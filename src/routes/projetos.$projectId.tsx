@@ -2,7 +2,10 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { ArrowLeft, Pencil, RefreshCw, Trash2, User } from "lucide-react"
 import { useState, type ReactNode } from "react"
 
-import { CreateProjectDialog } from "@/components/projetos/create-project-dialog"
+import {
+  CreateProjectDialog,
+  type ProjectDialogSection,
+} from "@/components/projetos/create-project-dialog"
 import { InvoiceCard } from "@/components/projetos/invoice-card"
 import { StatusBadge, WorkflowBadge } from "@/components/projetos/status-badges"
 import { ToolDetails } from "@/components/projetos/tool-details"
@@ -11,7 +14,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Tooltip } from "@/components/ui/tooltip"
 import { FREE_LABEL, isDealFree } from "@/data/projects"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
-import { formatCurrency, formatDeal } from "@/lib/format"
+import { formatCurrency, formatDealProgress } from "@/lib/format"
 import { generateInvoices } from "@/lib/invoices"
 import { useProjects } from "@/lib/projects-store"
 
@@ -24,15 +27,32 @@ function GitHubIcon({ className }: { className?: string }) {
   )
 }
 
-function Card({ title, children }: { title: string; children: ReactNode }) {
+function Card({
+  title,
+  action,
+  children,
+}: {
+  title: string
+  action?: ReactNode
+  children: ReactNode
+}) {
   return (
     <section className="rounded-xl border p-4">
-      <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-        {title}
-      </h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          {title}
+        </h2>
+        {action}
+      </div>
       <div className="mt-3">{children}</div>
     </section>
   )
+}
+
+type EditDialogConfig = {
+  sections: ProjectDialogSection[]
+  title: string
+  description?: string
 }
 
 function BackLink() {
@@ -51,7 +71,7 @@ function ProjetoDetalhePage() {
   const { projectId } = Route.useParams()
   const { findProject, deleteProject } = useProjects()
   const project = findProject(projectId)
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editDialog, setEditDialog] = useState<EditDialogConfig | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const navigate = useNavigate()
 
@@ -95,9 +115,12 @@ function ProjetoDetalhePage() {
   return (
     <div className="animate-in fade-in duration-300">
       <CreateProjectDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        open={editDialog !== null}
+        onOpenChange={(open) => !open && setEditDialog(null)}
         project={project}
+        sections={editDialog?.sections}
+        title={editDialog?.title}
+        description={editDialog?.description}
       />
 
       <ConfirmDialog
@@ -131,7 +154,13 @@ function ProjetoDetalhePage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setDialogOpen(true)}
+              onClick={() =>
+                setEditDialog({
+                  sections: ["identificacao", "contato", "repositorio"],
+                  title: "Editar projeto",
+                  description: "Atualize nome, status, contato e repositório.",
+                })
+              }
             >
               <Pencil />
               Editar
@@ -185,15 +214,31 @@ function ProjetoDetalhePage() {
       </div>
 
       <div className="grid gap-4 px-4 py-6 sm:px-6 lg:grid-cols-2 lg:px-8">
-        <Card title="Valor fechado">
+        <Card
+          title="Valor fechado"
+          action={
+            <Tooltip label="Editar valor fechado" side="top">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() =>
+                  setEditDialog({
+                    sections: ["cobranca"],
+                    title: "Editar valor fechado",
+                    description: "Atualize o valor e a forma de cobrança.",
+                  })
+                }
+              >
+                <Pencil />
+              </Button>
+            </Tooltip>
+          }
+        >
           <p className="text-2xl font-semibold tracking-tight">
             {isDealFree(deal) ? FREE_LABEL : formatCurrency(deal.amount, deal.currency)}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {formatDeal(deal)}
-            {deal.kind === "parcelado" && !isDealFree(deal) && deal.installments
-              ? ` · ${formatCurrency(deal.amount / deal.installments, deal.currency)} por parcela`
-              : ""}
+            {formatDealProgress(deal, invoices)}
           </p>
 
           {invoices.length > 0 && (
@@ -212,6 +257,23 @@ function ProjetoDetalhePage() {
             monthlyCostLabel
               ? `Ferramentas · ${paidTools.length} pagas · ${monthlyCostLabel}`
               : `Ferramentas · ${paidTools.length} pagas`
+          }
+          action={
+            <Tooltip label="Editar ferramentas" side="top">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() =>
+                  setEditDialog({
+                    sections: ["ferramentas"],
+                    title: "Editar ferramentas",
+                    description: "Atualize as ferramentas usadas no projeto.",
+                  })
+                }
+              >
+                <Pencil />
+              </Button>
+            </Tooltip>
           }
         >
           {project.tools.length === 0 ? (
