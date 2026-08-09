@@ -53,16 +53,9 @@ export function formatDealProgress(deal: Deal, invoices: Invoice[]) {
   return overdue > 0 ? `${base} · ${overdue} atrasada${overdue > 1 ? "s" : ""}` : base
 }
 
-/** "Nenhuma ferramenta paga", "3 pagas" ou "3 pagas · 1 atrasada". */
+/** "3 pagas · 2 grátis". */
 export function formatToolsProgress(tools: Tool[]) {
-  const paid = tools.filter((tool) => tool.billing)
-  if (paid.length === 0) return "Nenhuma ferramenta paga"
-
-  // atraso derivado da data da próxima fatura já ter passado — não existe
-  // status próprio pra ferramenta, mesma lógica que dá origem a "atrasada"
-  // nas faturas do valor fechado.
-  const today = new Date().toISOString().slice(0, 10)
-  const overdue = paid.filter((tool) => tool.billing!.nextInvoice < today).length
-  const base = `${paid.length} ${paid.length === 1 ? "paga" : "pagas"}`
-  return overdue > 0 ? `${base} · ${overdue} atrasada${overdue > 1 ? "s" : ""}` : base
+  const paid = tools.filter((tool) => tool.billing).length
+  const free = tools.length - paid
+  return `${paid} ${paid === 1 ? "paga" : "pagas"} · ${free} grátis`
 }
