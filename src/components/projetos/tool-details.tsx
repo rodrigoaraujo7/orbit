@@ -3,6 +3,7 @@ import { Eye, EyeOff, KeyRound } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/toast"
 import {
   BILLING_CYCLE_LABEL,
   PAYER_LABEL,
@@ -11,6 +12,15 @@ import {
 } from "@/data/projects"
 import { formatCurrency, formatDate } from "@/lib/format"
 import { ToolIcon } from "./tool-icons"
+
+async function copySecret(secret: Secret) {
+  try {
+    await navigator.clipboard.writeText(secret.value)
+    toast.add({ title: `${secret.key} copiado`, type: "success" })
+  } catch {
+    toast.add({ title: "Não foi possível copiar", type: "error" })
+  }
+}
 
 function SecretList({ secrets }: { secrets: Secret[] }) {
   const [revealed, setRevealed] = useState(false)
@@ -39,9 +49,13 @@ function SecretList({ secrets }: { secrets: Secret[] }) {
             className="flex flex-wrap items-baseline gap-x-2 font-mono text-xs"
           >
             <span className="text-muted-foreground">{secret.key}</span>
-            <span className="truncate">
+            <button
+              type="button"
+              onClick={() => copySecret(secret)}
+              className="truncate rounded-sm px-1 -mx-1 cursor-pointer transition-colors hover:bg-muted"
+            >
               {revealed ? secret.value : "•".repeat(12)}
-            </span>
+            </button>
           </li>
         ))}
       </ul>
