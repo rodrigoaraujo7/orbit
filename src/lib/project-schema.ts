@@ -23,7 +23,6 @@ export const projectSchema = z
         toolId: z.string().min(1, "Selecione a ferramenta"),
         customName: z.string().trim(),
         account: z.string().trim(),
-        paid: z.boolean(),
         amount: z.string().trim(),
         cycle: z.enum(["mensal", "anual", "avulso"]),
         nextInvoice: z.string().trim(),
@@ -70,22 +69,29 @@ export const projectSchema = z
         })
       }
 
-      if (tool.paid) {
-        const amount = parseAmount(tool.amount)
-        if (amount == null || amount <= 0) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["tools", index, "amount"],
-            message: "Informe um valor maior que zero",
-          })
-        }
-        if (!tool.nextInvoice) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["tools", index, "nextInvoice"],
-            message: "Informe a data da fatura",
-          })
-        }
+      // Valor zerado = ferramenta grátis. Só o que for lixo ou negativo é erro.
+      const amount = parseAmount(tool.amount)
+      if (tool.amount && amount == null) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["tools", index, "amount"],
+          message: "Informe um valor válido",
+        })
+      } else if (amount != null && amount < 0) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["tools", index, "amount"],
+          message: "O valor não pode ser negativo",
+        })
+      }
+
+      // Cobrança só é exigida quando a ferramenta tem valor.
+      if (isToolPaid(tool.amount) && !tool.nextInvoice) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["tools", index, "nextInvoice"],
+          message: "Informe a data da fatura",
+        })
       }
     })
 
@@ -105,8 +111,8 @@ export const emptyToolForm: ToolFormValues = {
   toolId: "",
   customName: "",
   account: "",
-  paid: false,
-  amount: "",
+  // começa zerado: sem valor, a ferramenta é tratada como grátis
+  amount: "0",
   cycle: "mensal",
   nextInvoice: "",
   payer: "eu",
@@ -130,6 +136,16 @@ function parseAmount(raw: string): number | null {
   const normalized = raw.replace(/\./g, "").replace(",", ".")
   const value = Number(normalized)
   return Number.isFinite(value) ? value : null
+}
+
+/**
+ * Ferramenta é paga quando tem valor maior que zero — não existe flag `paid`
+ * separada. Schema e UI compartilham esta função pra não divergirem sobre o
+ * que conta como "zerado" (vazio, "0" e "0,00" são todos grátis).
+ */
+export function isToolPaid(amount: string): boolean {
+  const value = parseAmount(amount)
+  return value != null && value > 0
 }
 
 /** Extrai "owner/repo" de uma URL do github.com. `null` se não for válida. */
@@ -157,8 +173,8 @@ function toTool(values: ToolFormValues): Tool {
     name: isOther ? values.customName : (catalogTool?.name ?? values.toolId),
     category: catalogTool?.category ?? "other",
     account: values.account || undefined,
-    // billing presente ⟺ ferramenta paga; não existe campo `paid` separado
-    billing: values.paid
+    // billing presente ⟺ valor > 0; não existe campo `paid` separado
+    billing: isToolPaid(values.amount)
       ? {
           amount: parseAmount(values.amount) ?? 0,
           cycle: values.cycle,

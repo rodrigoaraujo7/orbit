@@ -30,8 +30,9 @@ function form(overrides: Partial<ProjectFormValues> = {}): ProjectFormValues {
   return { ...emptyProjectForm, name: "Projeto X", client: "Cliente Y", ...overrides }
 }
 
+/** Ferramenta válida por padrão — cada caso sobrescreve só o que testa. */
 function tool(overrides: Partial<ToolFormValues> = {}): ToolFormValues {
-  return { ...emptyToolForm, ...overrides }
+  return { ...emptyToolForm, toolId: "aws", ...overrides }
 }
 
 function errorPaths(values: ProjectFormValues) {
@@ -95,28 +96,46 @@ assert.deepEqual(
   []
 )
 
-// ferramenta paga exige valor > 0 e data da fatura
+// valor zerado (o default), vazio ou "0,00" = grátis, sem exigir cobrança
+assert.deepEqual(errorPaths(form({ dealKind: "gratis", tools: [tool()] })), [])
 assert.deepEqual(
-  errorPaths(
-    form({ dealKind: "gratis", tools: [tool({ toolId: "aws", paid: true })] })
-  ),
-  ["tools.0.amount", "tools.0.nextInvoice"]
+  errorPaths(form({ dealKind: "gratis", tools: [tool({ amount: "" })] })),
+  []
+)
+assert.deepEqual(
+  errorPaths(form({ dealKind: "gratis", tools: [tool({ amount: "0,00" })] })),
+  []
+)
+
+// com valor, a data da fatura passa a ser obrigatória
+assert.deepEqual(
+  errorPaths(form({ dealKind: "gratis", tools: [tool({ amount: "340,50" })] })),
+  ["tools.0.nextInvoice"]
 )
 assert.deepEqual(
   errorPaths(
     form({
       dealKind: "gratis",
-      tools: [
-        tool({
-          toolId: "aws",
-          paid: true,
-          amount: "340,50",
-          nextInvoice: "2026-09-05",
-        }),
-      ],
+      tools: [tool({ amount: "340,50", nextInvoice: "2026-09-05" })],
     })
   ),
   []
+)
+
+// valor inválido ou negativo é erro
+assert.deepEqual(
+  errorPaths(form({ dealKind: "gratis", tools: [tool({ amount: "abc" })] })),
+  ["tools.0.amount"]
+)
+assert.deepEqual(
+  errorPaths(form({ dealKind: "gratis", tools: [tool({ amount: "-5" })] })),
+  ["tools.0.amount"]
+)
+
+// ferramenta zerada não gera billing
+assert.equal(
+  toProject(form({ dealKind: "gratis", tools: [tool()] })).tools[0].billing,
+  undefined
 )
 
 // secret pela metade é erro; billing só existe quando é paga
@@ -136,7 +155,6 @@ const paidTool = toProject(
     tools: [
       tool({
         toolId: "aws",
-        paid: true,
         amount: "340,50",
         nextInvoice: "2026-09-05",
         payer: "cliente",

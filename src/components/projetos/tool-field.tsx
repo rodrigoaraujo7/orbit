@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form"
 import { Eye, EyeOff, KeyRound, Plus, Trash2 } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { BILLING_CYCLE_LABEL, PAYER_LABEL } from "@/data/projects"
 import { OTHER_TOOL_ID } from "@/data/tool-catalog"
-import type { ProjectFormValues } from "@/lib/project-schema"
+import { isToolPaid, type ProjectFormValues } from "@/lib/project-schema"
 import { ToolSelect } from "./tool-select"
 
 function SecretRow({
@@ -103,8 +104,12 @@ export function ToolField({
   })
 
   const toolId = useWatch({ control, name: `tools.${index}.toolId` })
-  const paid = useWatch({ control, name: `tools.${index}.paid` })
+  const amount = useWatch({ control, name: `tools.${index}.amount` })
   const toolErrors = errors.tools?.[index]
+
+  // "é paga" vem do valor, não de um checkbox: zerado = grátis e o resto da
+  // cobrança fica travado. Mesma função que o schema usa, pra não divergir.
+  const paid = isToolPaid(amount ?? "")
 
   return (
     <div className="animate-in fade-in slide-in-from-top-1 flex flex-col gap-3 rounded-xl border p-3 duration-200">
@@ -164,31 +169,35 @@ export function ToolField({
         )}
       </Field>
 
-      <label className="flex w-fit items-center gap-2 text-sm select-none">
-        <input
-          type="checkbox"
-          {...register(`tools.${index}.paid`)}
-          className="size-3.5 accent-primary"
-        />
-        Ferramenta paga
-      </label>
+      <div className="rounded-lg bg-muted/40 p-3">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <Label className="text-xs text-muted-foreground">Cobrança</Label>
+          {!paid && <Badge variant="outline">Grátis</Badge>}
+        </div>
 
-      {paid && (
-        <div className="animate-in fade-in slide-in-from-top-1 grid gap-3 rounded-lg bg-muted/40 p-3 duration-200 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Valor (R$)" error={toolErrors?.amount?.message}>
             {(props) => (
               <Input
                 {...props}
                 {...register(`tools.${index}.amount`)}
                 inputMode="decimal"
-                placeholder="340,50"
+                placeholder="0"
+                onFocus={(event) => {
+                  // deixa digitar por cima do zero inicial em vez de virar "0340"
+                  if (!isToolPaid(event.target.value)) event.target.select()
+                }}
               />
             )}
           </Field>
 
           <Field label="Ciclo" error={toolErrors?.cycle?.message}>
             {(props) => (
-              <Select {...props} {...register(`tools.${index}.cycle`)}>
+              <Select
+                {...props}
+                {...register(`tools.${index}.cycle`)}
+                disabled={!paid}
+              >
                 {Object.entries(BILLING_CYCLE_LABEL).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
@@ -198,22 +207,24 @@ export function ToolField({
             )}
           </Field>
 
-          <Field
-            label="Data da fatura"
-            error={toolErrors?.nextInvoice?.message}
-          >
+          <Field label="Data da fatura" error={toolErrors?.nextInvoice?.message}>
             {(props) => (
               <Input
                 {...props}
                 {...register(`tools.${index}.nextInvoice`)}
                 type="date"
+                disabled={!paid}
               />
             )}
           </Field>
 
           <Field label="Quem paga" error={toolErrors?.payer?.message}>
             {(props) => (
-              <Select {...props} {...register(`tools.${index}.payer`)}>
+              <Select
+                {...props}
+                {...register(`tools.${index}.payer`)}
+                disabled={!paid}
+              >
                 {Object.entries(PAYER_LABEL).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
@@ -223,7 +234,7 @@ export function ToolField({
             )}
           </Field>
         </div>
-      )}
+      </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
