@@ -18,6 +18,12 @@ export function formatDate(iso: string) {
   return year && month && day ? `${day}/${month}/${year}` : iso
 }
 
+/** "2026-08-10T14:32" → "10/08/2026 14:32". Mesmo parse manual de `formatDate`. */
+export function formatDateTime(iso: string) {
+  const [datePart, time] = iso.split("T")
+  return time ? `${formatDate(datePart)} ${time}` : formatDate(datePart)
+}
+
 /** "R$ 18.000,00 em 3x", "R$ 7.200,00 à vista" ou "Grátis". */
 export function formatDeal(deal: Deal) {
   if (deal.kind === "gratis" || deal.amount == null) {

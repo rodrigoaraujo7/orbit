@@ -87,6 +87,36 @@ export const DEAL_KIND_LABEL: Record<DealKind, string> = {
   parcelado: "Parcelado",
 }
 
+export type InvoiceStatus = "pendente" | "paga" | "atrasada"
+export type PaymentMethod = "boleto" | "pix"
+
+/** Fatura de cobrança do cliente — derivada do `deal`, ver lib/invoices.ts. */
+export type Invoice = {
+  id: string
+  /** "YYYY-MM", presente só quando o deal é parcelado (mês da parcela). */
+  referenceMonth?: string
+  amount: number
+  status: InvoiceStatus
+  paymentMethod?: PaymentMethod
+  /** Data em que a fatura foi gerada, "YYYY-MM-DD". */
+  generatedAt: string
+  /** "YYYY-MM-DDTHH:mm", presente só se `status === "paga"`. */
+  paidAt?: string
+  payerName: string
+  hasAttachment: boolean
+}
+
+export const INVOICE_STATUS_LABEL: Record<InvoiceStatus, string> = {
+  pendente: "Pendente",
+  paga: "Paga",
+  atrasada: "Atrasada",
+}
+
+export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  boleto: "Boleto",
+  pix: "Pix",
+}
+
 export const BILLING_CYCLE_LABEL: Record<BillingCycle, string> = {
   mensal: "Mensal",
   anual: "Anual",
