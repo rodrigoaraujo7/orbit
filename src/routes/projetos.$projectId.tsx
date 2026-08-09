@@ -1,5 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { ArrowLeft, Pencil, Trash2, User } from "lucide-react"
+import { ArrowLeft, Pencil, RefreshCw, Trash2, User } from "lucide-react"
 import { useState, type ReactNode } from "react"
 
 import { CreateProjectDialog } from "@/components/projetos/create-project-dialog"
@@ -8,6 +8,7 @@ import { StatusBadge, WorkflowBadge } from "@/components/projetos/status-badges"
 import { ToolDetails } from "@/components/projetos/tool-details"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Tooltip } from "@/components/ui/tooltip"
 import { FREE_LABEL, isDealFree } from "@/data/projects"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
 import { formatCurrency, formatDeal } from "@/lib/format"
@@ -119,6 +120,14 @@ function ProjetoDetalhePage() {
         <div className="flex items-start justify-between gap-4">
           <BackLink />
           <div className="flex gap-1">
+            <Tooltip label="Atualizar dados do projeto" side="top">
+              {/* ponytail: sem-op — não há fetch real ainda (estado em
+                  memória, ver projects-store.tsx). Plugar refetch quando
+                  existir API. */}
+              <Button variant="outline" size="icon-sm" onClick={() => {}}>
+                <RefreshCw />
+              </Button>
+            </Tooltip>
             <Button
               variant="outline"
               size="sm"
