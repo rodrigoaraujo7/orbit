@@ -22,6 +22,7 @@ function ProjetosPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [deletingProject, setDeletingProject] = useState<Project | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const navigate = useNavigate()
 
   function editProject(project: Project) {
@@ -55,8 +56,8 @@ function ProjetosPage() {
       />
 
       <ConfirmDialog
-        open={deletingProject != null}
-        onOpenChange={(open) => !open && setDeletingProject(null)}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
         title="Excluir projeto"
         description={
           <>
@@ -179,7 +180,10 @@ function ProjetosPage() {
                   >
                     <RowActionsMenu
                       onEdit={() => editProject(project)}
-                      onDelete={() => setDeletingProject(project)}
+                      onDelete={() => {
+                        setDeletingProject(project)
+                        setDeleteDialogOpen(true)
+                      }}
                     />
                   </td>
                 </tr>
