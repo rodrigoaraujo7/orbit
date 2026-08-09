@@ -1,6 +1,7 @@
 import { Dialog } from "@base-ui/react/dialog"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, X } from "lucide-react"
+import { useEffect } from "react"
 import {
   Controller,
   FormProvider,
@@ -14,11 +15,12 @@ import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
-import { DEAL_KIND_LABEL, PROJECT_STATUS_LABEL } from "@/data/projects"
+import { DEAL_KIND_LABEL, PROJECT_STATUS_LABEL, type Project } from "@/data/projects"
 import {
   GITHUB_PREFIX,
   emptyProjectForm,
   emptyToolForm,
+  fromProject,
   projectSchema,
   toProject,
   type ProjectFormValues,
@@ -37,11 +39,14 @@ const dealKindOptions = Object.entries(DEAL_KIND_LABEL).map(
 export function CreateProjectDialog({
   open,
   onOpenChange,
+  project,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** presente = editando esse projeto; ausente = criando um novo */
+  project?: Project
 }) {
-  const { addProject } = useProjects()
+  const { addProject, updateProject } = useProjects()
 
   // o form inteiro vai pro FormProvider: ToolField/SecretRow são aninhados e
   // consomem via useFormContext em vez de receber control/register por prop
@@ -57,6 +62,13 @@ export function CreateProjectDialog({
     formState: { errors },
   } = form
 
+  // popula com os dados do projeto (edição) ou limpa (criação) toda vez que
+  // o dialog abre — o form fica montado o tempo todo, então precisa disso
+  // pra trocar de projeto entre uma edição e outra.
+  useEffect(() => {
+    if (open) reset(project ? fromProject(project) : emptyProjectForm)
+  }, [open, project, reset])
+
   const { fields, append, remove } = useFieldArray({ control, name: "tools" })
   // useWatch em vez de watch(): é memoizável, o watch() faz o React Compiler
   // desistir de otimizar o componente inteiro.
@@ -68,7 +80,11 @@ export function CreateProjectDialog({
   }
 
   const onSubmit = handleSubmit((values) => {
-    addProject(toProject(values))
+    if (project) {
+      updateProject(toProject(values, project))
+    } else {
+      addProject(toProject(values))
+    }
     close(false)
   })
 
@@ -80,7 +96,7 @@ export function CreateProjectDialog({
           <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
             <div>
               <Dialog.Title className="text-base font-semibold tracking-tight">
-                Novo projeto
+                {project ? "Editar projeto" : "Novo projeto"}
               </Dialog.Title>
               <Dialog.Description className="mt-0.5 text-sm text-muted-foreground">
                 Cadastre o projeto, o valor fechado e as ferramentas usadas.
@@ -255,7 +271,9 @@ export function CreateProjectDialog({
               >
                 Cancelar
               </Button>
-              <Button type="submit">Criar projeto</Button>
+              <Button type="submit">
+                {project ? "Salvar alterações" : "Criar projeto"}
+              </Button>
             </div>
             </form>
           </FormProvider>

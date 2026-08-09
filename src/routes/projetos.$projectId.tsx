@@ -1,10 +1,12 @@
-import { Link, createFileRoute } from "@tanstack/react-router"
-import { ArrowLeft, ExternalLink } from "lucide-react"
-import type { ReactNode } from "react"
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
+import { ArrowLeft, ExternalLink, Pencil, Trash2 } from "lucide-react"
+import { useState, type ReactNode } from "react"
 
+import { CreateProjectDialog } from "@/components/projetos/create-project-dialog"
 import { StatusBadge, WorkflowBadge } from "@/components/projetos/status-badges"
 import { ToolDetails } from "@/components/projetos/tool-details"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { DEAL_KIND_LABEL } from "@/data/projects"
 import { formatCurrency, formatDeal } from "@/lib/format"
 import { useProjects } from "@/lib/projects-store"
@@ -34,8 +36,17 @@ function BackLink() {
 
 function ProjetoDetalhePage() {
   const { projectId } = Route.useParams()
-  const { findProject } = useProjects()
+  const { findProject, deleteProject } = useProjects()
   const project = findProject(projectId)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const navigate = useNavigate()
+
+  function removeProject() {
+    if (!project) return
+    deleteProject(project.id)
+    navigate({ to: "/projetos" })
+  }
 
   if (!project) {
     return (
@@ -60,8 +71,50 @@ function ProjetoDetalhePage() {
 
   return (
     <div className="animate-in fade-in duration-300">
+      <CreateProjectDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        project={project}
+      />
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        onOpenChange={setConfirmingDelete}
+        title="Excluir projeto"
+        description={
+          <>
+            Excluir{" "}
+            <span className="font-medium text-primary">{project.name}</span>
+            ? Essa ação não pode ser desfeita.
+          </>
+        }
+        confirmLabel="Excluir"
+        confirmWord="excluir"
+        onConfirm={removeProject}
+      />
+
       <div className="border-b px-4 py-6 sm:px-6 lg:px-8">
-        <BackLink />
+        <div className="flex items-start justify-between gap-4">
+          <BackLink />
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDialogOpen(true)}
+            >
+              <Pencil />
+              Editar
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setConfirmingDelete(true)}
+            >
+              <Trash2 />
+              Excluir
+            </Button>
+          </div>
+        </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
             {project.name}
