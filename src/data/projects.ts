@@ -54,6 +54,8 @@ export type Project = {
   name: string
   /** Contato principal do cliente. */
   client: string
+  clientEmail?: string
+  clientPhone?: string
   status: ProjectStatus
   deal: Deal
   tools: Tool[]
@@ -120,6 +122,8 @@ export const projects: Project[] = [
     id: "1",
     name: "Portal do Corretor",
     client: "Marcelo Tavares",
+    clientEmail: "marcelo@portaldocorretor.com.br",
+    clientPhone: "(11) 98765-4321",
     status: "em-desenvolvimento",
     deal: { kind: "parcelado", amount: 18000, installments: 3 },
     tools: [

@@ -1,7 +1,7 @@
 import { Dialog } from "@base-ui/react/dialog"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, X } from "lucide-react"
-import { useEffect } from "react"
+import { useEffect, type ReactNode } from "react"
 import {
   Controller,
   FormProvider,
@@ -34,6 +34,23 @@ import { ToolField } from "./tool-field"
 const dealKindOptions = Object.entries(DEAL_KIND_LABEL).map(
   ([value, label]) => ({ value, label })
 )
+
+function Section({
+  title,
+  children,
+}: {
+  title: string
+  children: ReactNode
+}) {
+  return (
+    <div className="flex flex-col gap-4 border-t pt-4 first:border-t-0 first:pt-0">
+      <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        {title}
+      </h3>
+      {children}
+    </div>
+  )
+}
 
 export function CreateProjectDialog({
   open,
@@ -117,152 +134,195 @@ export function CreateProjectDialog({
 
           <FormProvider {...form}>
             <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-            <div className="flex flex-col gap-4 overflow-y-auto px-5 py-4">
-              <Field label="Nome do projeto" error={errors.name?.message}>
-                {(props) => (
-                  <Input
-                    {...props}
-                    {...register("name")}
-                    placeholder="Portal do Corretor"
-                  />
-                )}
-              </Field>
-
-              <Field label="Contato principal" error={errors.client?.message}>
-                {(props) => (
-                  <Input
-                    {...props}
-                    {...register("client")}
-                    placeholder="Marcelo Tavares"
-                  />
-                )}
-              </Field>
-
-              <Field label="Status" error={errors.status?.message}>
-                {(props) => (
-                  <Controller
-                    control={control}
-                    name="status"
-                    render={({ field }) => (
-                      <StatusSelect
+            <div className="flex flex-col gap-6 overflow-y-auto px-5 py-4">
+              <Section title="Identificação">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Nome do projeto" error={errors.name?.message}>
+                    {(props) => (
+                      <Input
                         {...props}
-                        value={field.value}
-                        onValueChange={field.onChange}
+                        {...register("name")}
+                        placeholder="Portal do Corretor"
                       />
                     )}
-                  />
-                )}
-              </Field>
+                  </Field>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Cobrança" error={errors.dealKind?.message}>
+                  <Field label="Status" error={errors.status?.message}>
+                    {(props) => (
+                      <Controller
+                        control={control}
+                        name="status"
+                        render={({ field }) => (
+                          <StatusSelect
+                            {...props}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          />
+                        )}
+                      />
+                    )}
+                  </Field>
+                </div>
+              </Section>
+
+              <Section title="Contato">
+                <Field label="Contato principal" error={errors.client?.message}>
                   {(props) => (
-                    <Controller
-                      control={control}
-                      name="dealKind"
-                      render={({ field }) => (
-                        <Select
-                          {...props}
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          options={dealKindOptions}
-                        />
-                      )}
+                    <Input
+                      {...props}
+                      {...register("client")}
+                      placeholder="Marcelo Tavares"
                     />
                   )}
                 </Field>
 
-                {dealKind !== "gratis" && (
+                <div className="grid gap-4 sm:grid-cols-2">
                   <Field
-                    label="Valor fechado (R$)"
-                    error={errors.amount?.message}
+                    label="E-mail do contato"
+                    error={errors.clientEmail?.message}
+                    hint="Opcional"
+                  >
+                    {(props) => (
+                      <Input
+                        {...props}
+                        {...register("clientEmail")}
+                        type="email"
+                        placeholder="marcelo@empresa.com.br"
+                      />
+                    )}
+                  </Field>
+
+                  <Field
+                    label="Telefone do contato"
+                    error={errors.clientPhone?.message}
+                    hint="Opcional"
+                  >
+                    {(props) => (
+                      <Input
+                        {...props}
+                        {...register("clientPhone")}
+                        placeholder="(11) 98765-4321"
+                      />
+                    )}
+                  </Field>
+                </div>
+              </Section>
+
+              <Section title="Cobrança">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Cobrança" error={errors.dealKind?.message}>
+                    {(props) => (
+                      <Controller
+                        control={control}
+                        name="dealKind"
+                        render={({ field }) => (
+                          <Select
+                            {...props}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            options={dealKindOptions}
+                          />
+                        )}
+                      />
+                    )}
+                  </Field>
+
+                  {dealKind !== "gratis" && (
+                    <Field
+                      label="Valor fechado (R$)"
+                      error={errors.amount?.message}
+                      className="animate-in fade-in slide-in-from-top-1 duration-200"
+                    >
+                      {(props) => (
+                        <Input
+                          {...props}
+                          {...register("amount")}
+                          inputMode="decimal"
+                          placeholder="18.000,00"
+                        />
+                      )}
+                    </Field>
+                  )}
+                </div>
+
+                {dealKind === "parcelado" && (
+                  <Field
+                    label="Número de parcelas"
+                    error={errors.installments?.message}
                     className="animate-in fade-in slide-in-from-top-1 duration-200"
                   >
                     {(props) => (
                       <Input
                         {...props}
-                        {...register("amount")}
-                        inputMode="decimal"
-                        placeholder="18.000,00"
+                        {...register("installments")}
+                        inputMode="numeric"
+                        placeholder="3"
                       />
                     )}
                   </Field>
                 )}
-              </div>
+              </Section>
 
-              {dealKind === "parcelado" && (
+              <Section title="Ferramentas">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Ferramentas usadas</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      onClick={() => append(emptyToolForm)}
+                    >
+                      <Plus />
+                      Adicionar
+                    </Button>
+                  </div>
+
+                  {fields.length === 0 ? (
+                    <p className="rounded-xl border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
+                      Nenhuma ferramenta registrada.
+                    </p>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {fields.map((field, index) => (
+                        <ToolField
+                          key={field.id}
+                          index={index}
+                          onRemove={() => remove(index)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Section>
+
+              <Section title="Repositório">
                 <Field
-                  label="Número de parcelas"
-                  error={errors.installments?.message}
-                  className="animate-in fade-in slide-in-from-top-1 duration-200"
+                  label="Repositório GitHub"
+                  error={errors.repoPath?.message}
+                  hint="Opcional"
                 >
                   {(props) => (
-                    <Input
-                      {...props}
-                      {...register("installments")}
-                      inputMode="numeric"
-                      placeholder="3"
-                    />
+                    <div
+                      className={cn(
+                        "flex h-10 items-stretch overflow-hidden rounded-xl border border-border bg-background transition-[color,border-color,box-shadow]",
+                        "has-[input:focus]:border-ring has-[input:focus]:ring-3 has-[input:focus]:ring-ring/30",
+                        "has-[input[aria-invalid=true]]:border-destructive has-[input[aria-invalid=true]]:ring-3 has-[input[aria-invalid=true]]:ring-destructive/20"
+                      )}
+                    >
+                      <span className="flex items-center border-r bg-muted/40 px-3.5 text-[15px] text-muted-foreground select-none">
+                        {GITHUB_PREFIX}
+                      </span>
+                      <input
+                        {...props}
+                        {...register("repoPath")}
+                        placeholder="usuario/repo"
+                        className="min-w-0 flex-1 bg-transparent px-3.5 text-[15px] outline-none placeholder:text-muted-foreground"
+                      />
+                    </div>
                   )}
                 </Field>
-              )}
-
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <Label>Ferramentas usadas</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="xs"
-                    onClick={() => append(emptyToolForm)}
-                  >
-                    <Plus />
-                    Adicionar
-                  </Button>
-                </div>
-
-                {fields.length === 0 ? (
-                  <p className="rounded-xl border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
-                    Nenhuma ferramenta registrada.
-                  </p>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    {fields.map((field, index) => (
-                      <ToolField
-                        key={field.id}
-                        index={index}
-                        onRemove={() => remove(index)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <Field
-                label="Repositório GitHub"
-                error={errors.repoPath?.message}
-                hint="Opcional"
-              >
-                {(props) => (
-                  <div
-                    className={cn(
-                      "flex h-10 items-stretch overflow-hidden rounded-xl border border-border bg-background transition-[color,border-color,box-shadow]",
-                      "has-[input:focus]:border-ring has-[input:focus]:ring-3 has-[input:focus]:ring-ring/30",
-                      "has-[input[aria-invalid=true]]:border-destructive has-[input[aria-invalid=true]]:ring-3 has-[input[aria-invalid=true]]:ring-destructive/20"
-                    )}
-                  >
-                    <span className="flex items-center border-r bg-muted/40 px-3.5 text-[15px] text-muted-foreground select-none">
-                      {GITHUB_PREFIX}
-                    </span>
-                    <input
-                      {...props}
-                      {...register("repoPath")}
-                      placeholder="usuario/repo"
-                      className="min-w-0 flex-1 bg-transparent px-3.5 text-[15px] outline-none placeholder:text-muted-foreground"
-                    />
-                  </div>
-                )}
-              </Field>
+              </Section>
             </div>
 
             <div className="flex justify-end gap-2 border-t px-5 py-4">

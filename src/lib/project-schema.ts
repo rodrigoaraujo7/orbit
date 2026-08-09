@@ -14,6 +14,8 @@ export const projectSchema = z
   .object({
     name: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
     client: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
+    clientEmail: z.string().trim(),
+    clientPhone: z.string().trim(),
     status: z.enum(["em-desenvolvimento", "fila", "pausado", "concluido"]),
     dealKind: z.enum(["gratis", "a-vista", "parcelado"]),
     amount: z.string().trim(),
@@ -39,6 +41,14 @@ export const projectSchema = z
     repoPath: z.string().trim(),
   })
   .superRefine((values, ctx) => {
+    if (values.clientEmail && !z.string().email().safeParse(values.clientEmail).success) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["clientEmail"],
+        message: "E-mail inválido",
+      })
+    }
+
     if (values.dealKind !== "gratis") {
       const amount = parseAmount(values.amount)
       if (amount == null || amount <= 0) {
@@ -123,6 +133,8 @@ export const emptyToolForm: ToolFormValues = {
 export const emptyProjectForm: ProjectFormValues = {
   name: "",
   client: "",
+  clientEmail: "",
+  clientPhone: "",
   status: "fila",
   dealKind: "a-vista",
   amount: "",
@@ -212,6 +224,8 @@ export function toProject(values: ProjectFormValues, existing?: Project): Projec
     id: existing?.id ?? crypto.randomUUID(),
     name: values.name,
     client: values.client,
+    clientEmail: values.clientEmail || undefined,
+    clientPhone: values.clientPhone || undefined,
     status: values.status,
     deal,
     tools: values.tools.map(toTool),
@@ -223,6 +237,8 @@ export function fromProject(project: Project): ProjectFormValues {
   return {
     name: project.name,
     client: project.client,
+    clientEmail: project.clientEmail ?? "",
+    clientPhone: project.clientPhone ?? "",
     status: project.status,
     dealKind: project.deal.kind,
     amount: project.deal.kind === "gratis" ? "" : String(project.deal.amount ?? ""),
