@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { DEAL_KIND_LABEL, PROJECT_STATUS_LABEL } from "@/data/projects"
 import {
+  GITHUB_PREFIX,
   emptyProjectForm,
   emptyToolForm,
   projectSchema,
@@ -23,6 +24,7 @@ import {
   type ProjectFormValues,
 } from "@/lib/project-schema"
 import { useProjects } from "@/lib/projects-store"
+import { cn } from "@/lib/utils"
 import { ToolField } from "./tool-field"
 
 const statusOptions = Object.entries(PROJECT_STATUS_LABEL).map(
@@ -220,15 +222,27 @@ export function CreateProjectDialog({
 
               <Field
                 label="Repositório GitHub"
-                error={errors.repoUrl?.message}
+                error={errors.repoPath?.message}
                 hint="Opcional"
               >
                 {(props) => (
-                  <Input
-                    {...props}
-                    {...register("repoUrl")}
-                    placeholder="https://github.com/usuario/repo"
-                  />
+                  <div
+                    className={cn(
+                      "flex h-10 items-stretch overflow-hidden rounded-xl border border-border bg-background transition-[color,border-color,box-shadow]",
+                      "has-[input:focus]:border-ring has-[input:focus]:ring-3 has-[input:focus]:ring-ring/30",
+                      "has-[input[aria-invalid=true]]:border-destructive has-[input[aria-invalid=true]]:ring-3 has-[input[aria-invalid=true]]:ring-destructive/20"
+                    )}
+                  >
+                    <span className="flex items-center border-r bg-muted/40 px-3.5 text-[15px] text-muted-foreground select-none">
+                      {GITHUB_PREFIX}
+                    </span>
+                    <input
+                      {...props}
+                      {...register("repoPath")}
+                      placeholder="usuario/repo"
+                      className="min-w-0 flex-1 bg-transparent px-3.5 text-[15px] outline-none placeholder:text-muted-foreground"
+                    />
+                  </div>
                 )}
               </Field>
             </div>
