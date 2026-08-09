@@ -1,5 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react"
+import { ArrowLeft, Pencil, Trash2, User } from "lucide-react"
 import { useState, type ReactNode } from "react"
 
 import { CreateProjectDialog } from "@/components/projetos/create-project-dialog"
@@ -144,7 +144,22 @@ function ProjetoDetalhePage() {
             <WorkflowBadge status={project.repo.workflow} iconOnly tooltip />
           </div>
         )}
-        <p className="mt-1 text-sm text-muted-foreground">{project.client}</p>
+        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+          <User className="size-3.5" />
+          <span>{project.client}</span>
+          {project.clientEmail && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>{project.clientEmail}</span>
+            </>
+          )}
+          {project.clientPhone && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>{project.clientPhone}</span>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-4 px-4 py-6 sm:px-6 lg:grid-cols-2 lg:px-8">
