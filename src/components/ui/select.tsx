@@ -1,38 +1,161 @@
-import { ChevronDown } from "lucide-react"
+import { Select as SelectPrimitive } from "@base-ui/react/select"
+import { Check, ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
 /**
- * `<select>` nativo estilizado — acessibilidade e comportamento mobile de
- * graça. Se um dia precisar de opções ricas (ícone, descrição), trocar pelo
- * Select do Base UI.
+ * Peças estilizadas do Select do Base UI, reaproveitadas tal e qual pelo
+ * select agrupado de ferramentas (`tool-select.tsx`) — é o que padroniza a
+ * aparência do dropdown em toda a plataforma. `Select` logo abaixo é a
+ * composição pronta pra lista simples (a maioria dos casos).
  */
-function Select({
+export function SelectTrigger({
   className,
-  children,
   ...props
-}: React.ComponentProps<"select">) {
+}: React.ComponentProps<typeof SelectPrimitive.Trigger>) {
   return (
-    <div className="relative">
-      <select
-        data-slot="select"
-        className={cn(
-          "flex h-9 w-full appearance-none rounded-xl border border-border bg-background pr-9 pl-3 text-sm transition-[color,border-color,box-shadow] outline-none",
-          "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-          "aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </select>
-      <ChevronDown
-        aria-hidden
-        className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
-      />
-    </div>
+    <SelectPrimitive.Trigger
+      className={cn(
+        "flex h-9 w-full items-center justify-between gap-2 rounded-xl border border-border bg-background px-3 text-sm transition-[color,border-color,box-shadow] outline-none",
+        "hover:bg-muted/50",
+        "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
+        "aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
   )
 }
 
-export { Select }
+export function SelectPopup({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Popup>) {
+  return (
+    <SelectPrimitive.Popup
+      className={cn(
+        "max-h-72 overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150",
+        "data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export function SelectItem({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Item>) {
+  return (
+    <SelectPrimitive.Item
+      className={cn(
+        "flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export function SelectGroupLabel({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.GroupLabel>) {
+  return (
+    <SelectPrimitive.GroupLabel
+      className={cn(
+        "px-2 py-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+// Peças sem estilo próprio — só agrupam/posicionam, reexportadas pra quem
+// monta um select customizado (ex: tool-select.tsx) não importar do pacote
+// direto e ficar preso a um único ponto de acoplamento com o Base UI.
+export const SelectRoot = SelectPrimitive.Root
+export const SelectValue = SelectPrimitive.Value
+export const SelectIcon = SelectPrimitive.Icon
+export const SelectPortal = SelectPrimitive.Portal
+export const SelectPositioner = SelectPrimitive.Positioner
+export const SelectGroup = SelectPrimitive.Group
+export const SelectItemText = SelectPrimitive.ItemText
+export const SelectItemIndicator = SelectPrimitive.ItemIndicator
+
+export type SelectOption = { value: string; label: string }
+
+/**
+ * Select pronto pra lista simples "value + label" — status, ciclo de
+ * cobrança, quem paga, etc. Controlado (`value`/`onValueChange`), não
+ * `register()`: use com `Controller` do react-hook-form.
+ */
+export function Select({
+  id,
+  value,
+  onValueChange,
+  options,
+  placeholder = "Selecione",
+  disabled,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": describedBy,
+}: {
+  id?: string
+  value: string
+  onValueChange: (value: string) => void
+  options: SelectOption[]
+  placeholder?: string
+  disabled?: boolean
+  "aria-invalid"?: boolean
+  "aria-describedby"?: string
+}) {
+  return (
+    <SelectRoot
+      value={value || null}
+      onValueChange={(next) => onValueChange(next ?? "")}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        id={id}
+        aria-invalid={ariaInvalid}
+        aria-describedby={describedBy}
+      >
+        <SelectValue>
+          {(selected: string | null) => {
+            const option = options.find((o) => o.value === selected)
+            return option ? (
+              option.label
+            ) : (
+              <span className="text-muted-foreground">{placeholder}</span>
+            )
+          }}
+        </SelectValue>
+        <SelectIcon>
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+        </SelectIcon>
+      </SelectTrigger>
+
+      <SelectPortal>
+        <SelectPositioner
+          sideOffset={4}
+          alignItemWithTrigger={false}
+          className="z-[60] w-[var(--anchor-width)]"
+        >
+          <SelectPopup>
+            {options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                <SelectItemText>{option.label}</SelectItemText>
+                <SelectItemIndicator className="ml-auto">
+                  <Check className="size-3.5 text-primary" />
+                </SelectItemIndicator>
+              </SelectItem>
+            ))}
+          </SelectPopup>
+        </SelectPositioner>
+      </SelectPortal>
+    </SelectRoot>
+  )
+}

@@ -1,19 +1,20 @@
 import { Dialog } from "@base-ui/react/dialog"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, X } from "lucide-react"
-import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form"
+import {
+  Controller,
+  FormProvider,
+  useFieldArray,
+  useForm,
+  useWatch,
+} from "react-hook-form"
 
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
-import {
-  DEAL_KIND_LABEL,
-  PROJECT_STATUS_LABEL,
-  type DealKind,
-  type ProjectStatus,
-} from "@/data/projects"
+import { DEAL_KIND_LABEL, PROJECT_STATUS_LABEL } from "@/data/projects"
 import {
   emptyProjectForm,
   emptyToolForm,
@@ -23,6 +24,13 @@ import {
 } from "@/lib/project-schema"
 import { useProjects } from "@/lib/projects-store"
 import { ToolField } from "./tool-field"
+
+const statusOptions = Object.entries(PROJECT_STATUS_LABEL).map(
+  ([value, label]) => ({ value, label })
+)
+const dealKindOptions = Object.entries(DEAL_KIND_LABEL).map(
+  ([value, label]) => ({ value, label })
+)
 
 export function CreateProjectDialog({
   open,
@@ -111,28 +119,36 @@ export function CreateProjectDialog({
 
               <Field label="Status" error={errors.status?.message}>
                 {(props) => (
-                  <Select {...props} {...register("status")}>
-                    {Object.entries(PROJECT_STATUS_LABEL).map(
-                      ([value, label]) => (
-                        <option key={value} value={value as ProjectStatus}>
-                          {label}
-                        </option>
-                      )
+                  <Controller
+                    control={control}
+                    name="status"
+                    render={({ field }) => (
+                      <Select
+                        {...props}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        options={statusOptions}
+                      />
                     )}
-                  </Select>
+                  />
                 )}
               </Field>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Cobrança" error={errors.dealKind?.message}>
                   {(props) => (
-                    <Select {...props} {...register("dealKind")}>
-                      {Object.entries(DEAL_KIND_LABEL).map(([value, label]) => (
-                        <option key={value} value={value as DealKind}>
-                          {label}
-                        </option>
-                      ))}
-                    </Select>
+                    <Controller
+                      control={control}
+                      name="dealKind"
+                      render={({ field }) => (
+                        <Select
+                          {...props}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          options={dealKindOptions}
+                        />
+                      )}
+                    />
                   )}
                 </Field>
 

@@ -13,6 +13,14 @@ import { OTHER_TOOL_ID } from "@/data/tool-catalog"
 import { isToolPaid, type ProjectFormValues } from "@/lib/project-schema"
 import { ToolSelect } from "./tool-select"
 
+const cycleOptions = Object.entries(BILLING_CYCLE_LABEL).map(
+  ([value, label]) => ({ value, label })
+)
+const payerOptions = Object.entries(PAYER_LABEL).map(([value, label]) => ({
+  value,
+  label,
+}))
+
 function SecretRow({
   toolIndex,
   index,
@@ -193,17 +201,19 @@ export function ToolField({
 
           <Field label="Ciclo" error={toolErrors?.cycle?.message}>
             {(props) => (
-              <Select
-                {...props}
-                {...register(`tools.${index}.cycle`)}
-                disabled={!paid}
-              >
-                {Object.entries(BILLING_CYCLE_LABEL).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name={`tools.${index}.cycle`}
+                render={({ field }) => (
+                  <Select
+                    {...props}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    options={cycleOptions}
+                    disabled={!paid}
+                  />
+                )}
+              />
             )}
           </Field>
 
@@ -220,17 +230,19 @@ export function ToolField({
 
           <Field label="Quem paga" error={toolErrors?.payer?.message}>
             {(props) => (
-              <Select
-                {...props}
-                {...register(`tools.${index}.payer`)}
-                disabled={!paid}
-              >
-                {Object.entries(PAYER_LABEL).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name={`tools.${index}.payer`}
+                render={({ field }) => (
+                  <Select
+                    {...props}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    options={payerOptions}
+                    disabled={!paid}
+                  />
+                )}
+              />
             )}
           </Field>
         </div>
