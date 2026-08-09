@@ -71,6 +71,14 @@ export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
   concluido: "Concluído",
 }
 
+/** Ordem das colunas do Kanban (fila → em desenvolvimento → pausado → concluído). */
+export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
+  "fila",
+  "em-desenvolvimento",
+  "pausado",
+  "concluido",
+]
+
 export const DEAL_KIND_LABEL: Record<DealKind, string> = {
   gratis: "Grátis",
   "a-vista": "À vista",
