@@ -8,7 +8,8 @@ import { StatusBadge, WorkflowBadge } from "@/components/projetos/status-badges"
 import { ToolDetails } from "@/components/projetos/tool-details"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { DEAL_KIND_LABEL } from "@/data/projects"
+import { FREE_LABEL, isDealFree } from "@/data/projects"
+import { DEFAULT_CURRENCY } from "@/lib/currency"
 import { formatCurrency, formatDeal } from "@/lib/format"
 import { generateInvoices } from "@/lib/invoices"
 import { useProjects } from "@/lib/projects-store"
@@ -77,9 +78,18 @@ function ProjetoDetalhePage() {
   const invoices = generateInvoices(project)
   // "é paga" é derivado de billing — não existe flag separada que possa divergir
   const paidTools = project.tools.filter((tool) => tool.billing)
-  const monthlyCost = paidTools
+  // agrupado por moeda — ferramentas de moedas diferentes não podem ser
+  // somadas num total único.
+  const monthlyCostByCurrency = paidTools
     .filter((tool) => tool.billing?.cycle === "mensal")
-    .reduce((total, tool) => total + (tool.billing?.amount ?? 0), 0)
+    .reduce<Record<string, number>>((totals, tool) => {
+      const { amount, currency = DEFAULT_CURRENCY } = tool.billing!
+      totals[currency] = (totals[currency] ?? 0) + amount
+      return totals
+    }, {})
+  const monthlyCostLabel = Object.entries(monthlyCostByCurrency)
+    .map(([currency, total]) => `${formatCurrency(total, currency)}/mês`)
+    .join(" + ")
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -168,14 +178,12 @@ function ProjetoDetalhePage() {
       <div className="grid gap-4 px-4 py-6 sm:px-6 lg:grid-cols-2 lg:px-8">
         <Card title="Valor fechado">
           <p className="text-2xl font-semibold tracking-tight">
-            {deal.kind === "gratis"
-              ? DEAL_KIND_LABEL.gratis
-              : formatCurrency(deal.amount ?? 0)}
+            {isDealFree(deal) ? FREE_LABEL : formatCurrency(deal.amount, deal.currency)}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             {formatDeal(deal)}
-            {deal.kind === "parcelado" && deal.amount && deal.installments
-              ? ` · ${formatCurrency(deal.amount / deal.installments)} por parcela`
+            {deal.kind === "parcelado" && !isDealFree(deal) && deal.installments
+              ? ` · ${formatCurrency(deal.amount / deal.installments, deal.currency)} por parcela`
               : ""}
           </p>
 
@@ -192,8 +200,8 @@ function ProjetoDetalhePage() {
 
         <Card
           title={
-            monthlyCost > 0
-              ? `Ferramentas · ${paidTools.length} pagas · ${formatCurrency(monthlyCost)}/mês`
+            monthlyCostLabel
+              ? `Ferramentas · ${paidTools.length} pagas · ${monthlyCostLabel}`
               : `Ferramentas · ${paidTools.length} pagas`
           }
         >

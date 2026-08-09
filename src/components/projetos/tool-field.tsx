@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { BILLING_CYCLE_LABEL, PAYER_LABEL } from "@/data/projects"
 import { OTHER_TOOL_ID } from "@/data/tool-catalog"
-import { isToolPaid, type ProjectFormValues } from "@/lib/project-schema"
+import { currencyOptions } from "@/lib/currency"
+import { hasPositiveAmount, type ProjectFormValues } from "@/lib/project-schema"
 import { ToolSelect } from "./tool-select"
 
 const cycleOptions = Object.entries(BILLING_CYCLE_LABEL).map(
@@ -117,7 +118,7 @@ export function ToolField({
 
   // "é paga" vem do valor, não de um checkbox: zerado = grátis e o resto da
   // cobrança fica travado. Mesma função que o schema usa, pra não divergir.
-  const paid = isToolPaid(amount ?? "")
+  const paid = hasPositiveAmount(amount ?? "")
 
   return (
     <div className="animate-in fade-in slide-in-from-top-1 flex flex-col gap-3 rounded-xl border p-3 duration-200">
@@ -184,7 +185,24 @@ export function ToolField({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Valor (R$)" error={toolErrors?.amount?.message}>
+          <Field label="Moeda" error={toolErrors?.currency?.message}>
+            {(props) => (
+              <Controller
+                control={control}
+                name={`tools.${index}.currency`}
+                render={({ field }) => (
+                  <Select
+                    {...props}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    options={currencyOptions}
+                  />
+                )}
+              />
+            )}
+          </Field>
+
+          <Field label="Valor" error={toolErrors?.amount?.message}>
             {(props) => (
               <Input
                 {...props}
@@ -193,7 +211,7 @@ export function ToolField({
                 placeholder="0"
                 onFocus={(event) => {
                   // deixa digitar por cima do zero inicial em vez de virar "0340"
-                  if (!isToolPaid(event.target.value)) event.target.select()
+                  if (!hasPositiveAmount(event.target.value)) event.target.select()
                 }}
               />
             )}
@@ -228,7 +246,11 @@ export function ToolField({
             )}
           </Field>
 
-          <Field label="Quem paga" error={toolErrors?.payer?.message}>
+          <Field
+            label="Quem paga"
+            error={toolErrors?.payer?.message}
+            className="sm:col-span-2"
+          >
             {(props) => (
               <Controller
                 control={control}

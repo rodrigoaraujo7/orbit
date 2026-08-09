@@ -1,4 +1,5 @@
-import type { Invoice, PaymentMethod, Project } from "@/data/projects"
+import { isDealFree, type Invoice, type PaymentMethod, type Project } from "@/data/projects"
+import { DEFAULT_CURRENCY } from "@/lib/currency"
 
 const PAYMENT_METHODS: PaymentMethod[] = ["boleto", "pix"]
 
@@ -19,7 +20,7 @@ function toDateString(yearMonth: string, day: number) {
  */
 export function generateInvoices(project: Project): Invoice[] {
   const { deal } = project
-  if (deal.kind === "gratis" || deal.amount == null) return []
+  if (isDealFree(deal)) return []
 
   const installments = deal.kind === "parcelado" ? (deal.installments ?? 1) : 1
   const amount = deal.amount / installments
@@ -43,6 +44,7 @@ export function generateInvoices(project: Project): Invoice[] {
       paidAt: isPaid ? `${toDateString(generatedMonth, 10)}T14:32` : undefined,
       payerName: project.client,
       hasAttachment: isPaid,
+      currency: deal.currency ?? DEFAULT_CURRENCY,
     }
   })
 }

@@ -5,6 +5,7 @@ import { z } from "zod"
 // e o Node não resolve o alias.
 import type { Deal, Project, Tool } from "../data/projects.ts"
 import { OTHER_TOOL_ID, findCatalogTool } from "../data/tool-catalog.ts"
+import { DEFAULT_CURRENCY } from "./currency.ts"
 
 /**
  * Campos numéricos e de data ficam como string porque vêm de `<input>`; a
@@ -17,8 +18,9 @@ export const projectSchema = z
     clientEmail: z.string().trim(),
     clientPhone: z.string().trim(),
     status: z.enum(["em-desenvolvimento", "fila", "pausado", "concluido"]),
-    dealKind: z.enum(["gratis", "a-vista", "parcelado"]),
+    dealKind: z.enum(["a-vista", "parcelado"]),
     amount: z.string().trim(),
+    currency: z.string().trim().min(1),
     installments: z.string().trim(),
     tools: z.array(
       z.object({
@@ -26,6 +28,7 @@ export const projectSchema = z
         customName: z.string().trim(),
         account: z.string().trim(),
         amount: z.string().trim(),
+        currency: z.string().trim().min(1),
         cycle: z.enum(["mensal", "anual", "avulso"]),
         nextInvoice: z.string().trim(),
         payer: z.enum(["eu", "cliente"]),
@@ -49,18 +52,25 @@ export const projectSchema = z
       })
     }
 
-    if (values.dealKind !== "gratis") {
-      const amount = parseAmount(values.amount)
-      if (amount == null || amount <= 0) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["amount"],
-          message: "Informe um valor maior que zero",
-        })
-      }
+    // Valor zerado = projeto grátis, mesma regra das ferramentas — só o que
+    // for lixo ou negativo é erro.
+    const dealAmount = parseAmount(values.amount)
+    if (values.amount && dealAmount == null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["amount"],
+        message: "Informe um valor válido",
+      })
+    } else if (dealAmount != null && dealAmount < 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["amount"],
+        message: "O valor não pode ser negativo",
+      })
     }
 
-    if (values.dealKind === "parcelado") {
+    // Parcelamento só faz sentido quando o projeto é pago.
+    if (values.dealKind === "parcelado" && hasPositiveAmount(values.amount)) {
       const installments = Number(values.installments)
       if (!Number.isInteger(installments) || installments < 2) {
         ctx.addIssue({
@@ -97,7 +107,7 @@ export const projectSchema = z
       }
 
       // Cobrança só é exigida quando a ferramenta tem valor.
-      if (isToolPaid(tool.amount) && !tool.nextInvoice) {
+      if (hasPositiveAmount(tool.amount) && !tool.nextInvoice) {
         ctx.addIssue({
           code: "custom",
           path: ["tools", index, "nextInvoice"],
@@ -124,6 +134,7 @@ export const emptyToolForm: ToolFormValues = {
   account: "",
   // começa zerado: sem valor, a ferramenta é tratada como grátis
   amount: "0",
+  currency: DEFAULT_CURRENCY,
   cycle: "mensal",
   nextInvoice: "",
   payer: "eu",
@@ -137,14 +148,17 @@ export const emptyProjectForm: ProjectFormValues = {
   clientPhone: "",
   status: "fila",
   dealKind: "a-vista",
-  amount: "",
-  installments: "",
+  // começa zerado: sem valor, o projeto é tratado como grátis (mesma regra
+  // das ferramentas)
+  amount: "0",
+  currency: DEFAULT_CURRENCY,
+  installments: "2",
   tools: [],
   repoPath: "",
 }
 
 /** Aceita "18000" e "18.000,50" (formato pt-BR). */
-function parseAmount(raw: string): number | null {
+export function parseAmount(raw: string): number | null {
   if (!raw) return null
   const normalized = raw.replace(/\./g, "").replace(",", ".")
   const value = Number(normalized)
@@ -152,11 +166,25 @@ function parseAmount(raw: string): number | null {
 }
 
 /**
- * Ferramenta é paga quando tem valor maior que zero — não existe flag `paid`
- * separada. Schema e UI compartilham esta função pra não divergirem sobre o
- * que conta como "zerado" (vazio, "0" e "0,00" são todos grátis).
+ * Inverso de `parseAmount` — usado em `fromProject` pra repopular o campo
+ * de valor na edição. `String(340.5)` daria "340.5" (ponto decimal), que
+ * `parseAmount` leria como separador de milhar e estouraria o valor em 10x;
+ * formata em pt-BR (vírgula decimal) pra fechar o roundtrip.
  */
-export function isToolPaid(amount: string): boolean {
+function formatAmountInput(value: number): string {
+  return value.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
+
+/**
+ * Ferramenta/projeto é pago quando tem valor maior que zero — não existe
+ * flag `paid` separada, nem kind "grátis" no deal. Schema e UI compartilham
+ * esta função pra não divergirem sobre o que conta como "zerado" (vazio,
+ * "0" e "0,00" são todos grátis).
+ */
+export function hasPositiveAmount(amount: string): boolean {
   const value = parseAmount(amount)
   return value != null && value > 0
 }
@@ -188,9 +216,10 @@ function toTool(values: ToolFormValues): Tool {
     category: catalogTool?.category ?? "other",
     account: values.account || undefined,
     // billing presente ⟺ valor > 0; não existe campo `paid` separado
-    billing: isToolPaid(values.amount)
+    billing: hasPositiveAmount(values.amount)
       ? {
           amount: parseAmount(values.amount) ?? 0,
+          currency: values.currency,
           cycle: values.cycle,
           nextInvoice: values.nextInvoice,
           payer: values.payer,
@@ -208,11 +237,14 @@ export function toProject(values: ProjectFormValues, existing?: Project): Projec
   const amount = parseAmount(values.amount) ?? 0
 
   const deal: Deal =
-    values.dealKind === "gratis"
-      ? { kind: "gratis" }
-      : values.dealKind === "parcelado"
-        ? { kind: "parcelado", amount, installments: Number(values.installments) }
-        : { kind: "a-vista", amount }
+    values.dealKind === "parcelado"
+      ? {
+          kind: "parcelado",
+          amount,
+          installments: Number(values.installments),
+          currency: values.currency,
+        }
+      : { kind: "a-vista", amount, currency: values.currency }
 
   const repo = values.repoPath ? parseRepo(values.repoPath) : null
   const workflow =
@@ -241,14 +273,15 @@ export function fromProject(project: Project): ProjectFormValues {
     clientPhone: project.clientPhone ?? "",
     status: project.status,
     dealKind: project.deal.kind,
-    amount: project.deal.kind === "gratis" ? "" : String(project.deal.amount ?? ""),
-    installments:
-      project.deal.kind === "parcelado" ? String(project.deal.installments ?? "") : "",
+    amount: formatAmountInput(project.deal.amount),
+    currency: project.deal.currency ?? DEFAULT_CURRENCY,
+    installments: String(project.deal.installments ?? 2),
     tools: project.tools.map((tool) => ({
       toolId: tool.id,
       customName: findCatalogTool(tool.id) ? "" : tool.name,
       account: tool.account ?? "",
-      amount: tool.billing ? String(tool.billing.amount) : "0",
+      amount: tool.billing ? formatAmountInput(tool.billing.amount) : "0",
+      currency: tool.billing?.currency ?? DEFAULT_CURRENCY,
       cycle: tool.billing?.cycle ?? "mensal",
       nextInvoice: tool.billing?.nextInvoice ?? "",
       payer: tool.billing?.payer ?? "eu",

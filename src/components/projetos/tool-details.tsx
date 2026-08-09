@@ -61,7 +61,7 @@ export function ToolDetails({ tool }: { tool: Tool }) {
         </span>
         {billing ? (
           <Badge variant="default">
-            {formatCurrency(billing.amount)} ·{" "}
+            {formatCurrency(billing.amount, billing.currency)} ·{" "}
             {BILLING_CYCLE_LABEL[billing.cycle]}
           </Badge>
         ) : (
