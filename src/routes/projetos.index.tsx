@@ -25,6 +25,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
 import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import { Select } from "@/components/ui/select"
+import { toast } from "@/components/ui/toast"
 import {
   BILLING_CYCLE_LABEL,
   type Project,
@@ -117,16 +118,30 @@ function ProjetosPage() {
         title="Projetos"
         description={`${projects.length} projetos cadastrados.`}
         actions={
-          <Button
-            onClick={() => {
-              setEditingProject(null)
-              setDialogOpen(true)
-            }}
-            className="mt-3 w-full sm:mt-0 sm:w-auto"
-          >
-            <Plus />
-            Novo projeto
-          </Button>
+          <div className="mt-3 flex w-full gap-2 sm:mt-0 sm:w-auto">
+            {/* ponytail: botão de teste, remover quando o toast estiver validado */}
+            <Button
+              variant="outline"
+              onClick={() => {
+                toast.add({ title: "Sucesso", description: "Toast de sucesso", type: "success" })
+                toast.add({ title: "Erro", description: "Toast de erro", type: "error" })
+                toast.add({ title: "Atenção", description: "Toast de warning", type: "warning" })
+                toast.add({ title: "Info", description: "Toast de info", type: "info" })
+              }}
+            >
+              Testar toasts
+            </Button>
+            <Button
+              onClick={() => {
+                setEditingProject(null)
+                setDialogOpen(true)
+              }}
+              className="w-full sm:w-auto"
+            >
+              <Plus />
+              Novo projeto
+            </Button>
+          </div>
         }
       />
 
@@ -151,7 +166,15 @@ function ProjetosPage() {
         }
         confirmLabel="Excluir"
         confirmWord="excluir"
-        onConfirm={() => deletingProject && deleteProject(deletingProject.id)}
+        onConfirm={() => {
+          if (!deletingProject) return
+          try {
+            deleteProject(deletingProject.id)
+            toast.add({ title: "Projeto excluído", type: "success" })
+          } catch {
+            toast.add({ title: "Erro ao excluir projeto", type: "error" })
+          }
+        }}
       />
 
       <div className="flex flex-col gap-3 px-4 pt-6 sm:flex-row sm:items-center sm:px-6 lg:px-8">
