@@ -16,8 +16,8 @@ export function Tooltip({
   side?: "top" | "right" | "bottom" | "left"
 }) {
   return (
-    <TooltipPrimitive.Root delay={200}>
-      <TooltipPrimitive.Trigger render={children} />
+    <TooltipPrimitive.Root>
+      <TooltipPrimitive.Trigger delay={200} render={children} />
       <TooltipPrimitive.Portal>
         <TooltipPrimitive.Positioner side={side} sideOffset={8}>
           <TooltipPrimitive.Popup
