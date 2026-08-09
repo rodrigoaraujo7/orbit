@@ -123,7 +123,7 @@ export function Select({
         aria-invalid={ariaInvalid}
         aria-describedby={describedBy}
       >
-        <SelectValue>
+        <SelectValue className="min-w-0 flex-1 truncate text-left">
           {(selected: string | null) => {
             const option = options.find((o) => o.value === selected)
             return option ? (

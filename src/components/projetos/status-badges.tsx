@@ -48,7 +48,7 @@ const STATUS_DOT_CLASS: Record<ProjectStatus, string> = {
   concluido: "bg-success",
 }
 
-function StatusDot({ status }: { status: ProjectStatus }) {
+export function StatusDot({ status }: { status: ProjectStatus }) {
   return (
     <span
       className={cn("size-2 shrink-0 rounded-full", STATUS_DOT_CLASS[status])}
@@ -68,6 +68,14 @@ const WORKFLOW_ICON: Record<WorkflowStatus, typeof Circle> = {
   failure: CircleX,
   running: LoaderCircle,
   none: Circle,
+}
+
+// mesma cor do badge (`WORKFLOW_VARIANT`), em text-* pro ícone do select.
+const WORKFLOW_ICON_COLOR_CLASS: Record<WorkflowStatus, string> = {
+  success: "text-success",
+  failure: "text-destructive",
+  running: "text-warning",
+  none: "text-muted-foreground",
 }
 
 export function StatusBadge({ status }: { status: ProjectStatus }) {
@@ -116,12 +124,14 @@ export function StatusSelect({
         aria-invalid={ariaInvalid}
         aria-describedby={describedBy}
       >
-        <SelectValue>
+        <SelectValue className="min-w-0 flex-1 text-left">
           {(selected: ProjectStatus | null) =>
             selected && (
-              <span className="flex items-center gap-2 truncate">
+              <span className="flex min-w-0 items-center gap-2 truncate">
                 <StatusDot status={selected} />
-                {PROJECT_STATUS_LABEL[selected]}
+                <span className="truncate">
+                  {PROJECT_STATUS_LABEL[selected]}
+                </span>
               </span>
             )
           }
@@ -147,6 +157,162 @@ export function StatusSelect({
                 </SelectItemIndicator>
               </SelectItem>
             ))}
+          </SelectPopup>
+        </SelectPositioner>
+      </SelectPortal>
+    </SelectRoot>
+  )
+}
+
+/**
+ * Mesmo select acima, mas com opção "Todos" — pro filtro da tabela, que
+ * precisa poder voltar pro estado sem status selecionado.
+ */
+export function StatusFilterSelect({
+  value,
+  onValueChange,
+}: {
+  value: ProjectStatus | ""
+  onValueChange: (value: ProjectStatus | "") => void
+}) {
+  return (
+    <SelectRoot
+      value={value || "all"}
+      onValueChange={(next) =>
+        onValueChange(next === "all" ? "" : (next as ProjectStatus))
+      }
+    >
+      <SelectTrigger>
+        <SelectValue className="min-w-0 flex-1 text-left">
+          {(selected: string | null) =>
+            selected && selected !== "all" ? (
+              <span className="flex min-w-0 items-center gap-2 truncate">
+                <StatusDot status={selected as ProjectStatus} />
+                <span className="truncate">
+                  {PROJECT_STATUS_LABEL[selected as ProjectStatus]}
+                </span>
+              </span>
+            ) : (
+              "Status"
+            )
+          }
+        </SelectValue>
+        <SelectIcon>
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+        </SelectIcon>
+      </SelectTrigger>
+
+      <SelectPortal>
+        <SelectPositioner
+          sideOffset={4}
+          alignItemWithTrigger={false}
+          className="z-[60] w-[var(--anchor-width)]"
+        >
+          <SelectPopup>
+            <SelectItem value="all">
+              <SelectItemText>Todos</SelectItemText>
+              <SelectItemIndicator className="ml-auto">
+                <Check className="size-3.5 text-primary" />
+              </SelectItemIndicator>
+            </SelectItem>
+            {PROJECT_STATUS_ORDER.map((status) => (
+              <SelectItem key={status} value={status}>
+                <StatusDot status={status} />
+                <SelectItemText>{PROJECT_STATUS_LABEL[status]}</SelectItemText>
+                <SelectItemIndicator className="ml-auto">
+                  <Check className="size-3.5 text-primary" />
+                </SelectItemIndicator>
+              </SelectItem>
+            ))}
+          </SelectPopup>
+        </SelectPositioner>
+      </SelectPortal>
+    </SelectRoot>
+  )
+}
+
+const WORKFLOW_STATUS_ORDER: WorkflowStatus[] = [
+  "success",
+  "failure",
+  "running",
+  "none",
+]
+
+/** Select do filtro de status do GitHub Actions, com o mesmo ícone do badge. */
+export function WorkflowFilterSelect({
+  value,
+  onValueChange,
+}: {
+  value: WorkflowStatus | ""
+  onValueChange: (value: WorkflowStatus | "") => void
+}) {
+  return (
+    <SelectRoot
+      value={value || "all"}
+      onValueChange={(next) =>
+        onValueChange(next === "all" ? "" : (next as WorkflowStatus))
+      }
+    >
+      <SelectTrigger>
+        <SelectValue className="min-w-0 flex-1 text-left">
+          {(selected: string | null) => {
+            if (!selected || selected === "all") return "GitHub Actions"
+            const status = selected as WorkflowStatus
+            const Icon = WORKFLOW_ICON[status]
+            return (
+              <span className="flex min-w-0 items-center gap-2 truncate">
+                <Icon
+                  className={cn(
+                    "size-3.5 shrink-0",
+                    WORKFLOW_ICON_COLOR_CLASS[status],
+                    status === "running" && "animate-spin"
+                  )}
+                />
+                <span className="truncate">
+                  {WORKFLOW_STATUS_LABEL[status]}
+                </span>
+              </span>
+            )
+          }}
+        </SelectValue>
+        <SelectIcon>
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+        </SelectIcon>
+      </SelectTrigger>
+
+      <SelectPortal>
+        <SelectPositioner
+          sideOffset={4}
+          alignItemWithTrigger={false}
+          className="z-[60] w-[var(--anchor-width)]"
+        >
+          <SelectPopup>
+            <SelectItem value="all">
+              <SelectItemText>Todos</SelectItemText>
+              <SelectItemIndicator className="ml-auto">
+                <Check className="size-3.5 text-primary" />
+              </SelectItemIndicator>
+            </SelectItem>
+            {WORKFLOW_STATUS_ORDER.map((status) => {
+              const Icon = WORKFLOW_ICON[status]
+              return (
+                <SelectItem key={status} value={status}>
+                  <Icon
+                    className={cn(
+                      "size-3.5 shrink-0",
+                      WORKFLOW_ICON_COLOR_CLASS[status],
+                      status === "running" && "animate-spin"
+                    )}
+                  />
+                  <SelectItemText>
+                    {WORKFLOW_STATUS_LABEL[status]}
+                  </SelectItemText>
+                  <SelectItemIndicator className="ml-auto">
+                    <Check className="size-3.5 text-primary" />
+                  </SelectItemIndicator>
+                </SelectItem>
+              )
+            })}
           </SelectPopup>
         </SelectPositioner>
       </SelectPortal>
