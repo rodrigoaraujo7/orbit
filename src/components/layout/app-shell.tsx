@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useTheme } from "@/hooks/use-theme"
 import { cn } from "@/lib/utils"
 import { SidebarNav } from "./sidebar-nav"
+import { UserMenu } from "./user-menu"
 
 const COLLAPSED_KEY = "pm-sidebar-collapsed"
 
@@ -63,28 +64,29 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Sidebar desktop */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-svh shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-out md:flex",
+          "sticky top-0 hidden h-svh shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-out md:relative md:flex",
           collapsed ? "w-16" : "w-60"
         )}
       >
         <Logo collapsed={collapsed} />
         <SidebarNav collapsed={collapsed} />
-        <div
-          className={cn(
-            "flex items-center gap-1 border-t p-2",
-            collapsed ? "flex-col" : "justify-between"
-          )}
-        >
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setCollapsed((c) => !c)}
-            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-          >
-            {collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
-          </Button>
-          <ThemeToggle theme={theme} onToggle={toggle} />
+        <div className="border-t p-2">
+          <UserMenu collapsed={collapsed} theme={theme} onToggleTheme={toggle} />
         </div>
+
+        <Button
+          variant="outline"
+          size="icon-sm"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+          className="absolute top-1/2 -right-3 z-10 size-7 !translate-y-[-50%] rounded-full !bg-background p-0 shadow-sm active:!translate-y-[-50%]"
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="size-4" />
+          ) : (
+            <PanelLeftClose className="size-4" />
+          )}
+        </Button>
       </aside>
 
       {/* Topbar mobile */}
