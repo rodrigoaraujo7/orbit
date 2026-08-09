@@ -3,12 +3,14 @@ import { ArrowLeft, Pencil, Trash2, User } from "lucide-react"
 import { useState, type ReactNode } from "react"
 
 import { CreateProjectDialog } from "@/components/projetos/create-project-dialog"
+import { InvoiceCard } from "@/components/projetos/invoice-card"
 import { StatusBadge, WorkflowBadge } from "@/components/projetos/status-badges"
 import { ToolDetails } from "@/components/projetos/tool-details"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { DEAL_KIND_LABEL } from "@/data/projects"
 import { formatCurrency, formatDeal } from "@/lib/format"
+import { generateInvoices } from "@/lib/invoices"
 import { useProjects } from "@/lib/projects-store"
 
 // lucide-react não tem o logo de marca do GitHub — svg oficial inline.
@@ -72,6 +74,7 @@ function ProjetoDetalhePage() {
   }
 
   const { deal } = project
+  const invoices = generateInvoices(project)
   // "é paga" é derivado de billing — não existe flag separada que possa divergir
   const paidTools = project.tools.filter((tool) => tool.billing)
   const monthlyCost = paidTools
@@ -175,6 +178,16 @@ function ProjetoDetalhePage() {
               ? ` · ${formatCurrency(deal.amount / deal.installments)} por parcela`
               : ""}
           </p>
+
+          {invoices.length > 0 && (
+            <ul className="mt-4 flex flex-col gap-2">
+              {invoices.map((invoice) => (
+                <li key={invoice.id}>
+                  <InvoiceCard invoice={invoice} />
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
 
         <Card
