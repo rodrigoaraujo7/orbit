@@ -188,7 +188,11 @@ function toTool(values: ToolFormValues): Tool {
   }
 }
 
-export function toProject(values: ProjectFormValues): Project {
+/**
+ * `existing` presente = edição: mantém o id e, se o repo não mudou, o status
+ * de workflow (o form não tem campo pra isso, só a URL/nome).
+ */
+export function toProject(values: ProjectFormValues, existing?: Project): Project {
   const amount = parseAmount(values.amount) ?? 0
 
   const deal: Deal =
@@ -199,15 +203,41 @@ export function toProject(values: ProjectFormValues): Project {
         : { kind: "a-vista", amount }
 
   const repo = values.repoPath ? parseRepo(values.repoPath) : null
+  const workflow =
+    repo && existing?.repo?.fullName === repo.fullName
+      ? existing.repo.workflow
+      : "none"
 
   return {
-    id: crypto.randomUUID(),
+    id: existing?.id ?? crypto.randomUUID(),
     name: values.name,
     client: values.client,
     status: values.status,
     deal,
     tools: values.tools.map(toTool),
-    // projeto recém-criado ainda não teve run de CI
-    repo: repo ? { ...repo, workflow: "none" } : null,
+    repo: repo ? { ...repo, workflow } : null,
+  }
+}
+
+export function fromProject(project: Project): ProjectFormValues {
+  return {
+    name: project.name,
+    client: project.client,
+    status: project.status,
+    dealKind: project.deal.kind,
+    amount: project.deal.kind === "gratis" ? "" : String(project.deal.amount ?? ""),
+    installments:
+      project.deal.kind === "parcelado" ? String(project.deal.installments ?? "") : "",
+    tools: project.tools.map((tool) => ({
+      toolId: tool.id,
+      customName: findCatalogTool(tool.id) ? "" : tool.name,
+      account: tool.account ?? "",
+      amount: tool.billing ? String(tool.billing.amount) : "0",
+      cycle: tool.billing?.cycle ?? "mensal",
+      nextInvoice: tool.billing?.nextInvoice ?? "",
+      payer: tool.billing?.payer ?? "eu",
+      secrets: tool.secrets,
+    })),
+    repoPath: project.repo?.fullName ?? "",
   }
 }

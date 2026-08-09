@@ -5,6 +5,7 @@
 import {
   emptyProjectForm,
   emptyToolForm,
+  fromProject,
   projectSchema,
   toProject,
   type ProjectFormValues,
@@ -214,5 +215,22 @@ const created = toProject(
 assert.equal(created.repo, null)
 assert.equal(created.tools[0].account, undefined)
 assert.deepEqual(created.deal, { kind: "gratis" })
+
+// edição: mantém o id existente e, se o repo não mudou, o status de workflow
+const original = toProject(
+  form({ dealKind: "gratis", repoPath: "user/repo", tools: [tool({ toolId: "vercel" })] })
+)
+original.repo = { ...original.repo!, workflow: "success" }
+const edited = toProject(fromProject(original), original)
+assert.equal(edited.id, original.id)
+assert.equal(edited.repo?.workflow, "success")
+
+// edição trocando o repo: workflow volta a "none"
+const editedRepo = toProject(
+  { ...fromProject(original), repoPath: "outro/repo" },
+  original
+)
+assert.equal(editedRepo.repo?.fullName, "outro/repo")
+assert.equal(editedRepo.repo?.workflow, "none")
 
 console.log("project-schema: todos os checks passaram")

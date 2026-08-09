@@ -11,14 +11,23 @@ import {
 import { ToolIcon } from "@/components/projetos/tool-icons"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { BILLING_CYCLE_LABEL } from "@/data/projects"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { RowActionsMenu } from "@/components/ui/row-actions-menu"
+import { BILLING_CYCLE_LABEL, type Project } from "@/data/projects"
 import { formatCurrency, formatDeal } from "@/lib/format"
 import { useProjects } from "@/lib/projects-store"
 
 function ProjetosPage() {
-  const { projects } = useProjects()
+  const { projects, deleteProject } = useProjects()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [deletingProject, setDeletingProject] = useState<Project | null>(null)
   const navigate = useNavigate()
+
+  function editProject(project: Project) {
+    setEditingProject(project)
+    setDialogOpen(true)
+  }
 
   return (
     <>
@@ -27,7 +36,10 @@ function ProjetosPage() {
         description={`${projects.length} projetos cadastrados.`}
         actions={
           <Button
-            onClick={() => setDialogOpen(true)}
+            onClick={() => {
+              setEditingProject(null)
+              setDialogOpen(true)
+            }}
             className="mt-3 w-full sm:mt-0 sm:w-auto"
           >
             <Plus />
@@ -36,7 +48,29 @@ function ProjetosPage() {
         }
       />
 
-      <CreateProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CreateProjectDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        project={editingProject ?? undefined}
+      />
+
+      <ConfirmDialog
+        open={deletingProject != null}
+        onOpenChange={(open) => !open && setDeletingProject(null)}
+        title="Excluir projeto"
+        description={
+          <>
+            Excluir{" "}
+            <span className="font-medium text-primary">
+              {deletingProject?.name}
+            </span>
+            ? Essa ação não pode ser desfeita.
+          </>
+        }
+        confirmLabel="Excluir"
+        confirmWord="excluir"
+        onConfirm={() => deletingProject && deleteProject(deletingProject.id)}
+      />
 
       <div className="px-4 py-6 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-xl border">
@@ -58,6 +92,7 @@ function ProjetosPage() {
                 <th className="hidden px-4 py-2.5 font-medium text-muted-foreground lg:table-cell">
                   GitHub
                 </th>
+                <th className="px-4 py-2.5" />
               </tr>
             </thead>
             <tbody>
@@ -136,6 +171,16 @@ function ProjetosPage() {
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
+                  </td>
+
+                  <td
+                    className="px-4 py-3 text-right whitespace-nowrap"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <RowActionsMenu
+                      onEdit={() => editProject(project)}
+                      onDelete={() => setDeletingProject(project)}
+                    />
                   </td>
                 </tr>
               ))}
