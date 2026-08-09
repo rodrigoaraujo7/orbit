@@ -72,22 +72,17 @@ export function CreateProjectDialog({
   // desistir de otimizar o componente inteiro.
   const dealKind = useWatch({ control, name: "dealKind" })
 
-  function close(next: boolean) {
-    if (!next) reset(emptyProjectForm)
-    onOpenChange(next)
-  }
-
   const onSubmit = handleSubmit((values) => {
     if (project) {
       updateProject(toProject(values, project))
     } else {
       addProject(toProject(values))
     }
-    close(false)
+    onOpenChange(false)
   })
 
   return (
-    <Dialog.Root open={open} onOpenChange={close}>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 flex max-h-[90svh] w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-2xl transition-all duration-200 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
@@ -103,7 +98,7 @@ export function CreateProjectDialog({
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => close(false)}
+              onClick={() => onOpenChange(false)}
               aria-label="Fechar"
             >
               <X />
@@ -264,7 +259,7 @@ export function CreateProjectDialog({
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => close(false)}
+                onClick={() => onOpenChange(false)}
               >
                 Cancelar
               </Button>
