@@ -1,4 +1,4 @@
-import { FREE_LABEL, isDealFree, type Deal } from "@/data/projects"
+import { FREE_LABEL, isDealFree, type Deal, type Invoice } from "@/data/projects"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
 
 // um Intl.NumberFormat por moeda, criado sob demanda e reaproveitado —
@@ -40,4 +40,15 @@ export function formatDeal(deal: Deal) {
   return deal.kind === "parcelado" && deal.installments
     ? `${amount} em ${deal.installments}x`
     : `${amount} à vista`
+}
+
+/** "À vista", "3 de 3 parcelas pagas" ou "1 de 3 parcelas pagas · 2 atrasadas". */
+export function formatDealProgress(deal: Deal, invoices: Invoice[]) {
+  if (isDealFree(deal)) return FREE_LABEL
+  if (deal.kind === "a-vista") return "À vista"
+
+  const paid = invoices.filter((invoice) => invoice.status === "paga").length
+  const overdue = invoices.filter((invoice) => invoice.status === "atrasada").length
+  const base = `${paid} de ${invoices.length} parcelas pagas`
+  return overdue > 0 ? `${base} · ${overdue} atrasada${overdue > 1 ? "s" : ""}` : base
 }
