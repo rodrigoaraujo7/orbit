@@ -103,6 +103,14 @@ export const WORKFLOW_STATUS_LABEL: Record<WorkflowStatus, string> = {
   none: "Sem runs",
 }
 
+/** Texto do tooltip quando a badge do workflow aparece só com o ícone. */
+export const WORKFLOW_STATUS_TOOLTIP: Record<WorkflowStatus, string> = {
+  success: "GitHub Actions passou",
+  failure: "GitHub Actions falhou",
+  running: "GitHub Actions rodando",
+  none: "Sem runs do GitHub Actions",
+}
+
 const MY_ACCOUNT = "rodrigo@fastbuilt.com.br"
 
 // ponytail: mock local. Trocar por fetch quando a API existir — o shape já

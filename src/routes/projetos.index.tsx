@@ -277,20 +277,20 @@ function ProjetosPage() {
 
                   <td className="hidden px-4 py-3 lg:table-cell">
                     {project.repo ? (
-                      <div className="flex items-center gap-2">
+                      <div className="group flex items-center gap-2">
                         <a
                           href={project.repo.url}
                           target="_blank"
                           rel="noreferrer"
                           onClick={(event) => event.stopPropagation()}
-                          className="group inline-flex items-center gap-1.5 rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                          className="inline-flex items-center rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <span className="truncate">
-                            {project.repo.fullName.split("/")[1]}
+                            {project.repo.fullName}
                           </span>
-                          <ExternalLink className="size-3 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
                         </a>
-                        <WorkflowBadge status={project.repo.workflow} />
+                        <WorkflowBadge status={project.repo.workflow} iconOnly />
+                        <ExternalLink className="size-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100" />
                       </div>
                     ) : (
                       <span className="text-muted-foreground">—</span>
