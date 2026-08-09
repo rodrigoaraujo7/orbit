@@ -15,7 +15,7 @@ import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
-import { DEAL_KIND_LABEL, PROJECT_STATUS_LABEL, type Project } from "@/data/projects"
+import { DEAL_KIND_LABEL, type Project } from "@/data/projects"
 import {
   GITHUB_PREFIX,
   emptyProjectForm,
@@ -27,11 +27,9 @@ import {
 } from "@/lib/project-schema"
 import { useProjects } from "@/lib/projects-store"
 import { cn } from "@/lib/utils"
+import { StatusSelect } from "./status-badges"
 import { ToolField } from "./tool-field"
 
-const statusOptions = Object.entries(PROJECT_STATUS_LABEL).map(
-  ([value, label]) => ({ value, label })
-)
 const dealKindOptions = Object.entries(DEAL_KIND_LABEL).map(
   ([value, label]) => ({ value, label })
 )
@@ -141,11 +139,10 @@ export function CreateProjectDialog({
                     control={control}
                     name="status"
                     render={({ field }) => (
-                      <Select
+                      <StatusSelect
                         {...props}
                         value={field.value}
                         onValueChange={field.onChange}
-                        options={statusOptions}
                       />
                     )}
                   />
