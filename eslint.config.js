@@ -19,4 +19,13 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // shadcn/ui exporta variantes (cva) junto do componente e o TanStack
+    // Router exige exportar `Route` no arquivo da rota. Ambos são padrões
+    // das libs, não código nosso pra corrigir.
+    files: ['src/components/ui/**/*.tsx', 'src/routes/**/*.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

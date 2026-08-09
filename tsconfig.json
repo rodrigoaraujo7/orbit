@@ -3,5 +3,12 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  // Inerte para o build (files: []), existe só para ferramentas que leem o
+  // tsconfig raiz — sem isso o CLI do shadcn cria uma pasta literal "@/".
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
 }
