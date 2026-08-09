@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Tooltip } from "@/components/ui/tooltip"
 import {
   SelectIcon,
   SelectItem,
@@ -24,6 +25,7 @@ import {
   PROJECT_STATUS_LABEL,
   PROJECT_STATUS_ORDER,
   WORKFLOW_STATUS_LABEL,
+  WORKFLOW_STATUS_TOOLTIP,
   type ProjectStatus,
   type WorkflowStatus,
 } from "@/data/projects"
@@ -86,13 +88,31 @@ export function StatusBadge({ status }: { status: ProjectStatus }) {
   )
 }
 
-export function WorkflowBadge({ status }: { status: WorkflowStatus }) {
+export function WorkflowBadge({
+  status,
+  iconOnly = false,
+  tooltip = false,
+}: {
+  status: WorkflowStatus
+  iconOnly?: boolean
+  tooltip?: boolean
+}) {
   const Icon = WORKFLOW_ICON[status]
-  return (
-    <Badge variant={WORKFLOW_VARIANT[status]}>
+  const badge = (
+    <Badge
+      variant={WORKFLOW_VARIANT[status]}
+      className={iconOnly ? "p-1" : undefined}
+    >
       <Icon className={status === "running" ? "animate-spin" : undefined} />
-      {WORKFLOW_STATUS_LABEL[status]}
+      {!iconOnly && WORKFLOW_STATUS_LABEL[status]}
     </Badge>
+  )
+  return iconOnly && tooltip ? (
+    <Tooltip label={WORKFLOW_STATUS_TOOLTIP[status]} side="right">
+      {badge}
+    </Tooltip>
+  ) : (
+    badge
   )
 }
 
