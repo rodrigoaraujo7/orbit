@@ -47,7 +47,7 @@ export function ToolSelect({
       onValueChange={(next) => onValueChange(next ?? "")}
     >
       <SelectTrigger id={id} aria-invalid={invalid} aria-describedby={describedBy}>
-        <SelectValue>
+        <SelectValue className="min-w-0 flex-1 text-left">
           {(selected: string | null) => {
             if (!selected) {
               return (
@@ -57,9 +57,11 @@ export function ToolSelect({
               )
             }
             return (
-              <span className="flex items-center gap-2 truncate">
+              <span className="flex min-w-0 items-center gap-2 truncate">
                 <ToolIcon id={selected} className="size-4 shrink-0" />
-                {findCatalogTool(selected)?.name ?? selected}
+                <span className="truncate">
+                  {findCatalogTool(selected)?.name ?? selected}
+                </span>
               </span>
             )
           }}
