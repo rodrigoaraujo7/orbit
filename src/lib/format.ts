@@ -1,4 +1,4 @@
-import { FREE_LABEL, isDealFree, type Deal, type Invoice } from "@/data/projects"
+import { FREE_LABEL, isDealFree, type Deal, type Invoice, type Tool } from "@/data/projects"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
 
 // um Intl.NumberFormat por moeda, criado sob demanda e reaproveitado —
@@ -50,5 +50,19 @@ export function formatDealProgress(deal: Deal, invoices: Invoice[]) {
   const paid = invoices.filter((invoice) => invoice.status === "paga").length
   const overdue = invoices.filter((invoice) => invoice.status === "atrasada").length
   const base = `${paid} de ${invoices.length} parcelas pagas`
+  return overdue > 0 ? `${base} · ${overdue} atrasada${overdue > 1 ? "s" : ""}` : base
+}
+
+/** "Nenhuma ferramenta paga", "3 pagas" ou "3 pagas · 1 atrasada". */
+export function formatToolsProgress(tools: Tool[]) {
+  const paid = tools.filter((tool) => tool.billing)
+  if (paid.length === 0) return "Nenhuma ferramenta paga"
+
+  // atraso derivado da data da próxima fatura já ter passado — não existe
+  // status próprio pra ferramenta, mesma lógica que dá origem a "atrasada"
+  // nas faturas do valor fechado.
+  const today = new Date().toISOString().slice(0, 10)
+  const overdue = paid.filter((tool) => tool.billing!.nextInvoice < today).length
+  const base = `${paid.length} ${paid.length === 1 ? "paga" : "pagas"}`
   return overdue > 0 ? `${base} · ${overdue} atrasada${overdue > 1 ? "s" : ""}` : base
 }
