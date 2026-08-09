@@ -118,30 +118,16 @@ function ProjetosPage() {
         title="Projetos"
         description={`${projects.length} projetos cadastrados.`}
         actions={
-          <div className="mt-3 flex w-full gap-2 sm:mt-0 sm:w-auto">
-            {/* ponytail: botão de teste, remover quando o toast estiver validado */}
-            <Button
-              variant="outline"
-              onClick={() => {
-                toast.add({ title: "Sucesso", description: "Toast de sucesso", type: "success" })
-                toast.add({ title: "Erro", description: "Toast de erro", type: "error" })
-                toast.add({ title: "Atenção", description: "Toast de warning", type: "warning" })
-                toast.add({ title: "Info", description: "Toast de info", type: "info" })
-              }}
-            >
-              Testar toasts
-            </Button>
-            <Button
-              onClick={() => {
-                setEditingProject(null)
-                setDialogOpen(true)
-              }}
-              className="w-full sm:w-auto"
-            >
-              <Plus />
-              Novo projeto
-            </Button>
-          </div>
+          <Button
+            onClick={() => {
+              setEditingProject(null)
+              setDialogOpen(true)
+            }}
+            className="mt-3 w-full sm:mt-0 sm:w-auto"
+          >
+            <Plus />
+            Novo projeto
+          </Button>
         }
       />
 
