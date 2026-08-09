@@ -15,6 +15,7 @@ import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
+import { toast } from "@/components/ui/toast"
 import { DEAL_KIND_LABEL, type Project } from "@/data/projects"
 import {
   GITHUB_PREFIX,
@@ -73,12 +74,21 @@ export function CreateProjectDialog({
   const dealKind = useWatch({ control, name: "dealKind" })
 
   const onSubmit = handleSubmit((values) => {
-    if (project) {
-      updateProject(toProject(values, project))
-    } else {
-      addProject(toProject(values))
+    try {
+      if (project) {
+        updateProject(toProject(values, project))
+        toast.add({ title: "Projeto atualizado", type: "success" })
+      } else {
+        addProject(toProject(values))
+        toast.add({ title: "Projeto criado", type: "success" })
+      }
+      onOpenChange(false)
+    } catch {
+      toast.add({
+        title: project ? "Erro ao atualizar projeto" : "Erro ao criar projeto",
+        type: "error",
+      })
     }
-    onOpenChange(false)
   })
 
   return (
