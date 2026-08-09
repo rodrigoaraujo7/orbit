@@ -35,7 +35,8 @@ export const projectSchema = z
         ),
       })
     ),
-    repoUrl: z.string().trim(),
+    // só o "owner/repo" — o prefixo "https://github.com/" é fixo na UI
+    repoPath: z.string().trim(),
   })
   .superRefine((values, ctx) => {
     if (values.dealKind !== "gratis") {
@@ -95,11 +96,11 @@ export const projectSchema = z
       }
     })
 
-    if (values.repoUrl && parseRepo(values.repoUrl) == null) {
+    if (values.repoPath && parseRepo(values.repoPath) == null) {
       ctx.addIssue({
         code: "custom",
-        path: ["repoUrl"],
-        message: "Informe uma URL válida de repositório do github.com",
+        path: ["repoPath"],
+        message: "Use o formato usuario/repositorio",
       })
     }
   })
@@ -127,7 +128,7 @@ export const emptyProjectForm: ProjectFormValues = {
   amount: "",
   installments: "",
   tools: [],
-  repoUrl: "",
+  repoPath: "",
 }
 
 /** Aceita "18000" e "18.000,50" (formato pt-BR). */
@@ -148,20 +149,21 @@ export function isToolPaid(amount: string): boolean {
   return value != null && value > 0
 }
 
-/** Extrai "owner/repo" de uma URL do github.com. `null` se não for válida. */
+export const GITHUB_PREFIX = "https://github.com/"
+
+/**
+ * Valida "owner/repo". Tolerante a colar a URL inteira por engano (o prefixo
+ * é removido antes de validar) mesmo a UI só pedindo o caminho.
+ */
 function parseRepo(raw: string): { fullName: string; url: string } | null {
-  let url: URL
-  try {
-    url = new URL(raw)
-  } catch {
-    return null
-  }
-  if (url.hostname !== "github.com" && url.hostname !== "www.github.com") {
-    return null
-  }
-  const [owner, repo] = url.pathname.replace(/^\/|\/$/g, "").split("/")
-  if (!owner || !repo) return null
-  return { fullName: `${owner}/${repo}`, url: `https://github.com/${owner}/${repo}` }
+  const path = raw
+    .trim()
+    .replace(/^https?:\/\/(www\.)?github\.com\//i, "")
+    .replace(/\/+$/, "")
+  const match = /^([\w.-]+)\/([\w.-]+)$/.exec(path)
+  if (!match) return null
+  const [, owner, repo] = match
+  return { fullName: `${owner}/${repo}`, url: `${GITHUB_PREFIX}${owner}/${repo}` }
 }
 
 function toTool(values: ToolFormValues): Tool {
@@ -196,7 +198,7 @@ export function toProject(values: ProjectFormValues): Project {
         ? { kind: "parcelado", amount, installments: Number(values.installments) }
         : { kind: "a-vista", amount }
 
-  const repo = values.repoUrl ? parseRepo(values.repoUrl) : null
+  const repo = values.repoPath ? parseRepo(values.repoPath) : null
 
   return {
     id: crypto.randomUUID(),

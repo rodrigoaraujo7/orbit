@@ -182,18 +182,28 @@ assert.equal(otherTool.name, "TOTVS Protheus")
 assert.equal(otherTool.category, "other")
 assert.equal(otherTool.billing, undefined)
 
-// repo: vazio passa, não-github falha, github vira fullName normalizado
-assert.deepEqual(errorPaths(form({ dealKind: "gratis", repoUrl: "" })), [])
-assert.deepEqual(errorPaths(form({ dealKind: "gratis", repoUrl: "https://gitlab.com/a/b" })), [
-  "repoUrl",
-])
-assert.deepEqual(errorPaths(form({ dealKind: "gratis", repoUrl: "não é url" })), ["repoUrl"])
+// repo: vazio passa, formato inválido falha, "owner/repo" vira fullName
+assert.deepEqual(errorPaths(form({ dealKind: "gratis", repoPath: "" })), [])
 assert.deepEqual(
-  errorPaths(form({ dealKind: "gratis", repoUrl: "https://github.com/user/repo" })),
+  errorPaths(form({ dealKind: "gratis", repoPath: "só-um-nome" })),
+  ["repoPath"]
+)
+assert.deepEqual(
+  errorPaths(form({ dealKind: "gratis", repoPath: "user/repo" })),
   []
 )
 assert.deepEqual(
-  toProject(form({ dealKind: "gratis", repoUrl: "https://github.com/user/repo/" })).repo,
+  toProject(form({ dealKind: "gratis", repoPath: "user/repo/" })).repo,
+  { fullName: "user/repo", url: "https://github.com/user/repo", workflow: "none" }
+)
+
+// cola a URL inteira sem querer: prefixo é tolerado e removido
+assert.deepEqual(
+  errorPaths(form({ dealKind: "gratis", repoPath: "https://github.com/user/repo" })),
+  []
+)
+assert.deepEqual(
+  toProject(form({ dealKind: "gratis", repoPath: "https://github.com/user/repo" })).repo,
   { fullName: "user/repo", url: "https://github.com/user/repo", workflow: "none" }
 )
 
