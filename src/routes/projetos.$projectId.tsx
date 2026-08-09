@@ -14,7 +14,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Tooltip } from "@/components/ui/tooltip"
 import { FREE_LABEL, isDealFree } from "@/data/projects"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
-import { formatCurrency, formatDealProgress } from "@/lib/format"
+import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/format"
 import { generateInvoices } from "@/lib/invoices"
 import { useProjects } from "@/lib/projects-store"
 
@@ -253,11 +253,7 @@ function ProjetoDetalhePage() {
         </Card>
 
         <Card
-          title={
-            monthlyCostLabel
-              ? `Ferramentas · ${paidTools.length} pagas · ${monthlyCostLabel}`
-              : `Ferramentas · ${paidTools.length} pagas`
-          }
+          title="Ferramentas"
           action={
             <Tooltip label="Editar ferramentas" side="top">
               <Button
@@ -276,12 +272,20 @@ function ProjetoDetalhePage() {
             </Tooltip>
           }
         >
+          <p className="text-2xl font-semibold tracking-tight">
+            {monthlyCostLabel ||
+              (paidTools.length > 0 ? "Sem cobrança mensal" : "Nenhuma ferramenta paga")}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {formatToolsProgress(project.tools)}
+          </p>
+
           {project.tools.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="mt-4 text-sm text-muted-foreground">
               Nenhuma ferramenta registrada.
             </p>
           ) : (
-            <ul className="flex flex-col divide-y">
+            <ul className="mt-4 flex flex-col divide-y">
               {project.tools.map((tool) => (
                 <ToolDetails key={`${tool.id}-${tool.name}`} tool={tool} />
               ))}
