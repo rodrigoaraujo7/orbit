@@ -16,6 +16,8 @@ export type ToolBilling = {
   /** Data da fatura, formato "YYYY-MM-DD" (o que o <input type="date"> devolve). */
   nextInvoice: string
   payer: Payer
+  /** Código ISO 4217, ex. "USD". Ausente = "BRL" (dado antigo/sem migração). */
+  currency?: string
 }
 
 /**
@@ -40,13 +42,24 @@ export type Tool = {
   secrets: Secret[]
 }
 
-export type DealKind = "gratis" | "a-vista" | "parcelado"
+export type DealKind = "a-vista" | "parcelado"
 
-/** Valor fechado com o cliente. `amount`/`installments` dependem do `kind`. */
+/**
+ * Valor fechado com o cliente. Sem "grátis" como kind separado — mesma regra
+ * das ferramentas: `amount` zerado é que significa grátis (ver `isDealFree`).
+ */
 export type Deal = {
   kind: DealKind
-  amount?: number
+  amount: number
+  /** Só relevante quando `kind === "parcelado"`. */
   installments?: number
+  /** Código ISO 4217, ex. "USD". Ausente = "BRL" (dado antigo/sem migração). */
+  currency?: string
+}
+
+/** Mesma regra do `isToolPaid` do form: valor zerado (ou negativo) = grátis. */
+export function isDealFree(deal: Deal): boolean {
+  return deal.amount <= 0
 }
 
 export type Project = {
@@ -82,10 +95,11 @@ export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
 ]
 
 export const DEAL_KIND_LABEL: Record<DealKind, string> = {
-  gratis: "Grátis",
   "a-vista": "À vista",
   parcelado: "Parcelado",
 }
+
+export const FREE_LABEL = "Grátis"
 
 export type InvoiceStatus = "pendente" | "paga" | "atrasada"
 export type PaymentMethod = "boleto" | "pix"
@@ -104,6 +118,8 @@ export type Invoice = {
   paidAt?: string
   payerName: string
   hasAttachment: boolean
+  /** Código ISO 4217, herdado do `deal` do projeto. */
+  currency: string
 }
 
 export const INVOICE_STATUS_LABEL: Record<InvoiceStatus, string> = {
@@ -451,7 +467,7 @@ export const projects: Project[] = [
     name: "Blog Técnico",
     client: "Pessoal",
     status: "concluido",
-    deal: { kind: "gratis" },
+    deal: { kind: "a-vista", amount: 0 },
     tools: [
       { id: "cloudflare", name: "Cloudflare", category: "deploy", secrets: [] },
       { id: "umami", name: "Umami", category: "analytics", secrets: [] },

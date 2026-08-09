@@ -118,7 +118,7 @@ export function InvoiceCard({ invoice }: { invoice: Invoice }) {
         <div className="flex items-center gap-1.5">
           <Wallet className="size-3.5 shrink-0" />
           <dt className="sr-only">Valor</dt>
-          <dd>{formatCurrency(invoice.amount)}</dd>
+          <dd>{formatCurrency(invoice.amount, invoice.currency)}</dd>
         </div>
         <span aria-hidden="true">·</span>
         <div className="flex items-center gap-1.5">

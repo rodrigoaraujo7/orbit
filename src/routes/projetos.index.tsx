@@ -263,7 +263,7 @@ function ProjetosPage() {
                             variant={tool.billing ? "default" : "outline"}
                             title={
                               tool.billing
-                                ? `Paga · ${formatCurrency(tool.billing.amount)} ${BILLING_CYCLE_LABEL[tool.billing.cycle].toLowerCase()}`
+                                ? `Paga · ${formatCurrency(tool.billing.amount, tool.billing.currency)} ${BILLING_CYCLE_LABEL[tool.billing.cycle].toLowerCase()}`
                                 : "Plano free"
                             }
                           >

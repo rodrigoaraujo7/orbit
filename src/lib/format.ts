@@ -1,12 +1,21 @@
-import { DEAL_KIND_LABEL, type Deal } from "@/data/projects"
+import { FREE_LABEL, isDealFree, type Deal } from "@/data/projects"
+import { DEFAULT_CURRENCY } from "@/lib/currency"
 
-const brl = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-})
+// um Intl.NumberFormat por moeda, criado sob demanda e reaproveitado —
+// mesma ideia do antigo formatter fixo em BRL, só que por moeda.
+const formatters = new Map<string, Intl.NumberFormat>()
 
-export function formatCurrency(value: number) {
-  return brl.format(value)
+function currencyFormatter(currency: string) {
+  let formatter = formatters.get(currency)
+  if (!formatter) {
+    formatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency })
+    formatters.set(currency, formatter)
+  }
+  return formatter
+}
+
+export function formatCurrency(value: number, currency: string = DEFAULT_CURRENCY) {
+  return currencyFormatter(currency).format(value)
 }
 
 /**
@@ -26,10 +35,8 @@ export function formatDateTime(iso: string) {
 
 /** "R$ 18.000,00 em 3x", "R$ 7.200,00 à vista" ou "Grátis". */
 export function formatDeal(deal: Deal) {
-  if (deal.kind === "gratis" || deal.amount == null) {
-    return DEAL_KIND_LABEL.gratis
-  }
-  const amount = formatCurrency(deal.amount)
+  if (isDealFree(deal)) return FREE_LABEL
+  const amount = formatCurrency(deal.amount, deal.currency)
   return deal.kind === "parcelado" && deal.installments
     ? `${amount} em ${deal.installments}x`
     : `${amount} à vista`

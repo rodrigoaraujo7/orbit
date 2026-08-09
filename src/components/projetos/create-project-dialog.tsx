@@ -10,6 +10,7 @@ import {
   useWatch,
 } from "react-hook-form"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -17,11 +18,15 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
 import { DEAL_KIND_LABEL, type Project } from "@/data/projects"
+import { currencyOptions } from "@/lib/currency"
+import { formatCurrency } from "@/lib/format"
 import {
   GITHUB_PREFIX,
   emptyProjectForm,
   emptyToolForm,
   fromProject,
+  hasPositiveAmount,
+  parseAmount,
   projectSchema,
   toProject,
   type ProjectFormValues,
@@ -37,19 +42,34 @@ const dealKindOptions = Object.entries(DEAL_KIND_LABEL).map(
 
 function Section({
   title,
+  action,
   children,
 }: {
   title: string
+  action?: ReactNode
   children: ReactNode
 }) {
   return (
     <div className="flex flex-col gap-4 border-t pt-4 first:border-t-0 first:pt-0">
-      <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-        {title}
-      </h3>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          {title}
+        </h3>
+        {action}
+      </div>
       {children}
     </div>
   )
+}
+
+/** 2x a 24x — a mesma faixa de qualquer simulador de parcelamento por aí. */
+const MAX_INSTALLMENTS = 24
+
+function installmentOptions(amount: number, currency: string) {
+  return Array.from({ length: MAX_INSTALLMENTS - 1 }, (_, i) => i + 2).map((n) => ({
+    value: String(n),
+    label: `${n}x de ${formatCurrency(amount / n, currency)} sem juros`,
+  }))
 }
 
 export function CreateProjectDialog({
@@ -89,6 +109,10 @@ export function CreateProjectDialog({
   // useWatch em vez de watch(): é memoizável, o watch() faz o React Compiler
   // desistir de otimizar o componente inteiro.
   const dealKind = useWatch({ control, name: "dealKind" })
+  const amount = useWatch({ control, name: "amount" })
+  const currency = useWatch({ control, name: "currency" })
+  // valor zerado = projeto grátis, mesma regra das ferramentas
+  const isFree = !hasPositiveAmount(amount ?? "")
 
   const onSubmit = handleSubmit((values) => {
     try {
@@ -208,9 +232,54 @@ export function CreateProjectDialog({
                 </div>
               </Section>
 
-              <Section title="Cobrança">
+              <Section
+                title="Cobrança"
+                action={isFree && <Badge variant="outline">Grátis</Badge>}
+              >
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Cobrança" error={errors.dealKind?.message}>
+                  <Field label="Moeda" error={errors.currency?.message}>
+                    {(props) => (
+                      <Controller
+                        control={control}
+                        name="currency"
+                        render={({ field }) => (
+                          <Select
+                            {...props}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            options={currencyOptions}
+                          />
+                        )}
+                      />
+                    )}
+                  </Field>
+
+                  <Field label="Valor fechado" error={errors.amount?.message}>
+                    {(props) => (
+                      <Input
+                        {...props}
+                        {...register("amount")}
+                        inputMode="decimal"
+                        placeholder="0"
+                        onFocus={(event) => {
+                          // deixa digitar por cima do zero inicial em vez de virar "018000"
+                          if (!hasPositiveAmount(event.target.value)) {
+                            event.target.select()
+                          }
+                        }}
+                      />
+                    )}
+                  </Field>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field
+                    label="Cobrança"
+                    error={errors.dealKind?.message}
+                    className={
+                      dealKind === "parcelado" && !isFree ? undefined : "sm:col-span-2"
+                    }
+                  >
                     {(props) => (
                       <Controller
                         control={control}
@@ -221,46 +290,39 @@ export function CreateProjectDialog({
                             value={field.value}
                             onValueChange={field.onChange}
                             options={dealKindOptions}
+                            disabled={isFree}
                           />
                         )}
                       />
                     )}
                   </Field>
 
-                  {dealKind !== "gratis" && (
+                  {dealKind === "parcelado" && !isFree && (
                     <Field
-                      label="Valor fechado (R$)"
-                      error={errors.amount?.message}
+                      label="Parcelas"
+                      error={errors.installments?.message}
                       className="animate-in fade-in slide-in-from-top-1 duration-200"
                     >
                       {(props) => (
-                        <Input
-                          {...props}
-                          {...register("amount")}
-                          inputMode="decimal"
-                          placeholder="18.000,00"
+                        <Controller
+                          control={control}
+                          name="installments"
+                          render={({ field }) => (
+                            <Select
+                              {...props}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              options={installmentOptions(
+                                parseAmount(amount ?? "") ?? 0,
+                                currency
+                              )}
+                            />
+                          )}
                         />
                       )}
                     </Field>
                   )}
                 </div>
-
-                {dealKind === "parcelado" && (
-                  <Field
-                    label="Número de parcelas"
-                    error={errors.installments?.message}
-                    className="animate-in fade-in slide-in-from-top-1 duration-200"
-                  >
-                    {(props) => (
-                      <Input
-                        {...props}
-                        {...register("installments")}
-                        inputMode="numeric"
-                        placeholder="3"
-                      />
-                    )}
-                  </Field>
-                )}
               </Section>
 
               <Section title="Ferramentas">
