@@ -25,6 +25,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
 import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import { Select } from "@/components/ui/select"
+import { toast } from "@/components/ui/toast"
 import {
   BILLING_CYCLE_LABEL,
   type Project,
@@ -151,7 +152,15 @@ function ProjetosPage() {
         }
         confirmLabel="Excluir"
         confirmWord="excluir"
-        onConfirm={() => deletingProject && deleteProject(deletingProject.id)}
+        onConfirm={() => {
+          if (!deletingProject) return
+          try {
+            deleteProject(deletingProject.id)
+            toast.add({ title: "Projeto excluído", type: "success" })
+          } catch {
+            toast.add({ title: "Erro ao excluir projeto", type: "error" })
+          }
+        }}
       />
 
       <div className="flex flex-col gap-3 px-4 pt-6 sm:flex-row sm:items-center sm:px-6 lg:px-8">
