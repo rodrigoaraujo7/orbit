@@ -30,9 +30,9 @@ function GitHubIcon({ className }: { className?: string }) {
 
 function Card({ action, children }: { action?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-xl border p-4">
-      {action && <div className="flex justify-end gap-2">{action}</div>}
-      <div className={action ? "mt-1" : undefined}>{children}</div>
+    <section className="relative rounded-xl border p-4">
+      {action && <div className="absolute top-3 right-3">{action}</div>}
+      {children}
     </section>
   )
 }
