@@ -23,7 +23,7 @@ export function TabsTab({
   return (
     <TabsPrimitive.Tab
       className={cn(
-        "cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground outline-none transition-colors select-none",
+        "inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground outline-none transition-colors select-none [&_svg]:size-4",
         "hover:text-foreground",
         "data-active:bg-background data-active:text-foreground data-active:shadow-sm",
         "focus-visible:ring-2 focus-visible:ring-ring",

@@ -1,5 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { ArrowLeft, Pencil, RefreshCw, Trash2, User } from "lucide-react"
+import { ArrowLeft, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react"
 import { useState, type ReactNode } from "react"
 
 import {
@@ -217,8 +217,14 @@ function ProjetoDetalhePage() {
       <div className="px-4 py-6 sm:px-6 lg:px-8">
         <Tabs defaultValue="financeiro">
           <TabsList>
-            <TabsTab value="financeiro">Financeiro</TabsTab>
-            <TabsTab value="ferramentas">Ferramentas</TabsTab>
+            <TabsTab value="financeiro">
+              <Wallet />
+              Financeiro
+            </TabsTab>
+            <TabsTab value="ferramentas">
+              <Wrench />
+              Ferramentas
+            </TabsTab>
           </TabsList>
 
           <TabsPanel value="financeiro" className="pt-4">
