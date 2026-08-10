@@ -1,22 +1,20 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { ArrowLeft, Pencil, RefreshCw, Trash2, User } from "lucide-react"
-import { useState, type ReactNode } from "react"
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react";
+import { useState, type ReactNode } from "react";
 
-import {
-  CreateProjectDialog,
-  type ProjectDialogSection,
-} from "@/components/projetos/create-project-dialog"
-import { InvoiceCard } from "@/components/projetos/invoice-card"
-import { StatusBadge, WorkflowBadge } from "@/components/projetos/status-badges"
-import { ToolDetails } from "@/components/projetos/tool-details"
-import { Button } from "@/components/ui/button"
-import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { Tooltip } from "@/components/ui/tooltip"
-import { FREE_LABEL, isDealFree } from "@/data/projects"
-import { DEFAULT_CURRENCY } from "@/lib/currency"
-import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/format"
-import { generateInvoices } from "@/lib/invoices"
-import { useProjects } from "@/lib/projects-store"
+import { CreateProjectDialog, type ProjectDialogSection } from "@/components/projetos/create-project-dialog";
+import { InvoicesTable } from "@/components/projetos/invoices-table";
+import { StatusBadge, WorkflowBadge } from "@/components/projetos/status-badges";
+import { ToolDetails } from "@/components/projetos/tool-details";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import { Tooltip } from "@/components/ui/tooltip";
+import { FREE_LABEL, isDealFree } from "@/data/projects";
+import { DEFAULT_CURRENCY } from "@/lib/currency";
+import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/format";
+import { generateInvoices } from "@/lib/invoices";
+import { useProjects } from "@/lib/projects-store";
 
 // lucide-react não tem o logo de marca do GitHub — svg oficial inline.
 function GitHubIcon({ className }: { className?: string }) {
@@ -24,36 +22,23 @@ function GitHubIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
       <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.93.57.1.78-.25.78-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.05 11.05 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.24 2.76.12 3.05.74.8 1.18 1.83 1.18 3.09 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .3.2.66.79.55A10.52 10.52 0 0 0 23.5 12c0-6.35-5.15-11.5-11.5-11.5Z" />
     </svg>
-  )
+  );
 }
 
-function Card({
-  title,
-  action,
-  children,
-}: {
-  title: string
-  action?: ReactNode
-  children: ReactNode
-}) {
+function Card({ action, children }: { action?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-xl border p-4">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          {title}
-        </h2>
-        {action}
-      </div>
-      <div className="mt-3">{children}</div>
+    <section className="relative rounded-xl border p-4">
+      {action && <div className="absolute top-3 right-3 flex gap-1">{action}</div>}
+      {children}
     </section>
-  )
+  );
 }
 
 type EditDialogConfig = {
-  sections: ProjectDialogSection[]
-  title: string
-  description?: string
-}
+  sections: ProjectDialogSection[];
+  title: string;
+  description?: string;
+};
 
 function BackLink() {
   return (
@@ -64,59 +49,69 @@ function BackLink() {
       <ArrowLeft className="size-4" />
       Projetos
     </Link>
-  )
+  );
 }
 
 function ProjetoDetalhePage() {
-  const { projectId } = Route.useParams()
-  const { findProject, deleteProject } = useProjects()
-  const project = findProject(projectId)
-  const [editDialog, setEditDialog] = useState<EditDialogConfig | null>(null)
-  const [confirmingDelete, setConfirmingDelete] = useState(false)
-  const navigate = useNavigate()
+  const { projectId } = Route.useParams();
+  const { findProject, deleteProject } = useProjects();
+  const project = findProject(projectId);
+  // `editDialog` guarda a última config usada (título/seções) e nunca é
+  // limpo ao fechar — só troca quando um botão de editar abre o dialog de
+  // novo. `dialogOpen` controla só a visibilidade. Se `editDialog` fosse
+  // zerado junto com o fechamento, as `sections` cairiam pro default (todas)
+  // enquanto o modal ainda está tocando a animação de saída (~200ms), e o
+  // formulário inteiro piscaria na tela antes de sumir.
+  const [editDialog, setEditDialog] = useState<EditDialogConfig | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const navigate = useNavigate();
+
+  function openEditDialog(config: EditDialogConfig) {
+    setEditDialog(config);
+    setDialogOpen(true);
+  }
 
   function removeProject() {
-    if (!project) return
-    deleteProject(project.id)
-    navigate({ to: "/projetos" })
+    if (!project) return;
+    deleteProject(project.id);
+    navigate({ to: "/projetos" });
   }
 
   if (!project) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 px-6 py-24 text-center">
-        <p className="text-sm text-muted-foreground">
-          Projeto não encontrado.
-        </p>
+        <p className="text-sm text-muted-foreground">Projeto não encontrado.</p>
         <Button variant="outline" size="sm" render={<Link to="/projetos" />}>
           <ArrowLeft />
           Voltar pra lista
         </Button>
       </div>
-    )
+    );
   }
 
-  const { deal } = project
-  const invoices = generateInvoices(project)
+  const { deal } = project;
+  const invoices = generateInvoices(project);
   // "é paga" é derivado de billing — não existe flag separada que possa divergir
-  const paidTools = project.tools.filter((tool) => tool.billing)
+  const paidTools = project.tools.filter((tool) => tool.billing);
   // agrupado por moeda — ferramentas de moedas diferentes não podem ser
   // somadas num total único.
   const monthlyCostByCurrency = paidTools
     .filter((tool) => tool.billing?.cycle === "mensal")
     .reduce<Record<string, number>>((totals, tool) => {
-      const { amount, currency = DEFAULT_CURRENCY } = tool.billing!
-      totals[currency] = (totals[currency] ?? 0) + amount
-      return totals
-    }, {})
+      const { amount, currency = DEFAULT_CURRENCY } = tool.billing!;
+      totals[currency] = (totals[currency] ?? 0) + amount;
+      return totals;
+    }, {});
   const monthlyCostLabel = Object.entries(monthlyCostByCurrency)
     .map(([currency, total]) => `${formatCurrency(total, currency)}/mês`)
-    .join(" + ")
+    .join(" + ");
 
   return (
     <div className="animate-in fade-in duration-300">
       <CreateProjectDialog
-        open={editDialog !== null}
-        onOpenChange={(open) => !open && setEditDialog(null)}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
         project={project}
         sections={editDialog?.sections}
         title={editDialog?.title}
@@ -129,9 +124,7 @@ function ProjetoDetalhePage() {
         title="Excluir projeto"
         description={
           <>
-            Excluir{" "}
-            <span className="font-medium text-primary">{project.name}</span>
-            ? Essa ação não pode ser desfeita.
+            Excluir <span className="font-medium text-primary">{project.name}</span>? Essa ação não pode ser desfeita.
           </>
         }
         confirmLabel="Excluir"
@@ -155,7 +148,7 @@ function ProjetoDetalhePage() {
               variant="outline"
               size="sm"
               onClick={() =>
-                setEditDialog({
+                openEditDialog({
                   sections: ["identificacao", "contato", "repositorio"],
                   title: "Editar projeto",
                   description: "Atualize nome, status, contato e repositório.",
@@ -165,20 +158,14 @@ function ProjetoDetalhePage() {
               <Pencil />
               Editar
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setConfirmingDelete(true)}
-            >
+            <Button variant="destructive" size="sm" onClick={() => setConfirmingDelete(true)}>
               <Trash2 />
               Excluir
             </Button>
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-            {project.name}
-          </h1>
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{project.name}</h1>
           <StatusBadge status={project.status} />
         </div>
         {project.repo && (
@@ -213,90 +200,108 @@ function ProjetoDetalhePage() {
         </div>
       </div>
 
-      <div className="grid gap-4 px-4 py-6 sm:px-6 lg:grid-cols-2 lg:px-8">
-        <Card
-          title="Valor fechado"
-          action={
-            <Tooltip label="Editar valor fechado" side="top">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() =>
-                  setEditDialog({
-                    sections: ["cobranca"],
-                    title: "Editar valor fechado",
-                    description: "Atualize o valor e a forma de cobrança.",
-                  })
-                }
-              >
-                <Pencil />
-              </Button>
-            </Tooltip>
-          }
-        >
-          <p className="text-2xl font-semibold tracking-tight">
-            {isDealFree(deal) ? FREE_LABEL : formatCurrency(deal.amount, deal.currency)}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {formatDealProgress(deal, invoices)}
-          </p>
+      <div className="px-4 py-6 sm:px-6 lg:px-8">
+        <Tabs defaultValue="financeiro">
+          <TabsList>
+            <TabsTab value="financeiro">
+              <Wallet />
+              Financeiro
+            </TabsTab>
+            <TabsTab value="ferramentas">
+              <Wrench />
+              Ferramentas
+            </TabsTab>
+          </TabsList>
 
-          {invoices.length > 0 && (
-            <ul className="mt-4 flex flex-col gap-2">
-              {invoices.map((invoice) => (
-                <li key={invoice.id}>
-                  <InvoiceCard invoice={invoice} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+          <TabsPanel value="financeiro" className="pt-4">
+            <Card
+              action={
+                <>
+                  <Tooltip label="Atualizar financeiro" side="top">
+                    {/* ponytail: sem-op — mesmo caso do refresh do header, sem
+                        fetch real ainda (ver comentário lá em cima). */}
+                    <Button variant="outline" size="icon-sm" onClick={() => {}}>
+                      <RefreshCw />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip label="Editar financeiro" side="top">
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      onClick={() =>
+                        openEditDialog({
+                          sections: ["cobranca"],
+                          title: "Editar financeiro",
+                          description: "Atualize o valor e a forma de cobrança.",
+                        })
+                      }
+                    >
+                      <Pencil />
+                    </Button>
+                  </Tooltip>
+                </>
+              }
+            >
+              <p className="text-2xl font-semibold tracking-tight">
+                {isDealFree(deal) ? FREE_LABEL : formatCurrency(deal.amount, deal.currency)}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{formatDealProgress(deal, invoices)}</p>
 
-        <Card
-          title="Ferramentas"
-          action={
-            <Tooltip label="Editar ferramentas" side="top">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() =>
-                  setEditDialog({
-                    sections: ["ferramentas"],
-                    title: "Editar ferramentas",
-                    description: "Atualize as ferramentas usadas no projeto.",
-                  })
-                }
-              >
-                <Pencil />
-              </Button>
-            </Tooltip>
-          }
-        >
-          <p className="text-2xl font-semibold tracking-tight">
-            {monthlyCostLabel ||
-              (paidTools.length > 0 ? "Sem cobrança mensal" : "Nenhuma ferramenta paga")}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {formatToolsProgress(project.tools)}
-          </p>
+              {invoices.length > 0 && <InvoicesTable invoices={invoices} />}
+            </Card>
+          </TabsPanel>
 
-          {project.tools.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">
-              Nenhuma ferramenta registrada.
-            </p>
-          ) : (
-            <ul className="mt-4 flex flex-col divide-y">
-              {project.tools.map((tool) => (
-                <ToolDetails key={`${tool.id}-${tool.name}`} tool={tool} />
-              ))}
-            </ul>
-          )}
-        </Card>
+          <TabsPanel value="ferramentas" className="pt-4">
+            <Card
+              action={
+                <>
+                  <Tooltip label="Atualizar ferramentas" side="top">
+                    {/* ponytail: sem-op — mesmo caso do refresh do header, sem
+                        fetch real ainda (ver comentário lá em cima). */}
+                    <Button variant="outline" size="icon-sm" onClick={() => {}}>
+                      <RefreshCw />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip label="Editar ferramentas" side="top">
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      onClick={() =>
+                        openEditDialog({
+                          sections: ["ferramentas"],
+                          title: "Editar ferramentas",
+                          description: "Atualize as ferramentas usadas no projeto.",
+                        })
+                      }
+                    >
+                      <Pencil />
+                    </Button>
+                  </Tooltip>
+                </>
+              }
+            >
+              <p className="text-2xl font-semibold tracking-tight">
+                {monthlyCostLabel || (paidTools.length > 0 ? "Sem cobrança mensal" : "Nenhuma ferramenta paga")}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{formatToolsProgress(project.tools)}</p>
+
+              {project.tools.length === 0 ? (
+                <p className="mt-4 text-sm text-muted-foreground">Nenhuma ferramenta registrada.</p>
+              ) : (
+                <ul className="mt-4 flex flex-col divide-y">
+                  {project.tools.map((tool) => (
+                    <ToolDetails key={`${tool.id}-${tool.name}`} tool={tool} />
+                  ))}
+                </ul>
+              )}
+            </Card>
+          </TabsPanel>
+        </Tabs>
       </div>
     </div>
-  )
+  );
 }
 
 export const Route = createFileRoute("/projetos/$projectId")({
   component: ProjetoDetalhePage,
-})
+});
