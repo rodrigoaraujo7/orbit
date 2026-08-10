@@ -25,7 +25,7 @@ export function TabsTab({
       className={cn(
         "cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground outline-none transition-colors select-none",
         "hover:text-foreground",
-        "data-selected:bg-background data-selected:text-foreground data-selected:shadow-sm",
+        "data-active:bg-background data-active:text-foreground data-active:shadow-sm",
         "focus-visible:ring-2 focus-visible:ring-ring",
         className
       )}
