@@ -56,9 +56,21 @@ function ProjetoDetalhePage() {
   const { projectId } = Route.useParams();
   const { findProject, deleteProject } = useProjects();
   const project = findProject(projectId);
+  // `editDialog` guarda a última config usada (título/seções) e nunca é
+  // limpo ao fechar — só troca quando um botão de editar abre o dialog de
+  // novo. `dialogOpen` controla só a visibilidade. Se `editDialog` fosse
+  // zerado junto com o fechamento, as `sections` cairiam pro default (todas)
+  // enquanto o modal ainda está tocando a animação de saída (~200ms), e o
+  // formulário inteiro piscaria na tela antes de sumir.
   const [editDialog, setEditDialog] = useState<EditDialogConfig | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const navigate = useNavigate();
+
+  function openEditDialog(config: EditDialogConfig) {
+    setEditDialog(config);
+    setDialogOpen(true);
+  }
 
   function removeProject() {
     if (!project) return;
@@ -98,8 +110,8 @@ function ProjetoDetalhePage() {
   return (
     <div className="animate-in fade-in duration-300">
       <CreateProjectDialog
-        open={editDialog !== null}
-        onOpenChange={(open) => !open && setEditDialog(null)}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
         project={project}
         sections={editDialog?.sections}
         title={editDialog?.title}
@@ -136,7 +148,7 @@ function ProjetoDetalhePage() {
               variant="outline"
               size="sm"
               onClick={() =>
-                setEditDialog({
+                openEditDialog({
                   sections: ["identificacao", "contato", "repositorio"],
                   title: "Editar projeto",
                   description: "Atualize nome, status, contato e repositório.",
@@ -217,7 +229,7 @@ function ProjetoDetalhePage() {
                       variant="outline"
                       size="icon-sm"
                       onClick={() =>
-                        setEditDialog({
+                        openEditDialog({
                           sections: ["cobranca"],
                           title: "Editar financeiro",
                           description: "Atualize o valor e a forma de cobrança.",
@@ -255,7 +267,7 @@ function ProjetoDetalhePage() {
                       variant="outline"
                       size="icon-sm"
                       onClick={() =>
-                        setEditDialog({
+                        openEditDialog({
                           sections: ["ferramentas"],
                           title: "Editar ferramentas",
                           description: "Atualize as ferramentas usadas no projeto.",
