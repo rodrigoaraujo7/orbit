@@ -31,7 +31,7 @@ function GitHubIcon({ className }: { className?: string }) {
 function Card({ action, children }: { action?: ReactNode; children: ReactNode }) {
   return (
     <section className="relative rounded-xl border p-4">
-      {action && <div className="absolute top-3 right-3">{action}</div>}
+      {action && <div className="absolute top-3 right-3 flex gap-1">{action}</div>}
       {children}
     </section>
   )
@@ -217,21 +217,30 @@ function ProjetoDetalhePage() {
           <TabsPanel value="financeiro" className="pt-4">
             <Card
               action={
-                <Tooltip label="Editar valor fechado" side="top">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() =>
-                      setEditDialog({
-                        sections: ["cobranca"],
-                        title: "Editar valor fechado",
-                        description: "Atualize o valor e a forma de cobrança.",
-                      })
-                    }
-                  >
-                    <Pencil />
-                  </Button>
-                </Tooltip>
+                <>
+                  <Tooltip label="Atualizar valor fechado" side="top">
+                    {/* ponytail: sem-op — mesmo caso do refresh do header, sem
+                        fetch real ainda (ver comentário lá em cima). */}
+                    <Button variant="outline" size="icon-sm" onClick={() => {}}>
+                      <RefreshCw />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip label="Editar valor fechado" side="top">
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      onClick={() =>
+                        setEditDialog({
+                          sections: ["cobranca"],
+                          title: "Editar valor fechado",
+                          description: "Atualize o valor e a forma de cobrança.",
+                        })
+                      }
+                    >
+                      <Pencil />
+                    </Button>
+                  </Tooltip>
+                </>
               }
             >
               <p className="text-2xl font-semibold tracking-tight">
@@ -248,21 +257,30 @@ function ProjetoDetalhePage() {
           <TabsPanel value="ferramentas" className="pt-4">
             <Card
               action={
-                <Tooltip label="Editar ferramentas" side="top">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() =>
-                      setEditDialog({
-                        sections: ["ferramentas"],
-                        title: "Editar ferramentas",
-                        description: "Atualize as ferramentas usadas no projeto.",
-                      })
-                    }
-                  >
-                    <Pencil />
-                  </Button>
-                </Tooltip>
+                <>
+                  <Tooltip label="Atualizar ferramentas" side="top">
+                    {/* ponytail: sem-op — mesmo caso do refresh do header, sem
+                        fetch real ainda (ver comentário lá em cima). */}
+                    <Button variant="outline" size="icon-sm" onClick={() => {}}>
+                      <RefreshCw />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip label="Editar ferramentas" side="top">
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      onClick={() =>
+                        setEditDialog({
+                          sections: ["ferramentas"],
+                          title: "Editar ferramentas",
+                          description: "Atualize as ferramentas usadas no projeto.",
+                        })
+                      }
+                    >
+                      <Pencil />
+                    </Button>
+                  </Tooltip>
+                </>
               }
             >
               <p className="text-2xl font-semibold tracking-tight">
