@@ -6,11 +6,12 @@ import {
   CreateProjectDialog,
   type ProjectDialogSection,
 } from "@/components/projetos/create-project-dialog"
-import { InvoiceCard } from "@/components/projetos/invoice-card"
+import { InvoicesTable } from "@/components/projetos/invoices-table"
 import { StatusBadge, WorkflowBadge } from "@/components/projetos/status-badges"
 import { ToolDetails } from "@/components/projetos/tool-details"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs"
 import { Tooltip } from "@/components/ui/tooltip"
 import { FREE_LABEL, isDealFree } from "@/data/projects"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
@@ -213,85 +214,88 @@ function ProjetoDetalhePage() {
         </div>
       </div>
 
-      <div className="grid gap-4 px-4 py-6 sm:px-6 lg:grid-cols-2 lg:px-8">
-        <Card
-          title="Valor fechado"
-          action={
-            <Tooltip label="Editar valor fechado" side="top">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() =>
-                  setEditDialog({
-                    sections: ["cobranca"],
-                    title: "Editar valor fechado",
-                    description: "Atualize o valor e a forma de cobrança.",
-                  })
-                }
-              >
-                <Pencil />
-              </Button>
-            </Tooltip>
-          }
-        >
-          <p className="text-2xl font-semibold tracking-tight">
-            {isDealFree(deal) ? FREE_LABEL : formatCurrency(deal.amount, deal.currency)}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {formatDealProgress(deal, invoices)}
-          </p>
+      <div className="px-4 py-6 sm:px-6 lg:px-8">
+        <Tabs defaultValue="financeiro">
+          <TabsList>
+            <TabsTab value="financeiro">Financeiro</TabsTab>
+            <TabsTab value="ferramentas">Ferramentas</TabsTab>
+          </TabsList>
 
-          {invoices.length > 0 && (
-            <ul className="mt-4 flex flex-col gap-2">
-              {invoices.map((invoice) => (
-                <li key={invoice.id}>
-                  <InvoiceCard invoice={invoice} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+          <TabsPanel value="financeiro" className="pt-4">
+            <Card
+              title="Valor fechado"
+              action={
+                <Tooltip label="Editar valor fechado" side="top">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() =>
+                      setEditDialog({
+                        sections: ["cobranca"],
+                        title: "Editar valor fechado",
+                        description: "Atualize o valor e a forma de cobrança.",
+                      })
+                    }
+                  >
+                    <Pencil />
+                  </Button>
+                </Tooltip>
+              }
+            >
+              <p className="text-2xl font-semibold tracking-tight">
+                {isDealFree(deal) ? FREE_LABEL : formatCurrency(deal.amount, deal.currency)}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {formatDealProgress(deal, invoices)}
+              </p>
 
-        <Card
-          title="Ferramentas"
-          action={
-            <Tooltip label="Editar ferramentas" side="top">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() =>
-                  setEditDialog({
-                    sections: ["ferramentas"],
-                    title: "Editar ferramentas",
-                    description: "Atualize as ferramentas usadas no projeto.",
-                  })
-                }
-              >
-                <Pencil />
-              </Button>
-            </Tooltip>
-          }
-        >
-          <p className="text-2xl font-semibold tracking-tight">
-            {monthlyCostLabel ||
-              (paidTools.length > 0 ? "Sem cobrança mensal" : "Nenhuma ferramenta paga")}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {formatToolsProgress(project.tools)}
-          </p>
+              {invoices.length > 0 && <InvoicesTable invoices={invoices} />}
+            </Card>
+          </TabsPanel>
 
-          {project.tools.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">
-              Nenhuma ferramenta registrada.
-            </p>
-          ) : (
-            <ul className="mt-4 flex flex-col divide-y">
-              {project.tools.map((tool) => (
-                <ToolDetails key={`${tool.id}-${tool.name}`} tool={tool} />
-              ))}
-            </ul>
-          )}
-        </Card>
+          <TabsPanel value="ferramentas" className="pt-4">
+            <Card
+              title="Ferramentas"
+              action={
+                <Tooltip label="Editar ferramentas" side="top">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() =>
+                      setEditDialog({
+                        sections: ["ferramentas"],
+                        title: "Editar ferramentas",
+                        description: "Atualize as ferramentas usadas no projeto.",
+                      })
+                    }
+                  >
+                    <Pencil />
+                  </Button>
+                </Tooltip>
+              }
+            >
+              <p className="text-2xl font-semibold tracking-tight">
+                {monthlyCostLabel ||
+                  (paidTools.length > 0 ? "Sem cobrança mensal" : "Nenhuma ferramenta paga")}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {formatToolsProgress(project.tools)}
+              </p>
+
+              {project.tools.length === 0 ? (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Nenhuma ferramenta registrada.
+                </p>
+              ) : (
+                <ul className="mt-4 flex flex-col divide-y">
+                  {project.tools.map((tool) => (
+                    <ToolDetails key={`${tool.id}-${tool.name}`} tool={tool} />
+                  ))}
+                </ul>
+              )}
+            </Card>
+          </TabsPanel>
+        </Tabs>
       </div>
     </div>
   )
