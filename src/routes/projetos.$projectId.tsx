@@ -28,24 +28,11 @@ function GitHubIcon({ className }: { className?: string }) {
   )
 }
 
-function Card({
-  title,
-  action,
-  children,
-}: {
-  title: string
-  action?: ReactNode
-  children: ReactNode
-}) {
+function Card({ action, children }: { action?: ReactNode; children: ReactNode }) {
   return (
     <section className="rounded-xl border p-4">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          {title}
-        </h2>
-        {action}
-      </div>
-      <div className="mt-3">{children}</div>
+      {action && <div className="flex justify-end gap-2">{action}</div>}
+      <div className={action ? "mt-1" : undefined}>{children}</div>
     </section>
   )
 }
@@ -229,7 +216,6 @@ function ProjetoDetalhePage() {
 
           <TabsPanel value="financeiro" className="pt-4">
             <Card
-              title="Valor fechado"
               action={
                 <Tooltip label="Editar valor fechado" side="top">
                   <Button
@@ -261,7 +247,6 @@ function ProjetoDetalhePage() {
 
           <TabsPanel value="ferramentas" className="pt-4">
             <Card
-              title="Ferramentas"
               action={
                 <Tooltip label="Editar ferramentas" side="top">
                   <Button
