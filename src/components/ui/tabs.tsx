@@ -10,7 +10,7 @@ export function TabsList({
 }: React.ComponentProps<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
-      className={cn("flex items-center gap-1 border-b", className)}
+      className={cn("inline-flex items-center gap-1 rounded-xl bg-muted p-1", className)}
       {...props}
     />
   )
@@ -23,9 +23,9 @@ export function TabsTab({
   return (
     <TabsPrimitive.Tab
       className={cn(
-        "cursor-pointer border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground outline-none transition-colors select-none",
+        "cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground outline-none transition-colors select-none",
         "hover:text-foreground",
-        "data-selected:border-primary data-selected:text-foreground",
+        "data-selected:bg-background data-selected:text-foreground data-selected:shadow-sm",
         "focus-visible:ring-2 focus-visible:ring-ring",
         className
       )}
