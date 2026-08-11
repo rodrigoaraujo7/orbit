@@ -34,20 +34,20 @@ import { cn } from "@/lib/utils"
 type BadgeVariant = React.ComponentProps<typeof Badge>["variant"]
 
 const STATUS_VARIANT: Record<ProjectStatus, BadgeVariant> = {
-  "em-desenvolvimento": "default",
-  fila: "muted",
-  pausado: "warning",
-  concluido: "success",
+  "in-development": "default",
+  queued: "muted",
+  paused: "warning",
+  completed: "success",
 }
 
-// mesma cor da bolinha do badge, mas em bg-* pra virar um ponto — as duas
-// leituras (badge e select) compartilham essa fonte pro status não divergir
-// de cor entre lugares.
+// same color as the badge dot, but in bg-* so it becomes a dot — both readings
+// (badge and select) share this source so a status never drifts in color
+// between places.
 const STATUS_DOT_CLASS: Record<ProjectStatus, string> = {
-  "em-desenvolvimento": "bg-primary",
-  fila: "bg-muted-foreground",
-  pausado: "bg-warning",
-  concluido: "bg-success",
+  "in-development": "bg-primary",
+  queued: "bg-muted-foreground",
+  paused: "bg-warning",
+  completed: "bg-success",
 }
 
 export function StatusDot({ status }: { status: ProjectStatus }) {
@@ -72,7 +72,7 @@ const WORKFLOW_ICON: Record<WorkflowStatus, typeof Circle> = {
   none: Circle,
 }
 
-// mesma cor do badge (`WORKFLOW_VARIANT`), em text-* pro ícone do select.
+// same color as the badge (`WORKFLOW_VARIANT`), in text-* for the select icon.
 const WORKFLOW_ICON_COLOR_CLASS: Record<WorkflowStatus, string> = {
   success: "text-success",
   failure: "text-destructive",
@@ -117,9 +117,9 @@ export function WorkflowBadge({
 }
 
 /**
- * Select de status com uma bolinha da cor do status ao lado do nome — mesmas
- * peças de `ui/select.tsx`, composto na mão em vez do `Select` genérico
- * porque a bolinha não cabe num `SelectOption` simples.
+ * Status select with a dot in the status color next to the name — the same
+ * pieces from `ui/select.tsx`, composed by hand instead of the generic `Select`
+ * because the dot does not fit in a plain `SelectOption`.
  */
 export function StatusSelect({
   id,
@@ -185,8 +185,8 @@ export function StatusSelect({
 }
 
 /**
- * Mesmo select acima, mas com opção "Todos" — pro filtro da tabela, que
- * precisa poder voltar pro estado sem status selecionado.
+ * Same select as above, but with an "all" option — for the table filter, which
+ * needs to be able to go back to having no status selected.
  */
 export function StatusFilterSelect({
   value,
@@ -258,7 +258,7 @@ const WORKFLOW_STATUS_ORDER: WorkflowStatus[] = [
   "none",
 ]
 
-/** Select do filtro de status do GitHub Actions, com o mesmo ícone do badge. */
+/** GitHub Actions status filter select, with the same icon as the badge. */
 export function WorkflowFilterSelect({
   value,
   onValueChange,

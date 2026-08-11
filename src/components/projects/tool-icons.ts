@@ -37,9 +37,8 @@ import {
 export type ToolIcon = ComponentType<{ className?: string }>
 
 /**
- * O simple-icons removeu vários logos por política de marca registrada
- * (AWS, Neon, Twilio, SendGrid, Slack, OpenAI) — esses caem num ícone
- * genérico do lucide.
+ * simple-icons dropped several logos over trademark policy (AWS, Neon, Twilio,
+ * SendGrid, Slack, OpenAI) — those fall back to a generic lucide icon.
  */
 const TOOL_ICON: Record<string, ToolIcon> = {
   vercel: SiVercel,
@@ -80,11 +79,11 @@ const TOOL_ICON: Record<string, ToolIcon> = {
 }
 
 /**
- * Ícone da ferramenta pelo id do catálogo (`Wrench` como fallback, usado
- * pelas ferramentas cadastradas como "Outra").
+ * Tool icon by catalog id (`Wrench` as the fallback, used by tools registered
+ * as "Outra").
  *
- * Usa `createElement` em vez de JSX porque atribuir o componente a uma
- * variável local dentro do render dispara o lint `react-hooks/static-components`.
+ * Uses `createElement` instead of JSX because assigning the component to a
+ * local variable inside the render trips the `react-hooks/static-components` lint.
  */
 export function ToolIcon({ id, className }: { id: string; className?: string }) {
   return createElement(TOOL_ICON[id] ?? Wrench, { className })

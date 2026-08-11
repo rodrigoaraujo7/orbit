@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils"
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/projetos", label: "Projetos", icon: FolderGit2 },
+  { to: "/projects", label: "Projetos", icon: FolderGit2 },
   { to: "/kanban", label: "Kanban", icon: Columns3 },
-  { to: "/financeiro", label: "Financeiro", icon: Wallet },
+  { to: "/finance", label: "Financeiro", icon: Wallet },
 ] as const
 
 export function SidebarNav({
@@ -35,7 +35,7 @@ export function SidebarNav({
                 collapsed && "justify-center px-0"
               )}
             >
-              {/* marcador do item ativo */}
+              {/* active item marker */}
               <span
                 aria-hidden
                 className="absolute -left-2 h-4 w-0.5 rounded-r-full bg-sidebar-primary opacity-0 transition-opacity duration-200 group-data-[status=active]:opacity-100"

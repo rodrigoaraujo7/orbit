@@ -3,8 +3,8 @@ import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 import { cn } from "@/lib/utils"
 
 /**
- * Tooltip padrão da plataforma — usado hoje nos itens da sidebar quando
- * ela está retraída (só ícone, sem label visível).
+ * The platform's default tooltip — used today on the sidebar items when it is
+ * collapsed (icon only, no visible label).
  */
 export function Tooltip({
   label,

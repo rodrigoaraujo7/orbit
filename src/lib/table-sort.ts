@@ -1,8 +1,8 @@
 export type SortState = { key: string; direction: "asc" | "desc" } | null
 
 /**
- * Ciclo de clique no header: asc → desc → sem ordenação. Voltar pro "sem
- * ordenação" é o que devolve a lista na ordem original do backend.
+ * Header click cycle: asc → desc → unsorted. Going back to "unsorted" is what
+ * returns the list in the backend's original order.
  */
 export function nextSort(current: SortState, key: string): SortState {
   if (current?.key !== key) return { key, direction: "asc" }
@@ -11,7 +11,7 @@ export function nextSort(current: SortState, key: string): SortState {
 }
 
 function compare(a: string | number, b: string | number) {
-  // localeCompare pra texto sair na ordem do pt-BR (acento não vai pro fim)
+  // localeCompare so text sorts in pt-BR order (accents do not go last)
   if (typeof a === "string" && typeof b === "string") {
     return a.localeCompare(b, "pt-BR")
   }
@@ -19,9 +19,9 @@ function compare(a: string | number, b: string | number) {
 }
 
 /**
- * Ordena sem mutar `rows`. Puro — dá pra rodar num self-check de node (ver
- * table-sort.check.ts). `sort` nulo ou coluna sem `sortValue` devolve a
- * ordem original.
+ * Sorts without mutating `rows`. Pure — can run in a node self-check (see
+ * table-sort.check.ts). A null `sort`, or a column with no `sortValue`, returns
+ * the original order.
  */
 export function sortRows<T>(
   rows: T[],

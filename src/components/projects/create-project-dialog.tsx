@@ -41,18 +41,18 @@ const dealKindOptions = Object.entries(DEAL_KIND_LABEL).map(
 )
 
 export type ProjectDialogSection =
-  | "identificacao"
-  | "contato"
-  | "cobranca"
-  | "ferramentas"
-  | "repositorio"
+  | "identity"
+  | "contact"
+  | "billing"
+  | "tools"
+  | "repository"
 
 const ALL_SECTIONS: ProjectDialogSection[] = [
-  "identificacao",
-  "contato",
-  "cobranca",
-  "ferramentas",
-  "repositorio",
+  "identity",
+  "contact",
+  "billing",
+  "tools",
+  "repository",
 ]
 
 function Section({
@@ -77,7 +77,7 @@ function Section({
   )
 }
 
-/** 2x a 24x — a mesma faixa de qualquer simulador de parcelamento por aí. */
+/** 2x to 24x — the same range as any installment simulator out there. */
 const MAX_INSTALLMENTS = 24
 
 function installmentOptions(amount: number, currency: string) {
@@ -97,17 +97,17 @@ export function CreateProjectDialog({
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** presente = editando esse projeto; ausente = criando um novo */
+  /** present = editing this project; absent = creating a new one */
   project?: Project
-  /** seções visíveis no form — default é tudo (criação e edição completa) */
+  /** sections visible in the form — defaults to all of them (create and full edit) */
   sections?: ProjectDialogSection[]
   title?: string
   description?: string
 }) {
   const { addProject, updateProject } = useProjects()
 
-  // o form inteiro vai pro FormProvider: ToolField/SecretRow são aninhados e
-  // consomem via useFormContext em vez de receber control/register por prop
+  // the whole form goes into FormProvider: ToolField/SecretRow are nested and
+  // consume it via useFormContext instead of taking control/register as props
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: emptyProjectForm,
@@ -120,20 +120,20 @@ export function CreateProjectDialog({
     formState: { errors },
   } = form
 
-  // popula com os dados do projeto (edição) ou limpa (criação) toda vez que
-  // o dialog abre — o form fica montado o tempo todo, então precisa disso
-  // pra trocar de projeto entre uma edição e outra.
+  // fills in the project data (editing) or clears it (creating) every time the
+  // dialog opens — the form stays mounted all the time, so this is what makes
+  // switching projects between edits work.
   useEffect(() => {
     if (open) reset(project ? fromProject(project) : emptyProjectForm)
   }, [open, project, reset])
 
   const { fields, append, remove } = useFieldArray({ control, name: "tools" })
-  // useWatch em vez de watch(): é memoizável, o watch() faz o React Compiler
-  // desistir de otimizar o componente inteiro.
+  // useWatch instead of watch(): it is memoizable, watch() makes the React
+  // Compiler give up on optimizing the whole component.
   const dealKind = useWatch({ control, name: "dealKind" })
   const amount = useWatch({ control, name: "amount" })
   const currency = useWatch({ control, name: "currency" })
-  // valor zerado = projeto grátis, mesma regra das ferramentas
+  // zeroed amount = free project, same rule as the tools
   const isFree = !hasPositiveAmount(amount ?? "")
 
   const onSubmit = handleSubmit((values) => {
@@ -181,7 +181,7 @@ export function CreateProjectDialog({
           <FormProvider {...form}>
             <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
             <div className="flex flex-col gap-6 overflow-y-auto px-5 py-4">
-              {sections.includes("identificacao") && (
+              {sections.includes("identity") && (
                 <Section title="Identificação">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Nome do projeto" error={errors.name?.message}>
@@ -213,7 +213,7 @@ export function CreateProjectDialog({
                 </Section>
               )}
 
-              {sections.includes("contato") && (
+              {sections.includes("contact") && (
                 <Section title="Contato">
                   <Field label="Contato principal" error={errors.client?.message}>
                     {(props) => (
@@ -258,7 +258,7 @@ export function CreateProjectDialog({
                 </Section>
               )}
 
-              {sections.includes("cobranca") && (
+              {sections.includes("billing") && (
                 <Section
                   title="Cobrança"
                   action={isFree && <Badge variant="outline">Grátis</Badge>}
@@ -289,7 +289,7 @@ export function CreateProjectDialog({
                           inputMode="decimal"
                           placeholder="0"
                           onFocus={(event) => {
-                            // deixa digitar por cima do zero inicial em vez de virar "018000"
+                            // lets typing overwrite the leading zero instead of becoming "018000"
                             if (!hasPositiveAmount(event.target.value)) {
                               event.target.select()
                             }
@@ -304,7 +304,7 @@ export function CreateProjectDialog({
                       label="Cobrança"
                       error={errors.dealKind?.message}
                       className={
-                        dealKind === "parcelado" && !isFree ? undefined : "sm:col-span-2"
+                        dealKind === "installment" && !isFree ? undefined : "sm:col-span-2"
                       }
                     >
                       {(props) => (
@@ -324,7 +324,7 @@ export function CreateProjectDialog({
                       )}
                     </Field>
 
-                    {dealKind === "parcelado" && !isFree && (
+                    {dealKind === "installment" && !isFree && (
                       <Field
                         label="Parcelas"
                         error={errors.installments?.message}
@@ -353,7 +353,7 @@ export function CreateProjectDialog({
                 </Section>
               )}
 
-              {sections.includes("ferramentas") && (
+              {sections.includes("tools") && (
                 <Section title="Ferramentas">
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
@@ -388,7 +388,7 @@ export function CreateProjectDialog({
                 </Section>
               )}
 
-              {sections.includes("repositorio") && (
+              {sections.includes("repository") && (
                 <Section title="Repositório">
                   <Field
                     label="Repositório GitHub"

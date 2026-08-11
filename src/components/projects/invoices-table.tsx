@@ -33,17 +33,17 @@ const PAYMENT_METHOD_ICON: Record<PaymentMethod, typeof Barcode> = {
 };
 
 const STATUS_VARIANT: Record<InvoiceStatus, React.ComponentProps<typeof Badge>["variant"]> = {
-  pendente: "warning",
-  paga: "success",
-  atrasada: "destructive",
+  pending: "warning",
+  paid: "success",
+  overdue: "destructive",
 };
 
 const menuItemClass =
   "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground";
 
-// Compartilhar/gerar boleto/pix/alterar status/anexar ainda não fazem nada —
-// sem API de faturas por enquanto, os itens são só UI (mesmo estado de
-// antes, em invoice-card.tsx).
+// Share/generate boleto/pix/change status/attach do nothing yet — with no
+// invoice API for now, the items are UI only (same state as before, in
+// invoice-card.tsx).
 function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
   return (
     <Menu.Root>
@@ -92,9 +92,9 @@ function formatReference(invoice: Invoice) {
 }
 
 const STATUS_DOT: Record<InvoiceStatus, string> = {
-  pendente: "bg-warning",
-  paga: "bg-success",
-  atrasada: "bg-destructive",
+  pending: "bg-warning",
+  paid: "bg-success",
+  overdue: "bg-destructive",
 };
 
 function StatusDot({ className }: { className?: string }) {
@@ -102,14 +102,14 @@ function StatusDot({ className }: { className?: string }) {
 }
 
 const STATUS_OPTIONS: SelectOption[] = [
-  { value: "todos", label: "Todos os status", icon: <StatusDot className="bg-muted-foreground/40" /> },
-  { value: "pendente", label: INVOICE_STATUS_LABEL.pendente, icon: <StatusDot className={STATUS_DOT.pendente} /> },
-  { value: "paga", label: INVOICE_STATUS_LABEL.paga, icon: <StatusDot className={STATUS_DOT.paga} /> },
-  { value: "atrasada", label: INVOICE_STATUS_LABEL.atrasada, icon: <StatusDot className={STATUS_DOT.atrasada} /> },
+  { value: "all", label: "Todos os status", icon: <StatusDot className="bg-muted-foreground/40" /> },
+  { value: "pending", label: INVOICE_STATUS_LABEL.pending, icon: <StatusDot className={STATUS_DOT.pending} /> },
+  { value: "paid", label: INVOICE_STATUS_LABEL.paid, icon: <StatusDot className={STATUS_DOT.paid} /> },
+  { value: "overdue", label: INVOICE_STATUS_LABEL.overdue, icon: <StatusDot className={STATUS_DOT.overdue} /> },
 ];
 
-// Ordem de urgência, não alfabética: o que precisa de ação vem primeiro.
-const STATUS_SORT_WEIGHT: Record<InvoiceStatus, number> = { pendente: 0, atrasada: 1, paga: 2 };
+// Urgency order, not alphabetical: whatever needs action comes first.
+const STATUS_SORT_WEIGHT: Record<InvoiceStatus, number> = { pending: 0, overdue: 1, paid: 2 };
 const PAYMENT_METHOD_SORT_WEIGHT: Record<PaymentMethod, number> = { boleto: 0, pix: 1 };
 
 const COLUMNS: Column<Invoice>[] = [
@@ -163,7 +163,7 @@ const COLUMNS: Column<Invoice>[] = [
 ];
 
 export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
-  const [status, setStatus] = useState<InvoiceStatus | "todos">("todos");
+  const [status, setStatus] = useState<InvoiceStatus | "all">("all");
   const [monthFrom, setMonthFrom] = useState("");
   const [monthTo, setMonthTo] = useState("");
 
@@ -175,7 +175,7 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
         <div className="w-44">
           <Select
             value={status}
-            onValueChange={(value) => setStatus(value as InvoiceStatus | "todos")}
+            onValueChange={(value) => setStatus(value as InvoiceStatus | "all")}
             options={STATUS_OPTIONS}
           />
         </div>

@@ -19,7 +19,7 @@ export const TOOL_CATEGORY_LABEL: Record<ToolCategory, string> = {
   other: "Outra",
 }
 
-/** Ordem dos grupos no select. `other` sempre por último. */
+/** Group order in the select. `other` always last. */
 export const TOOL_CATEGORY_ORDER: ToolCategory[] = [
   "deploy",
   "database",
@@ -37,11 +37,11 @@ export type CatalogTool = {
   category: ToolCategory
 }
 
-/** Id da opção "Outra" — libera o campo de nome livre. */
-export const OTHER_TOOL_ID = "outra"
+/** Id of the "Outra" option — unlocks the free-text name field. */
+export const OTHER_TOOL_ID = "other"
 
-// Só dados: os ícones vivem em components/projetos/tool-icons.ts, pra este
-// módulo continuar importável fora do browser (ex: o self-check do schema).
+// Data only: icons live in components/projects/tool-icons.ts so this module
+// stays importable outside the browser (e.g. the schema self-check).
 export const toolCatalog: CatalogTool[] = [
   { id: "vercel", name: "Vercel", category: "deploy" },
   { id: "netlify", name: "Netlify", category: "deploy" },
@@ -88,7 +88,7 @@ export function findCatalogTool(id: string): CatalogTool | undefined {
   return byId.get(id)
 }
 
-/** Ferramentas de uma categoria, na ordem em que aparecem no catálogo. */
+/** Tools of a category, in the order they appear in the catalog. */
 export function toolsByCategory(category: ToolCategory): CatalogTool[] {
   return toolCatalog.filter((tool) => tool.category === category)
 }

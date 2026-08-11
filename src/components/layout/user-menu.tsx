@@ -3,8 +3,8 @@ import { LogOut, Moon, Pencil, Sun, Users } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-// ponytail: dados e ações mockados — sem auth/backend ainda. Plugar
-// usuário real e handlers (logout, trocar conta, editar perfil) quando existirem.
+// ponytail: mocked data and actions — no auth/backend yet. Plug in the real
+// user and handlers (logout, switch account, edit profile) once they exist.
 const mockUser = {
   name: "Rodrigo Araujo",
   email: "rodrigo@fastbuilt.com.br",

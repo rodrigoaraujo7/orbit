@@ -4,10 +4,10 @@ import { Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 /**
- * Peças estilizadas do Select do Base UI, reaproveitadas tal e qual pelo
- * select agrupado de ferramentas (`tool-select.tsx`) — é o que padroniza a
- * aparência do dropdown em toda a plataforma. `Select` logo abaixo é a
- * composição pronta pra lista simples (a maioria dos casos).
+ * Styled pieces of the Base UI Select, reused as-is by the grouped tool select
+ * (`tool-select.tsx`) — this is what standardizes the dropdown look across the
+ * whole platform. `Select` right below is the ready-made composition for simple
+ * lists (most cases).
  */
 export function SelectTrigger({
   className,
@@ -74,9 +74,9 @@ export function SelectGroupLabel({
   )
 }
 
-// Peças sem estilo próprio — só agrupam/posicionam, reexportadas pra quem
-// monta um select customizado (ex: tool-select.tsx) não importar do pacote
-// direto e ficar preso a um único ponto de acoplamento com o Base UI.
+// Pieces with no styling of their own — they only group/position. Re-exported
+// so anyone building a custom select (e.g. tool-select.tsx) does not import
+// from the package directly, keeping a single coupling point with Base UI.
 export const SelectRoot = SelectPrimitive.Root
 export const SelectValue = SelectPrimitive.Value
 export const SelectIcon = SelectPrimitive.Icon
@@ -89,9 +89,9 @@ export const SelectItemIndicator = SelectPrimitive.ItemIndicator
 export type SelectOption = { value: string; label: string; icon?: React.ReactNode }
 
 /**
- * Select pronto pra lista simples "value + label" — status, ciclo de
- * cobrança, quem paga, etc. Controlado (`value`/`onValueChange`), não
- * `register()`: use com `Controller` do react-hook-form.
+ * Ready-made select for simple "value + label" lists — status, billing cycle,
+ * who pays, etc. Controlled (`value`/`onValueChange`), not `register()`: use it
+ * with react-hook-form's `Controller`.
  */
 export function Select({
   id,

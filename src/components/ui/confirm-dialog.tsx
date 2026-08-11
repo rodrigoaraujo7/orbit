@@ -11,7 +11,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel = "Confirmar",
-  /** presente = exige digitar essa palavra pra habilitar o botão de confirmar */
+  /** present = the user must type this word to enable the confirm button */
   confirmWord,
   onConfirm,
 }: {
@@ -24,8 +24,8 @@ export function ConfirmDialog({
   onConfirm: () => void
 }) {
   const [typed, setTyped] = useState("")
-  // dialog fica montado o tempo todo (animação de saída) — limpa o campo
-  // toda vez que abre de novo. Ajuste durante o render em vez de efeito:
+  // the dialog stays mounted all the time (exit animation) — clears the field
+  // every time it opens again. Adjusted during render instead of an effect:
   // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
   const [prevOpen, setPrevOpen] = useState(open)
   if (open !== prevOpen) {

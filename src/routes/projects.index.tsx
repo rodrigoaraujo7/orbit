@@ -3,14 +3,14 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { ExternalLink, Plus } from "lucide-react"
 
 import { PageHeader } from "@/components/layout/page"
-import { CreateProjectDialog } from "@/components/projetos/create-project-dialog"
+import { CreateProjectDialog } from "@/components/projects/create-project-dialog"
 import {
   StatusBadge,
   StatusFilterSelect,
   WorkflowBadge,
   WorkflowFilterSelect,
-} from "@/components/projetos/status-badges"
-import { ToolIcon } from "@/components/projetos/tool-icons"
+} from "@/components/projects/status-badges"
+import { ToolIcon } from "@/components/projects/tool-icons"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -27,7 +27,7 @@ import {
 import { formatCurrency, formatDeal } from "@/lib/format"
 import { useProjects } from "@/lib/projects-store"
 
-function ProjetosPage() {
+function ProjectsPage() {
   const { projects, deleteProject } = useProjects()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
@@ -46,8 +46,8 @@ function ProjetosPage() {
 
   const search = nameFilter.trim().toLowerCase()
   const filtered = projects.filter((project) => {
-    // nome e cliente na mesma busca — quem procura "Acme" quer o projeto do
-    // cliente Acme tanto quanto o projeto chamado Acme.
+    // name and client in the same search — someone looking for "Acme" wants the
+    // project of client Acme as much as the project named Acme.
     if (
       search &&
       !project.name.toLowerCase().includes(search) &&
@@ -68,7 +68,7 @@ function ProjetosPage() {
       cell: (project) => (
         <>
           <Link
-            to="/projetos/$projectId"
+            to="/projects/$projectId"
             params={{ projectId: project.id }}
             className="rounded-sm font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
           >
@@ -85,7 +85,7 @@ function ProjetosPage() {
       cell: (project) => <StatusBadge status={project.status} />,
     },
     {
-      key: "valor",
+      key: "amount",
       header: "Valor",
       className: "hidden sm:table-cell",
       sortValue: (project) => project.deal.amount,
@@ -146,7 +146,7 @@ function ProjetosPage() {
       header: "",
       className: "text-right whitespace-nowrap",
       cell: (project) => (
-        // o clique nas ações não pode navegar pro detalhe junto
+        // clicking the actions must not navigate to the detail page too
         <span onClick={(event) => event.stopPropagation()}>
           <RowActionsMenu
             onEdit={() => editProject(project)}
@@ -235,10 +235,10 @@ function ProjetosPage() {
           columns={columns}
           rowKey={(project) => project.id}
           initialSort={{ key: "name", direction: "asc" }}
-          // conveniência pro mouse; o teclado navega pelo link do nome
+          // mouse convenience; the keyboard navigates through the name link
           onRowClick={(project) =>
             navigate({
-              to: "/projetos/$projectId",
+              to: "/projects/$projectId",
               params: { projectId: project.id },
             })
           }
@@ -249,6 +249,6 @@ function ProjetosPage() {
   )
 }
 
-export const Route = createFileRoute("/projetos/")({
-  component: ProjetosPage,
+export const Route = createFileRoute("/projects/")({
+  component: ProjectsPage,
 })
