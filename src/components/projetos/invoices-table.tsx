@@ -1,11 +1,21 @@
 import { Menu } from "@base-ui/react/menu";
-import { Barcode, CreditCard, MoreVertical, Paperclip, QrCode, RefreshCw, Share2, Wallet } from "lucide-react";
+import {
+  Barcode,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  MoreVertical,
+  Paperclip,
+  QrCode,
+  RefreshCw,
+  Share2,
+  Wallet,
+} from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MonthPicker } from "@/components/ui/month-picker";
-import { Pagination } from "@/components/ui/pagination";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -101,6 +111,14 @@ const STATUS_OPTIONS: SelectOption[] = [
   { value: "atrasada", label: INVOICE_STATUS_LABEL.atrasada, icon: <StatusDot className={STATUS_DOT.atrasada} /> },
 ];
 
+// Mesmas opções da tabela de projetos (projetos.index.tsx) — só UI, não
+// muda o tamanho real da página ainda.
+const PAGE_SIZE_OPTIONS: SelectOption[] = [
+  { value: "10", label: "10 por página" },
+  { value: "25", label: "25 por página" },
+  { value: "50", label: "50 por página" },
+];
+
 const COLUMNS: { key: InvoiceSortKey; label: string }[] = [
   { key: "month", label: "Referência" },
   { key: "amount", label: "Valor" },
@@ -114,6 +132,7 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
   const [monthTo, setMonthTo] = useState("");
   const [sortKey, setSortKey] = useState<InvoiceSortKey | null>(null);
   const [direction, setDirection] = useState<SortDirection>("asc");
+  const [pageSize, setPageSize] = useState("10");
 
   function toggleSort(key: InvoiceSortKey) {
     if (sortKey !== key) {
@@ -193,7 +212,33 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
               })}
             </TableBody>
           </Table>
-          <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
+          <div className="mt-3 flex flex-col-reverse items-center justify-between gap-3 sm:flex-row">
+            <div className="w-full sm:w-44">
+              <Select value={pageSize} onValueChange={setPageSize} options={PAGE_SIZE_OPTIONS} />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Página {page}</span>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+                aria-label="Página anterior"
+              >
+                <ChevronLeft />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={page >= pageCount}
+                onClick={() => setPage(page + 1)}
+                aria-label="Próxima página"
+              >
+                <ChevronRight />
+              </Button>
+            </div>
+          </div>
         </>
       )}
     </div>
