@@ -1,8 +1,6 @@
 import { Menu } from "@base-ui/react/menu";
 import {
   Barcode,
-  ChevronLeft,
-  ChevronRight,
   CreditCard,
   MoreVertical,
   Paperclip,
@@ -17,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Select, type SelectOption } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTable, type Column } from "@/components/ui/table";
 import {
   INVOICE_STATUS_LABEL,
   PAYMENT_METHOD_LABEL,
@@ -26,8 +24,7 @@ import {
   type PaymentMethod,
 } from "@/data/projects";
 import { formatCurrency, formatDateTime } from "@/lib/format";
-import { filterInvoices, sortInvoices, type InvoiceSortKey, type SortDirection } from "@/lib/invoice-table";
-import { usePagination } from "@/lib/pagination";
+import { effectiveMonth, filterInvoices } from "@/lib/invoice-table";
 import { cn } from "@/lib/utils";
 
 const PAYMENT_METHOD_ICON: Record<PaymentMethod, typeof Barcode> = {
@@ -111,43 +108,66 @@ const STATUS_OPTIONS: SelectOption[] = [
   { value: "atrasada", label: INVOICE_STATUS_LABEL.atrasada, icon: <StatusDot className={STATUS_DOT.atrasada} /> },
 ];
 
-// Mesmas opções da tabela de projetos (projetos.index.tsx) — só UI, não
-// muda o tamanho real da página ainda.
-const PAGE_SIZE_OPTIONS: SelectOption[] = [
-  { value: "10", label: "10 por página" },
-  { value: "25", label: "25 por página" },
-  { value: "50", label: "50 por página" },
-];
+// Ordem de urgência, não alfabética: o que precisa de ação vem primeiro.
+const STATUS_SORT_WEIGHT: Record<InvoiceStatus, number> = { pendente: 0, atrasada: 1, paga: 2 };
+const PAYMENT_METHOD_SORT_WEIGHT: Record<PaymentMethod, number> = { boleto: 0, pix: 1 };
 
-const COLUMNS: { key: InvoiceSortKey; label: string }[] = [
-  { key: "month", label: "Referência" },
-  { key: "amount", label: "Valor" },
-  { key: "paymentMethod", label: "Método" },
-  { key: "status", label: "Status" },
+const COLUMNS: Column<Invoice>[] = [
+  {
+    key: "month",
+    header: "Referência",
+    sortValue: effectiveMonth,
+    cell: formatReference,
+  },
+  {
+    key: "amount",
+    header: "Valor",
+    sortValue: (invoice) => invoice.amount,
+    cell: (invoice) => (
+      <span className="inline-flex items-center gap-1.5">
+        <Wallet className="size-3.5 shrink-0 text-muted-foreground" />
+        {formatCurrency(invoice.amount, invoice.currency)}
+      </span>
+    ),
+  },
+  {
+    key: "paymentMethod",
+    header: "Método",
+    sortValue: (invoice) =>
+      invoice.paymentMethod ? PAYMENT_METHOD_SORT_WEIGHT[invoice.paymentMethod] : -1,
+    cell: (invoice) => {
+      const MethodIcon = invoice.paymentMethod ? PAYMENT_METHOD_ICON[invoice.paymentMethod] : CreditCard;
+      return (
+        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+          <MethodIcon className="size-3.5 shrink-0" />
+          {invoice.paymentMethod ? PAYMENT_METHOD_LABEL[invoice.paymentMethod] : "Não definido"}
+          {invoice.paidAt && ` (${formatDateTime(invoice.paidAt)})`}
+        </span>
+      );
+    },
+  },
+  {
+    key: "status",
+    header: "Status",
+    sortValue: (invoice) => STATUS_SORT_WEIGHT[invoice.status],
+    cell: (invoice) => (
+      <Badge variant={STATUS_VARIANT[invoice.status]}>{INVOICE_STATUS_LABEL[invoice.status]}</Badge>
+    ),
+  },
+  {
+    key: "actions",
+    header: "",
+    className: "w-10 text-right",
+    cell: (invoice) => <InvoiceActionsMenu invoice={invoice} />,
+  },
 ];
 
 export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
   const [status, setStatus] = useState<InvoiceStatus | "todos">("todos");
   const [monthFrom, setMonthFrom] = useState("");
   const [monthTo, setMonthTo] = useState("");
-  const [sortKey, setSortKey] = useState<InvoiceSortKey | null>(null);
-  const [direction, setDirection] = useState<SortDirection>("asc");
-  const [pageSize, setPageSize] = useState("10");
-
-  function toggleSort(key: InvoiceSortKey) {
-    if (sortKey !== key) {
-      setSortKey(key);
-      setDirection("asc");
-    } else if (direction === "asc") {
-      setDirection("desc");
-    } else {
-      setSortKey(null);
-    }
-  }
 
   const filtered = filterInvoices(invoices, { status, monthFrom, monthTo });
-  const sorted = sortInvoices(filtered, sortKey, direction);
-  const { pageItems, page, pageCount, setPage } = usePagination(sorted);
 
   return (
     <div className="mt-4">
@@ -163,84 +183,12 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
         <MonthPicker aria-label="Até" placeholder="Até" value={monthTo} onChange={setMonthTo} />
       </div>
 
-      {sorted.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">Nenhuma fatura encontrada com esses filtros.</p>
-      ) : (
-        <>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {COLUMNS.map((column) => (
-                  <TableHead
-                    key={column.key}
-                    sortDirection={sortKey === column.key ? direction : null}
-                    onSort={() => toggleSort(column.key)}
-                  >
-                    {column.label}
-                  </TableHead>
-                ))}
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageItems.map((invoice) => {
-                const MethodIcon = invoice.paymentMethod ? PAYMENT_METHOD_ICON[invoice.paymentMethod] : CreditCard;
-                return (
-                  <TableRow key={invoice.id}>
-                    <TableCell>{formatReference(invoice)}</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center gap-1.5">
-                        <Wallet className="size-3.5 shrink-0 text-muted-foreground" />
-                        {formatCurrency(invoice.amount, invoice.currency)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                        <MethodIcon className="size-3.5 shrink-0" />
-                        {invoice.paymentMethod ? PAYMENT_METHOD_LABEL[invoice.paymentMethod] : "Não definido"}
-                        {invoice.paidAt && ` (${formatDateTime(invoice.paidAt)})`}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={STATUS_VARIANT[invoice.status]}>{INVOICE_STATUS_LABEL[invoice.status]}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <InvoiceActionsMenu invoice={invoice} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-          <div className="mt-3 flex flex-col-reverse items-center justify-between gap-3 sm:flex-row">
-            <div className="w-full sm:w-44">
-              <Select value={pageSize} onValueChange={setPageSize} options={PAGE_SIZE_OPTIONS} />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Página {page}</span>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
-                aria-label="Página anterior"
-              >
-                <ChevronLeft />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                disabled={page >= pageCount}
-                onClick={() => setPage(page + 1)}
-                aria-label="Próxima página"
-              >
-                <ChevronRight />
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
+      <DataTable
+        data={filtered}
+        columns={COLUMNS}
+        rowKey={(invoice) => invoice.id}
+        emptyMessage="Nenhuma fatura encontrada com esses filtros."
+      />
     </div>
   );
 }
