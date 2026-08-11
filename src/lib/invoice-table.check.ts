@@ -1,8 +1,9 @@
 /**
- * Self-check de filtro/ordenação de faturas (ver invoice-table.ts).
+ * Self-check de filtro de faturas (ver invoice-table.ts). A ordenação virou
+ * genérica e tem check próprio em table-sort.check.ts.
  * Roda com: pnpm check:invoice-table
  */
-import { effectiveMonth, filterInvoices, sortInvoices } from "./invoice-table.ts"
+import { effectiveMonth, filterInvoices } from "./invoice-table.ts"
 import type { Invoice } from "@/data/projects"
 
 const assert = {
@@ -53,20 +54,5 @@ assert.deepEqual(
   ),
   ["feb", "mar"]
 )
-
-// ordenação por valor, asc/desc
-const byAmount = [invoice({ id: "a", amount: 30 }), invoice({ id: "b", amount: 10 }), invoice({ id: "c", amount: 20 })]
-assert.deepEqual(
-  sortInvoices(byAmount, "amount", "asc").map((i) => i.id),
-  ["b", "c", "a"]
-)
-assert.deepEqual(
-  sortInvoices(byAmount, "amount", "desc").map((i) => i.id),
-  ["a", "c", "b"]
-)
-
-// sortKey null devolve ordem original, sem mutar o array de entrada
-assert.deepEqual(sortInvoices(list, null, "asc").map((i) => i.id), ["jan", "feb", "mar"])
-assert.deepEqual(list.map((i) => i.id), ["jan", "feb", "mar"])
 
 console.log("invoice-table: todos os checks passaram")
