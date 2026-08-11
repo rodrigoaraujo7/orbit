@@ -1,52 +1,37 @@
-import { Menu } from "@base-ui/react/menu"
-import {
-  Barcode,
-  CreditCard,
-  MoreVertical,
-  Paperclip,
-  QrCode,
-  RefreshCw,
-  Share2,
-  Wallet,
-} from "lucide-react"
-import { useState } from "react"
+import { Menu } from "@base-ui/react/menu";
+import { Barcode, CreditCard, MoreVertical, Paperclip, QrCode, RefreshCw, Share2, Wallet } from "lucide-react";
+import { useState } from "react";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Pagination } from "@/components/ui/pagination"
-import { Select, type SelectOption } from "@/components/ui/select"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
+import { Select, type SelectOption } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   INVOICE_STATUS_LABEL,
   PAYMENT_METHOD_LABEL,
   type Invoice,
   type InvoiceStatus,
   type PaymentMethod,
-} from "@/data/projects"
-import { formatCurrency, formatDateTime } from "@/lib/format"
-import { filterInvoices, sortInvoices, type InvoiceSortKey, type SortDirection } from "@/lib/invoice-table"
-import { usePagination } from "@/lib/pagination"
+} from "@/data/projects";
+import { formatCurrency, formatDateTime } from "@/lib/format";
+import { filterInvoices, sortInvoices, type InvoiceSortKey, type SortDirection } from "@/lib/invoice-table";
+import { usePagination } from "@/lib/pagination";
+import { cn } from "@/lib/utils";
 
 const PAYMENT_METHOD_ICON: Record<PaymentMethod, typeof Barcode> = {
   boleto: Barcode,
   pix: QrCode,
-}
+};
 
 const STATUS_VARIANT: Record<InvoiceStatus, React.ComponentProps<typeof Badge>["variant"]> = {
   pendente: "warning",
   paga: "success",
   atrasada: "destructive",
-}
+};
 
 const menuItemClass =
-  "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
+  "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground";
 
 // Compartilhar/gerar boleto/pix/alterar status/anexar ainda não fazem nada —
 // sem API de faturas por enquanto, os itens são só UI (mesmo estado de
@@ -85,58 +70,68 @@ function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
         </Menu.Positioner>
       </Menu.Portal>
     </Menu.Root>
-  )
+  );
 }
 
 function formatReference(invoice: Invoice) {
-  if (!invoice.referenceMonth) return "Pagamento único"
-  const [year, month] = invoice.referenceMonth.split("-")
+  if (!invoice.referenceMonth) return "Pagamento único";
+  const [year, month] = invoice.referenceMonth.split("-");
   const label = new Date(Number(year), Number(month) - 1).toLocaleDateString("pt-BR", {
     month: "long",
     year: "numeric",
-  })
-  return label.charAt(0).toUpperCase() + label.slice(1)
+  });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+const STATUS_DOT: Record<InvoiceStatus, string> = {
+  pendente: "bg-warning",
+  paga: "bg-success",
+  atrasada: "bg-destructive",
+};
+
+function StatusDot({ className }: { className?: string }) {
+  return <span className={cn("size-2 shrink-0 rounded-full", className)} />;
 }
 
 const STATUS_OPTIONS: SelectOption[] = [
-  { value: "todos", label: "Todos os status" },
-  { value: "pendente", label: INVOICE_STATUS_LABEL.pendente },
-  { value: "paga", label: INVOICE_STATUS_LABEL.paga },
-  { value: "atrasada", label: INVOICE_STATUS_LABEL.atrasada },
-]
+  { value: "todos", label: "Todos os status", icon: <StatusDot className="bg-muted-foreground/40" /> },
+  { value: "pendente", label: INVOICE_STATUS_LABEL.pendente, icon: <StatusDot className={STATUS_DOT.pendente} /> },
+  { value: "paga", label: INVOICE_STATUS_LABEL.paga, icon: <StatusDot className={STATUS_DOT.paga} /> },
+  { value: "atrasada", label: INVOICE_STATUS_LABEL.atrasada, icon: <StatusDot className={STATUS_DOT.atrasada} /> },
+];
 
 const COLUMNS: { key: InvoiceSortKey; label: string }[] = [
   { key: "month", label: "Referência" },
   { key: "amount", label: "Valor" },
   { key: "paymentMethod", label: "Método" },
   { key: "status", label: "Status" },
-]
+];
 
 export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
-  const [status, setStatus] = useState<InvoiceStatus | "todos">("todos")
-  const [monthFrom, setMonthFrom] = useState("")
-  const [monthTo, setMonthTo] = useState("")
-  const [sortKey, setSortKey] = useState<InvoiceSortKey | null>(null)
-  const [direction, setDirection] = useState<SortDirection>("asc")
+  const [status, setStatus] = useState<InvoiceStatus | "todos">("todos");
+  const [monthFrom, setMonthFrom] = useState("");
+  const [monthTo, setMonthTo] = useState("");
+  const [sortKey, setSortKey] = useState<InvoiceSortKey | null>(null);
+  const [direction, setDirection] = useState<SortDirection>("asc");
 
   function toggleSort(key: InvoiceSortKey) {
     if (sortKey !== key) {
-      setSortKey(key)
-      setDirection("asc")
+      setSortKey(key);
+      setDirection("asc");
     } else if (direction === "asc") {
-      setDirection("desc")
+      setDirection("desc");
     } else {
-      setSortKey(null)
+      setSortKey(null);
     }
   }
 
-  const filtered = filterInvoices(invoices, { status, monthFrom, monthTo })
-  const sorted = sortInvoices(filtered, sortKey, direction)
-  const { pageItems, page, pageCount, setPage } = usePagination(sorted)
+  const filtered = filterInvoices(invoices, { status, monthFrom, monthTo });
+  const sorted = sortInvoices(filtered, sortKey, direction);
+  const { pageItems, page, pageCount, setPage } = usePagination(sorted);
 
   return (
     <div className="mt-4">
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="w-44">
           <Select
             value={status}
@@ -144,33 +139,27 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
             options={STATUS_OPTIONS}
           />
         </div>
-        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-          De
-          <input
-            type="month"
-            value={monthFrom}
-            onChange={(e) => setMonthFrom(e.target.value)}
-            className="h-9 rounded-xl border border-border bg-background px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-          Até
-          <input
-            type="month"
-            value={monthTo}
-            onChange={(e) => setMonthTo(e.target.value)}
-            className="h-9 rounded-xl border border-border bg-background px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-          />
-        </label>
+        <input
+          type="month"
+          aria-label="De"
+          value={monthFrom}
+          onChange={(e) => setMonthFrom(e.target.value)}
+          className="h-9 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+        />
+        <input
+          type="month"
+          aria-label="Até"
+          value={monthTo}
+          onChange={(e) => setMonthTo(e.target.value)}
+          className="h-9 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+        />
       </div>
 
       {sorted.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">
-          Nenhuma fatura encontrada com esses filtros.
-        </p>
+        <p className="mt-4 text-sm text-muted-foreground">Nenhuma fatura encontrada com esses filtros.</p>
       ) : (
         <>
-          <Table className="mt-3">
+          <Table>
             <TableHeader>
               <TableRow>
                 {COLUMNS.map((column) => (
@@ -187,9 +176,7 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
             </TableHeader>
             <TableBody>
               {pageItems.map((invoice) => {
-                const MethodIcon = invoice.paymentMethod
-                  ? PAYMENT_METHOD_ICON[invoice.paymentMethod]
-                  : CreditCard
+                const MethodIcon = invoice.paymentMethod ? PAYMENT_METHOD_ICON[invoice.paymentMethod] : CreditCard;
                 return (
                   <TableRow key={invoice.id}>
                     <TableCell>{formatReference(invoice)}</TableCell>
@@ -202,22 +189,18 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
                     <TableCell>
                       <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                         <MethodIcon className="size-3.5 shrink-0" />
-                        {invoice.paymentMethod
-                          ? PAYMENT_METHOD_LABEL[invoice.paymentMethod]
-                          : "Não definido"}
+                        {invoice.paymentMethod ? PAYMENT_METHOD_LABEL[invoice.paymentMethod] : "Não definido"}
                         {invoice.paidAt && ` (${formatDateTime(invoice.paidAt)})`}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={STATUS_VARIANT[invoice.status]}>
-                        {INVOICE_STATUS_LABEL[invoice.status]}
-                      </Badge>
+                      <Badge variant={STATUS_VARIANT[invoice.status]}>{INVOICE_STATUS_LABEL[invoice.status]}</Badge>
                     </TableCell>
                     <TableCell>
                       <InvoiceActionsMenu invoice={invoice} />
                     </TableCell>
                   </TableRow>
-                )
+                );
               })}
             </TableBody>
           </Table>
@@ -225,5 +208,5 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
         </>
       )}
     </div>
-  )
+  );
 }

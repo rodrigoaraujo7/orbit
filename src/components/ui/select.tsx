@@ -86,7 +86,7 @@ export const SelectGroup = SelectPrimitive.Group
 export const SelectItemText = SelectPrimitive.ItemText
 export const SelectItemIndicator = SelectPrimitive.ItemIndicator
 
-export type SelectOption = { value: string; label: string }
+export type SelectOption = { value: string; label: string; icon?: React.ReactNode }
 
 /**
  * Select pronto pra lista simples "value + label" — status, ciclo de
@@ -127,7 +127,10 @@ export function Select({
           {(selected: string | null) => {
             const option = options.find((o) => o.value === selected)
             return option ? (
-              option.label
+              <span className="flex min-w-0 items-center gap-2">
+                {option.icon}
+                <span className="truncate">{option.label}</span>
+              </span>
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )
@@ -147,6 +150,7 @@ export function Select({
           <SelectPopup>
             {options.map((option) => (
               <SelectItem key={option.value} value={option.value}>
+                {option.icon}
                 <SelectItemText>{option.label}</SelectItemText>
                 <SelectItemIndicator className="ml-auto">
                   <Check className="size-3.5 text-primary" />
