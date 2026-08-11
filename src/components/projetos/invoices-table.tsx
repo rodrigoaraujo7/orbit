@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MonthPicker } from "@/components/ui/month-picker";
 import { Pagination } from "@/components/ui/pagination";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -139,20 +140,8 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
             options={STATUS_OPTIONS}
           />
         </div>
-        <input
-          type="month"
-          aria-label="De"
-          value={monthFrom}
-          onChange={(e) => setMonthFrom(e.target.value)}
-          className="h-9 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-        />
-        <input
-          type="month"
-          aria-label="Até"
-          value={monthTo}
-          onChange={(e) => setMonthTo(e.target.value)}
-          className="h-9 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-        />
+        <MonthPicker aria-label="De" placeholder="De" value={monthFrom} onChange={setMonthFrom} />
+        <MonthPicker aria-label="Até" placeholder="Até" value={monthTo} onChange={setMonthTo} />
       </div>
 
       {sorted.length === 0 ? (
