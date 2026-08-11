@@ -21,6 +21,32 @@ function Logo({ collapsed = false }: { collapsed?: boolean }) {
   );
 }
 
+function CollapseButton({ onClick }: { onClick: () => void }) {
+  // aguarda a sidebar terminar de expandir (duration-400 do <aside>) antes de aparecer
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setVisible(true), 350);
+    return () => clearTimeout(id);
+  }, []);
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      onClick={onClick}
+      aria-label="Recolher menu"
+      className={cn(
+        "group absolute top-1/2 right-1.5 z-10 h-[65px] w-[8px] -translate-y-1/2 rounded-full bg-gray-300 p-0",
+        "transition-[height,background-color,opacity] duration-200 ease-out",
+        "hover:h-[100px] hover:bg-gray-400 active:!translate-y-[-50%] dark:bg-border dark:hover:bg-white/20",
+        visible ? "opacity-100" : "opacity-0",
+      )}
+    >
+      <ChevronLeft className="pointer-events-none absolute top-1/2 right-full mr-1.5 size-5 translate-x-3 -translate-y-1/2 text-muted-foreground opacity-0 transition-all duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100 group-hover:delay-[250ms]" />
+    </Button>
+  );
+}
+
 function ThemeToggle({ theme, onToggle }: { theme: "light" | "dark"; onToggle: () => void }) {
   return (
     <Button
@@ -57,27 +83,22 @@ export function AppShell({ children }: { children: ReactNode }) {
       >
         <Logo collapsed={collapsed} />
         <SidebarNav collapsed={collapsed} />
+        {collapsed && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setCollapsed(false)}
+            aria-label="Expandir menu"
+            className="mx-auto mb-2 animate-in fade-in zoom-in-75 duration-300 ease-out"
+          >
+            <PanelLeftOpen className="size-4" />
+          </Button>
+        )}
         <div className="border-t p-2">
           <UserMenu collapsed={collapsed} theme={theme} onToggleTheme={toggle} />
         </div>
 
-        <Button
-          variant={collapsed ? "outline" : "ghost"}
-          size="icon-sm"
-          onClick={() => setCollapsed((c) => !c)}
-          aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-          className={cn(
-            "group absolute top-1/2 z-10 -translate-y-1/2 active:!translate-y-[-50%]",
-            collapsed
-              ? "-right-3 size-7 rounded-full !bg-background p-0 shadow-sm"
-              : "right-1.5 h-[65px] w-[8px] rounded-full bg-gray-300 p-0 transition-[height,background-color] duration-200 ease-out hover:h-[100px] hover:bg-gray-400 dark:bg-border dark:hover:bg-white/20",
-          )}
-        >
-          {collapsed && <PanelLeftOpen className="size-4" />}
-          {!collapsed && (
-            <ChevronLeft className="pointer-events-none absolute top-1/2 right-full mr-1.5 size-5 translate-x-3 -translate-y-1/2 text-muted-foreground opacity-0 transition-all duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100 group-hover:delay-[250ms]" />
-          )}
-        </Button>
+        {!collapsed && <CollapseButton onClick={() => setCollapsed(true)} />}
       </aside>
 
       {/* Topbar mobile */}
