@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { ComingSoon, PageHeader } from "@/components/layout/page"
 
-export const Route = createFileRoute("/financeiro")({
+export const Route = createFileRoute("/finance")({
   component: () => (
     <>
       <PageHeader

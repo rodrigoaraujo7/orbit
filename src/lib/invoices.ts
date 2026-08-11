@@ -13,32 +13,32 @@ function toDateString(yearMonth: string, day: number) {
 }
 
 /**
- * ponytail: mock derivado do `deal` — não há API de faturas ainda, então a
- * fatura não é uma entidade própria com histórico, é calculada na hora.
- * Quando existir API: trocar por dado real vindo do backend (com status e
- * anexo editáveis de verdade, não determinados pelo índice da parcela).
+ * ponytail: mock derived from the `deal` — there's no invoice API yet, so an
+ * invoice isn't an entity of its own with history, it's computed on the fly.
+ * Once the API exists: swap for real backend data (with genuinely editable
+ * status and attachment, not decided by the installment index).
  */
 export function generateInvoices(project: Project): Invoice[] {
   const { deal } = project
   if (isDealFree(deal)) return []
 
-  const installments = deal.kind === "parcelado" ? (deal.installments ?? 1) : 1
+  const installments = deal.kind === "installment" ? (deal.installments ?? 1) : 1
   const amount = deal.amount / installments
   const now = new Date()
 
   return Array.from({ length: installments }, (_, index) => {
-    // primeira parcela paga, as demais pendentes — determinístico, sem
-    // Math.random, pra não mudar a cada render.
+    // first installment paid, the rest pending — deterministic, no
+    // Math.random, so it doesn't change on every render.
     const isPaid = index === 0
     const referenceMonth =
-      deal.kind === "parcelado" ? addMonths(now, index) : undefined
+      deal.kind === "installment" ? addMonths(now, index) : undefined
     const generatedMonth = referenceMonth ?? addMonths(now, 0)
 
     return {
       id: `${project.id}-invoice-${index + 1}`,
       referenceMonth,
       amount,
-      status: isPaid ? "paga" : "pendente",
+      status: isPaid ? "paid" : "pending",
       paymentMethod: isPaid ? PAYMENT_METHODS[index % 2] : undefined,
       generatedAt: toDateString(generatedMonth, 5),
       paidAt: isPaid ? `${toDateString(generatedMonth, 10)}T14:32` : undefined,

@@ -25,7 +25,7 @@ export function PageHeader({
   )
 }
 
-/** Placeholder das seções que ainda não foram desenhadas. */
+/** Placeholder for the sections that have not been designed yet. */
 export function ComingSoon({ section }: { section: string }) {
   return (
     <div className="animate-in fade-in zoom-in-95 flex flex-col items-center justify-center gap-3 px-6 py-24 text-center duration-500">

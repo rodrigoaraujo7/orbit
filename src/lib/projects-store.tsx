@@ -19,8 +19,8 @@ type ProjectsContextValue = {
 const ProjectsContext = createContext<ProjectsContextValue | null>(null)
 
 /**
- * ponytail: estado em memória, some no reload. Sem API ainda — quando existir,
- * trocar por fetch/mutation mantendo essa mesma interface.
+ * ponytail: in-memory state, gone on reload. No API yet — once there is one,
+ * swap for fetch/mutation keeping this same interface.
  */
 export function ProjectsProvider({ children }: { children: ReactNode }) {
   const [projects, setProjects] = useState<Project[]>(initialProjects)
@@ -46,7 +46,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 export function useProjects() {
   const context = useContext(ProjectsContext)
   if (!context) {
-    throw new Error("useProjects precisa estar dentro de <ProjectsProvider>")
+    throw new Error("useProjects must be used inside <ProjectsProvider>")
   }
   return context
 }

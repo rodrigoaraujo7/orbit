@@ -1,6 +1,6 @@
 /**
- * Self-check da lógica do schema (parsing de dinheiro, regras condicionais,
- * URL do repo). Roda com: pnpm check:schema
+ * Self-check of the schema logic (money parsing, conditional rules, repo URL).
+ * Run with: pnpm check:schema
  */
 import {
   emptyProjectForm,
@@ -12,28 +12,28 @@ import {
   type ToolFormValues,
 } from "./project-schema.ts"
 
-// assert local em vez de node:assert — evita depender de @types/node num
-// arquivo que vive junto do código de browser.
+// local assert instead of node:assert — avoids depending on @types/node in a
+// file that lives next to browser code.
 const assert = {
   deepEqual(actual: unknown, expected: unknown) {
     const a = JSON.stringify(actual)
     const e = JSON.stringify(expected)
-    if (a !== e) throw new Error(`esperado ${e}, recebido ${a}`)
+    if (a !== e) throw new Error(`expected ${e}, got ${a}`)
   },
   equal(actual: unknown, expected: unknown) {
     if (actual !== expected) {
-      throw new Error(`esperado ${String(expected)}, recebido ${String(actual)}`)
+      throw new Error(`expected ${String(expected)}, got ${String(actual)}`)
     }
   },
 }
 
-// dealKind "a-vista" + amount "0" (os defaults de emptyProjectForm) já
-// representam "grátis" — não existe mais um kind separado pra isso.
+// dealKind "upfront" + amount "0" (the emptyProjectForm defaults) already
+// mean "free" — there is no separate kind for it anymore.
 function form(overrides: Partial<ProjectFormValues> = {}): ProjectFormValues {
-  return { ...emptyProjectForm, name: "Projeto X", client: "Cliente Y", ...overrides }
+  return { ...emptyProjectForm, name: "Project X", client: "Client Y", ...overrides }
 }
 
-/** Ferramenta válida por padrão — cada caso sobrescreve só o que testa. */
+/** Valid tool by default — each case overrides only what it tests. */
 function tool(overrides: Partial<ToolFormValues> = {}): ToolFormValues {
   return { ...emptyToolForm, toolId: "aws", ...overrides }
 }
@@ -43,68 +43,68 @@ function errorPaths(values: ProjectFormValues) {
   return result.success ? [] : result.error.issues.map((i) => i.path.join("."))
 }
 
-// nome e cliente obrigatórios com mínimo de 2 chars
+// name and client are required, minimum of 2 chars
 assert.deepEqual(errorPaths(form({ name: "A", client: "" })), ["name", "client"])
 
-// valor zerado (o default) = projeto grátis, sem exigir cobrança
+// zeroed amount (the default) = free project, no billing required
 assert.deepEqual(errorPaths(form()), [])
 
-// valor positivo é válido em qualquer cobrança, zero e vazio também (grátis)
-assert.deepEqual(errorPaths(form({ dealKind: "a-vista" })), [])
-assert.deepEqual(errorPaths(form({ dealKind: "a-vista", amount: "0" })), [])
-assert.deepEqual(errorPaths(form({ dealKind: "a-vista", amount: "7200" })), [])
+// a positive amount is valid on any deal kind, zero and empty too (free)
+assert.deepEqual(errorPaths(form({ dealKind: "upfront" })), [])
+assert.deepEqual(errorPaths(form({ dealKind: "upfront", amount: "0" })), [])
+assert.deepEqual(errorPaths(form({ dealKind: "upfront", amount: "7200" })), [])
 
-// parcelado só exige mínimo de 2 parcelas quando é pago (valor > 0)
+// installment only requires a minimum of 2 installments when paid (amount > 0)
 assert.deepEqual(
-  errorPaths(form({ dealKind: "parcelado", amount: "18000", installments: "1" })),
+  errorPaths(form({ dealKind: "installment", amount: "18000", installments: "1" })),
   ["installments"]
 )
 assert.deepEqual(
-  errorPaths(form({ dealKind: "parcelado", amount: "18000", installments: "3" })),
+  errorPaths(form({ dealKind: "installment", amount: "18000", installments: "3" })),
   []
 )
-// parcelado grátis (valor zerado) não exige parcelas
+// free installment deal (zeroed amount) requires no installments
 assert.deepEqual(
-  errorPaths(form({ dealKind: "parcelado", amount: "0", installments: "1" })),
+  errorPaths(form({ dealKind: "installment", amount: "0", installments: "1" })),
   []
 )
 
-// formato pt-BR no valor
-assert.deepEqual(errorPaths(form({ dealKind: "a-vista", amount: "18.000,50" })), [])
+// pt-BR formatted amount
+assert.deepEqual(errorPaths(form({ dealKind: "upfront", amount: "18.000,50" })), [])
 assert.equal(
-  toProject(form({ dealKind: "a-vista", amount: "18.000,50" })).deal.amount,
+  toProject(form({ dealKind: "upfront", amount: "18.000,50" })).deal.amount,
   18000.5
 )
 
-// valor do deal inválido ou negativo é erro (mesma regra das ferramentas)
+// an invalid or negative deal amount is an error (same rule as the tools)
 assert.deepEqual(errorPaths(form({ amount: "abc" })), ["amount"])
 assert.deepEqual(errorPaths(form({ amount: "-5" })), ["amount"])
 
-// ferramenta: precisa escolher uma do catálogo
+// tool: one must be picked from the catalog
 assert.deepEqual(
   errorPaths(form({ tools: [tool({ toolId: "" })] })),
   ["tools.0.toolId"]
 )
 assert.deepEqual(errorPaths(form({ tools: [tool({ toolId: "aws" })] })), [])
 
-// "Outra" exige nome livre
+// "Outra" requires the free-text name
 assert.deepEqual(
-  errorPaths(form({ tools: [tool({ toolId: "outra" })] })),
+  errorPaths(form({ tools: [tool({ toolId: "other" })] })),
   ["tools.0.customName"]
 )
 assert.deepEqual(
   errorPaths(
-    form({ tools: [tool({ toolId: "outra", customName: "TOTVS Protheus" })] })
+    form({ tools: [tool({ toolId: "other", customName: "TOTVS Protheus" })] })
   ),
   []
 )
 
-// valor zerado (o default), vazio ou "0,00" = grátis, sem exigir cobrança
+// zeroed (the default), empty or "0,00" amount = free, no billing required
 assert.deepEqual(errorPaths(form({ tools: [tool()] })), [])
 assert.deepEqual(errorPaths(form({ tools: [tool({ amount: "" })] })), [])
 assert.deepEqual(errorPaths(form({ tools: [tool({ amount: "0,00" })] })), [])
 
-// com valor, a data da fatura passa a ser obrigatória
+// with an amount, the invoice date becomes required
 assert.deepEqual(
   errorPaths(form({ tools: [tool({ amount: "340,50" })] })),
   ["tools.0.nextInvoice"]
@@ -116,7 +116,7 @@ assert.deepEqual(
   []
 )
 
-// valor inválido ou negativo é erro
+// an invalid or negative amount is an error
 assert.deepEqual(
   errorPaths(form({ tools: [tool({ amount: "abc" })] })),
   ["tools.0.amount"]
@@ -126,10 +126,10 @@ assert.deepEqual(
   ["tools.0.amount"]
 )
 
-// ferramenta zerada não gera billing
+// a zeroed tool produces no billing
 assert.equal(toProject(form({ tools: [tool()] })).tools[0].billing, undefined)
 
-// secret pela metade é erro; billing só existe quando é paga
+// a half-filled secret is an error; billing only exists when paid
 assert.deepEqual(
   errorPaths(
     form({
@@ -146,7 +146,7 @@ const paidTool = toProject(
         toolId: "aws",
         amount: "340,50",
         nextInvoice: "2026-09-05",
-        payer: "cliente",
+        payer: "client",
       }),
     ],
   })
@@ -156,29 +156,29 @@ assert.equal(paidTool.category, "deploy")
 assert.deepEqual(paidTool.billing, {
   amount: 340.5,
   currency: "BRL",
-  cycle: "mensal",
+  cycle: "monthly",
   nextInvoice: "2026-09-05",
-  payer: "cliente",
+  payer: "client",
 })
 
-// "Outra" usa o nome livre e cai na categoria other, sem billing
+// "Outra" uses the free-text name and falls into the other category, no billing
 const otherTool = toProject(
-  form({ tools: [tool({ toolId: "outra", customName: "TOTVS Protheus" })] })
+  form({ tools: [tool({ toolId: "other", customName: "TOTVS Protheus" })] })
 ).tools[0]
 assert.equal(otherTool.name, "TOTVS Protheus")
 assert.equal(otherTool.category, "other")
 assert.equal(otherTool.billing, undefined)
 
-// repo: vazio passa, formato inválido falha, "owner/repo" vira fullName
+// repo: empty passes, invalid format fails, "owner/repo" becomes fullName
 assert.deepEqual(errorPaths(form({ repoPath: "" })), [])
-assert.deepEqual(errorPaths(form({ repoPath: "só-um-nome" })), ["repoPath"])
+assert.deepEqual(errorPaths(form({ repoPath: "just-a-name" })), ["repoPath"])
 assert.deepEqual(errorPaths(form({ repoPath: "user/repo" })), [])
 assert.deepEqual(
   toProject(form({ repoPath: "user/repo/" })).repo,
   { fullName: "user/repo", url: "https://github.com/user/repo", workflow: "none" }
 )
 
-// cola a URL inteira sem querer: prefixo é tolerado e removido
+// pasting the whole URL by mistake: the prefix is tolerated and stripped
 assert.deepEqual(
   errorPaths(form({ repoPath: "https://github.com/user/repo" })),
   []
@@ -188,14 +188,14 @@ assert.deepEqual(
   { fullName: "user/repo", url: "https://github.com/user/repo", workflow: "none" }
 )
 
-// projeto sem repo fica null; conta vazia vira undefined; deal grátis é
-// "a-vista" com valor zero, não um kind separado
+// a project with no repo stays null; an empty account becomes undefined; a
+// free deal is "upfront" with a zero amount, not a separate kind
 const created = toProject(form({ tools: [tool({ toolId: "vercel" })] }))
 assert.equal(created.repo, null)
 assert.equal(created.tools[0].account, undefined)
-assert.deepEqual(created.deal, { kind: "a-vista", amount: 0, currency: "BRL" })
+assert.deepEqual(created.deal, { kind: "upfront", amount: 0, currency: "BRL" })
 
-// edição: mantém o id existente e, se o repo não mudou, o status de workflow
+// editing: keeps the existing id and, if the repo did not change, the workflow status
 const original = toProject(
   form({ repoPath: "user/repo", tools: [tool({ toolId: "vercel" })] })
 )
@@ -204,20 +204,20 @@ const edited = toProject(fromProject(original), original)
 assert.equal(edited.id, original.id)
 assert.equal(edited.repo?.workflow, "success")
 
-// edição trocando o repo: workflow volta a "none"
+// editing with a different repo: workflow goes back to "none"
 const editedRepo = toProject(
-  { ...fromProject(original), repoPath: "outro/repo" },
+  { ...fromProject(original), repoPath: "another/repo" },
   original
 )
-assert.equal(editedRepo.repo?.fullName, "outro/repo")
+assert.equal(editedRepo.repo?.fullName, "another/repo")
 assert.equal(editedRepo.repo?.workflow, "none")
 
-// edição não pode inflar valor com centavos — fromProject→toProject de um
-// valor fracionado precisa fechar o roundtrip (regressão: String(340.5) dava
-// "340.5", que o parser lia como "3405" por causa do ponto decimal)
+// editing must not inflate amounts with cents — fromProject→toProject of a
+// fractional amount has to close the roundtrip (regression: String(340.5) gave
+// "340.5", which the parser read as "3405" because of the decimal point)
 const fractional = toProject(
   form({
-    dealKind: "a-vista",
+    dealKind: "upfront",
     amount: "18000,50",
     tools: [tool({ toolId: "aws", amount: "340,50", nextInvoice: "2026-09-05" })],
   })
@@ -226,4 +226,4 @@ const fractionalEdited = toProject(fromProject(fractional), fractional)
 assert.equal(fractionalEdited.deal.amount, 18000.5)
 assert.equal(fractionalEdited.tools[0].billing?.amount, 340.5)
 
-console.log("project-schema: todos os checks passaram")
+console.log("project-schema: all checks passed")

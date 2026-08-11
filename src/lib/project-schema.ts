@@ -1,15 +1,15 @@
 import { z } from "zod"
 
-// Imports relativos (e não pelo alias "@/") de propósito: este módulo roda
-// também fora do Vite, no self-check com `node --experimental-strip-types`,
-// e o Node não resolve o alias.
+// Relative imports (not the "@/" alias) on purpose: this module also runs
+// outside Vite, in the self-check with `node --experimental-strip-types`, and
+// Node does not resolve the alias.
 import type { Deal, Project, Tool } from "../data/projects.ts"
 import { OTHER_TOOL_ID, findCatalogTool } from "../data/tool-catalog.ts"
 import { DEFAULT_CURRENCY } from "./currency.ts"
 
 /**
- * Campos numéricos e de data ficam como string porque vêm de `<input>`; a
- * conversão acontece no `superRefine` e no `toProject`.
+ * Number and date fields stay as strings because they come from `<input>`; the
+ * conversion happens in `superRefine` and in `toProject`.
  */
 export const projectSchema = z
   .object({
@@ -17,8 +17,8 @@ export const projectSchema = z
     client: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
     clientEmail: z.string().trim(),
     clientPhone: z.string().trim(),
-    status: z.enum(["em-desenvolvimento", "fila", "pausado", "concluido"]),
-    dealKind: z.enum(["a-vista", "parcelado"]),
+    status: z.enum(["in-development", "queued", "paused", "completed"]),
+    dealKind: z.enum(["upfront", "installment"]),
     amount: z.string().trim(),
     currency: z.string().trim().min(1),
     installments: z.string().trim(),
@@ -29,9 +29,9 @@ export const projectSchema = z
         account: z.string().trim(),
         amount: z.string().trim(),
         currency: z.string().trim().min(1),
-        cycle: z.enum(["mensal", "anual", "avulso"]),
+        cycle: z.enum(["monthly", "yearly", "one-off"]),
         nextInvoice: z.string().trim(),
-        payer: z.enum(["eu", "cliente"]),
+        payer: z.enum(["me", "client"]),
         secrets: z.array(
           z.object({
             key: z.string().trim().min(1, "Informe a chave"),
@@ -40,7 +40,7 @@ export const projectSchema = z
         ),
       })
     ),
-    // só o "owner/repo" — o prefixo "https://github.com/" é fixo na UI
+    // just the "owner/repo" — the "https://github.com/" prefix is fixed in the UI
     repoPath: z.string().trim(),
   })
   .superRefine((values, ctx) => {
@@ -52,8 +52,8 @@ export const projectSchema = z
       })
     }
 
-    // Valor zerado = projeto grátis, mesma regra das ferramentas — só o que
-    // for lixo ou negativo é erro.
+    // Zeroed amount = free project, same rule as the tools — only garbage or
+    // negative values are errors.
     const dealAmount = parseAmount(values.amount)
     if (values.amount && dealAmount == null) {
       ctx.addIssue({
@@ -69,8 +69,8 @@ export const projectSchema = z
       })
     }
 
-    // Parcelamento só faz sentido quando o projeto é pago.
-    if (values.dealKind === "parcelado" && hasPositiveAmount(values.amount)) {
+    // Installments only make sense when the project is paid.
+    if (values.dealKind === "installment" && hasPositiveAmount(values.amount)) {
       const installments = Number(values.installments)
       if (!Number.isInteger(installments) || installments < 2) {
         ctx.addIssue({
@@ -90,7 +90,7 @@ export const projectSchema = z
         })
       }
 
-      // Valor zerado = ferramenta grátis. Só o que for lixo ou negativo é erro.
+      // Zeroed amount = free tool. Only garbage or negative values are errors.
       const amount = parseAmount(tool.amount)
       if (tool.amount && amount == null) {
         ctx.addIssue({
@@ -106,7 +106,7 @@ export const projectSchema = z
         })
       }
 
-      // Cobrança só é exigida quando a ferramenta tem valor.
+      // Billing is only required when the tool has an amount.
       if (hasPositiveAmount(tool.amount) && !tool.nextInvoice) {
         ctx.addIssue({
           code: "custom",
@@ -132,12 +132,12 @@ export const emptyToolForm: ToolFormValues = {
   toolId: "",
   customName: "",
   account: "",
-  // começa zerado: sem valor, a ferramenta é tratada como grátis
+  // starts zeroed: with no amount, the tool is treated as free
   amount: "0",
   currency: DEFAULT_CURRENCY,
-  cycle: "mensal",
+  cycle: "monthly",
   nextInvoice: "",
-  payer: "eu",
+  payer: "me",
   secrets: [],
 }
 
@@ -146,10 +146,10 @@ export const emptyProjectForm: ProjectFormValues = {
   client: "",
   clientEmail: "",
   clientPhone: "",
-  status: "fila",
-  dealKind: "a-vista",
-  // começa zerado: sem valor, o projeto é tratado como grátis (mesma regra
-  // das ferramentas)
+  status: "queued",
+  dealKind: "upfront",
+  // starts zeroed: with no amount, the project is treated as free (same rule
+  // as the tools)
   amount: "0",
   currency: DEFAULT_CURRENCY,
   installments: "2",
@@ -157,7 +157,7 @@ export const emptyProjectForm: ProjectFormValues = {
   repoPath: "",
 }
 
-/** Aceita "18000" e "18.000,50" (formato pt-BR). */
+/** Accepts "18000" and "18.000,50" (pt-BR format). */
 export function parseAmount(raw: string): number | null {
   if (!raw) return null
   const normalized = raw.replace(/\./g, "").replace(",", ".")
@@ -166,10 +166,10 @@ export function parseAmount(raw: string): number | null {
 }
 
 /**
- * Inverso de `parseAmount` — usado em `fromProject` pra repopular o campo
- * de valor na edição. `String(340.5)` daria "340.5" (ponto decimal), que
- * `parseAmount` leria como separador de milhar e estouraria o valor em 10x;
- * formata em pt-BR (vírgula decimal) pra fechar o roundtrip.
+ * Inverse of `parseAmount` — used by `fromProject` to refill the amount field
+ * when editing. `String(340.5)` would give "340.5" (decimal point), which
+ * `parseAmount` would read as a thousands separator and blow the value up 10x;
+ * formats in pt-BR (decimal comma) to close the roundtrip.
  */
 function formatAmountInput(value: number): string {
   return value.toLocaleString("pt-BR", {
@@ -179,10 +179,10 @@ function formatAmountInput(value: number): string {
 }
 
 /**
- * Ferramenta/projeto é pago quando tem valor maior que zero — não existe
- * flag `paid` separada, nem kind "grátis" no deal. Schema e UI compartilham
- * esta função pra não divergirem sobre o que conta como "zerado" (vazio,
- * "0" e "0,00" são todos grátis).
+ * A tool/project is paid when it has an amount greater than zero — there is no
+ * separate `paid` flag, nor a "free" deal kind. Schema and UI share this
+ * function so they cannot disagree on what counts as "zeroed" (empty, "0" and
+ * "0,00" are all free).
  */
 export function hasPositiveAmount(amount: string): boolean {
   const value = parseAmount(amount)
@@ -192,8 +192,8 @@ export function hasPositiveAmount(amount: string): boolean {
 export const GITHUB_PREFIX = "https://github.com/"
 
 /**
- * Valida "owner/repo". Tolerante a colar a URL inteira por engano (o prefixo
- * é removido antes de validar) mesmo a UI só pedindo o caminho.
+ * Validates "owner/repo". Tolerates pasting the whole URL by mistake (the
+ * prefix is stripped before validating) even though the UI only asks for the path.
  */
 function parseRepo(raw: string): { fullName: string; url: string } | null {
   const path = raw
@@ -215,7 +215,7 @@ function toTool(values: ToolFormValues): Tool {
     name: isOther ? values.customName : (catalogTool?.name ?? values.toolId),
     category: catalogTool?.category ?? "other",
     account: values.account || undefined,
-    // billing presente ⟺ valor > 0; não existe campo `paid` separado
+    // billing present ⟺ amount > 0; there is no separate `paid` field
     billing: hasPositiveAmount(values.amount)
       ? {
           amount: parseAmount(values.amount) ?? 0,
@@ -230,21 +230,21 @@ function toTool(values: ToolFormValues): Tool {
 }
 
 /**
- * `existing` presente = edição: mantém o id e, se o repo não mudou, o status
- * de workflow (o form não tem campo pra isso, só a URL/nome).
+ * `existing` present = editing: keeps the id and, if the repo did not change,
+ * the workflow status (the form has no field for it, only the URL/name).
  */
 export function toProject(values: ProjectFormValues, existing?: Project): Project {
   const amount = parseAmount(values.amount) ?? 0
 
   const deal: Deal =
-    values.dealKind === "parcelado"
+    values.dealKind === "installment"
       ? {
-          kind: "parcelado",
+          kind: "installment",
           amount,
           installments: Number(values.installments),
           currency: values.currency,
         }
-      : { kind: "a-vista", amount, currency: values.currency }
+      : { kind: "upfront", amount, currency: values.currency }
 
   const repo = values.repoPath ? parseRepo(values.repoPath) : null
   const workflow =
@@ -282,9 +282,9 @@ export function fromProject(project: Project): ProjectFormValues {
       account: tool.account ?? "",
       amount: tool.billing ? formatAmountInput(tool.billing.amount) : "0",
       currency: tool.billing?.currency ?? DEFAULT_CURRENCY,
-      cycle: tool.billing?.cycle ?? "mensal",
+      cycle: tool.billing?.cycle ?? "monthly",
       nextInvoice: tool.billing?.nextInvoice ?? "",
-      payer: tool.billing?.payer ?? "eu",
+      payer: tool.billing?.payer ?? "me",
       secrets: tool.secrets,
     })),
     repoPath: project.repo?.fullName ?? "",

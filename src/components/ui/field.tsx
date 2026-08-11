@@ -4,8 +4,8 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
 /**
- * Agrupa label + controle + mensagem de erro com espaçamento padronizado.
- * Passa o `id` gerado e o estado de erro pro controle via render prop.
+ * Groups label + control + error message with standardized spacing. Passes the
+ * generated `id` and the error state down to the control via a render prop.
  */
 function Field({
   label,

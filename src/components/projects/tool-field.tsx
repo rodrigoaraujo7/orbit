@@ -116,8 +116,8 @@ export function ToolField({
   const amount = useWatch({ control, name: `tools.${index}.amount` })
   const toolErrors = errors.tools?.[index]
 
-  // "é paga" vem do valor, não de um checkbox: zerado = grátis e o resto da
-  // cobrança fica travado. Mesma função que o schema usa, pra não divergir.
+  // "is paid" comes from the amount, not a checkbox: zeroed = free and the rest
+  // of the billing stays locked. Same function the schema uses, so they agree.
   const paid = hasPositiveAmount(amount ?? "")
 
   return (
@@ -210,7 +210,7 @@ export function ToolField({
                 inputMode="decimal"
                 placeholder="0"
                 onFocus={(event) => {
-                  // deixa digitar por cima do zero inicial em vez de virar "0340"
+                  // lets typing overwrite the leading zero instead of becoming "0340"
                   if (!hasPositiveAmount(event.target.value)) event.target.select()
                 }}
               />

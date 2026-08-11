@@ -23,10 +23,10 @@ import {
 import { ToolIcon } from "./tool-icons"
 
 /**
- * Select agrupado por categoria com ícone por ferramenta — mesmas peças
- * estilizadas de `ui/select.tsx`, só que composto na mão em vez do `Select`
- * genérico, porque precisa de grupos e ícone (que `<option>` nativo não
- * renderiza e o `Select` simples não cobre).
+ * Select grouped by category with a per-tool icon — the same styled pieces from
+ * `ui/select.tsx`, just composed by hand instead of the generic `Select`,
+ * because it needs groups and icons (which a native `<option>` cannot render
+ * and the simple `Select` does not cover).
  */
 export function ToolSelect({
   id,

@@ -1,8 +1,8 @@
 export const DEFAULT_CURRENCY = "BRL"
 
-// Curadoria das moedas mais comuns pra cliente internacional de freelancer —
-// não é a lista ISO 4217 inteira (Intl.supportedValuesOf("currency") tem
-// 160+), pra não virar uma lista gigante sem busca no dropdown.
+// Curated set of the currencies a freelancer's international clients actually
+// use — not the whole ISO 4217 list (Intl.supportedValuesOf("currency") has
+// 160+), so the dropdown doesn't become a huge list with no search.
 export const CURRENCIES = [
   "BRL",
   "USD",
@@ -31,8 +31,8 @@ export const CURRENCIES = [
   "ILS",
 ] as const
 
-// Intl.DisplayNames traduz o nome da moeda pro pt-BR nativamente — sem
-// manter um dicionário de tradução na mão.
+// Intl.DisplayNames localizes the currency name to pt-BR natively — no
+// hand-maintained translation dictionary.
 const currencyNames = new Intl.DisplayNames(["pt-BR"], { type: "currency" })
 
 export const currencyOptions = CURRENCIES.map((code) => ({

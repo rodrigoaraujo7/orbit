@@ -11,11 +11,11 @@ function readTheme(): Theme {
 }
 
 /**
- * Tema persistido em localStorage, com fallback pro sistema.
- * O primeiro paint é resolvido pelo script inline no index.html.
+ * Theme persisted in localStorage, falling back to the system preference.
+ * The first paint is handled by the inline script in index.html.
  *
- * ponytail: state local, não context — só a topbar consome. Se um segundo
- * componente precisar do tema, promover pra context ou useSyncExternalStore.
+ * ponytail: local state, not context — only the topbar consumes it. If a second
+ * component needs the theme, promote it to context or useSyncExternalStore.
  */
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(readTheme)

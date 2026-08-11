@@ -10,10 +10,10 @@ const MONTHS = Array.from({ length: 12 }, (_, i) =>
 );
 
 /**
- * Substitui o `<input type="month">` nativo: o popup de calendário do
- * browser não dá pra estilizar (é UI do SO, fora do DOM), então aqui é um
- * botão + grid de meses do ano, no mesmo estilo do Select/Menu do app.
- * Valor no formato "YYYY-MM" (igual ao input nativo), string vazia = sem filtro.
+ * Replaces the native `<input type="month">`: the browser calendar popup cannot
+ * be styled (it is OS UI, outside the DOM), so this is a button + a grid of the
+ * year's months, in the same style as the app's Select/Menu.
+ * Value in "YYYY-MM" format (same as the native input), empty string = no filter.
  */
 export function MonthPicker({
   value,

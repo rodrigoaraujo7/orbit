@@ -22,7 +22,7 @@ function Logo({ collapsed = false }: { collapsed?: boolean }) {
 }
 
 function CollapseButton({ onClick }: { onClick: () => void }) {
-  // aguarda a sidebar terminar de expandir (duration-400 do <aside>) antes de aparecer
+  // waits for the sidebar to finish expanding (the <aside> duration-400) before showing up
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const id = setTimeout(() => setVisible(true), 350);
@@ -72,7 +72,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">
-      {/* Sidebar desktop */}
+      {/* Desktop sidebar */}
       <aside
         className={cn(
           "sticky top-0 hidden h-svh shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground transition-[width] duration-400 ease-[cubic-bezier(0.34,1.65,0.64,1)] md:flex",
@@ -101,7 +101,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {!collapsed && <CollapseButton onClick={() => setCollapsed(true)} />}
       </aside>
 
-      {/* Topbar mobile */}
+      {/* Mobile topbar */}
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-3 backdrop-blur-sm md:hidden">
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon-sm" onClick={() => setDrawerOpen(true)} aria-label="Abrir menu">
@@ -112,7 +112,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <ThemeToggle theme={theme} onToggle={toggle} />
       </header>
 
-      {/* Drawer mobile — swipe pra esquerda fecha */}
+      {/* Mobile drawer — swiping left closes it */}
       <Drawer.Root open={drawerOpen} onOpenChange={setDrawerOpen} swipeDirection="left">
         <Drawer.Portal>
           <Drawer.Backdrop className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px] transition-opacity duration-300 data-ending-style:opacity-0 data-starting-style:opacity-0" />

@@ -2,10 +2,10 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
-import { CreateProjectDialog, type ProjectDialogSection } from "@/components/projetos/create-project-dialog";
-import { InvoicesTable } from "@/components/projetos/invoices-table";
-import { StatusBadge, WorkflowBadge } from "@/components/projetos/status-badges";
-import { ToolDetails } from "@/components/projetos/tool-details";
+import { CreateProjectDialog, type ProjectDialogSection } from "@/components/projects/create-project-dialog";
+import { InvoicesTable } from "@/components/projects/invoices-table";
+import { StatusBadge, WorkflowBadge } from "@/components/projects/status-badges";
+import { ToolDetails } from "@/components/projects/tool-details";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
@@ -16,7 +16,7 @@ import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/f
 import { generateInvoices } from "@/lib/invoices";
 import { useProjects } from "@/lib/projects-store";
 
-// lucide-react não tem o logo de marca do GitHub — svg oficial inline.
+// lucide-react has no GitHub brand logo — official svg inlined.
 function GitHubIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -43,7 +43,7 @@ type EditDialogConfig = {
 function BackLink() {
   return (
     <Link
-      to="/projetos"
+      to="/projects"
       className="inline-flex items-center gap-1.5 rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
     >
       <ArrowLeft className="size-4" />
@@ -52,16 +52,16 @@ function BackLink() {
   );
 }
 
-function ProjetoDetalhePage() {
+function ProjectDetailPage() {
   const { projectId } = Route.useParams();
   const { findProject, deleteProject } = useProjects();
   const project = findProject(projectId);
-  // `editDialog` guarda a última config usada (título/seções) e nunca é
-  // limpo ao fechar — só troca quando um botão de editar abre o dialog de
-  // novo. `dialogOpen` controla só a visibilidade. Se `editDialog` fosse
-  // zerado junto com o fechamento, as `sections` cairiam pro default (todas)
-  // enquanto o modal ainda está tocando a animação de saída (~200ms), e o
-  // formulário inteiro piscaria na tela antes de sumir.
+  // `editDialog` holds the last config used (title/sections) and is never
+  // cleared on close — it only changes when an edit button opens the dialog
+  // again. `dialogOpen` controls visibility alone. If `editDialog` were reset on
+  // close, `sections` would fall back to the default (all of them) while the
+  // modal is still playing its exit animation (~200ms), and the whole form
+  // would flash on screen before disappearing.
   const [editDialog, setEditDialog] = useState<EditDialogConfig | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -75,14 +75,14 @@ function ProjetoDetalhePage() {
   function removeProject() {
     if (!project) return;
     deleteProject(project.id);
-    navigate({ to: "/projetos" });
+    navigate({ to: "/projects" });
   }
 
   if (!project) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 px-6 py-24 text-center">
         <p className="text-sm text-muted-foreground">Projeto não encontrado.</p>
-        <Button variant="outline" size="sm" render={<Link to="/projetos" />}>
+        <Button variant="outline" size="sm" render={<Link to="/projects" />}>
           <ArrowLeft />
           Voltar pra lista
         </Button>
@@ -92,12 +92,12 @@ function ProjetoDetalhePage() {
 
   const { deal } = project;
   const invoices = generateInvoices(project);
-  // "é paga" é derivado de billing — não existe flag separada que possa divergir
+  // "is paid" is derived from billing — no separate flag that could drift
   const paidTools = project.tools.filter((tool) => tool.billing);
-  // agrupado por moeda — ferramentas de moedas diferentes não podem ser
-  // somadas num total único.
+  // grouped by currency — tools in different currencies cannot be added up
+  // into a single total.
   const monthlyCostByCurrency = paidTools
-    .filter((tool) => tool.billing?.cycle === "mensal")
+    .filter((tool) => tool.billing?.cycle === "monthly")
     .reduce<Record<string, number>>((totals, tool) => {
       const { amount, currency = DEFAULT_CURRENCY } = tool.billing!;
       totals[currency] = (totals[currency] ?? 0) + amount;
@@ -137,9 +137,9 @@ function ProjetoDetalhePage() {
           <BackLink />
           <div className="flex gap-1">
             <Tooltip label="Atualizar dados do projeto" side="top">
-              {/* ponytail: sem-op — não há fetch real ainda (estado em
-                  memória, ver projects-store.tsx). Plugar refetch quando
-                  existir API. */}
+              {/* ponytail: no-op — there is no real fetch yet (in-memory
+                  state, see projects-store.tsx). Plug in a refetch once the
+                  API exists. */}
               <Button variant="outline" size="icon-sm" onClick={() => {}}>
                 <RefreshCw />
               </Button>
@@ -149,7 +149,7 @@ function ProjetoDetalhePage() {
               size="sm"
               onClick={() =>
                 openEditDialog({
-                  sections: ["identificacao", "contato", "repositorio"],
+                  sections: ["identity", "contact", "repository"],
                   title: "Editar projeto",
                   description: "Atualize nome, status, contato e repositório.",
                 })
@@ -201,25 +201,25 @@ function ProjetoDetalhePage() {
       </div>
 
       <div className="px-4 py-6 sm:px-6 lg:px-8">
-        <Tabs defaultValue="financeiro">
+        <Tabs defaultValue="finance">
           <TabsList>
-            <TabsTab value="financeiro">
+            <TabsTab value="finance">
               <Wallet />
               Financeiro
             </TabsTab>
-            <TabsTab value="ferramentas">
+            <TabsTab value="tools">
               <Wrench />
               Ferramentas
             </TabsTab>
           </TabsList>
 
-          <TabsPanel value="financeiro" className="pt-4">
+          <TabsPanel value="finance" className="pt-4">
             <Card
               action={
                 <>
                   <Tooltip label="Atualizar financeiro" side="top">
-                    {/* ponytail: sem-op — mesmo caso do refresh do header, sem
-                        fetch real ainda (ver comentário lá em cima). */}
+                    {/* ponytail: no-op — same as the header refresh, no real
+                        fetch yet (see the comment further up). */}
                     <Button variant="outline" size="icon-sm" onClick={() => {}}>
                       <RefreshCw />
                     </Button>
@@ -230,7 +230,7 @@ function ProjetoDetalhePage() {
                       size="icon-sm"
                       onClick={() =>
                         openEditDialog({
-                          sections: ["cobranca"],
+                          sections: ["billing"],
                           title: "Editar financeiro",
                           description: "Atualize o valor e a forma de cobrança.",
                         })
@@ -251,13 +251,13 @@ function ProjetoDetalhePage() {
             </Card>
           </TabsPanel>
 
-          <TabsPanel value="ferramentas" className="pt-4">
+          <TabsPanel value="tools" className="pt-4">
             <Card
               action={
                 <>
                   <Tooltip label="Atualizar ferramentas" side="top">
-                    {/* ponytail: sem-op — mesmo caso do refresh do header, sem
-                        fetch real ainda (ver comentário lá em cima). */}
+                    {/* ponytail: no-op — same as the header refresh, no real
+                        fetch yet (see the comment further up). */}
                     <Button variant="outline" size="icon-sm" onClick={() => {}}>
                       <RefreshCw />
                     </Button>
@@ -268,7 +268,7 @@ function ProjetoDetalhePage() {
                       size="icon-sm"
                       onClick={() =>
                         openEditDialog({
-                          sections: ["ferramentas"],
+                          sections: ["tools"],
                           title: "Editar ferramentas",
                           description: "Atualize as ferramentas usadas no projeto.",
                         })
@@ -302,6 +302,6 @@ function ProjetoDetalhePage() {
   );
 }
 
-export const Route = createFileRoute("/projetos/$projectId")({
-  component: ProjetoDetalhePage,
+export const Route = createFileRoute("/projects/$projectId")({
+  component: ProjectDetailPage,
 });

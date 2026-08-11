@@ -16,22 +16,22 @@ import { cn } from "@/lib/utils"
 export type { SortState }
 
 /**
- * Descrição de uma coluna. `cell` recebe a linha inteira e devolve o que
- * renderizar — quem sabe formatar o dado é quem monta a tabela, o DataTable
- * só posiciona.
+ * Description of a column. `cell` gets the whole row and returns what to
+ * render — whoever builds the table knows how to format the data, the DataTable
+ * only lays it out.
  */
 export type Column<T> = {
   key: string
   header: React.ReactNode
   cell: (row: T) => React.ReactNode
   /**
-   * Valor comparável da coluna. Presente = coluna ordenável (o header vira
-   * botão). Ausente = coluna estática.
+   * Comparable value of the column. Present = sortable column (the header
+   * becomes a button). Absent = static column.
    */
   sortValue?: (row: T) => string | number
   /**
-   * Classes aplicadas no `th` **e** no `td` da coluna — é onde mora o
-   * responsivo (`hidden md:table-cell`) sem precisar repetir nos dois.
+   * Classes applied to both the column's `th` **and** `td` — this is where the
+   * responsive bits (`hidden md:table-cell`) live without repeating them twice.
    */
   className?: string
 }
@@ -43,11 +43,11 @@ const PAGE_SIZE_OPTIONS: SelectOption[] = [
 ]
 
 /**
- * Tabela única da plataforma: colunas declarativas, ordenação em 3 estados
- * (asc → desc → sem ordenação) e paginação embutida.
+ * The platform's single table: declarative columns, 3-state sorting
+ * (asc → desc → unsorted) and built-in pagination.
  *
- * Ordena e pagina em memória sobre `data`. Quando o backend passar a fazer
- * isso, é aqui que entra o modo controlado.
+ * Sorts and paginates `data` in memory. Once the backend does that, this is
+ * where a controlled mode goes in.
  */
 export function DataTable<T>({
   data,
@@ -149,8 +149,8 @@ export function DataTable<T>({
               rows.map((row, i) => (
                 <tr
                   key={rowKey(row)}
-                  // stagger só nas primeiras linhas: com 50 por página o
-                  // acumulado passaria de 2s de espera na última.
+                  // stagger only on the first rows: with 50 per page the total
+                  // delay would go past 2s on the last one.
                   style={{ animationDelay: `${Math.min(i, 9) * 40}ms` }}
                   onClick={onRowClick && (() => onRowClick(row))}
                   className={cn(
