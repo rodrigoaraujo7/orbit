@@ -1,0 +1,147 @@
+import { Dialog } from "@base-ui/react/dialog"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { X } from "lucide-react"
+import { useEffect } from "react"
+import { Controller, useForm } from "react-hook-form"
+import { z } from "zod"
+
+import { Button } from "@/components/ui/button"
+import { Field } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { Select } from "@/components/ui/select"
+import { toast } from "@/components/ui/toast"
+import {
+  TOOL_CATEGORY_LABEL,
+  TOOL_CATEGORY_ORDER,
+  type ToolCategory,
+} from "@/data/tool-catalog"
+import type { CustomTool } from "@/data/custom-tools"
+import { useRegistry } from "@/lib/registry-store"
+
+const categoryOptions = TOOL_CATEGORY_ORDER.map((category) => ({
+  value: category,
+  label: TOOL_CATEGORY_LABEL[category],
+}))
+
+const customToolSchema = z.object({
+  name: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
+  // kept as a plain string (not z.enum) so this doesn't have to duplicate
+  // ToolCategory's literal union — the Select only ever offers valid
+  // categories, so casting on submit is safe.
+  category: z.string().min(1, "Selecione a categoria"),
+})
+
+type CustomToolFormValues = z.infer<typeof customToolSchema>
+
+const emptyCustomToolForm: CustomToolFormValues = {
+  name: "",
+  category: TOOL_CATEGORY_ORDER[0],
+}
+
+export function CreateCustomToolDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const { addCustomTool } = useRegistry()
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CustomToolFormValues>({
+    resolver: zodResolver(customToolSchema),
+    defaultValues: emptyCustomToolForm,
+  })
+
+  useEffect(() => {
+    if (open) reset(emptyCustomToolForm)
+  }, [open, reset])
+
+  const onSubmit = handleSubmit((values) => {
+    const tool: CustomTool = {
+      id: crypto.randomUUID(),
+      name: values.name,
+      category: values.category as ToolCategory,
+    }
+    try {
+      addCustomTool(tool)
+      toast.add({ title: "Ferramenta criada", type: "success" })
+      onOpenChange(false)
+    } catch {
+      toast.add({ title: "Erro ao criar ferramenta", type: "error" })
+    }
+  })
+
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-card text-card-foreground shadow-2xl transition-all duration-200 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
+          <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
+            <div>
+              <Dialog.Title className="text-base font-semibold tracking-tight">
+                Nova ferramenta
+              </Dialog.Title>
+              <Dialog.Description className="mt-0.5 text-sm text-muted-foreground">
+                Cadastre uma ferramenta fora do catálogo para reaproveitar em
+                vários projetos.
+              </Dialog.Description>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => onOpenChange(false)}
+              aria-label="Fechar"
+            >
+              <X />
+            </Button>
+          </div>
+
+          <form onSubmit={onSubmit} className="flex flex-col gap-4 px-5 py-4">
+            <Field label="Nome" error={errors.name?.message}>
+              {(props) => (
+                <Input
+                  {...props}
+                  {...register("name")}
+                  placeholder="TOTVS Protheus"
+                />
+              )}
+            </Field>
+
+            <Field label="Categoria" error={errors.category?.message}>
+              {(props) => (
+                <Controller
+                  control={control}
+                  name="category"
+                  render={({ field }) => (
+                    <Select
+                      {...props}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      options={categoryOptions}
+                    />
+                  )}
+                />
+              )}
+            </Field>
+
+            <div className="mt-2 flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit">Criar ferramenta</Button>
+            </div>
+          </form>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
+  )
+}
