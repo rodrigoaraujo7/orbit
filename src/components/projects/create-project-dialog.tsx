@@ -121,6 +121,7 @@ export function CreateProjectDialog({
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = form
 
@@ -305,7 +306,21 @@ export function CreateProjectDialog({
                     <input
                       type="checkbox"
                       className="size-4 accent-primary"
-                      {...register("isNewContact")}
+                      {...register("isNewContact", {
+                        onChange: (e) => {
+                          // switching sides leaves the other one's state behind
+                          // otherwise — a stale clientId or half-filled contact
+                          // fields the user can no longer see.
+                          if (e.target.checked) {
+                            setValue("clientId", "")
+                          } else {
+                            setValue("newContactName", "")
+                            setValue("newContactEmail", "")
+                            setValue("newContactPhone", "")
+                            setValue("newContactCompany", "")
+                          }
+                        },
+                      })}
                     />
                     Criar um novo contato
                   </label>
