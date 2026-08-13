@@ -18,7 +18,7 @@ function toDateString(yearMonth: string, day: number) {
  * Once the API exists: swap for real backend data (with genuinely editable
  * status and attachment, not decided by the installment index).
  */
-export function generateInvoices(project: Project): Invoice[] {
+export function generateInvoices(project: Project, payerName: string): Invoice[] {
   const { deal } = project
   if (isDealFree(deal)) return []
 
@@ -42,7 +42,7 @@ export function generateInvoices(project: Project): Invoice[] {
       paymentMethod: isPaid ? PAYMENT_METHODS[index % 2] : undefined,
       generatedAt: toDateString(generatedMonth, 5),
       paidAt: isPaid ? `${toDateString(generatedMonth, 10)}T14:32` : undefined,
-      payerName: project.client,
+      payerName,
       hasAttachment: isPaid,
       currency: deal.currency ?? DEFAULT_CURRENCY,
     }
