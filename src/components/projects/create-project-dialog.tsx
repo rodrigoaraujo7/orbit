@@ -261,7 +261,10 @@ export function CreateProjectDialog({
                   </label>
 
                   {isNewContact ? (
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div
+                      key="new-contact-fields"
+                      className="grid animate-in fade-in slide-in-from-top-1 gap-4 duration-200 sm:grid-cols-2"
+                    >
                       <Field label="Nome" error={errors.newContactName?.message}>
                         {(props) => (
                           <Input
@@ -308,7 +311,12 @@ export function CreateProjectDialog({
                       </Field>
                     </div>
                   ) : (
-                    <Field label="Contato principal" error={errors.clientId?.message}>
+                    <Field
+                      key="contact-select"
+                      label="Contato principal"
+                      error={errors.clientId?.message}
+                      className="animate-in fade-in slide-in-from-top-1 duration-200"
+                    >
                       {(props) => (
                         <Controller
                           control={control}
