@@ -15,6 +15,7 @@ import { DEFAULT_CURRENCY } from "@/lib/currency";
 import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/format";
 import { generateInvoices } from "@/lib/invoices";
 import { useProjects } from "@/lib/projects-store";
+import { useRegistry } from "@/lib/registry-store";
 
 // lucide-react has no GitHub brand logo — official svg inlined.
 function GitHubIcon({ className }: { className?: string }) {
@@ -55,6 +56,7 @@ function BackLink() {
 function ProjectDetailPage() {
   const { projectId } = Route.useParams();
   const { findProject, deleteProject } = useProjects();
+  const { findContact } = useRegistry();
   const project = findProject(projectId);
   // `editDialog` holds the last config used (title/sections) and is never
   // cleared on close — it only changes when an edit button opens the dialog
@@ -90,8 +92,9 @@ function ProjectDetailPage() {
     );
   }
 
+  const contact = findContact(project.clientId);
   const { deal } = project;
-  const invoices = generateInvoices(project);
+  const invoices = generateInvoices(project, contact?.name ?? "—");
   // "is paid" is derived from billing — no separate flag that could drift
   const paidTools = project.tools.filter((tool) => tool.billing);
   // grouped by currency — tools in different currencies cannot be added up
@@ -184,17 +187,17 @@ function ProjectDetailPage() {
         )}
         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
           <User className="size-3.5" />
-          <span>{project.client}</span>
-          {project.clientEmail && (
+          <span>{contact?.name ?? "—"}</span>
+          {contact?.email && (
             <>
               <span aria-hidden="true">·</span>
-              <span>{project.clientEmail}</span>
+              <span>{contact.email}</span>
             </>
           )}
-          {project.clientPhone && (
+          {contact?.phone && (
             <>
               <span aria-hidden="true">·</span>
-              <span>{project.clientPhone}</span>
+              <span>{contact.phone}</span>
             </>
           )}
         </div>

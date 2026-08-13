@@ -26,9 +26,11 @@ import {
 } from "@/data/projects"
 import { formatCurrency, formatDeal } from "@/lib/format"
 import { useProjects } from "@/lib/projects-store"
+import { useRegistry } from "@/lib/registry-store"
 
 function ProjectsPage() {
   const { projects, deleteProject } = useProjects()
+  const { findContact } = useRegistry()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [deletingProject, setDeletingProject] = useState<Project | null>(null)
@@ -46,12 +48,13 @@ function ProjectsPage() {
 
   const search = nameFilter.trim().toLowerCase()
   const filtered = projects.filter((project) => {
+    const clientName = findContact(project.clientId)?.name ?? ""
     // name and client in the same search — someone looking for "Acme" wants the
     // project of client Acme as much as the project named Acme.
     if (
       search &&
       !project.name.toLowerCase().includes(search) &&
-      !project.client.toLowerCase().includes(search)
+      !clientName.toLowerCase().includes(search)
     ) {
       return false
     }
@@ -74,7 +77,9 @@ function ProjectsPage() {
           >
             {project.name}
           </Link>
-          <div className="text-xs text-muted-foreground">{project.client}</div>
+          <div className="text-xs text-muted-foreground">
+            {findContact(project.clientId)?.name ?? "—"}
+          </div>
         </>
       ),
     },

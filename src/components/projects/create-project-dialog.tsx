@@ -33,6 +33,7 @@ import {
 } from "@/lib/project-schema"
 import { useProjects } from "@/lib/projects-store"
 import { cn } from "@/lib/utils"
+import { ContactSelect } from "./contact-select"
 import { StatusSelect } from "./status-badges"
 import { ToolField } from "./tool-field"
 
@@ -215,46 +216,21 @@ export function CreateProjectDialog({
 
               {sections.includes("contact") && (
                 <Section title="Contato">
-                  <Field label="Contato principal" error={errors.client?.message}>
+                  <Field label="Contato principal" error={errors.clientId?.message}>
                     {(props) => (
-                      <Input
-                        {...props}
-                        {...register("client")}
-                        placeholder="Marcelo Tavares"
+                      <Controller
+                        control={control}
+                        name="clientId"
+                        render={({ field }) => (
+                          <ContactSelect
+                            {...props}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          />
+                        )}
                       />
                     )}
                   </Field>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field
-                      label="E-mail do contato"
-                      error={errors.clientEmail?.message}
-                      hint="Opcional"
-                    >
-                      {(props) => (
-                        <Input
-                          {...props}
-                          {...register("clientEmail")}
-                          type="email"
-                          placeholder="marcelo@empresa.com.br"
-                        />
-                      )}
-                    </Field>
-
-                    <Field
-                      label="Telefone do contato"
-                      error={errors.clientPhone?.message}
-                      hint="Opcional"
-                    >
-                      {(props) => (
-                        <Input
-                          {...props}
-                          {...register("clientPhone")}
-                          placeholder="(11) 98765-4321"
-                        />
-                      )}
-                    </Field>
-                  </div>
                 </Section>
               )}
 
