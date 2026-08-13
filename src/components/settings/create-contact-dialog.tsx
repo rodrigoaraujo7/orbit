@@ -41,12 +41,9 @@ const emptyContactForm: ContactFormValues = {
 export function CreateContactDialog({
   open,
   onOpenChange,
-  onCreated,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** called with the newly created contact right after it's added to the registry */
-  onCreated?: (contact: Contact) => void
 }) {
   const { addContact } = useRegistry()
   const {
@@ -75,7 +72,6 @@ export function CreateContactDialog({
     try {
       addContact(contact)
       toast.add({ title: "Contato criado", type: "success" })
-      onCreated?.(contact)
       onOpenChange(false)
     } catch {
       toast.add({ title: "Erro ao criar contato", type: "error" })
