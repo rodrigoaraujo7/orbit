@@ -237,6 +237,29 @@ export function CreateProjectDialog({
 
               {sections.includes("contact") && (
                 <Section title="Contato">
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground select-none">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-primary"
+                      {...register("isNewContact", {
+                        onChange: (e) => {
+                          // switching sides leaves the other one's state behind
+                          // otherwise — a stale clientId or half-filled contact
+                          // fields the user can no longer see.
+                          if (e.target.checked) {
+                            setValue("clientId", "")
+                          } else {
+                            setValue("newContactName", "")
+                            setValue("newContactEmail", "")
+                            setValue("newContactPhone", "")
+                            setValue("newContactCompany", "")
+                          }
+                        },
+                      })}
+                    />
+                    Criar um novo contato
+                  </label>
+
                   {isNewContact ? (
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Field label="Nome" error={errors.newContactName?.message}>
@@ -301,29 +324,6 @@ export function CreateProjectDialog({
                       )}
                     </Field>
                   )}
-
-                  <label className="flex items-center gap-2 text-sm text-muted-foreground select-none">
-                    <input
-                      type="checkbox"
-                      className="size-4 accent-primary"
-                      {...register("isNewContact", {
-                        onChange: (e) => {
-                          // switching sides leaves the other one's state behind
-                          // otherwise — a stale clientId or half-filled contact
-                          // fields the user can no longer see.
-                          if (e.target.checked) {
-                            setValue("clientId", "")
-                          } else {
-                            setValue("newContactName", "")
-                            setValue("newContactEmail", "")
-                            setValue("newContactPhone", "")
-                            setValue("newContactCompany", "")
-                          }
-                        },
-                      })}
-                    />
-                    Criar um novo contato
-                  </label>
                 </Section>
               )}
 
