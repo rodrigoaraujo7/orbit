@@ -14,7 +14,15 @@ import { DEFAULT_CURRENCY } from "./currency.ts"
 export const projectSchema = z
   .object({
     name: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
-    clientId: z.string().min(1, "Selecione um contato"),
+    clientId: z.string(),
+    // when true, clientId is ignored and a Contact is created from the
+    // newContact* fields instead — see the create-project-dialog for the
+    // actual creation (this schema stays free of registry side effects).
+    isNewContact: z.boolean(),
+    newContactName: z.string().trim(),
+    newContactEmail: z.string().trim(),
+    newContactPhone: z.string().trim(),
+    newContactCompany: z.string().trim(),
     status: z.enum(["in-development", "queued", "paused", "completed"]),
     dealKind: z.enum(["upfront", "installment"]),
     amount: z.string().trim(),
@@ -42,6 +50,50 @@ export const projectSchema = z
     repoPath: z.string().trim(),
   })
   .superRefine((values, ctx) => {
+    // Contato: either an existing contact is picked, or a new one is filled
+    // in inline — same required fields as CreateContactDialog's contactSchema.
+    if (!values.isNewContact) {
+      if (!values.clientId) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["clientId"],
+          message: "Selecione um contato",
+        })
+      }
+    } else {
+      if (values.newContactName.length < 2) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["newContactName"],
+          message: "Informe pelo menos 2 caracteres",
+        })
+      }
+      if (!values.newContactPhone) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["newContactPhone"],
+          message: "Informe o telefone",
+        })
+      }
+      if (!values.newContactCompany) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["newContactCompany"],
+          message: "Informe a empresa",
+        })
+      }
+      if (
+        values.newContactEmail &&
+        !z.string().email().safeParse(values.newContactEmail).success
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["newContactEmail"],
+          message: "E-mail inválido",
+        })
+      }
+    }
+
     // Zeroed amount = free project, same rule as the tools — only garbage or
     // negative values are errors.
     const dealAmount = parseAmount(values.amount)
@@ -134,6 +186,11 @@ export const emptyToolForm: ToolFormValues = {
 export const emptyProjectForm: ProjectFormValues = {
   name: "",
   clientId: "",
+  isNewContact: false,
+  newContactName: "",
+  newContactEmail: "",
+  newContactPhone: "",
+  newContactCompany: "",
   status: "queued",
   dealKind: "upfront",
   // starts zeroed: with no amount, the project is treated as free (same rule
@@ -255,6 +312,11 @@ export function fromProject(project: Project): ProjectFormValues {
   return {
     name: project.name,
     clientId: project.clientId,
+    isNewContact: false,
+    newContactName: "",
+    newContactEmail: "",
+    newContactPhone: "",
+    newContactCompany: "",
     status: project.status,
     dealKind: project.deal.kind,
     amount: formatAmountInput(project.deal.amount),

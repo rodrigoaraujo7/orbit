@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
 import { DEAL_KIND_LABEL, type Project } from "@/data/projects"
+import type { Contact } from "@/data/contacts"
 import { currencyOptions } from "@/lib/currency"
 import { formatCurrency } from "@/lib/format"
 import {
@@ -32,6 +33,7 @@ import {
   type ProjectFormValues,
 } from "@/lib/project-schema"
 import { useProjects } from "@/lib/projects-store"
+import { useRegistry } from "@/lib/registry-store"
 import { cn } from "@/lib/utils"
 import { ContactSelect } from "./contact-select"
 import { StatusSelect } from "./status-badges"
@@ -106,6 +108,7 @@ export function CreateProjectDialog({
   description?: string
 }) {
   const { addProject, updateProject } = useProjects()
+  const { addContact } = useRegistry()
 
   // the whole form goes into FormProvider: ToolField/SecretRow are nested and
   // consume it via useFormContext instead of taking control/register as props
@@ -134,16 +137,33 @@ export function CreateProjectDialog({
   const dealKind = useWatch({ control, name: "dealKind" })
   const amount = useWatch({ control, name: "amount" })
   const currency = useWatch({ control, name: "currency" })
+  const isNewContact = useWatch({ control, name: "isNewContact" })
   // zeroed amount = free project, same rule as the tools
   const isFree = !hasPositiveAmount(amount ?? "")
 
   const onSubmit = handleSubmit((values) => {
     try {
+      // creating the contact is a side effect the schema itself can't own —
+      // resolve it here, then hand toProject a plain clientId like any other.
+      let clientId = values.clientId
+      if (values.isNewContact) {
+        const contact: Contact = {
+          id: crypto.randomUUID(),
+          name: values.newContactName,
+          email: values.newContactEmail || undefined,
+          phone: values.newContactPhone,
+          company: values.newContactCompany,
+        }
+        addContact(contact)
+        clientId = contact.id
+      }
+      const projectValues = { ...values, clientId }
+
       if (project) {
-        updateProject(toProject(values, project))
+        updateProject(toProject(projectValues, project))
         toast.add({ title: "Projeto atualizado", type: "success" })
       } else {
-        addProject(toProject(values))
+        addProject(toProject(projectValues))
         toast.add({ title: "Projeto criado", type: "success" })
       }
       onOpenChange(false)
@@ -216,21 +236,79 @@ export function CreateProjectDialog({
 
               {sections.includes("contact") && (
                 <Section title="Contato">
-                  <Field label="Contato principal" error={errors.clientId?.message}>
-                    {(props) => (
-                      <Controller
-                        control={control}
-                        name="clientId"
-                        render={({ field }) => (
-                          <ContactSelect
+                  {isNewContact ? (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Nome" error={errors.newContactName?.message}>
+                        {(props) => (
+                          <Input
                             {...props}
-                            value={field.value}
-                            onValueChange={field.onChange}
+                            {...register("newContactName")}
+                            placeholder="Marcelo Tavares"
                           />
                         )}
-                      />
-                    )}
-                  </Field>
+                      </Field>
+
+                      <Field
+                        label="E-mail"
+                        error={errors.newContactEmail?.message}
+                        hint="Opcional"
+                      >
+                        {(props) => (
+                          <Input
+                            {...props}
+                            {...register("newContactEmail")}
+                            type="email"
+                            placeholder="marcelo@empresa.com.br"
+                          />
+                        )}
+                      </Field>
+
+                      <Field label="Telefone" error={errors.newContactPhone?.message}>
+                        {(props) => (
+                          <Input
+                            {...props}
+                            {...register("newContactPhone")}
+                            placeholder="(11) 98765-4321"
+                          />
+                        )}
+                      </Field>
+
+                      <Field label="Empresa" error={errors.newContactCompany?.message}>
+                        {(props) => (
+                          <Input
+                            {...props}
+                            {...register("newContactCompany")}
+                            placeholder="Empresa Ltda"
+                          />
+                        )}
+                      </Field>
+                    </div>
+                  ) : (
+                    <Field label="Contato principal" error={errors.clientId?.message}>
+                      {(props) => (
+                        <Controller
+                          control={control}
+                          name="clientId"
+                          render={({ field }) => (
+                            <ContactSelect
+                              {...props}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            />
+                          )}
+                        />
+                      )}
+                    </Field>
+                  )}
+
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground select-none">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-primary"
+                      {...register("isNewContact")}
+                    />
+                    Criar um novo contato
+                  </label>
                 </Section>
               )}
 

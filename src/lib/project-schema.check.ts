@@ -46,6 +46,38 @@ function errorPaths(values: ProjectFormValues) {
 // name requires a minimum of 2 chars; clientId just needs to be picked
 assert.deepEqual(errorPaths(form({ name: "A", clientId: "" })), ["name", "clientId"])
 
+// isNewContact: clientId is ignored, the new-contact fields are required instead
+assert.deepEqual(
+  errorPaths(form({ isNewContact: true, clientId: "" })),
+  ["newContactName", "newContactPhone", "newContactCompany"]
+)
+assert.deepEqual(
+  errorPaths(
+    form({
+      isNewContact: true,
+      clientId: "",
+      newContactName: "Marcelo Tavares",
+      newContactPhone: "(11) 98765-4321",
+      newContactCompany: "Empresa Ltda",
+    })
+  ),
+  []
+)
+// email is optional, but must be a valid address when present
+assert.deepEqual(
+  errorPaths(
+    form({
+      isNewContact: true,
+      clientId: "",
+      newContactName: "Marcelo Tavares",
+      newContactEmail: "not-an-email",
+      newContactPhone: "(11) 98765-4321",
+      newContactCompany: "Empresa Ltda",
+    })
+  ),
+  ["newContactEmail"]
+)
+
 // zeroed amount (the default) = free project, no billing required
 assert.deepEqual(errorPaths(form()), [])
 
