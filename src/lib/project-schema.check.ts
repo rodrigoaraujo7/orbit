@@ -203,6 +203,7 @@ original.repo = { ...original.repo!, workflow: "success" }
 const edited = toProject(fromProject(original), original)
 assert.equal(edited.id, original.id)
 assert.equal(edited.repo?.workflow, "success")
+assert.equal(edited.clientId, "contact-x")
 
 // editing with a different repo: workflow goes back to "none"
 const editedRepo = toProject(

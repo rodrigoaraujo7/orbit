@@ -6,11 +6,13 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { DataTable, type Column } from "@/components/ui/table"
 import { toast } from "@/components/ui/toast"
 import type { Contact } from "@/data/contacts"
+import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
 import { CreateContactDialog } from "./create-contact-dialog"
 
 export function ContactsPanel() {
   const { contacts, removeContact } = useRegistry()
+  const { projects } = useProjects()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [deletingContact, setDeletingContact] = useState<Contact | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -98,6 +100,14 @@ export function ContactsPanel() {
         confirmLabel="Excluir"
         onConfirm={() => {
           if (!deletingContact) return
+          if (projects.some((p) => p.clientId === deletingContact.id)) {
+            toast.add({
+              title: "Contato em uso",
+              description: "Este contato está vinculado a um projeto e não pode ser excluído.",
+              type: "error",
+            })
+            return
+          }
           try {
             removeContact(deletingContact.id)
             toast.add({ title: "Contato excluído", type: "success" })

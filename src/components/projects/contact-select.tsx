@@ -44,8 +44,9 @@ export function ContactSelect({
   "aria-invalid"?: boolean
   "aria-describedby"?: string
 }) {
-  const { contacts } = useRegistry()
+  const { contacts, findContact } = useRegistry()
   const [createOpen, setCreateOpen] = useState(false)
+  const sortedContacts = [...contacts].sort((a, b) => a.name.localeCompare(b.name))
 
   return (
     <>
@@ -62,7 +63,7 @@ export function ContactSelect({
         <SelectTrigger id={id} aria-invalid={ariaInvalid} aria-describedby={describedBy}>
           <SelectValue className="min-w-0 flex-1 text-left">
             {(selected: string | null) => {
-              const contact = contacts.find((c) => c.id === selected)
+              const contact = selected ? findContact(selected) : undefined
               if (!contact) {
                 return <span className="text-muted-foreground">Selecione o contato</span>
               }
@@ -86,7 +87,7 @@ export function ContactSelect({
             className="z-[60] w-[var(--anchor-width)]"
           >
             <SelectPopup>
-              {contacts.map((contact) => {
+              {sortedContacts.map((contact) => {
                 const subtitle = contactSubtitle(contact)
                 return (
                   <SelectItem
