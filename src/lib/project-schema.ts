@@ -14,9 +14,7 @@ import { DEFAULT_CURRENCY } from "./currency.ts"
 export const projectSchema = z
   .object({
     name: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
-    client: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
-    clientEmail: z.string().trim(),
-    clientPhone: z.string().trim(),
+    clientId: z.string().min(1, "Selecione um contato"),
     status: z.enum(["in-development", "queued", "paused", "completed"]),
     dealKind: z.enum(["upfront", "installment"]),
     amount: z.string().trim(),
@@ -44,14 +42,6 @@ export const projectSchema = z
     repoPath: z.string().trim(),
   })
   .superRefine((values, ctx) => {
-    if (values.clientEmail && !z.string().email().safeParse(values.clientEmail).success) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["clientEmail"],
-        message: "E-mail inválido",
-      })
-    }
-
     // Zeroed amount = free project, same rule as the tools — only garbage or
     // negative values are errors.
     const dealAmount = parseAmount(values.amount)
@@ -143,9 +133,7 @@ export const emptyToolForm: ToolFormValues = {
 
 export const emptyProjectForm: ProjectFormValues = {
   name: "",
-  client: "",
-  clientEmail: "",
-  clientPhone: "",
+  clientId: "",
   status: "queued",
   dealKind: "upfront",
   // starts zeroed: with no amount, the project is treated as free (same rule
@@ -255,9 +243,7 @@ export function toProject(values: ProjectFormValues, existing?: Project): Projec
   return {
     id: existing?.id ?? crypto.randomUUID(),
     name: values.name,
-    client: values.client,
-    clientEmail: values.clientEmail || undefined,
-    clientPhone: values.clientPhone || undefined,
+    clientId: values.clientId,
     status: values.status,
     deal,
     tools: values.tools.map(toTool),
@@ -268,9 +254,7 @@ export function toProject(values: ProjectFormValues, existing?: Project): Projec
 export function fromProject(project: Project): ProjectFormValues {
   return {
     name: project.name,
-    client: project.client,
-    clientEmail: project.clientEmail ?? "",
-    clientPhone: project.clientPhone ?? "",
+    clientId: project.clientId,
     status: project.status,
     dealKind: project.deal.kind,
     amount: formatAmountInput(project.deal.amount),

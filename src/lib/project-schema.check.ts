@@ -30,7 +30,7 @@ const assert = {
 // dealKind "upfront" + amount "0" (the emptyProjectForm defaults) already
 // mean "free" — there is no separate kind for it anymore.
 function form(overrides: Partial<ProjectFormValues> = {}): ProjectFormValues {
-  return { ...emptyProjectForm, name: "Project X", client: "Client Y", ...overrides }
+  return { ...emptyProjectForm, name: "Project X", clientId: "contact-x", ...overrides }
 }
 
 /** Valid tool by default — each case overrides only what it tests. */
@@ -43,8 +43,8 @@ function errorPaths(values: ProjectFormValues) {
   return result.success ? [] : result.error.issues.map((i) => i.path.join("."))
 }
 
-// name and client are required, minimum of 2 chars
-assert.deepEqual(errorPaths(form({ name: "A", client: "" })), ["name", "client"])
+// name requires a minimum of 2 chars; clientId just needs to be picked
+assert.deepEqual(errorPaths(form({ name: "A", clientId: "" })), ["name", "clientId"])
 
 // zeroed amount (the default) = free project, no billing required
 assert.deepEqual(errorPaths(form()), [])
