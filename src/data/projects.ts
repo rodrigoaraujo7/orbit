@@ -65,10 +65,8 @@ export function isDealFree(deal: Deal): boolean {
 export type Project = {
   id: string
   name: string
-  /** Main client contact. */
-  client: string
-  clientEmail?: string
-  clientPhone?: string
+  /** References a Contact.id (see data/contacts.ts) — the project's main contact. */
+  clientId: string
   status: ProjectStatus
   deal: Deal
   tools: Tool[]
@@ -167,9 +165,7 @@ export const projects: Project[] = [
   {
     id: "1",
     name: "Portal do Corretor",
-    client: "Marcelo Tavares",
-    clientEmail: "marcelo@portaldocorretor.com.br",
-    clientPhone: "(11) 98765-4321",
+    clientId: "contact-1",
     status: "in-development",
     deal: { kind: "installment", amount: 18000, installments: 3 },
     tools: [
@@ -222,7 +218,7 @@ export const projects: Project[] = [
   {
     id: "2",
     name: "E-commerce Nutri",
-    client: "Camila Bastos",
+    clientId: "contact-2",
     status: "in-development",
     deal: { kind: "installment", amount: 24500, installments: 5 },
     tools: [
@@ -271,7 +267,7 @@ export const projects: Project[] = [
   {
     id: "3",
     name: "App de Agendamento",
-    client: "Studio Belle",
+    clientId: "contact-3",
     status: "queued",
     deal: { kind: "upfront", amount: 7200 },
     tools: [
@@ -314,7 +310,7 @@ export const projects: Project[] = [
   {
     id: "4",
     name: "Dashboard Logística",
-    client: "TransRápido",
+    clientId: "contact-4",
     status: "paused",
     deal: { kind: "installment", amount: 31000, installments: 4 },
     tools: [
@@ -360,7 +356,7 @@ export const projects: Project[] = [
   {
     id: "5",
     name: "Landing Page Institucional",
-    client: "Advocacia Prado",
+    clientId: "contact-5",
     status: "completed",
     deal: { kind: "upfront", amount: 3500 },
     tools: [
@@ -388,7 +384,7 @@ export const projects: Project[] = [
   {
     id: "6",
     name: "API de Integração ERP",
-    client: "Distribuidora Norte",
+    clientId: "contact-6",
     status: "in-development",
     deal: { kind: "installment", amount: 42000, installments: 6 },
     tools: [
@@ -454,7 +450,7 @@ export const projects: Project[] = [
   {
     id: "7",
     name: "Sistema de Chamados",
-    client: "Clínica Vitalis",
+    clientId: "contact-7",
     status: "queued",
     deal: { kind: "upfront", amount: 9800 },
     tools: [
@@ -465,7 +461,7 @@ export const projects: Project[] = [
   {
     id: "8",
     name: "Blog Técnico",
-    client: "Pessoal",
+    clientId: "contact-8",
     status: "completed",
     deal: { kind: "upfront", amount: 0 },
     tools: [
