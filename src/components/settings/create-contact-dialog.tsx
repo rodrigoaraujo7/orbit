@@ -16,8 +16,8 @@ const contactSchema = z
   .object({
     name: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
     email: z.string().trim(),
-    phone: z.string().trim(),
-    company: z.string().trim(),
+    phone: z.string().trim().min(1, "Informe o telefone"),
+    company: z.string().trim().min(1, "Informe a empresa"),
   })
   .superRefine((values, ctx) => {
     if (values.email && !z.string().email().safeParse(values.email).success) {
@@ -69,8 +69,8 @@ export function CreateContactDialog({
       id: crypto.randomUUID(),
       name: values.name,
       email: values.email || undefined,
-      phone: values.phone || undefined,
-      company: values.company || undefined,
+      phone: values.phone,
+      company: values.company,
     }
     try {
       addContact(contact)
@@ -128,7 +128,7 @@ export function CreateContactDialog({
               )}
             </Field>
 
-            <Field label="Telefone" error={errors.phone?.message} hint="Opcional">
+            <Field label="Telefone" error={errors.phone?.message}>
               {(props) => (
                 <Input
                   {...props}
@@ -138,7 +138,7 @@ export function CreateContactDialog({
               )}
             </Field>
 
-            <Field label="Empresa" error={errors.company?.message} hint="Opcional">
+            <Field label="Empresa" error={errors.company?.message}>
               {(props) => (
                 <Input
                   {...props}
