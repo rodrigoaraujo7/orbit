@@ -6,13 +6,14 @@ import {
   type ReactNode,
 } from "react"
 
-import type { Contact } from "@/data/contacts"
+import { contacts as initialContacts, type Contact } from "@/data/contacts"
 import type { CustomTool } from "@/data/custom-tools"
 
 type RegistryContextValue = {
   contacts: Contact[]
   addContact: (contact: Contact) => void
   removeContact: (id: string) => void
+  findContact: (id: string) => Contact | undefined
   customTools: CustomTool[]
   addCustomTool: (tool: CustomTool) => void
   removeCustomTool: (id: string) => void
@@ -26,7 +27,7 @@ const RegistryContext = createContext<RegistryContextValue | null>(null)
  * swap for fetch/mutation keeping this same interface.
  */
 export function RegistryProvider({ children }: { children: ReactNode }) {
-  const [contacts, setContacts] = useState<Contact[]>([])
+  const [contacts, setContacts] = useState<Contact[]>(initialContacts)
   const [customTools, setCustomTools] = useState<CustomTool[]>([])
 
   const value = useMemo<RegistryContextValue>(
@@ -36,6 +37,7 @@ export function RegistryProvider({ children }: { children: ReactNode }) {
         setContacts((current) => [contact, ...current]),
       removeContact: (id) =>
         setContacts((current) => current.filter((c) => c.id !== id)),
+      findContact: (id) => contacts.find((c) => c.id === id),
       customTools,
       addCustomTool: (tool) =>
         setCustomTools((current) => [tool, ...current]),
