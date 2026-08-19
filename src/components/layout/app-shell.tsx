@@ -36,9 +36,9 @@ function CollapseButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label="Recolher menu"
       className={cn(
-        "group absolute top-1/2 right-1.5 z-10 h-[65px] w-[8px] -translate-y-1/2 rounded-full bg-gray-300 p-0",
+        "group absolute top-1/2 right-1.5 z-10 h-[65px] w-[8px] -translate-y-1/2 rounded-full bg-border p-0",
         "transition-[height,background-color,opacity] duration-200 ease-out",
-        "hover:h-[100px] hover:bg-gray-400 active:!translate-y-[-50%] dark:bg-border dark:hover:bg-white/20",
+        "hover:h-[100px] hover:bg-muted-foreground/30 active:!translate-y-[-50%] dark:hover:bg-white/20",
         visible ? "opacity-100" : "opacity-0",
       )}
     >
