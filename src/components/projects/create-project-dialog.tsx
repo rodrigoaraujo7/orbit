@@ -12,6 +12,7 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { DialogDescription, DialogTitle } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -183,12 +184,10 @@ export function CreateProjectDialog({
         <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 flex max-h-[90svh] w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-2xl transition-all duration-200 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
           <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
             <div>
-              <Dialog.Title className="text-base font-semibold tracking-tight">
-                {title ?? (project ? "Editar projeto" : "Novo projeto")}
-              </Dialog.Title>
-              <Dialog.Description className="mt-0.5 text-sm text-muted-foreground">
+              <DialogTitle>{title ?? (project ? "Editar projeto" : "Novo projeto")}</DialogTitle>
+              <DialogDescription className="mt-0.5">
                 {description ?? "Cadastre o projeto, o valor fechado e as ferramentas usadas."}
-              </Dialog.Description>
+              </DialogDescription>
             </div>
             <Button
               variant="ghost"
