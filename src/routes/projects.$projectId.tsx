@@ -1,5 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react";
+import { ArrowLeft, Pencil, RefreshCw, Trash2, User } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 import { CreateProjectDialog, type ProjectDialogSection } from "@/components/projects/create-project-dialog";
@@ -207,14 +207,8 @@ function ProjectDetailPage() {
       <div className="px-4 py-6 sm:px-6 lg:px-8">
         <Tabs defaultValue="finance">
           <TabsList>
-            <TabsTab value="finance">
-              <Wallet />
-              Financeiro
-            </TabsTab>
-            <TabsTab value="tools">
-              <Wrench />
-              Ferramentas
-            </TabsTab>
+            <TabsTab value="finance">Financeiro</TabsTab>
+            <TabsTab value="tools">Ferramentas</TabsTab>
           </TabsList>
 
           <TabsPanel value="finance" className="pt-4">
