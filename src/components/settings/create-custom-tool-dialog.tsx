@@ -6,6 +6,7 @@ import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
+import { DialogDescription, DialogTitle } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
@@ -83,13 +84,11 @@ export function CreateCustomToolDialog({
         <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-card text-card-foreground shadow-2xl transition-all duration-200 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
           <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
             <div>
-              <Dialog.Title className="text-base font-semibold tracking-tight">
-                Nova ferramenta
-              </Dialog.Title>
-              <Dialog.Description className="mt-0.5 text-sm text-muted-foreground">
+              <DialogTitle>Nova ferramenta</DialogTitle>
+              <DialogDescription className="mt-0.5">
                 Cadastre uma ferramenta fora do catálogo para reaproveitar em
                 vários projetos.
-              </Dialog.Description>
+              </DialogDescription>
             </div>
             <Button
               variant="ghost"
