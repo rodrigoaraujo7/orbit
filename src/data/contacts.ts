@@ -22,4 +22,10 @@ export const contacts: Contact[] = [
   { id: "contact-6", name: "Distribuidora Norte" },
   { id: "contact-7", name: "Clínica Vitalis" },
   { id: "contact-8", name: "Pessoal" },
+  {
+    id: "contact-9",
+    name: "Northwind Labs",
+    email: "ops@northwindlabs.io",
+    company: "Northwind Labs",
+  },
 ]

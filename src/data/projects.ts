@@ -1,4 +1,4 @@
-import type { ToolCategory } from "./tool-catalog"
+import type { ToolCategory } from "./tool-catalog.ts"
 
 export type ProjectStatus = "in-development" | "queued" | "paused" | "completed"
 
@@ -68,6 +68,17 @@ export type Project = {
   /** References a Contact.id (see data/contacts.ts) — the project's main contact. */
   clientId: string
   status: ProjectStatus
+  /**
+   * Start date, "YYYY-MM-DD". The anchor of the whole timeline: installments
+   * are counted from it (lib/invoices.ts) and a tool only costs money from
+   * this month on (lib/dashboard-metrics.ts).
+   */
+  startedAt: string
+  /**
+   * Only on finished projects — after it the tools stop costing. Absent means
+   * the project is still running the meter.
+   */
+  endedAt?: string
   deal: Deal
   tools: Tool[]
   repo: {
@@ -167,6 +178,7 @@ export const projects: Project[] = [
     name: "Portal do Corretor",
     clientId: "contact-1",
     status: "in-development",
+    startedAt: "2026-07-08",
     deal: { kind: "installment", amount: 18000, installments: 3 },
     tools: [
       {
@@ -220,6 +232,7 @@ export const projects: Project[] = [
     name: "E-commerce Nutri",
     clientId: "contact-2",
     status: "in-development",
+    startedAt: "2026-05-20",
     deal: { kind: "installment", amount: 24500, installments: 5 },
     tools: [
       {
@@ -269,6 +282,7 @@ export const projects: Project[] = [
     name: "App de Agendamento",
     clientId: "contact-3",
     status: "queued",
+    startedAt: "2026-08-25",
     deal: { kind: "upfront", amount: 7200 },
     tools: [
       {
@@ -312,6 +326,7 @@ export const projects: Project[] = [
     name: "Dashboard Logística",
     clientId: "contact-4",
     status: "paused",
+    startedAt: "2026-02-05",
     deal: { kind: "installment", amount: 31000, installments: 4 },
     tools: [
       {
@@ -358,6 +373,8 @@ export const projects: Project[] = [
     name: "Landing Page Institucional",
     clientId: "contact-5",
     status: "completed",
+    startedAt: "2025-09-15",
+    endedAt: "2025-11-30",
     deal: { kind: "upfront", amount: 3500 },
     tools: [
       { id: "vercel", name: "Vercel", category: "deploy", secrets: [] },
@@ -386,6 +403,7 @@ export const projects: Project[] = [
     name: "API de Integração ERP",
     clientId: "contact-6",
     status: "in-development",
+    startedAt: "2026-04-03",
     deal: { kind: "installment", amount: 42000, installments: 6 },
     tools: [
       {
@@ -452,17 +470,66 @@ export const projects: Project[] = [
     name: "Sistema de Chamados",
     clientId: "contact-7",
     status: "queued",
+    startedAt: "2026-09-10",
     deal: { kind: "upfront", amount: 9800 },
     tools: [
       { id: "supabase", name: "Supabase", category: "database", secrets: [] },
     ],
     repo: null,
   },
+  // The only non-BRL deal in the mock — it is what makes the dashboard's
+  // currency filter show its work: switching to USD leaves this project alone
+  // on screen, and BRL reports it as excluded instead of adding it in.
+  {
+    id: "9",
+    name: "Onboarding SaaS",
+    clientId: "contact-9",
+    status: "in-development",
+    startedAt: "2026-06-15",
+    deal: { kind: "installment", amount: 9000, installments: 3, currency: "USD" },
+    tools: [
+      {
+        id: "vercel",
+        name: "Vercel",
+        category: "deploy",
+        account: "rodrigoaraujo7 (GitHub)",
+        billing: {
+          amount: 20,
+          cycle: "monthly",
+          nextInvoice: "2026-09-12",
+          payer: "me",
+          currency: "USD",
+        },
+        secrets: [],
+      },
+      {
+        id: "openai",
+        name: "OpenAI",
+        category: "ai",
+        account: "rodrigo@fastbuilt.com.br",
+        billing: {
+          amount: 120,
+          cycle: "monthly",
+          nextInvoice: "2026-09-01",
+          payer: "client",
+          currency: "USD",
+        },
+        secrets: [{ key: "OPENAI_API_KEY", value: "sk-proj-example" }],
+      },
+    ],
+    repo: {
+      fullName: "rodrigoaraujo7/northwind-onboarding",
+      url: "https://github.com/rodrigoaraujo7/northwind-onboarding",
+      workflow: "success",
+    },
+  },
   {
     id: "8",
     name: "Blog Técnico",
     clientId: "contact-8",
     status: "completed",
+    startedAt: "2025-03-02",
+    endedAt: "2025-06-20",
     deal: { kind: "upfront", amount: 0 },
     tools: [
       { id: "cloudflare", name: "Cloudflare", category: "deploy", secrets: [] },
