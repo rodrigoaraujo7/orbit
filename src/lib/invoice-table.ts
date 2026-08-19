@@ -1,4 +1,5 @@
-import type { Invoice, InvoiceStatus } from "@/data/projects"
+// Relative import: same reason as invoices.ts — this runs in the self-checks.
+import type { Invoice, InvoiceStatus } from "../data/projects.ts"
 
 /**
  * The invoice's "effective month" for date filtering: `referenceMonth` when it

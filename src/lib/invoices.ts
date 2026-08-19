@@ -1,22 +1,21 @@
-import { isDealFree, type Invoice, type PaymentMethod, type Project } from "@/data/projects"
-import { DEFAULT_CURRENCY } from "@/lib/currency"
+// Relative imports (not the "@/" alias) on purpose: dashboard-metrics.ts pulls
+// this module into a self-check that runs outside Vite, on
+// `node --experimental-strip-types`, and Node does not resolve the alias.
+import { isDealFree, type Invoice, type PaymentMethod, type Project } from "../data/projects.ts"
+import { DEFAULT_CURRENCY } from "./currency.ts"
+import { addMonths, dayOfMonth, monthOf, todayIso } from "./dates.ts"
 
 const PAYMENT_METHODS: PaymentMethod[] = ["boleto", "pix"]
-
-function addMonths(date: Date, months: number) {
-  const result = new Date(date.getFullYear(), date.getMonth() + months, 1)
-  return `${result.getFullYear()}-${String(result.getMonth() + 1).padStart(2, "0")}`
-}
-
-function toDateString(yearMonth: string, day: number) {
-  return `${yearMonth}-${String(day).padStart(2, "0")}`
-}
 
 /**
  * ponytail: mock derived from the `deal` — there's no invoice API yet, so an
  * invoice isn't an entity of its own with history, it's computed on the fly.
  * Once the API exists: swap for real backend data (with genuinely editable
- * status and attachment, not decided by the installment index).
+ * status and attachment, not decided by the due date).
+ *
+ * Anchored on `project.startedAt`, not on today: that's what gives the platform
+ * a real timeline (past installments already paid, future ones still open) and
+ * what the dashboard charts read.
  */
 export function generateInvoices(project: Project, payerName: string): Invoice[] {
   const { deal } = project
@@ -24,24 +23,36 @@ export function generateInvoices(project: Project, payerName: string): Invoice[]
 
   const installments = deal.kind === "installment" ? (deal.installments ?? 1) : 1
   const amount = deal.amount / installments
-  const now = new Date()
+  const today = todayIso()
+  const startMonth = monthOf(project.startedAt)
+  const billingDay = Number(project.startedAt.slice(8, 10))
 
-  return Array.from({ length: installments }, (_, index) => {
-    // first installment paid, the rest pending — deterministic, no
-    // Math.random, so it doesn't change on every render.
-    const isPaid = index === 0
-    const referenceMonth =
-      deal.kind === "installment" ? addMonths(now, index) : undefined
-    const generatedMonth = referenceMonth ?? addMonths(now, 0)
+  const dueDates = Array.from({ length: installments }, (_, index) =>
+    dayOfMonth(addMonths(startMonth, index), billingDay)
+  )
+  // Only reason `overdue` exists in the mock: one deterministic late payer, so
+  // the dashboard has something to show in the "atrasado" series. A paused
+  // project is the believable candidate — it stopped because nobody paid.
+  const lastDueIndex = dueDates.findLastIndex((dueDate) => dueDate < today)
+  const overdueIndex = project.status === "paused" ? lastDueIndex : -1
+
+  return dueDates.map((dueDate, index) => {
+    const isPaid = dueDate < today && index !== overdueIndex
+    const status: Invoice["status"] = isPaid
+      ? "paid"
+      : index === overdueIndex
+        ? "overdue"
+        : "pending"
 
     return {
       id: `${project.id}-invoice-${index + 1}`,
-      referenceMonth,
+      referenceMonth: deal.kind === "installment" ? monthOf(dueDate) : undefined,
       amount,
-      status: isPaid ? "paid" : "pending",
+      status,
       paymentMethod: isPaid ? PAYMENT_METHODS[index % 2] : undefined,
-      generatedAt: toDateString(generatedMonth, 5),
-      paidAt: isPaid ? `${toDateString(generatedMonth, 10)}T14:32` : undefined,
+      generatedAt: dueDate,
+      // paid on the due date itself — the mock has no separate payment date
+      paidAt: isPaid ? `${dueDate}T14:32` : undefined,
       payerName,
       hasAttachment: isPaid,
       currency: deal.currency ?? DEFAULT_CURRENCY,

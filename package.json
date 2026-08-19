@@ -11,6 +11,7 @@
     "check:pagination": "node --experimental-strip-types src/lib/pagination.check.ts",
     "check:invoice-table": "node --experimental-strip-types src/lib/invoice-table.check.ts",
     "check:table-sort": "node --experimental-strip-types src/lib/table-sort.check.ts",
+    "check:dashboard": "node --experimental-strip-types src/lib/dashboard-metrics.check.ts",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.85.0",
+    "recharts": "3.8.0",
     "shadcn": "^4.16.2",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",

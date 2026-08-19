@@ -59,3 +59,42 @@ export function formatToolsProgress(tools: Tool[]) {
   const free = tools.length - paid
   return `${paid} ${paid === 1 ? "paga" : "pagas"} · ${free} grátis`
 }
+
+/** "2026-09" → "set/26". Short enough to fit an axis tick without rotating it. */
+export function formatMonth(month: string) {
+  const [year, monthNumber] = month.split("-").map(Number)
+  const label = new Date(year, monthNumber - 1, 1)
+    .toLocaleDateString("pt-BR", { month: "short" })
+    .replace(".", "")
+  return `${label}/${String(year).slice(2)}`
+}
+
+/** "set. de 2026" — the long form, for tooltips where there is room. */
+export function formatMonthLong(month: string) {
+  const [year, monthNumber] = month.split("-").map(Number)
+  return new Date(year, monthNumber - 1, 1).toLocaleDateString("pt-BR", {
+    month: "short",
+    year: "numeric",
+  })
+}
+
+/** "R$ 18 mil" — axis ticks only; tooltips and tiles always show the full value. */
+export function formatCompactCurrency(value: number, currency: string = DEFAULT_CURRENCY) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency,
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value)
+}
+
+/**
+ * 0.42 → "42%". Keeps one decimal so a 99,6% margin does not get rounded up to
+ * a "100%" that reads as "this project had no costs at all".
+ */
+export function formatPercent(ratio: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "percent",
+    maximumFractionDigits: 1,
+  }).format(ratio)
+}
