@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Emphasis } from "@/components/ui/emphasis"
 import { DataTable, type Column } from "@/components/ui/table"
 import { toast } from "@/components/ui/toast"
 import { TOOL_CATEGORY_LABEL } from "@/data/tool-catalog"
@@ -78,9 +79,7 @@ export function CustomToolsPanel() {
         description={
           <>
             Excluir{" "}
-            <span className="font-medium text-primary">
-              {deletingTool?.name}
-            </span>
+            <Emphasis className="text-primary">{deletingTool?.name}</Emphasis>
             ? Essa ação não pode ser desfeita.
           </>
         }

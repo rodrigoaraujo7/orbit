@@ -3,6 +3,7 @@ import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Emphasis } from "@/components/ui/emphasis"
 import { DataTable, type Column } from "@/components/ui/table"
 import { toast } from "@/components/ui/toast"
 import type { Contact } from "@/data/contacts"
@@ -91,9 +92,7 @@ export function ContactsPanel() {
         description={
           <>
             Excluir{" "}
-            <span className="font-medium text-primary">
-              {deletingContact?.name}
-            </span>
+            <Emphasis className="text-primary">{deletingContact?.name}</Emphasis>
             ? Essa ação não pode ser desfeita.
           </>
         }
