@@ -1,28 +1,18 @@
-import { Construction } from "lucide-react"
-import type { ReactNode } from "react"
+import { Construction } from "lucide-react";
+import type { ReactNode } from "react";
 
-export function PageHeader({
-  title,
-  description,
-  actions,
-}: {
-  title: string
-  description?: string
-  actions?: ReactNode
-}) {
+import { Emphasis } from "@/components/ui/emphasis";
+
+export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
   return (
     <div className="flex flex-col gap-1 border-b px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
       <div className="animate-in fade-in slide-in-from-bottom-1 duration-500">
-        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-          {title}
-        </h1>
-        {description && (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        )}
+        <h1 className="font-heading text-4xl font-normal tracking-normal sm:text-4xl">{title}</h1>
+        {description && <p className="font-subtitle mt-1 text-sm text-muted-foreground">{description}</p>}
       </div>
       {actions}
     </div>
-  )
+  );
 }
 
 /** Placeholder for the sections that have not been designed yet. */
@@ -33,9 +23,8 @@ export function ComingSoon({ section }: { section: string }) {
         <Construction className="size-5" />
       </div>
       <p className="text-sm text-muted-foreground">
-        A seção <span className="font-medium text-foreground">{section}</span>{" "}
-        ainda está em construção.
+        A seção <Emphasis className="text-foreground">{section}</Emphasis> ainda está em construção.
       </p>
     </div>
-  )
+  );
 }
