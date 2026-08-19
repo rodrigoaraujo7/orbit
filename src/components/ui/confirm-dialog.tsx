@@ -2,6 +2,8 @@ import { Dialog } from "@base-ui/react/dialog"
 import { useState, type ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
+import { DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import { Emphasis } from "@/components/ui/emphasis"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -41,20 +43,14 @@ export function ConfirmDialog({
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
         <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-card p-5 text-card-foreground shadow-2xl transition-all duration-200 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
-          <Dialog.Title className="text-base font-semibold tracking-tight">
-            {title}
-          </Dialog.Title>
-          <Dialog.Description className="mt-1.5 text-sm text-muted-foreground">
-            {description}
-          </Dialog.Description>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
 
           {confirmWord != null && (
             <div className="mt-4 flex flex-col gap-1.5">
               <Label htmlFor="confirm-word">
                 Digite{" "}
-                <span className="font-medium text-destructive">
-                  {confirmWord}
-                </span>{" "}
+                <Emphasis italic={false} className="text-destructive">{confirmWord}</Emphasis>{" "}
                 para confirmar
               </Label>
               <Input
