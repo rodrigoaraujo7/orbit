@@ -4,10 +4,11 @@ import { useState, type ReactNode } from "react";
 
 import { CreateProjectDialog, type ProjectDialogSection } from "@/components/projects/create-project-dialog";
 import { InvoicesTable } from "@/components/projects/invoices-table";
-import { StatusBadge, WorkflowBadge } from "@/components/projects/status-badges";
+import { StatusLabel, WorkflowBadge } from "@/components/projects/status-badges";
 import { ToolDetails } from "@/components/projects/tool-details";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Emphasis } from "@/components/ui/emphasis";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import { Tooltip } from "@/components/ui/tooltip";
 import { FREE_LABEL, isDealFree } from "@/data/projects";
@@ -127,7 +128,7 @@ function ProjectDetailPage() {
         title="Excluir projeto"
         description={
           <>
-            Excluir <span className="font-medium text-primary">{project.name}</span>? Essa ação não pode ser desfeita.
+            Excluir <Emphasis className="text-primary">{project.name}</Emphasis>? Essa ação não pode ser desfeita.
           </>
         }
         confirmLabel="Excluir"
@@ -167,9 +168,9 @@ function ProjectDetailPage() {
             </Button>
           </div>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{project.name}</h1>
-          <StatusBadge status={project.status} />
+        <div className="mt-3">
+          <StatusLabel status={project.status} className="text-xl" />
+          <h1 className="font-heading text-4xl font-normal tracking-normal sm:text-4xl">{project.name}</h1>
         </div>
         {project.repo && (
           <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -245,7 +246,7 @@ function ProjectDetailPage() {
                 </>
               }
             >
-              <p className="text-2xl font-semibold tracking-tight">
+              <p className="font-subtitle text-2xl font-semibold tracking-tight">
                 {isDealFree(deal) ? FREE_LABEL : formatCurrency(deal.amount, deal.currency)}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">{formatDealProgress(deal, invoices)}</p>
@@ -283,7 +284,7 @@ function ProjectDetailPage() {
                 </>
               }
             >
-              <p className="text-2xl font-semibold tracking-tight">
+              <p className="font-subtitle text-2xl font-semibold tracking-tight">
                 {monthlyCostLabel || (paidTools.length > 0 ? "Sem cobrança mensal" : "Nenhuma ferramenta paga")}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">{formatToolsProgress(project.tools)}</p>
