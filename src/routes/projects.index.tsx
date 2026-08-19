@@ -14,6 +14,7 @@ import { ToolIcon } from "@/components/projects/tool-icons"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Emphasis } from "@/components/ui/emphasis"
 import { Input } from "@/components/ui/input"
 import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import { DataTable, type Column } from "@/components/ui/table"
@@ -197,9 +198,7 @@ function ProjectsPage() {
         description={
           <>
             Excluir{" "}
-            <span className="font-medium text-primary">
-              {deletingProject?.name}
-            </span>
+            <Emphasis className="text-primary">{deletingProject?.name}</Emphasis>
             ? Essa ação não pode ser desfeita.
           </>
         }
