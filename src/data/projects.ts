@@ -15,6 +15,24 @@ export type ProjectComment = {
   body: string
 }
 
+export type ProjectHistoryField =
+  | "name"
+  | "status"
+  | "description"
+  | "clientId"
+  | "deal"
+  | "tools"
+  | "repo"
+
+export type ProjectHistoryEntry = {
+  id: string
+  /** "YYYY-MM-DDTHH:mm" */
+  at: string
+  field: ProjectHistoryField
+  from: string
+  to: string
+}
+
 /** Result of the latest GitHub Actions run on the project repo. */
 export type WorkflowStatus = "success" | "failure" | "running" | "none"
 
@@ -102,6 +120,8 @@ export type Project = {
   /** Shown on the Kanban issue modal; absent = "Sem descrição." */
   description?: string
   comments?: ProjectComment[]
+  /** Field changes (not comments). Newest is last. */
+  history?: ProjectHistoryEntry[]
 }
 
 export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
@@ -200,6 +220,15 @@ export const projects: Project[] = [
     startedAt: "2026-07-08",
     description:
       "Portal para corretores acompanharem propostas, comissões e documentos dos clientes. Integra AWS, Resend e Supabase.",
+    history: [
+      {
+        id: "h1-1",
+        at: "2026-07-08T10:00",
+        field: "status",
+        from: "queued",
+        to: "in-development",
+      },
+    ],
     comments: [
       {
         id: "c1-1",

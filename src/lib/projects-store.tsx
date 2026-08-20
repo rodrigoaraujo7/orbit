@@ -7,6 +7,7 @@ import {
 } from "react"
 
 import { projects as initialProjects, type Project, type ProjectStatus } from "@/data/projects"
+import { recordProjectHistory, withProjectHistory } from "./project-history"
 import { moveProjectInList } from "./project-status"
 
 type ProjectsContextValue = {
@@ -34,11 +35,14 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
       addProject: (project) => setProjects((current) => [project, ...current]),
       updateProject: (project) =>
         setProjects((current) =>
-          current.map((p) => (p.id === project.id ? project : p))
+          current.map((p) => (p.id === project.id ? withProjectHistory(p, project) : p))
         ),
       moveProject: (id, toStatus, toIndex) =>
-        setProjects((current) => moveProjectInList(current, id, toStatus, toIndex)),
-      replaceProjects: (next) => setProjects(next),
+        setProjects((current) =>
+          recordProjectHistory(current, moveProjectInList(current, id, toStatus, toIndex))
+        ),
+      replaceProjects: (next) =>
+        setProjects((current) => recordProjectHistory(current, next)),
       deleteProject: (id) =>
         setProjects((current) => current.filter((p) => p.id !== id)),
       findProject: (id) => projects.find((p) => p.id === id),
