@@ -1,7 +1,7 @@
 import { Dialog } from "@base-ui/react/dialog"
 import { Link } from "@tanstack/react-router"
-import { ExternalLink, User, X } from "lucide-react"
-import { useState, type FormEvent, type ReactNode } from "react"
+import { ExternalLink, Pencil, User, X } from "lucide-react"
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
 
 import { StatusLabel, StatusSelect, WorkflowBadge } from "@/components/projects/status-badges"
 import { Button } from "@/components/ui/button"
@@ -25,8 +25,10 @@ import {
   formatToolsProgress,
 } from "@/lib/format"
 import { generateInvoices } from "@/lib/invoices"
+import { formatHistoryEntry } from "@/lib/project-history"
 import { withProjectStatus } from "@/lib/project-status"
 import { useProjects } from "@/lib/projects-store"
+import { useRegistry } from "@/lib/registry-store"
 
 const COMMENT_AUTHOR = "Rodrigo Araujo"
 
@@ -74,12 +76,14 @@ export function ProjectIssueDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const { updateProject } = useProjects()
+  const { findContact } = useRegistry()
   const [draft, setDraft] = useState("")
 
   if (!project) return null
 
   const invoices = generateInvoices(project, contact?.name ?? "—")
   const comments = project.comments ?? []
+  const history = [...(project.history ?? [])].reverse()
   const costLabel = monthlyCostLabel(project)
   const dealAmount = isDealFree(project.deal)
     ? FREE_LABEL
@@ -149,15 +153,35 @@ export function ProjectIssueDialog({
 
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
             <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-5 py-5">
-              <section className="flex flex-col gap-2">
+              <EditableDescription
+                key={project.id}
+                value={project.description ?? ""}
+                onSave={(description) => updateProject({ ...project, description })}
+              />
+
+              <section className="flex flex-col gap-4">
                 <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  Descrição
+                  Histórico
                 </h3>
-                <p className="text-sm whitespace-pre-wrap">
-                  {project.description || (
-                    <span className="text-muted-foreground">Sem descrição.</span>
-                  )}
-                </p>
+                {history.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhuma alteração ainda.</p>
+                ) : (
+                  <ul className="flex flex-col gap-3">
+                    {history.map((entry) => (
+                      <li key={entry.id} className="flex flex-col gap-0.5">
+                        <p className="text-sm">
+                          {formatHistoryEntry(
+                            entry,
+                            (id) => findContact(id)?.name ?? id
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDateTime(entry.at)}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </section>
 
               <section className="flex flex-col gap-4">
@@ -274,5 +298,98 @@ export function ProjectIssueDialog({
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>
+  )
+}
+
+function EditableDescription({
+  value,
+  onSave,
+}: {
+  value: string
+  onSave: (next: string | undefined) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value)
+  const input = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (editing) input.current?.focus()
+  }, [editing])
+
+  function start() {
+    setDraft(value)
+    setEditing(true)
+  }
+
+  function save() {
+    setEditing(false)
+    const next = draft.trim()
+    if (next === value.trim()) return
+    onSave(next || undefined)
+  }
+
+  function cancel() {
+    setEditing(false)
+    setDraft(value)
+  }
+
+  return (
+    <section className="flex flex-col gap-2">
+      <div className="flex items-center gap-0.5">
+        <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          Descrição
+        </h3>
+        {!editing && (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-muted-foreground"
+            onClick={start}
+            aria-label="Editar descrição"
+            title="Editar descrição"
+          >
+            <Pencil />
+          </Button>
+        )}
+      </div>
+      <div
+        key={editing ? "input" : "text"}
+        className="origin-top animate-in fade-in zoom-in-95 duration-200 ease-out motion-reduce:animate-none"
+      >
+        {editing ? (
+          <div className="flex flex-col gap-2">
+            <Textarea
+              ref={input}
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault()
+                  cancel()
+                }
+                if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                  event.preventDefault()
+                  save()
+                }
+              }}
+              rows={4}
+              aria-label="Descrição"
+            />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="ghost" size="sm" onClick={cancel}>
+                Cancelar
+              </Button>
+              <Button type="button" size="sm" onClick={save}>
+                Salvar
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm whitespace-pre-wrap">
+            {value || <span className="text-muted-foreground">Sem descrição.</span>}
+          </p>
+        )}
+      </div>
+    </section>
   )
 }
