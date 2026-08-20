@@ -138,7 +138,7 @@ export function ProjectIssueDialog({
                 }
               >
                 <ExternalLink data-icon="inline-start" />
-                Abrir página
+                Acessar projeto
               </Button>
               <Button
                 variant="ghost"
