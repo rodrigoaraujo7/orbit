@@ -20,6 +20,13 @@ export function todayIso(): string {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
 
+/** Now as "YYYY-MM-DDTHH:mm", in local time — comment timestamps. */
+export function nowDateTimeIso(): string {
+  const now = new Date()
+  const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+  return `${date}T${pad(now.getHours())}:${pad(now.getMinutes())}`
+}
+
 /** "2026-09-05" → "2026-09". Also a no-op on a value that is already a month. */
 export function monthOf(iso: string): string {
   return iso.slice(0, 7)

@@ -6,12 +6,15 @@ import {
   type ReactNode,
 } from "react"
 
-import { projects as initialProjects, type Project } from "@/data/projects"
+import { projects as initialProjects, type Project, type ProjectStatus } from "@/data/projects"
+import { moveProjectInList } from "./project-status"
 
 type ProjectsContextValue = {
   projects: Project[]
   addProject: (project: Project) => void
   updateProject: (project: Project) => void
+  moveProject: (id: string, toStatus: ProjectStatus, toIndex: number) => void
+  replaceProjects: (projects: Project[]) => void
   deleteProject: (id: string) => void
   findProject: (id: string) => Project | undefined
 }
@@ -33,6 +36,9 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
         setProjects((current) =>
           current.map((p) => (p.id === project.id ? project : p))
         ),
+      moveProject: (id, toStatus, toIndex) =>
+        setProjects((current) => moveProjectInList(current, id, toStatus, toIndex)),
+      replaceProjects: (next) => setProjects(next),
       deleteProject: (id) =>
         setProjects((current) => current.filter((p) => p.id !== id)),
       findProject: (id) => projects.find((p) => p.id === id),

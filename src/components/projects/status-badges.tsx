@@ -27,9 +27,10 @@ import { cn } from "@/lib/utils";
 type BadgeVariant = React.ComponentProps<typeof Badge>["variant"];
 
 const STATUS_VARIANT: Record<ProjectStatus, BadgeVariant> = {
-  "in-development": "default",
   queued: "muted",
+  "in-development": "default",
   paused: "warning",
+  "in-validation": "outline",
   completed: "success",
 };
 
@@ -37,9 +38,10 @@ const STATUS_VARIANT: Record<ProjectStatus, BadgeVariant> = {
 // (badge and select) share this source so a status never drifts in color
 // between places.
 const STATUS_DOT_CLASS: Record<ProjectStatus, string> = {
-  "in-development": "bg-primary",
   queued: "bg-muted-foreground",
+  "in-development": "bg-primary",
   paused: "bg-warning",
+  "in-validation": "bg-foreground/50",
   completed: "bg-success",
 };
 
@@ -49,9 +51,10 @@ export function StatusDot({ status }: { status: ProjectStatus }) {
 
 // same color as the dot (`STATUS_DOT_CLASS`), in text-* for plain-text labels.
 const STATUS_TEXT_CLASS: Record<ProjectStatus, string> = {
-  "in-development": "text-primary",
   queued: "text-muted-foreground",
+  "in-development": "text-primary",
   paused: "text-warning",
+  "in-validation": "text-foreground/70",
   completed: "text-success",
 };
 

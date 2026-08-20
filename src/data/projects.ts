@@ -1,6 +1,19 @@
 import type { ToolCategory } from "./tool-catalog.ts"
 
-export type ProjectStatus = "in-development" | "queued" | "paused" | "completed"
+export type ProjectStatus =
+  | "queued"
+  | "in-development"
+  | "paused"
+  | "in-validation"
+  | "completed"
+
+export type ProjectComment = {
+  id: string
+  author: string
+  /** "YYYY-MM-DDTHH:mm" */
+  createdAt: string
+  body: string
+}
 
 /** Result of the latest GitHub Actions run on the project repo. */
 export type WorkflowStatus = "success" | "failure" | "running" | "none"
@@ -86,20 +99,25 @@ export type Project = {
     url: string
     workflow: WorkflowStatus
   } | null
+  /** Shown on the Kanban issue modal; absent = "Sem descrição." */
+  description?: string
+  comments?: ProjectComment[]
 }
 
 export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
-  "in-development": "Em desenvolvimento",
   queued: "Na fila",
+  "in-development": "Em desenvolvimento",
   paused: "Pausado",
+  "in-validation": "Em validação",
   completed: "Concluído",
 }
 
-/** Kanban column order (queued → in development → paused → completed). */
+/** Kanban column order. */
 export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
   "queued",
   "in-development",
   "paused",
+  "in-validation",
   "completed",
 ]
 
@@ -169,6 +187,7 @@ export const WORKFLOW_STATUS_TOOLTIP: Record<WorkflowStatus, string> = {
 }
 
 const MY_ACCOUNT = "rodrigo@fastbuilt.com.br"
+const MOCK_AUTHOR = "Rodrigo Araujo"
 
 // ponytail: local mock. Swap for a fetch once the API exists — the shape is
 // already what the API should return.
@@ -179,6 +198,22 @@ export const projects: Project[] = [
     clientId: "contact-1",
     status: "in-development",
     startedAt: "2026-07-08",
+    description:
+      "Portal para corretores acompanharem propostas, comissões e documentos dos clientes. Integra AWS, Resend e Supabase.",
+    comments: [
+      {
+        id: "c1-1",
+        author: MOCK_AUTHOR,
+        createdAt: "2026-07-10T09:15",
+        body: "Kickoff feito. Cliente mandou o layout do Figma e o acesso ao S3.",
+      },
+      {
+        id: "c1-2",
+        author: MOCK_AUTHOR,
+        createdAt: "2026-08-02T16:40",
+        body: "Falta fechar o fluxo de comissão parcelada antes de subir o deploy de staging.",
+      },
+    ],
     deal: { kind: "installment", amount: 18000, installments: 3 },
     tools: [
       {
@@ -231,8 +266,18 @@ export const projects: Project[] = [
     id: "2",
     name: "E-commerce Nutri",
     clientId: "contact-2",
-    status: "in-development",
+    status: "in-validation",
     startedAt: "2026-05-20",
+    description:
+      "Loja de suplementos com checkout Stripe e catálogo gerenciado pela Camila. Em validação com a cliente depois do último ciclo de QA.",
+    comments: [
+      {
+        id: "c2-1",
+        author: MOCK_AUTHOR,
+        createdAt: "2026-08-14T11:05",
+        body: "Mandei o ambiente de homologação. Aguardando o ok dela no fluxo de cupom.",
+      },
+    ],
     deal: { kind: "installment", amount: 24500, installments: 5 },
     tools: [
       {
@@ -283,6 +328,8 @@ export const projects: Project[] = [
     clientId: "contact-3",
     status: "queued",
     startedAt: "2026-08-25",
+    description:
+      "Agenda online para o Studio Belle, com lembretes por WhatsApp via Twilio. Ainda na fila, começando depois do Portal.",
     deal: { kind: "upfront", amount: 7200 },
     tools: [
       {
@@ -327,6 +374,22 @@ export const projects: Project[] = [
     clientId: "contact-4",
     status: "paused",
     startedAt: "2026-02-05",
+    description:
+      "Painel de rotas e faturamento da TransRápido. Pausado até o cliente quitar a parcela atrasada.",
+    comments: [
+      {
+        id: "c4-1",
+        author: MOCK_AUTHOR,
+        createdAt: "2026-06-18T14:20",
+        body: "Parei o desenvolvimento. Datadog continua rodando na conta deles.",
+      },
+      {
+        id: "c4-2",
+        author: MOCK_AUTHOR,
+        createdAt: "2026-07-22T09:00",
+        body: "Financeiro cobrou de novo hoje. Sem resposta ainda.",
+      },
+    ],
     deal: { kind: "installment", amount: 31000, installments: 4 },
     tools: [
       {
@@ -374,6 +437,8 @@ export const projects: Project[] = [
     clientId: "contact-5",
     status: "completed",
     startedAt: "2025-09-15",
+    description:
+      "Site institucional da Advocacia Prado. Entregue em novembro; Plausible continua no ar na minha conta.",
     endedAt: "2025-11-30",
     deal: { kind: "upfront", amount: 3500 },
     tools: [
@@ -404,6 +469,28 @@ export const projects: Project[] = [
     clientId: "contact-6",
     status: "in-development",
     startedAt: "2026-04-03",
+    description:
+      "Ponte entre o e-commerce da Distribuidora Norte e o TOTVS Protheus. A parte mais cara da carteira, ainda em desenvolvimento.",
+    comments: [
+      {
+        id: "c6-1",
+        author: MOCK_AUTHOR,
+        createdAt: "2026-04-08T10:00",
+        body: "Kickoff com o time de integração deles. Token do Protheus já está no Railway.",
+      },
+      {
+        id: "c6-2",
+        author: MOCK_AUTHOR,
+        createdAt: "2026-07-30T18:12",
+        body: "Sentry está barulhento no sync noturno. Investigar o timeout do Protheus.",
+      },
+      {
+        id: "c6-3",
+        author: MOCK_AUTHOR,
+        createdAt: "2026-08-15T08:45",
+        body: "CI ainda rodando o último PR de retry.",
+      },
+    ],
     deal: { kind: "installment", amount: 42000, installments: 6 },
     tools: [
       {
@@ -471,6 +558,8 @@ export const projects: Project[] = [
     clientId: "contact-7",
     status: "queued",
     startedAt: "2026-09-10",
+    description:
+      "Help desk interno da Clínica Vitalis. Ainda sem repositório — começa em setembro.",
     deal: { kind: "upfront", amount: 9800 },
     tools: [
       { id: "supabase", name: "Supabase", category: "database", secrets: [] },
@@ -486,6 +575,8 @@ export const projects: Project[] = [
     clientId: "contact-9",
     status: "in-development",
     startedAt: "2026-06-15",
+    description:
+      "Fluxo de onboarding da Northwind Labs, cobrado em USD. Wizard com dicas geradas via OpenAI.",
     deal: { kind: "installment", amount: 9000, installments: 3, currency: "USD" },
     tools: [
       {
@@ -529,6 +620,7 @@ export const projects: Project[] = [
     clientId: "contact-8",
     status: "completed",
     startedAt: "2025-03-02",
+    description: "Blog pessoal no Cloudflare Pages. Projeto grátis, já encerrado.",
     endedAt: "2025-06-20",
     deal: { kind: "upfront", amount: 0 },
     tools: [

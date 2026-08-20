@@ -7,6 +7,7 @@ import type { Deal, Project, Tool } from "../data/projects.ts"
 import { OTHER_TOOL_ID, findCatalogTool } from "../data/tool-catalog.ts"
 import { DEFAULT_CURRENCY } from "./currency.ts"
 import { todayIso } from "./dates.ts"
+import { withProjectStatus } from "./project-status.ts"
 
 /**
  * Number and date fields stay as strings because they come from `<input>`; the
@@ -24,7 +25,13 @@ export const projectSchema = z
     newContactEmail: z.string().trim(),
     newContactPhone: z.string().trim(),
     newContactCompany: z.string().trim(),
-    status: z.enum(["in-development", "queued", "paused", "completed"]),
+    status: z.enum([
+      "queued",
+      "in-development",
+      "paused",
+      "in-validation",
+      "completed",
+    ]),
     dealKind: z.enum(["upfront", "installment"]),
     amount: z.string().trim(),
     currency: z.string().trim().min(1),
@@ -298,21 +305,25 @@ export function toProject(values: ProjectFormValues, existing?: Project): Projec
       ? existing.repo.workflow
       : "none"
 
-  return {
-    id: existing?.id ?? crypto.randomUUID(),
-    name: values.name,
-    clientId: values.clientId,
-    status: values.status,
-    // Not in the form: a project starts when it is registered, and finishes
-    // when its status says so. Both are kept on edit so the timeline the
-    // dashboard draws does not jump every time the project is saved.
-    startedAt: existing?.startedAt ?? todayIso(),
-    endedAt:
-      values.status === "completed" ? (existing?.endedAt ?? todayIso()) : undefined,
-    deal,
-    tools: values.tools.map(toTool),
-    repo: repo ? { ...repo, workflow } : null,
-  }
+  return withProjectStatus(
+    {
+      id: existing?.id ?? crypto.randomUUID(),
+      name: values.name,
+      clientId: values.clientId,
+      status: values.status,
+      // Not in the form: a project starts when it is registered, and finishes
+      // when its status says so. Both are kept on edit so the timeline the
+      // dashboard draws does not jump every time the project is saved.
+      startedAt: existing?.startedAt ?? todayIso(),
+      endedAt: existing?.endedAt,
+      deal,
+      tools: values.tools.map(toTool),
+      repo: repo ? { ...repo, workflow } : null,
+      description: existing?.description,
+      comments: existing?.comments,
+    },
+    values.status
+  )
 }
 
 export function fromProject(project: Project): ProjectFormValues {
