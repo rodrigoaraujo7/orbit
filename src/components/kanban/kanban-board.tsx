@@ -33,9 +33,11 @@ type DropNode = {
 export function KanbanBoard({
   clientName,
   onOpen,
+  filter,
 }: {
   clientName: (clientId: string) => string
   onOpen: (id: string) => void
+  filter?: (project: Project) => boolean
 }) {
   const { projects, replaceProjects } = useProjects()
   const reducedMotion = useReducedMotion()
@@ -60,7 +62,9 @@ export function KanbanBoard({
   function projectsIn(status: ProjectStatus): Project[] {
     return columns[status].flatMap((id) => {
       const project = byId.get(id)
-      return project ? [project] : []
+      if (!project) return []
+      if (filter && !filter(project)) return []
+      return [project]
     })
   }
 
@@ -104,7 +108,7 @@ export function KanbanBoard({
         snapshot.current = null
       }}
     >
-      <div className="flex h-[calc(100svh-12.5rem)] min-h-0 gap-3 overflow-x-auto overflow-y-hidden px-4 py-6 md:h-[calc(100svh-9rem)] sm:px-6 lg:px-8">
+      <div className="flex h-[calc(100svh-23rem)] min-h-0 gap-3 overflow-x-auto overflow-y-hidden px-4 py-6 md:h-[calc(100svh-19.5rem)] sm:px-6 lg:px-8">
         {PROJECT_STATUS_ORDER.map((status) => (
           <KanbanColumn
             key={status}

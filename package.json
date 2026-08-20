@@ -15,6 +15,7 @@
     "check:table-sort": "node --experimental-strip-types src/lib/table-sort.check.ts",
     "check:dashboard": "node --experimental-strip-types src/lib/dashboard-metrics.check.ts",
     "check:finance-events": "node --experimental-strip-types src/lib/finance-events.check.ts",
+    "check:kanban-filter": "node --experimental-strip-types src/lib/kanban-filter.check.ts",
     "preview": "vite preview"
   },
   "dependencies": {
