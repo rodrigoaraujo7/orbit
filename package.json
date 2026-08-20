@@ -12,6 +12,7 @@
     "check:invoice-table": "node --experimental-strip-types src/lib/invoice-table.check.ts",
     "check:table-sort": "node --experimental-strip-types src/lib/table-sort.check.ts",
     "check:dashboard": "node --experimental-strip-types src/lib/dashboard-metrics.check.ts",
+    "check:finance-events": "node --experimental-strip-types src/lib/finance-events.check.ts",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -24,8 +25,10 @@
     "@tanstack/react-router": "^1.170.23",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
     "lucide-react": "^1.30.0",
     "react": "^19.2.8",
+    "react-day-picker": "^10.0.1",
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.85.0",
     "recharts": "3.8.0",
