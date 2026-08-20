@@ -352,44 +352,39 @@ function EditableDescription({
           </Button>
         )}
       </div>
-      <div
-        key={editing ? "input" : "text"}
-        className="origin-top animate-in fade-in zoom-in-95 duration-200 ease-out motion-reduce:animate-none"
-      >
-        {editing ? (
-          <div className="flex flex-col gap-2">
-            <Textarea
-              ref={input}
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") {
-                  event.preventDefault()
-                  cancel()
-                }
-                if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-                  event.preventDefault()
-                  save()
-                }
-              }}
-              rows={4}
-              aria-label="Descrição"
-            />
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="ghost" size="sm" onClick={cancel}>
-                Cancelar
-              </Button>
-              <Button type="button" size="sm" onClick={save}>
-                Salvar
-              </Button>
-            </div>
+      {editing ? (
+        <div className="flex origin-top flex-col gap-2 animate-in fade-in zoom-in-95 duration-200 ease-out motion-reduce:animate-none">
+          <Textarea
+            ref={input}
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.preventDefault()
+                cancel()
+              }
+              if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                event.preventDefault()
+                save()
+              }
+            }}
+            rows={4}
+            aria-label="Descrição"
+          />
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={cancel}>
+              Cancelar
+            </Button>
+            <Button type="button" size="sm" onClick={save}>
+              Salvar
+            </Button>
           </div>
-        ) : (
-          <p className="text-sm whitespace-pre-wrap">
-            {value || <span className="text-muted-foreground">Sem descrição.</span>}
-          </p>
-        )}
-      </div>
+        </div>
+      ) : (
+        <p className="text-sm whitespace-pre-wrap">
+          {value || <span className="text-muted-foreground">Sem descrição.</span>}
+        </p>
+      )}
     </section>
   )
 }

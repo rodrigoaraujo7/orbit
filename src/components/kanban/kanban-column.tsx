@@ -46,7 +46,7 @@ export function KanbanColumn({
         <span className="text-xs text-muted-foreground tabular-nums">{projects.length}</span>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">
         {projects.length === 0 ? (
           <p className="px-1 py-6 text-center text-sm text-muted-foreground">Nenhum projeto</p>
         ) : (
