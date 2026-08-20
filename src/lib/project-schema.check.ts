@@ -259,4 +259,13 @@ const fractionalEdited = toProject(fromProject(fractional), fractional)
 assert.equal(fractionalEdited.deal.amount, 18000.5)
 assert.equal(fractionalEdited.tools[0].billing?.amount, 340.5)
 
+// description and comments live outside the form — editing must keep them
+original.description = "Nota do kanban"
+original.comments = [
+  { id: "c1", author: "Rodrigo Araujo", createdAt: "2026-08-01T10:00", body: "Oi" },
+]
+const editedNotes = toProject(fromProject(original), original)
+assert.equal(editedNotes.description, "Nota do kanban")
+assert.deepEqual(editedNotes.comments, original.comments)
+
 console.log("project-schema: all checks passed")
