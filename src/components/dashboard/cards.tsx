@@ -92,6 +92,8 @@ export function StatTile({
   value,
   format,
   hint,
+  icon,
+  iconClassName,
   tone = "default",
   delay = 0,
 }: {
@@ -99,6 +101,8 @@ export function StatTile({
   value: number;
   format: (value: number) => string;
   hint?: ReactNode;
+  icon?: ReactNode;
+  iconClassName?: string;
   tone?: StatTone;
   delay?: number;
 }) {
@@ -106,22 +110,49 @@ export function StatTile({
   const animated = useCountUp(value, reduced);
   const enter = enterProps(delay, reduced);
 
+  const valueClass = icon
+    ? "font-subtitle text-2xl leading-none font-semibold tracking-tight tabular-nums sm:text-3xl"
+    : "mt-1 font-subtitle text-lg font-semibold tracking-tight tabular-nums sm:text-xl 2xl:text-2xl";
+
+  const valueEl = (
+    <p className={cn(valueClass, TONE_CLASS[tone])}>{format(animated)}</p>
+  );
+  const labelEl = (
+    <p className={cn("font-subtitle text-xs text-muted-foreground", icon && "mt-0.5 leading-none")}>
+      {label}
+    </p>
+  );
+  const hintEl = hint ? <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p> : null;
+
   return (
     <div {...enter} className={cn("rounded-xl border p-4", enter.className)}>
-      <p className="font-subtitle text-xs text-muted-foreground">{label}</p>
-      {/* Sized against the tightest column, not the roomiest: a full
-          "R$ 136.000,00" needs ~130px at 20px, and the tile is 127px wide on a
-          375px phone and 150px in the 5-column row at 1280px. A currency value
-          can't wrap, so the type steps instead. */}
-      <p
-        className={cn(
-          "mt-1 font-subtitle text-lg font-semibold tracking-tight tabular-nums sm:text-xl 2xl:text-2xl",
-          TONE_CLASS[tone],
-        )}
-      >
-        {format(animated)}
-      </p>
-      {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
+      {icon ? (
+        <div className="flex items-center gap-3">
+          <span
+            className={cn(
+              "grid size-10 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground [&_svg]:size-5",
+              iconClassName,
+            )}
+          >
+            {icon}
+          </span>
+          <div className="min-w-0">
+            {valueEl}
+            {labelEl}
+            {hintEl}
+          </div>
+        </div>
+      ) : (
+        <>
+          {labelEl}
+          {/* Sized against the tightest column, not the roomiest: a full
+              "R$ 136.000,00" needs ~130px at 20px, and the tile is 127px wide on a
+              375px phone and 150px in the 5-column row at 1280px. A currency value
+              can't wrap, so the type steps instead. */}
+          {valueEl}
+          {hintEl}
+        </>
+      )}
     </div>
   );
 }

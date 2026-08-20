@@ -1,16 +1,14 @@
 import { useSortable } from "@dnd-kit/react/sortable"
+import { User } from "lucide-react"
 import { useEffect, useRef, type ComponentProps, type KeyboardEvent } from "react"
 
-import { WorkflowBadge } from "@/components/projects/status-badges"
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
-  CardAction,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { FREE_LABEL, isDealFree, type Project, type ProjectStatus } from "@/data/projects"
-import { formatCurrency } from "@/lib/format"
+import type { Project, ProjectStatus } from "@/data/projects"
 import { cn } from "@/lib/utils"
 
 function KanbanCardFace({
@@ -25,10 +23,6 @@ function KanbanCardFace({
   overlay?: boolean
   className?: string
 } & ComponentProps<typeof Card>) {
-  const dealLabel = isDealFree(project.deal)
-    ? FREE_LABEL
-    : formatCurrency(project.deal.amount, project.deal.currency)
-
   return (
     <Card
       size="sm"
@@ -40,15 +34,12 @@ function KanbanCardFace({
       {...props}
     >
       <CardHeader>
-        <CardTitle className="truncate">{project.name}</CardTitle>
-        <CardDescription className="truncate">{clientName}</CardDescription>
-        {project.repo && (
-          <CardAction>
-            <WorkflowBadge status={project.repo.workflow} iconOnly />
-          </CardAction>
-        )}
+        <CardTitle className="truncate font-heading text-lg font-normal">{project.name}</CardTitle>
+        <Badge variant="muted">
+          <User />
+          {clientName}
+        </Badge>
       </CardHeader>
-      <p className="px-(--card-spacing) text-xs text-muted-foreground">{dealLabel}</p>
     </Card>
   )
 }
