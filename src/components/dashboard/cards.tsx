@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** Same 700ms/ease-out feel the charts use, so tiles and bars land together. */
@@ -39,19 +40,16 @@ function enterProps(delay: number, reduced: boolean) {
 }
 
 /**
- * The dashboard's headline number: Instrument Serif at display size, because
- * the serif is what this app looks like — a generic sans hero would be any
- * other dashboard's hero.
+ * Headline number in the page header — same type scale as the title and
+ * description beside it, so the header reads as one balanced row.
  */
 export function HeroFigure({
-  label,
   value,
-  format,
+  currency,
   hint,
 }: {
-  label: string;
   value: number;
-  format: (value: number) => string;
+  currency: string;
   hint?: ReactNode;
 }) {
   const reduced = useReducedMotion();
@@ -60,14 +58,13 @@ export function HeroFigure({
 
   return (
     <div {...enter} className={cn("mt-3 sm:mt-0 sm:text-right", enter.className)}>
-      <p className="font-subtitle text-xs tracking-wide text-muted-foreground uppercase">{label}</p>
       <p
         className={cn(
-          "font-heading text-5xl leading-none font-normal tabular-nums",
+          "font-heading text-4xl font-normal tracking-normal tabular-nums sm:text-4xl",
           value < 0 && "text-destructive",
         )}
       >
-        {format(animated)}
+        {formatCurrency(animated, currency)}
       </p>
       {hint && <p className="font-subtitle mt-1 text-sm text-muted-foreground">{hint}</p>}
     </div>

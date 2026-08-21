@@ -15,7 +15,7 @@ import {
   resolveMonths,
   type DashboardFilters,
 } from "@/lib/dashboard-metrics";
-import { formatCurrency, formatMonthLong, formatPercent } from "@/lib/format";
+import { formatMonthLong, formatPercent } from "@/lib/format";
 import { useProjects } from "@/lib/projects-store";
 
 /** "cresceu 18% vs. período anterior" — or an honest note when there is no before. */
@@ -49,9 +49,8 @@ function DashboardPage() {
         description={period}
         actions={
           <HeroFigure
-            label="Lucro no período"
             value={summary.lucro}
-            format={(value) => formatCurrency(value, filters.currency)}
+            currency={filters.currency}
             hint={profitHint(summary.lucro, before.lucro)}
           />
         }
