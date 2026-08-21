@@ -156,7 +156,11 @@ export function StatTile({
 
 /** Responsive row of tiles — the KPI strip at the top of each tab. */
 export function StatRow({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5">{children}</div>;
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-6 xl:grid-cols-5 max-lg:[&>:last-child]:col-span-2 lg:max-xl:[&>:nth-child(-n+3)]:col-span-2 lg:max-xl:[&>:nth-last-child(-n+2)]:col-span-3">
+      {children}
+    </div>
+  );
 }
 
 /**
