@@ -1,14 +1,7 @@
-import { Filter, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { FilterDrawer } from "@/components/ui/filter-drawer";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Select, type SelectOption } from "@/components/ui/select";
 import type { Project } from "@/data/projects";
@@ -190,32 +183,9 @@ export function FiltersBar({
         <FilterFields projects={projects} filters={filters} onChange={onChange} />
       </div>
 
-      <div className="md:hidden">
-        <Drawer showSwipeHandle>
-          <DrawerTrigger render={<Button variant="outline" />}>
-            <Filter data-icon="inline-start" />
-            Filtro
-          </DrawerTrigger>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Filtros</DrawerTitle>
-            </DrawerHeader>
-            <div className="flex flex-col gap-3 overflow-y-auto p-4">
-              <FilterFields stacked projects={projects} filters={filters} onChange={onChange} />
-            </div>
-            <DrawerFooter>
-              <Button
-                variant="ghost"
-                disabled={!hasActiveFilters(filters)}
-                onClick={() => onChange(emptyFilters)}
-              >
-                <X data-icon="inline-start" />
-                Limpar
-              </Button>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-      </div>
+      <FilterDrawer hasActive={hasActiveFilters(filters)} onClear={() => onChange(emptyFilters)}>
+        <FilterFields stacked projects={projects} filters={filters} onChange={onChange} />
+      </FilterDrawer>
     </div>
   );
 }
