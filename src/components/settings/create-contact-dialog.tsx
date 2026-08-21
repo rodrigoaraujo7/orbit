@@ -7,10 +7,19 @@ import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/toast"
 import type { Contact } from "@/data/contacts"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { useRegistry } from "@/lib/registry-store"
 
 const contactSchema = z
@@ -79,6 +88,84 @@ export function CreateContactDialog({
     }
   })
 
+  const isMobile = useIsMobile()
+
+  const formFields = (
+    <>
+      <Field label="Nome" error={errors.name?.message}>
+        {(props) => (
+          <Input
+            {...props}
+            {...register("name")}
+            placeholder="Marcelo Tavares"
+          />
+        )}
+      </Field>
+
+      <Field label="E-mail" error={errors.email?.message} hint="Opcional">
+        {(props) => (
+          <Input
+            {...props}
+            {...register("email")}
+            type="email"
+            placeholder="marcelo@empresa.com.br"
+          />
+        )}
+      </Field>
+
+      <Field label="Telefone" error={errors.phone?.message}>
+        {(props) => (
+          <Input
+            {...props}
+            {...register("phone")}
+            placeholder="(11) 98765-4321"
+          />
+        )}
+      </Field>
+
+      <Field label="Empresa" error={errors.company?.message}>
+        {(props) => (
+          <Input
+            {...props}
+            {...register("company")}
+            placeholder="Empresa Ltda"
+          />
+        )}
+      </Field>
+    </>
+  )
+
+  const cancelButton = (
+    <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+      Cancelar
+    </Button>
+  )
+  const submitButton = <Button type="submit">Criar contato</Button>
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
+        <DrawerContent>
+          <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+            <DrawerHeader>
+              <DrawerTitle>Novo contato</DrawerTitle>
+              <DrawerDescription>
+                Cadastre um contato para reaproveitar em vários projetos.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+              {formFields}
+            </div>
+            <DrawerFooter className="flex-row [&>*]:flex-1">
+              {cancelButton}
+              {submitButton}
+            </DrawerFooter>
+          </form>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -102,56 +189,10 @@ export function CreateContactDialog({
           </div>
 
           <form onSubmit={onSubmit} className="flex flex-col gap-4 px-5 py-4">
-            <Field label="Nome" error={errors.name?.message}>
-              {(props) => (
-                <Input
-                  {...props}
-                  {...register("name")}
-                  placeholder="Marcelo Tavares"
-                />
-              )}
-            </Field>
-
-            <Field label="E-mail" error={errors.email?.message} hint="Opcional">
-              {(props) => (
-                <Input
-                  {...props}
-                  {...register("email")}
-                  type="email"
-                  placeholder="marcelo@empresa.com.br"
-                />
-              )}
-            </Field>
-
-            <Field label="Telefone" error={errors.phone?.message}>
-              {(props) => (
-                <Input
-                  {...props}
-                  {...register("phone")}
-                  placeholder="(11) 98765-4321"
-                />
-              )}
-            </Field>
-
-            <Field label="Empresa" error={errors.company?.message}>
-              {(props) => (
-                <Input
-                  {...props}
-                  {...register("company")}
-                  placeholder="Empresa Ltda"
-                />
-              )}
-            </Field>
-
+            {formFields}
             <div className="mt-2 flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit">Criar contato</Button>
+              {cancelButton}
+              {submitButton}
             </div>
           </form>
         </Dialog.Popup>

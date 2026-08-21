@@ -7,10 +7,19 @@ import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
+import { useIsMobile } from "@/hooks/use-mobile"
 import {
   TOOL_CATEGORY_LABEL,
   TOOL_CATEGORY_ORDER,
@@ -77,6 +86,71 @@ export function CreateCustomToolDialog({
     }
   })
 
+  const isMobile = useIsMobile()
+
+  const formFields = (
+    <>
+      <Field label="Nome" error={errors.name?.message}>
+        {(props) => (
+          <Input
+            {...props}
+            {...register("name")}
+            placeholder="TOTVS Protheus"
+          />
+        )}
+      </Field>
+
+      <Field label="Categoria" error={errors.category?.message}>
+        {(props) => (
+          <Controller
+            control={control}
+            name="category"
+            render={({ field }) => (
+              <Select
+                {...props}
+                value={field.value}
+                onValueChange={field.onChange}
+                options={categoryOptions}
+              />
+            )}
+          />
+        )}
+      </Field>
+    </>
+  )
+
+  const cancelButton = (
+    <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+      Cancelar
+    </Button>
+  )
+  const submitButton = <Button type="submit">Criar ferramenta</Button>
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
+        <DrawerContent>
+          <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+            <DrawerHeader>
+              <DrawerTitle>Nova ferramenta</DrawerTitle>
+              <DrawerDescription>
+                Cadastre uma ferramenta fora do catálogo para reaproveitar em
+                vários projetos.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+              {formFields}
+            </div>
+            <DrawerFooter className="flex-row [&>*]:flex-1">
+              {cancelButton}
+              {submitButton}
+            </DrawerFooter>
+          </form>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -101,42 +175,10 @@ export function CreateCustomToolDialog({
           </div>
 
           <form onSubmit={onSubmit} className="flex flex-col gap-4 px-5 py-4">
-            <Field label="Nome" error={errors.name?.message}>
-              {(props) => (
-                <Input
-                  {...props}
-                  {...register("name")}
-                  placeholder="TOTVS Protheus"
-                />
-              )}
-            </Field>
-
-            <Field label="Categoria" error={errors.category?.message}>
-              {(props) => (
-                <Controller
-                  control={control}
-                  name="category"
-                  render={({ field }) => (
-                    <Select
-                      {...props}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      options={categoryOptions}
-                    />
-                  )}
-                />
-              )}
-            </Field>
-
+            {formFields}
             <div className="mt-2 flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit">Criar ferramenta</Button>
+              {cancelButton}
+              {submitButton}
             </div>
           </form>
         </Dialog.Popup>
