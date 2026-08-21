@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Wallet, Wrench } from "lucide-react";
 import { useState } from "react";
 
 import { HeroFigure } from "@/components/dashboard/cards";
@@ -6,7 +7,7 @@ import { FiltersBar } from "@/components/dashboard/filters-bar";
 import { FinanceTab } from "@/components/dashboard/finance-tab";
 import { ToolsTab } from "@/components/dashboard/tools-tab";
 import { PageHeader } from "@/components/layout/page";
-import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import { Tabs, TabsDock, TabsDockTab, TabsPanel } from "@/components/ui/tabs";
 import {
   applyFilters,
   emptyFilters,
@@ -58,7 +59,7 @@ function DashboardPage() {
 
       <FiltersBar projects={projects} filters={filters} onChange={setFilters} />
 
-      <div className="px-4 py-6 sm:px-6 lg:px-8">
+      <div className="px-4 pt-6 pb-24 sm:px-6 md:pb-6 lg:px-8">
         {summary.foraDaMoeda > 0 && (
           <p className="mb-4 text-xs text-muted-foreground">
             {summary.foraDaMoeda}{" "}
@@ -69,10 +70,14 @@ function DashboardPage() {
         )}
 
         <Tabs defaultValue="finance">
-          <TabsList>
-            <TabsTab value="finance">Financeiro</TabsTab>
-            <TabsTab value="tools">Ferramentas</TabsTab>
-          </TabsList>
+          <TabsDock>
+            <TabsDockTab value="finance" icon={Wallet}>
+              Financeiro
+            </TabsDockTab>
+            <TabsDockTab value="tools" icon={Wrench}>
+              Ferramentas
+            </TabsDockTab>
+          </TabsDock>
 
           <TabsPanel value="finance" className="pt-6">
             <FinanceTab projects={filtered} months={months} currency={filters.currency} />
