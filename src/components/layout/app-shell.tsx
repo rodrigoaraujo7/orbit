@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Drawer } from "@base-ui/react/drawer";
 import { ChevronLeft, Menu, Moon, PanelLeftOpen, Sun } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { SidebarNav } from "./sidebar-nav";
@@ -101,28 +101,24 @@ export function AppShell({ children }: { children: ReactNode }) {
         {!collapsed && <CollapseButton onClick={() => setCollapsed(true)} />}
       </aside>
 
-      {/* Mobile topbar */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-3 backdrop-blur-sm md:hidden">
-        <Button variant="ghost" size="icon-sm" onClick={() => setDrawerOpen(true)} aria-label="Abrir menu">
-          <Menu />
-        </Button>
-        <ThemeToggle theme={theme} onToggle={toggle} />
-      </header>
+      {/* Mobile topbar + nav drawer */}
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} swipeDirection="left">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-3 backdrop-blur-sm md:hidden">
+          <DrawerTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Abrir menu" />}>
+            <Menu />
+          </DrawerTrigger>
+          <ThemeToggle theme={theme} onToggle={toggle} />
+        </header>
 
-      {/* Mobile drawer — swiping left closes it */}
-      <Drawer.Root open={drawerOpen} onOpenChange={setDrawerOpen} swipeDirection="left">
-        <Drawer.Portal>
-          <Drawer.Backdrop className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px] transition-opacity duration-300 data-ending-style:opacity-0 data-starting-style:opacity-0" />
-          <Drawer.Popup className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-sidebar text-sidebar-foreground shadow-xl transition-transform duration-300 ease-out data-ending-style:-translate-x-full data-starting-style:-translate-x-full">
-            <Drawer.Title className="sr-only">Navegação principal</Drawer.Title>
-            <Logo />
-            <SidebarNav onNavigate={() => setDrawerOpen(false)} />
-            <div className="border-t p-2">
-              <UserMenu theme={theme} onToggleTheme={toggle} />
-            </div>
-          </Drawer.Popup>
-        </Drawer.Portal>
-      </Drawer.Root>
+        <DrawerContent className="w-60 bg-sidebar text-sidebar-foreground after:hidden">
+          <DrawerTitle className="sr-only">Navegação principal</DrawerTitle>
+          <Logo />
+          <SidebarNav onNavigate={() => setDrawerOpen(false)} />
+          <div className="border-t p-2">
+            <UserMenu theme={theme} onToggleTheme={toggle} />
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       <main className="flex-1 overflow-x-hidden">{children}</main>
     </div>
