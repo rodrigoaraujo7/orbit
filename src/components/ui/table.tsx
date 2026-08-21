@@ -174,8 +174,8 @@ export function DataTable<T>({
       </div>
 
       {pagination && (
-        <div className="mt-3 flex flex-col-reverse items-center justify-between gap-3 sm:flex-row">
-          <div className="w-full sm:w-44">
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <div className="w-44 min-w-0">
             <Select
               value={pageSize}
               onValueChange={(next) => {
@@ -186,8 +186,8 @@ export function DataTable<T>({
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="sr-only">
               Página {sliced.page} de {sliced.pageCount}
             </span>
             <Button
