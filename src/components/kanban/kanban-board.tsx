@@ -108,7 +108,7 @@ export function KanbanBoard({
         snapshot.current = null
       }}
     >
-      <div className="flex h-[calc(100svh-23rem)] min-h-0 gap-3 overflow-x-auto overflow-y-hidden px-4 py-6 md:h-[calc(100svh-19.5rem)] sm:px-6 lg:px-8">
+      <div className="flex h-[calc(100svh-16rem)] min-h-0 gap-3 overflow-x-auto overflow-y-hidden px-4 py-3 md:h-[calc(100svh-19.5rem)] md:py-6 sm:px-6 lg:px-8">
         {PROJECT_STATUS_ORDER.map((status) => (
           <KanbanColumn
             key={status}
