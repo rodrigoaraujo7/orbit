@@ -78,24 +78,27 @@ export function FiltersBar({
     filters.clientId !== "" ||
     filters.currency !== emptyFilters.currency;
 
+  const activePreset = PRESETS.find((preset) => isActivePreset(filters, preset));
+  const periodOptions: SelectOption[] = PRESETS.map((preset) => ({
+    value: String(preset.months),
+    label: preset.label,
+  }));
+
   return (
     <div className="flex flex-col gap-3 border-b px-4 py-4 sm:px-6 lg:px-8">
-      <div className="flex flex-wrap items-center gap-1">
-        {PRESETS.map((preset) => (
-          <Button
-            key={preset.label}
-            variant="ghost"
-            size="sm"
-            data-active={isActivePreset(filters, preset) || undefined}
-            className="text-muted-foreground data-active:bg-accent data-active:text-foreground"
-            onClick={() => set(presetRange(preset))}
-          >
-            {preset.label}
-          </Button>
-        ))}
-      </div>
-
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="w-full sm:w-40">
+          <Select
+            value={activePreset ? String(activePreset.months) : ""}
+            onValueChange={(value) => {
+              const preset = PRESETS.find((p) => String(p.months) === value);
+              if (preset) set(presetRange(preset));
+            }}
+            options={periodOptions}
+            placeholder="Período"
+          />
+        </div>
+
         <div className="flex items-center gap-2">
           <MonthPicker
             value={filters.monthFrom}
