@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Emphasis } from "@/components/ui/emphasis"
+import { FilterDrawer } from "@/components/ui/filter-drawer"
 import { Input } from "@/components/ui/input"
 import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import { DataTable, type Column } from "@/components/ui/table"
@@ -28,6 +29,41 @@ import {
 import { formatCurrency, formatDeal } from "@/lib/format"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
+
+function ProjectFilterFields({
+  stacked = false,
+  nameFilter,
+  onNameChange,
+  statusFilter,
+  onStatusChange,
+  workflowFilter,
+  onWorkflowChange,
+}: {
+  stacked?: boolean
+  nameFilter: string
+  onNameChange: (value: string) => void
+  statusFilter: ProjectStatus | ""
+  onStatusChange: (value: ProjectStatus | "") => void
+  workflowFilter: WorkflowStatus | ""
+  onWorkflowChange: (value: WorkflowStatus | "") => void
+}) {
+  return (
+    <>
+      <Input
+        value={nameFilter}
+        onChange={(event) => onNameChange(event.target.value)}
+        placeholder="Buscar por nome..."
+        className={stacked ? "w-full" : "flex-1"}
+      />
+      <div className={stacked ? "w-full" : "w-44"}>
+        <StatusFilterSelect value={statusFilter} onValueChange={onStatusChange} />
+      </div>
+      <div className={stacked ? "w-full" : "w-48"}>
+        <WorkflowFilterSelect value={workflowFilter} onValueChange={onWorkflowChange} />
+      </div>
+    </>
+  )
+}
 
 function ProjectsPage() {
   const { projects, deleteProject } = useProjects()
@@ -172,16 +208,36 @@ function ProjectsPage() {
         title="Projetos"
         description={`${projects.length} projetos cadastrados.`}
         actions={
-          <Button
-            onClick={() => {
-              setEditingProject(null)
-              setDialogOpen(true)
-            }}
-            className="mt-3 w-full sm:mt-0 sm:w-auto"
-          >
-            <Plus />
-            Novo projeto
-          </Button>
+          <div className="mt-3 flex w-full gap-2 sm:mt-0 sm:w-auto">
+            <Button
+              onClick={() => {
+                setEditingProject(null)
+                setDialogOpen(true)
+              }}
+              className="flex-1 md:flex-none"
+            >
+              <Plus />
+              Novo projeto
+            </Button>
+            <FilterDrawer
+              hasActive={nameFilter !== "" || statusFilter !== "" || workflowFilter !== ""}
+              onClear={() => {
+                setNameFilter("")
+                setStatusFilter("")
+                setWorkflowFilter("")
+              }}
+            >
+              <ProjectFilterFields
+                stacked
+                nameFilter={nameFilter}
+                onNameChange={setNameFilter}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+                workflowFilter={workflowFilter}
+                onWorkflowChange={setWorkflowFilter}
+              />
+            </FilterDrawer>
+          </div>
         }
       />
 
@@ -215,22 +271,15 @@ function ProjectsPage() {
         }}
       />
 
-      <div className="flex flex-col gap-3 px-4 pt-6 sm:flex-row sm:items-center sm:px-6 lg:px-8">
-        <Input
-          value={nameFilter}
-          onChange={(event) => setNameFilter(event.target.value)}
-          placeholder="Buscar por nome..."
-          className="flex-1"
+      <div className="hidden gap-3 px-4 pt-6 md:flex md:flex-row md:items-center sm:px-6 lg:px-8">
+        <ProjectFilterFields
+          nameFilter={nameFilter}
+          onNameChange={setNameFilter}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          workflowFilter={workflowFilter}
+          onWorkflowChange={setWorkflowFilter}
         />
-        <div className="w-full sm:w-44">
-          <StatusFilterSelect value={statusFilter} onValueChange={setStatusFilter} />
-        </div>
-        <div className="w-full sm:w-48">
-          <WorkflowFilterSelect
-            value={workflowFilter}
-            onValueChange={setWorkflowFilter}
-          />
-        </div>
       </div>
 
       <div className="px-4 py-6 sm:px-6 lg:px-8">

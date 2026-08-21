@@ -8,6 +8,7 @@ import { ProjectIssueDialog } from "@/components/kanban/project-issue-dialog"
 import { PageHeader } from "@/components/layout/page"
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog"
 import { Button } from "@/components/ui/button"
+import { FilterDrawer } from "@/components/ui/filter-drawer"
 import { Input } from "@/components/ui/input"
 import { MonthPicker } from "@/components/ui/month-picker"
 import { Select, type SelectOption } from "@/components/ui/select"
@@ -17,6 +18,60 @@ import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
 
 const count = (value: number) => Math.round(value).toLocaleString("pt-BR")
+
+function KanbanFilterFields({
+  stacked = false,
+  filters,
+  clientOptions,
+  onChange,
+}: {
+  stacked?: boolean
+  filters: KanbanFilters
+  clientOptions: SelectOption[]
+  onChange: (patch: Partial<KanbanFilters>) => void
+}) {
+  return (
+    <>
+      <Input
+        value={filters.search}
+        onChange={(event) => onChange({ search: event.target.value })}
+        placeholder="Buscar por nome..."
+        className={stacked ? "w-full" : "flex-1"}
+      />
+      <div className={stacked ? "w-full" : "w-52"}>
+        <Select
+          value={filters.clientId}
+          onValueChange={(clientId) => onChange({ clientId })}
+          options={clientOptions}
+          placeholder="Todos os clientes"
+        />
+      </div>
+      <div
+        className={
+          stacked
+            ? "flex w-full items-center gap-2 [&>button]:min-w-0 [&>button]:flex-1"
+            : "flex items-center gap-2"
+        }
+      >
+        <MonthPicker
+          value={filters.monthFrom}
+          onChange={(monthFrom) => onChange({ monthFrom })}
+          placeholder="Início"
+          aria-label="Mês inicial"
+        />
+        <span className="text-sm text-muted-foreground" aria-hidden="true">
+          até
+        </span>
+        <MonthPicker
+          value={filters.monthTo}
+          onChange={(monthTo) => onChange({ monthTo })}
+          placeholder="Fim"
+          aria-label="Mês final"
+        />
+      </div>
+    </>
+  )
+}
 
 function KanbanPage() {
   const { projects, findProject } = useProjects()
@@ -67,13 +122,15 @@ function KanbanPage() {
         title="Kanban"
         description="O que está em desenvolvimento e o que está na fila."
         actions={
-          <Button
-            onClick={() => setDialogOpen(true)}
-            className="mt-3 w-full sm:mt-0 sm:w-auto"
-          >
-            <Plus />
-            Novo projeto
-          </Button>
+          <div className="mt-3 flex w-full gap-2 sm:mt-0 sm:w-auto">
+            <Button onClick={() => setDialogOpen(true)} className="flex-1 md:flex-none">
+              <Plus />
+              Novo projeto
+            </Button>
+            <FilterDrawer hasActive={isFiltered} onClear={() => setFilters(emptyKanbanFilters)}>
+              <KanbanFilterFields stacked filters={filters} clientOptions={clientOptions} onChange={setFilter} />
+            </FilterDrawer>
+          </div>
         }
       />
 
@@ -115,38 +172,8 @@ function KanbanPage() {
         />
       </div>
 
-      <div className="flex flex-col gap-3 px-4 pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:px-6 lg:px-8">
-        <Input
-          value={filters.search}
-          onChange={(event) => setFilter({ search: event.target.value })}
-          placeholder="Buscar por nome..."
-          className="flex-1"
-        />
-        <div className="w-full sm:w-52">
-          <Select
-            value={filters.clientId}
-            onValueChange={(clientId) => setFilter({ clientId })}
-            options={clientOptions}
-            placeholder="Todos os clientes"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <MonthPicker
-            value={filters.monthFrom}
-            onChange={(monthFrom) => setFilter({ monthFrom })}
-            placeholder="Início"
-            aria-label="Mês inicial"
-          />
-          <span className="text-sm text-muted-foreground" aria-hidden="true">
-            até
-          </span>
-          <MonthPicker
-            value={filters.monthTo}
-            onChange={(monthTo) => setFilter({ monthTo })}
-            placeholder="Fim"
-            aria-label="Mês final"
-          />
-        </div>
+      <div className="hidden gap-3 px-4 pt-4 md:flex md:flex-row md:flex-wrap md:items-center sm:px-6 lg:px-8">
+        <KanbanFilterFields filters={filters} clientOptions={clientOptions} onChange={setFilter} />
         {isFiltered && (
           <Button variant="ghost" size="sm" onClick={() => setFilters(emptyKanbanFilters)}>
             <X />
