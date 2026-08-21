@@ -1,5 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Pencil, RefreshCw, Trash2, User } from "lucide-react";
+import { ArrowLeft, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 import { CreateProjectDialog, type ProjectDialogSection } from "@/components/projects/create-project-dialog";
@@ -9,7 +9,7 @@ import { ToolDetails } from "@/components/projects/tool-details";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Emphasis } from "@/components/ui/emphasis";
-import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import { Tabs, TabsDock, TabsDockTab, TabsPanel } from "@/components/ui/tabs";
 import { Tooltip } from "@/components/ui/tooltip";
 import { FREE_LABEL, isDealFree } from "@/data/projects";
 import { DEFAULT_CURRENCY } from "@/lib/currency";
@@ -204,12 +204,16 @@ function ProjectDetailPage() {
         </div>
       </div>
 
-      <div className="px-4 py-6 sm:px-6 lg:px-8">
+      <div className="px-4 pt-6 pb-24 sm:px-6 md:pb-6 lg:px-8">
         <Tabs defaultValue="finance">
-          <TabsList>
-            <TabsTab value="finance">Financeiro</TabsTab>
-            <TabsTab value="tools">Ferramentas</TabsTab>
-          </TabsList>
+          <TabsDock>
+            <TabsDockTab value="finance" icon={Wallet}>
+              Financeiro
+            </TabsDockTab>
+            <TabsDockTab value="tools" icon={Wrench}>
+              Ferramentas
+            </TabsDockTab>
+          </TabsDock>
 
           <TabsPanel value="finance" className="pt-4">
             <Card
