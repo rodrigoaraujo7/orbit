@@ -53,8 +53,8 @@ export function UserMenu({
       </Menu.Trigger>
 
       <Menu.Portal>
-        <Menu.Positioner side="top" align="start" sideOffset={10} className="z-[60]">
-          <Menu.Popup className="min-w-56 rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
+        <Menu.Positioner side="top" align="start" sideOffset={10} className="z-[60] w-[var(--anchor-width)] min-w-56">
+          <Menu.Popup className="w-full rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
             <Menu.Item className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground">
               <Pencil className="size-3.5" />
               Editar perfil
