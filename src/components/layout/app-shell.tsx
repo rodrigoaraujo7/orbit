@@ -103,12 +103,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile topbar */}
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-3 backdrop-blur-sm md:hidden">
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon-sm" onClick={() => setDrawerOpen(true)} aria-label="Abrir menu">
-            <Menu />
-          </Button>
-          <Logo />
-        </div>
+        <Button variant="ghost" size="icon-sm" onClick={() => setDrawerOpen(true)} aria-label="Abrir menu">
+          <Menu />
+        </Button>
         <ThemeToggle theme={theme} onToggle={toggle} />
       </header>
 
@@ -120,6 +117,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Drawer.Title className="sr-only">Navegação principal</Drawer.Title>
             <Logo />
             <SidebarNav onNavigate={() => setDrawerOpen(false)} />
+            <div className="border-t p-2">
+              <UserMenu theme={theme} onToggleTheme={toggle} />
+            </div>
           </Drawer.Popup>
         </Drawer.Portal>
       </Drawer.Root>
