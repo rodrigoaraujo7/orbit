@@ -86,8 +86,8 @@ export function FiltersBar({
 
   return (
     <div className="flex flex-col gap-3 border-b px-4 py-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-        <div className="w-full sm:w-40">
+      <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="w-full shrink-0 sm:w-40">
           <Select
             value={activePreset ? String(activePreset.months) : ""}
             onValueChange={(value) => {
@@ -99,7 +99,7 @@ export function FiltersBar({
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <MonthPicker
             value={filters.monthFrom}
             onChange={(monthFrom) => set({ monthFrom })}
@@ -117,7 +117,7 @@ export function FiltersBar({
           />
         </div>
 
-        <div className="w-full sm:w-52">
+        <div className="min-w-0 flex-1">
           <Select
             value={filters.clientId}
             // clearing the client also clears a project that no longer belongs to it
@@ -135,7 +135,7 @@ export function FiltersBar({
           />
         </div>
 
-        <div className="w-full sm:w-56">
+        <div className="min-w-0 flex-1">
           <Select
             value={filters.projectId}
             onValueChange={(projectId) => set({ projectId })}
@@ -144,7 +144,7 @@ export function FiltersBar({
           />
         </div>
 
-        <div className="w-full sm:w-28">
+        <div className="w-full shrink-0 sm:w-28">
           <Select
             value={filters.currency}
             onValueChange={(currency) => set({ currency })}
@@ -154,7 +154,7 @@ export function FiltersBar({
         </div>
 
         {isFiltered && (
-          <Button variant="ghost" size="sm" onClick={() => onChange(emptyFilters)}>
+          <Button variant="ghost" size="sm" className="shrink-0" onClick={() => onChange(emptyFilters)}>
             <X />
             Limpar
           </Button>
