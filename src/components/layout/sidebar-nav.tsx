@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import { Columns3, FolderGit2, LayoutDashboard, Settings, Wallet } from "lucide-react"
+import { Columns3, FolderGit2, LayoutDashboard, Settings } from "lucide-react"
 
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
@@ -8,7 +8,6 @@ const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/projects", label: "Projetos", icon: FolderGit2 },
   { to: "/kanban", label: "Kanban", icon: Columns3 },
-  { to: "/finance", label: "Financeiro", icon: Wallet },
   { to: "/settings", label: "Configurações", icon: Settings },
 ] as const
 
