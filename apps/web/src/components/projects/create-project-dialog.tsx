@@ -28,7 +28,6 @@ import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { DEAL_KIND_LABEL, type Project } from "@/data/projects"
-import type { Contact } from "@/data/contacts"
 import { currencyOptions } from "@/lib/currency"
 import { formatCurrency } from "@/lib/format"
 import {
@@ -152,29 +151,25 @@ export function CreateProjectDialog({
   // zeroed amount = free project, same rule as the tools
   const isFree = !hasPositiveAmount(amount ?? "")
 
-  const onSubmit = handleSubmit((values) => {
+  const onSubmit = handleSubmit(async (values) => {
     try {
-      // creating the contact is a side effect the schema itself can't own —
-      // resolve it here, then hand toProject a plain clientId like any other.
       let clientId = values.clientId
       if (values.isNewContact) {
-        const contact: Contact = {
-          id: crypto.randomUUID(),
+        const created = await addContact({
           name: values.newContactName,
           email: values.newContactEmail || undefined,
           phone: values.newContactPhone,
           company: values.newContactCompany,
-        }
-        addContact(contact)
-        clientId = contact.id
+        })
+        clientId = created.id
       }
       const projectValues = { ...values, clientId }
 
       if (project) {
-        updateProject(toProject(projectValues, project))
+        await updateProject(toProject(projectValues, project))
         toast.add({ title: "Projeto atualizado", type: "success" })
       } else {
-        addProject(toProject(projectValues))
+        await addProject(toProject(projectValues))
         toast.add({ title: "Projeto criado", type: "success" })
       }
       onOpenChange(false)

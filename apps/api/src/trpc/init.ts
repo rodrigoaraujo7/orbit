@@ -7,7 +7,6 @@ import { withUser, type Tx } from "../db/with-user.ts"
 export async function createContext(opts: FetchCreateContextFnOptions) {
   const session = await getAuth().api.getSession({ headers: opts.req.headers })
   return {
-    db: getDb(),
     session,
     user: session?.user ?? null,
     req: opts.req,
@@ -32,6 +31,6 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   })
 })
 
-export function asUser<T>(ctx: { db: Context["db"]; userId: string }, fn: (tx: Tx) => Promise<T>) {
-  return withUser(ctx.db, ctx.userId, fn)
+export function asUser<T>(ctx: { userId: string }, fn: (tx: Tx) => Promise<T>) {
+  return withUser(getDb(), ctx.userId, fn)
 }

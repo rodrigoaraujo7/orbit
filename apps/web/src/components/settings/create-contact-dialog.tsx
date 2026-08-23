@@ -18,7 +18,6 @@ import {
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/toast"
-import type { Contact } from "@/data/contacts"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useRegistry } from "@/lib/registry-store"
 
@@ -71,16 +70,14 @@ export function CreateContactDialog({
     if (open) reset(emptyContactForm)
   }, [open, reset])
 
-  const onSubmit = handleSubmit((values) => {
-    const contact: Contact = {
-      id: crypto.randomUUID(),
-      name: values.name,
-      email: values.email || undefined,
-      phone: values.phone,
-      company: values.company,
-    }
+  const onSubmit = handleSubmit(async (values) => {
     try {
-      addContact(contact)
+      await addContact({
+        name: values.name,
+        email: values.email || undefined,
+        phone: values.phone,
+        company: values.company,
+      })
       toast.add({ title: "Contato criado", type: "success" })
       onOpenChange(false)
     } catch {

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm"
+import { and, count, eq, gte } from "drizzle-orm"
 import { z } from "zod"
 import { TRPCError } from "@trpc/server"
 import { auditLog, credential, userKey } from "../db/schema.ts"
@@ -11,10 +11,13 @@ import {
   unwrapDek,
   wrapDek,
 } from "../crypto/envelope.ts"
-import { allowAttempt } from "../crypto/rate-limit.ts"
 import { env } from "../env.ts"
 import { asUser, protectedProcedure, router } from "../trpc/init.ts"
 import type { Tx } from "../db/with-user.ts"
+
+const REVEAL_LIMIT = 10
+const REVEAL_WINDOW_MS = 60 * 60 * 1000
+const REVEAL_ATTEMPT = "credential.reveal.attempt"
 
 function masterKey() {
   return parseMasterKey(env("MASTER_KEY"))
@@ -65,6 +68,54 @@ export async function sealNewSecret(
   return id
 }
 
+export function requireRevealAccess(
+  user: { twoFactorEnabled?: boolean | null },
+  sessionCreatedAt: Date | string | null | undefined,
+  now = Date.now(),
+) {
+  if (!user.twoFactorEnabled) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "2FA is required to reveal secrets",
+    })
+  }
+  const ageMs = sessionCreatedAt ? now - new Date(sessionCreatedAt).getTime() : Infinity
+  if (ageMs > 15 * 60 * 1000) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Reauthenticate to reveal secrets",
+    })
+  }
+}
+
+export async function recordRevealAttempt(
+  tx: Tx,
+  userId: string,
+  subjectId: string,
+  ip?: string | null,
+  userAgent?: string | null,
+) {
+  await tx.insert(auditLog).values({
+    id: crypto.randomUUID(),
+    userId,
+    action: REVEAL_ATTEMPT,
+    subjectId,
+    ip: ip ?? null,
+    userAgent: userAgent ?? null,
+  })
+}
+
+export async function revealAttemptCount(tx: Tx, userId: string, now = new Date()) {
+  const since = new Date(now.getTime() - REVEAL_WINDOW_MS)
+  const [row] = await tx
+    .select({ n: count() })
+    .from(auditLog)
+    .where(
+      and(eq(auditLog.userId, userId), eq(auditLog.action, REVEAL_ATTEMPT), gte(auditLog.createdAt, since)),
+    )
+  return Number(row?.n ?? 0)
+}
+
 export const credentialsRouter = router({
   list: protectedProcedure
     .input(z.object({ projectToolId: z.string() }))
@@ -98,25 +149,20 @@ export const credentialsRouter = router({
   reveal: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.user.twoFactorEnabled) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "2FA is required to reveal secrets",
-        })
-      }
-      const issuedAt = ctx.session?.session.createdAt
-      const ageMs = issuedAt ? Date.now() - new Date(issuedAt).getTime() : Infinity
-      if (ageMs > 15 * 60 * 1000) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Reauthenticate to reveal secrets",
-        })
-      }
-      if (!allowAttempt(`reveal:${ctx.userId}`, 10, 60 * 60 * 1000)) {
-        throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
-      }
+      requireRevealAccess(ctx.user, ctx.session?.session.createdAt)
 
       return asUser(ctx, async (tx) => {
+        await recordRevealAttempt(
+          tx,
+          ctx.userId,
+          input.id,
+          ctx.req.headers.get("x-forwarded-for"),
+          ctx.req.headers.get("user-agent"),
+        )
+        if ((await revealAttemptCount(tx, ctx.userId)) > REVEAL_LIMIT) {
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
+        }
+
         const [row] = await tx.select().from(credential).where(eq(credential.id, input.id)).limit(1)
         if (!row) throw new TRPCError({ code: "NOT_FOUND" })
         const dek = await dekFor(tx, ctx.userId)
