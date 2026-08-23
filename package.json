@@ -1,6 +1,7 @@
 {
   "name": "projects-manager",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "pnpm --filter web dev",
     "dev:web": "pnpm --filter web dev",
