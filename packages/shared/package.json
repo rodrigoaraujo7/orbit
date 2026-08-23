@@ -1,0 +1,17 @@
+{
+  "name": "shared",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check": "node --experimental-strip-types src/money.check.ts && node --experimental-strip-types src/domain.check.ts",
+    "lint": "pnpm check",
+    "build": "pnpm check"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  }
+}

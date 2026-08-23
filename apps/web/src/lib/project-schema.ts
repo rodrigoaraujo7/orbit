@@ -1,11 +1,21 @@
 import { z } from "zod"
+import {
+  billingCycleSchema,
+  dealKindSchema,
+  DEFAULT_CURRENCY,
+  hasPositiveAmount,
+  parseAmount,
+  payerSchema,
+  projectStatusSchema,
+} from "shared"
+
+export { hasPositiveAmount, parseAmount }
 
 // Relative imports (not the "@/" alias) on purpose: this module also runs
 // outside Vite, in the self-check with `node --experimental-strip-types`, and
 // Node does not resolve the alias.
 import type { Deal, Project, Tool } from "../data/projects.ts"
 import { OTHER_TOOL_ID, findCatalogTool } from "../data/tool-catalog.ts"
-import { DEFAULT_CURRENCY } from "./currency.ts"
 import { todayIso } from "./dates.ts"
 import { withProjectStatus } from "./project-status.ts"
 
@@ -25,14 +35,8 @@ export const projectSchema = z
     newContactEmail: z.string().trim(),
     newContactPhone: z.string().trim(),
     newContactCompany: z.string().trim(),
-    status: z.enum([
-      "queued",
-      "in-development",
-      "paused",
-      "in-validation",
-      "completed",
-    ]),
-    dealKind: z.enum(["upfront", "installment"]),
+    status: projectStatusSchema,
+    dealKind: dealKindSchema,
     amount: z.string().trim(),
     currency: z.string().trim().min(1),
     installments: z.string().trim(),
@@ -43,9 +47,9 @@ export const projectSchema = z
         account: z.string().trim(),
         amount: z.string().trim(),
         currency: z.string().trim().min(1),
-        cycle: z.enum(["monthly", "yearly", "one-off"]),
+        cycle: billingCycleSchema,
         nextInvoice: z.string().trim(),
-        payer: z.enum(["me", "client"]),
+        payer: payerSchema,
         secrets: z.array(
           z.object({
             key: z.string().trim().min(1, "Informe a chave"),
@@ -210,14 +214,6 @@ export const emptyProjectForm: ProjectFormValues = {
   repoPath: "",
 }
 
-/** Accepts "18000" and "18.000,50" (pt-BR format). */
-export function parseAmount(raw: string): number | null {
-  if (!raw) return null
-  const normalized = raw.replace(/\./g, "").replace(",", ".")
-  const value = Number(normalized)
-  return Number.isFinite(value) ? value : null
-}
-
 /**
  * Inverse of `parseAmount` — used by `fromProject` to refill the amount field
  * when editing. `String(340.5)` would give "340.5" (decimal point), which
@@ -229,17 +225,6 @@ function formatAmountInput(value: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })
-}
-
-/**
- * A tool/project is paid when it has an amount greater than zero — there is no
- * separate `paid` flag, nor a "free" deal kind. Schema and UI share this
- * function so they cannot disagree on what counts as "zeroed" (empty, "0" and
- * "0,00" are all free).
- */
-export function hasPositiveAmount(amount: string): boolean {
-  const value = parseAmount(amount)
-  return value != null && value > 0
 }
 
 export const GITHUB_PREFIX = "https://github.com/"
