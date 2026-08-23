@@ -13,11 +13,13 @@ import { trpc } from "./trpc"
 
 type ProjectsContextValue = {
   projects: Project[]
-  addProject: (project: Project) => void
-  updateProject: (project: Project) => void
+  isPending: boolean
+  isError: boolean
+  addProject: (project: Project) => Promise<{ id: string }>
+  updateProject: (project: Project) => Promise<{ ok: true }>
   moveProject: (id: string, toStatus: ProjectStatus, toIndex: number) => void
   replaceProjects: (projects: Project[]) => void
-  deleteProject: (id: string) => void
+  deleteProject: (id: string) => Promise<{ ok: true }>
   findProject: (id: string) => Project | undefined
 }
 
@@ -38,42 +40,48 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   const create = useMutation({
     mutationFn: (project: Project) => trpc.projects.create.mutate(project),
     onSuccess: invalidate,
+    onError: invalidate,
   })
   const update = useMutation({
     mutationFn: (project: Project) => trpc.projects.update.mutate(project),
     onSuccess: invalidate,
+    onError: invalidate,
   })
   const move = useMutation({
     mutationFn: (input: { id: string; status: ProjectStatus; index: number }) =>
       trpc.projects.move.mutate(input),
     onSuccess: invalidate,
+    onError: invalidate,
   })
   const remove = useMutation({
     mutationFn: (id: string) => trpc.projects.delete.mutate({ id }),
     onSuccess: invalidate,
+    onError: invalidate,
   })
 
   const value = useMemo<ProjectsContextValue>(
     () => ({
       projects,
-      addProject: (project) => create.mutate(project),
-      updateProject: (project) => update.mutate(project),
+      isPending: query.isPending,
+      isError: query.isError,
+      addProject: (project) => create.mutateAsync(project),
+      updateProject: (project) => update.mutateAsync(project),
       moveProject: (id, toStatus, toIndex) => {
         const next = moveProjectInList(projects, id, toStatus, toIndex)
         const moved = next.find((p) => p.id === id)
-        if (moved) move.mutate({ id, status: toStatus, index: toIndex })
+        if (moved) void move.mutateAsync({ id, status: toStatus, index: toIndex })
         const recorded = recordProjectHistory(projects, next)
         queryClient.setQueryData(["projects"], recorded)
       },
       replaceProjects: (next) => {
-        for (const project of recordProjectHistory(projects, next)) {
-          update.mutate(project)
-        }
+        void Promise.all(
+          recordProjectHistory(projects, next).map((project) => update.mutateAsync(project)),
+        )
       },
-      deleteProject: (id) => remove.mutate(id),
+      deleteProject: (id) => remove.mutateAsync(id),
       findProject: (id) => projects.find((p) => p.id === id),
     }),
-    [projects, create, update, move, remove, queryClient],
+    [projects, query.isPending, query.isError, create, update, move, remove, queryClient],
   )
 
   return <ProjectsContext value={value}>{children}</ProjectsContext>

@@ -9,6 +9,7 @@ import {
   toCents,
 } from "shared"
 import { credential, project, projectTool } from "../db/schema.ts"
+import type { Tx } from "../db/with-user.ts"
 import { asUser, protectedProcedure, router } from "../trpc/init.ts"
 import { sealNewSecret } from "./credentials.ts"
 
@@ -121,6 +122,55 @@ async function loadProjects(tx: Parameters<Parameters<typeof asUser>[1]>[0], use
   )
 }
 
+export async function replaceProjectTools(
+  tx: Tx,
+  userId: string,
+  projectId: string,
+  tools: z.infer<typeof toolInput>[],
+) {
+  const existingTools = await tx.select().from(projectTool).where(eq(projectTool.projectId, projectId))
+  const existingSecrets = await tx.select().from(credential)
+  await tx.delete(projectTool).where(eq(projectTool.projectId, projectId))
+  for (const tool of tools) {
+    const toolId = crypto.randomUUID()
+    await tx.insert(projectTool).values({
+      id: toolId,
+      userId,
+      projectId,
+      catalogId: tool.id,
+      name: tool.name,
+      category: tool.category,
+      account: tool.account ?? null,
+      amountCents: tool.billing ? toCents(tool.billing.amount) : null,
+      currency: tool.billing?.currency ?? null,
+      cycle: tool.billing?.cycle ?? null,
+      nextInvoice: tool.billing?.nextInvoice ?? null,
+      payer: tool.billing?.payer ?? null,
+    })
+    for (const secret of tool.secrets) {
+      if (secret.value) {
+        await sealNewSecret(tx, userId, toolId, secret.key, secret.value)
+        continue
+      }
+      const prevTool = existingTools.find((row) => row.catalogId === tool.id)
+      const prev = existingSecrets.find(
+        (row) => row.projectToolId === prevTool?.id && row.label === secret.key,
+      )
+      if (!prev) continue
+      await tx.insert(credential).values({
+        id: prev.id,
+        userId,
+        projectToolId: toolId,
+        label: prev.label,
+        ciphertext: prev.ciphertext,
+        iv: prev.iv,
+        tag: prev.tag,
+        version: prev.version,
+      })
+    }
+  }
+}
+
 export const projectsRouter = router({
   list: protectedProcedure.query(({ ctx }) => asUser(ctx, (tx) => loadProjects(tx, ctx.userId))),
 
@@ -196,50 +246,7 @@ export const projectsRouter = router({
         })
         .where(eq(project.id, input.id))
 
-      const existingTools = await tx
-        .select()
-        .from(projectTool)
-        .where(eq(projectTool.projectId, input.id))
-      const existingSecrets = await tx.select().from(credential)
-      await tx.delete(projectTool).where(eq(projectTool.projectId, input.id))
-      for (const tool of input.tools) {
-        const toolId = crypto.randomUUID()
-        await tx.insert(projectTool).values({
-          id: toolId,
-          userId: ctx.userId,
-          projectId: input.id,
-          catalogId: tool.id,
-          name: tool.name,
-          category: tool.category,
-          account: tool.account ?? null,
-          amountCents: tool.billing ? toCents(tool.billing.amount) : null,
-          currency: tool.billing?.currency ?? null,
-          cycle: tool.billing?.cycle ?? null,
-          nextInvoice: tool.billing?.nextInvoice ?? null,
-          payer: tool.billing?.payer ?? null,
-        })
-        for (const secret of tool.secrets) {
-          if (secret.value) {
-            await sealNewSecret(tx, ctx.userId, toolId, secret.key, secret.value)
-            continue
-          }
-          const prevTool = existingTools.find((row) => row.catalogId === tool.id)
-          const prev = existingSecrets.find(
-            (row) => row.projectToolId === prevTool?.id && row.label === secret.key,
-          )
-          if (!prev) continue
-          await tx.insert(credential).values({
-            id: crypto.randomUUID(),
-            userId: ctx.userId,
-            projectToolId: toolId,
-            label: prev.label,
-            ciphertext: prev.ciphertext,
-            iv: prev.iv,
-            tag: prev.tag,
-            version: prev.version,
-          })
-        }
-      }
+      await replaceProjectTools(tx, ctx.userId, input.id, input.tools)
     })
     return { ok: true }
   }),

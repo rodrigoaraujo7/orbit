@@ -3,7 +3,7 @@
  * Run: pnpm --filter api check:isolation
  */
 import { eq, sql } from "drizzle-orm"
-import { contact } from "./schema.ts"
+import { contact, invoice, project, projectTool } from "./schema.ts"
 import { createTestDb, insertUser } from "./test-db.ts"
 import { withUser } from "./with-user.ts"
 
@@ -61,6 +61,102 @@ const asA = await withUser(db, "user-a", async (tx) =>
 )
 assert.equal(asA.length, 1, "list as A")
 assert.equal(asA[0]?.name, "Alice Contact")
+
+await client.query(
+  `insert into two_factor (id, secret, backup_codes, user_id) values ('tf-a', 'totp-secret', '[]', 'user-a')`,
+)
+let authTableDenied = false
+try {
+  await withUser(db, "user-b", async (tx) => tx.execute(sql`select secret from two_factor`))
+} catch {
+  authTableDenied = true
+}
+assert.equal(authTableDenied, true, "app_runtime cannot read two_factor")
+
+await withUser(db, "user-a", async (tx) => {
+  await tx.insert(project).values({
+    id: "p-a",
+    userId: "user-a",
+    name: "Alice Project",
+    status: "queued",
+    position: 0,
+    startedAt: "2026-01-01",
+    dealKind: "upfront",
+    dealAmountCents: 0n,
+    dealCurrency: "BRL",
+  })
+})
+
+let stealInvoiceFailed = false
+try {
+  await withUser(db, "user-b", async (tx) => {
+    await tx.insert(invoice).values({
+      id: "inv-steal",
+      userId: "user-b",
+      projectId: "p-a",
+      amountCents: 100n,
+      currency: "BRL",
+      status: "pending",
+      dueDate: "2026-02-01",
+    })
+  })
+} catch {
+  stealInvoiceFailed = true
+}
+assert.equal(stealInvoiceFailed, true, "invoice cannot point at another tenant's project")
+
+let stealToolFailed = false
+try {
+  await withUser(db, "user-b", async (tx) => {
+    await tx.insert(projectTool).values({
+      id: "tool-steal",
+      userId: "user-b",
+      projectId: "p-a",
+      catalogId: "aws",
+      name: "AWS",
+      category: "infra",
+    })
+  })
+} catch {
+  stealToolFailed = true
+}
+assert.equal(stealToolFailed, true, "project_tool cannot point at another tenant's project")
+
+await withUser(db, "user-a", async (tx) => {
+  await tx.insert(project).values({
+    id: "p-with-contact",
+    userId: "user-a",
+    contactId: "c-a",
+    name: "With contact",
+    status: "queued",
+    position: 1,
+    startedAt: "2026-01-01",
+    dealKind: "upfront",
+    dealAmountCents: 0n,
+    dealCurrency: "BRL",
+  })
+})
+
+let missingContactFailed = false
+try {
+  await withUser(db, "user-a", async (tx) => {
+    await tx.insert(project).values({
+      id: "p-bad-contact",
+      userId: "user-a",
+      contactId: "does-not-exist",
+      name: "Bad contact",
+      status: "queued",
+      position: 2,
+      startedAt: "2026-01-01",
+      dealKind: "upfront",
+      dealAmountCents: 0n,
+      dealCurrency: "BRL",
+    })
+  })
+} catch {
+  missingContactFailed = true
+}
+assert.equal(missingContactFailed, true, "project cannot point at a contact that does not exist")
 
 await client.close()
 console.log("isolation.check.ts: ok")

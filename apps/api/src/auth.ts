@@ -18,9 +18,6 @@ export function createAuth() {
       schema,
     }),
     emailAndPassword: { enabled: true },
-    session: {
-      cookieCache: { enabled: true, maxAge: 60 * 5 },
-    },
     advanced: {
       defaultCookieAttributes: {
         httpOnly: true,

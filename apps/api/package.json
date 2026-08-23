@@ -8,7 +8,7 @@
     "start": "node --experimental-strip-types src/index.ts",
     "check": "node --experimental-strip-types src/app.check.ts",
     "check:isolation": "node --experimental-strip-types src/db/isolation.check.ts",
-    "check:crypto": "node --experimental-strip-types src/crypto/envelope.check.ts && node --experimental-strip-types src/crypto/rate-limit.check.ts",
+    "check:crypto": "node --experimental-strip-types src/crypto/envelope.check.ts && node --experimental-strip-types src/routers/projects.secrets.check.ts && node --experimental-strip-types src/routers/credentials.reveal.check.ts",
     "lint": "pnpm check && pnpm check:isolation && pnpm check:crypto",
     "build": "pnpm lint"
   },

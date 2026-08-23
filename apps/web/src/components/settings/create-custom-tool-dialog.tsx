@@ -25,7 +25,6 @@ import {
   TOOL_CATEGORY_ORDER,
   type ToolCategory,
 } from "@/data/tool-catalog"
-import type { CustomTool } from "@/data/custom-tools"
 import { useRegistry } from "@/lib/registry-store"
 
 const categoryOptions = TOOL_CATEGORY_ORDER.map((category) => ({
@@ -71,14 +70,12 @@ export function CreateCustomToolDialog({
     if (open) reset(emptyCustomToolForm)
   }, [open, reset])
 
-  const onSubmit = handleSubmit((values) => {
-    const tool: CustomTool = {
-      id: crypto.randomUUID(),
-      name: values.name,
-      category: values.category as ToolCategory,
-    }
+  const onSubmit = handleSubmit(async (values) => {
     try {
-      addCustomTool(tool)
+      await addCustomTool({
+        name: values.name,
+        category: values.category as ToolCategory,
+      })
       toast.add({ title: "Ferramenta criada", type: "success" })
       onOpenChange(false)
     } catch {
