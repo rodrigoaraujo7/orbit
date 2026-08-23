@@ -1,0 +1,213 @@
+-- Auth tables (Better Auth). No RLS — they are the identity store.
+create table if not exists "user" (
+  id text primary key,
+  name text not null,
+  email text not null unique,
+  email_verified boolean not null default false,
+  image text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  two_factor_enabled boolean default false
+);
+
+create table if not exists session (
+  id text primary key,
+  expires_at timestamptz not null,
+  token text not null unique,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  ip_address text,
+  user_agent text,
+  user_id text not null references "user"(id) on delete cascade
+);
+
+create table if not exists account (
+  id text primary key,
+  account_id text not null,
+  provider_id text not null,
+  user_id text not null references "user"(id) on delete cascade,
+  access_token text,
+  refresh_token text,
+  id_token text,
+  access_token_expires_at timestamptz,
+  refresh_token_expires_at timestamptz,
+  scope text,
+  password text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists verification (
+  id text primary key,
+  identifier text not null,
+  value text not null,
+  expires_at timestamptz not null,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists two_factor (
+  id text primary key,
+  secret text not null,
+  backup_codes text not null,
+  user_id text not null references "user"(id) on delete cascade,
+  verified boolean default true,
+  failed_verification_count integer default 0,
+  locked_until timestamptz
+);
+
+-- Domain tables. Every row is owned by a user.
+create table if not exists contact (
+  id text primary key,
+  user_id text not null references "user"(id) on delete cascade,
+  name text not null,
+  email text,
+  phone text,
+  company text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists project (
+  id text primary key,
+  user_id text not null references "user"(id) on delete cascade,
+  name text not null,
+  status text not null,
+  position integer not null default 0,
+  contact_id text references contact(id) on delete set null,
+  started_at date not null,
+  ended_at date,
+  deal_kind text not null,
+  deal_amount_cents bigint not null default 0,
+  deal_currency text not null default 'BRL',
+  deal_installments integer,
+  repo_full_name text,
+  repo_url text,
+  repo_workflow text,
+  description text,
+  comments jsonb not null default '[]',
+  history jsonb not null default '[]',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists project_tool (
+  id text primary key,
+  user_id text not null references "user"(id) on delete cascade,
+  project_id text not null references project(id) on delete cascade,
+  catalog_id text not null,
+  name text not null,
+  category text not null,
+  account text,
+  amount_cents bigint,
+  currency text,
+  cycle text,
+  next_invoice date,
+  payer text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists credential (
+  id text primary key,
+  user_id text not null references "user"(id) on delete cascade,
+  project_tool_id text not null references project_tool(id) on delete cascade,
+  label text not null,
+  ciphertext text not null,
+  iv text not null,
+  tag text not null,
+  version integer not null default 1,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists invoice (
+  id text primary key,
+  user_id text not null references "user"(id) on delete cascade,
+  project_id text not null references project(id) on delete cascade,
+  amount_cents bigint not null,
+  currency text not null,
+  status text not null,
+  due_date date not null,
+  paid_at timestamptz,
+  payment_method text,
+  reference_month text,
+  payer_name text not null default '',
+  has_attachment boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists payment (
+  id text primary key,
+  user_id text not null references "user"(id) on delete cascade,
+  invoice_id text not null references invoice(id) on delete cascade,
+  amount_cents bigint not null,
+  paid_at timestamptz not null,
+  method text not null
+);
+
+create table if not exists custom_tool (
+  id text primary key,
+  user_id text not null references "user"(id) on delete cascade,
+  name text not null,
+  category text not null,
+  unique (user_id, name)
+);
+
+create table if not exists user_key (
+  user_id text primary key references "user"(id) on delete cascade,
+  wrapped_dek text not null,
+  iv text not null,
+  tag text not null,
+  master_key_version integer not null default 1
+);
+
+create table if not exists audit_log (
+  id text primary key,
+  user_id text not null references "user"(id) on delete cascade,
+  action text not null,
+  subject_id text,
+  ip text,
+  user_agent text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists contact_user_created_idx on contact (user_id, created_at desc);
+create index if not exists project_user_created_idx on project (user_id, created_at desc);
+create index if not exists project_tool_user_project_idx on project_tool (user_id, project_id);
+create index if not exists invoice_user_project_idx on invoice (user_id, project_id);
+create index if not exists payment_user_invoice_idx on payment (user_id, invoice_id);
+create index if not exists credential_user_tool_idx on credential (user_id, project_tool_id);
+create index if not exists audit_log_user_created_idx on audit_log (user_id, created_at desc);
+
+-- Runtime role cannot bypass RLS. Superuser still can; withUser() SET ROLE here.
+do $$ begin
+  create role app_runtime nosuperuser nobypassrls;
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  execute format('grant app_runtime to %I', current_user);
+exception when others then null;
+end $$;
+
+grant usage on schema public to app_runtime;
+grant select, insert, update, delete on all tables in schema public to app_runtime;
+grant usage, select on all sequences in schema public to app_runtime;
+alter default privileges in schema public grant select, insert, update, delete on tables to app_runtime;
+
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'contact','project','project_tool','credential','invoice','payment',
+    'custom_tool','user_key','audit_log'
+  ]
+  loop
+    execute format('alter table %I enable row level security', t);
+    execute format('alter table %I force row level security', t);
+    execute format('drop policy if exists tenant_isolation on %I', t);
+    execute format(
+      'create policy tenant_isolation on %I
+         using (user_id = nullif(current_setting(''app.user_id'', true), ''''))
+         with check (user_id = nullif(current_setting(''app.user_id'', true), ''''))',
+      t
+    );
+  end loop;
+end $$;
