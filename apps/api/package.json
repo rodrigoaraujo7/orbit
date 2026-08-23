@@ -7,15 +7,28 @@
     "dev": "node --watch --experimental-strip-types src/index.ts",
     "start": "node --experimental-strip-types src/index.ts",
     "check": "node --experimental-strip-types src/app.check.ts",
-    "lint": "pnpm check",
-    "build": "pnpm check"
+    "check:isolation": "node --experimental-strip-types src/db/isolation.check.ts",
+    "check:crypto": "node --experimental-strip-types src/crypto/envelope.check.ts && node --experimental-strip-types src/crypto/rate-limit.check.ts",
+    "lint": "pnpm check && pnpm check:isolation && pnpm check:crypto",
+    "build": "pnpm lint"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.9",
+    "@hono/trpc-server": "^0.4.2",
+    "@trpc/server": "^11.18.0",
+    "better-auth": "^1.7.1",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.11.7",
-    "shared": "workspace:*"
+    "postgres": "^3.4.9",
+    "shared": "workspace:*",
+    "zod": "^4.4.3"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.6",
+    "@types/node": "^24.13.3",
+    "drizzle-kit": "^0.31.10"
   }
 }

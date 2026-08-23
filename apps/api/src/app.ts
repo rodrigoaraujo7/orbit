@@ -17,7 +17,7 @@ app.use(
   }),
 )
 app.use("*", secureHeaders())
-app.use("*", bodyLimit({ maxSize: 64 * 1024 }))
+app.use("*", bodyLimit({ maxSize: 1024 * 1024 }))
 
 app.get("/health", (c) => c.json({ ok: true }))
 

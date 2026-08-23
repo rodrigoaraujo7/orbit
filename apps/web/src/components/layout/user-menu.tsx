@@ -1,14 +1,8 @@
 import { Menu } from "@base-ui/react/menu"
 import { LogOut, Moon, Pencil, Sun, Users } from "lucide-react"
 
+import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
-
-// ponytail: mocked data and actions — no auth/backend yet. Plug in the real
-// user and handlers (logout, switch account, edit profile) once they exist.
-const mockUser = {
-  name: "Rodrigo Araujo",
-  email: "rodrigo@fastbuilt.com.br",
-}
 
 function initials(name: string) {
   return name
@@ -28,6 +22,12 @@ export function UserMenu({
   theme: "light" | "dark"
   onToggleTheme: () => void
 }) {
+  const { data } = authClient.useSession()
+  const user = {
+    name: data?.user.name ?? "Conta",
+    email: data?.user.email ?? "",
+  }
+
   return (
     <Menu.Root>
       <Menu.Trigger
@@ -38,15 +38,15 @@ export function UserMenu({
         )}
       >
         <div className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-          {initials(mockUser.name)}
+            {initials(user.name)}
         </div>
         {!collapsed && (
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-sidebar-foreground">
-              {mockUser.name}
+              {user.name}
             </p>
             <p className="truncate text-xs text-sidebar-foreground/60">
-              {mockUser.email}
+              {user.email}
             </p>
           </div>
         )}
@@ -77,6 +77,7 @@ export function UserMenu({
             </Menu.Item>
             <Menu.Separator className="my-1 h-px bg-border" />
             <Menu.Item
+              onClick={() => void authClient.signOut()}
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-destructive outline-none select-none",
                 "data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
