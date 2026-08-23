@@ -1,0 +1,21 @@
+{
+  "name": "api",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --experimental-strip-types src/index.ts",
+    "start": "node --experimental-strip-types src/index.ts",
+    "check": "node --experimental-strip-types src/app.check.ts",
+    "lint": "pnpm check",
+    "build": "pnpm check"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.9",
+    "hono": "^4.11.7",
+    "shared": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
