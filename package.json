@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter web dev",
+    "dev": "pnpm --parallel --filter web --filter api run dev",
     "dev:web": "pnpm --filter web dev",
     "dev:api": "pnpm --filter api dev",
     "build": "pnpm -r build",
