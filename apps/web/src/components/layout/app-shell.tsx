@@ -110,7 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <ThemeToggle theme={theme} onToggle={toggle} />
         </header>
 
-        <DrawerContent className="w-60 bg-sidebar text-sidebar-foreground after:hidden">
+        <DrawerContent className="w-60 bg-sidebar/40 text-sidebar-foreground after:hidden">
           <DrawerTitle className="sr-only">Navegação principal</DrawerTitle>
           <Logo />
           <SidebarNav onNavigate={() => setDrawerOpen(false)} />
