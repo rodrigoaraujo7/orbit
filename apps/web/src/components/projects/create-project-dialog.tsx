@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, X } from "lucide-react"
-import { useEffect, type ReactNode } from "react"
+import { useLayoutEffect, useRef, type ReactNode } from "react"
 import {
   Controller,
   FormProvider,
@@ -123,7 +123,7 @@ export function CreateProjectDialog({
   description?: string
 }) {
   const { addProject, updateProject } = useProjects()
-  const { addContact } = useRegistry()
+  const { addContact, contacts, isContactsPending } = useRegistry()
 
   // the whole form goes into FormProvider: ToolField/SecretRow are nested and
   // consume it via useFormContext instead of taking control/register as props
@@ -142,8 +142,9 @@ export function CreateProjectDialog({
 
   // fills in the project data (editing) or clears it (creating) every time the
   // dialog opens — the form stays mounted all the time, so this is what makes
-  // switching projects between edits work.
-  useEffect(() => {
+  // switching projects between edits work. Layout (not effect) so the empty-
+  // contacts force below can run in the same turn, after this reset.
+  useLayoutEffect(() => {
     if (open) reset(project ? fromProject(project) : emptyProjectForm)
   }, [open, project, reset])
 
@@ -157,10 +158,39 @@ export function CreateProjectDialog({
   // zeroed amount = free project, same rule as the tools
   const isFree = !hasPositiveAmount(amount ?? "")
 
+  // Creating a project with no contacts yet: skip the picker and go straight
+  // to the inline form. Wait until the contacts query has settled so an empty
+  // cache during load does not flash this path and then snap back to the select.
+  const forceNewContact =
+    !project && !isContactsPending && contacts.length === 0
+  const showNewContactFields = forceNewContact || isNewContact
+
+  const wasForceNewContact = useRef(false)
+  useLayoutEffect(() => {
+    if (!open) {
+      wasForceNewContact.current = false
+      return
+    }
+    if (forceNewContact) {
+      setValue("isNewContact", true)
+      setValue("clientId", "")
+      wasForceNewContact.current = true
+      return
+    }
+    if (wasForceNewContact.current) {
+      wasForceNewContact.current = false
+      setValue("isNewContact", false)
+      setValue("newContactName", "")
+      setValue("newContactEmail", "")
+      setValue("newContactPhone", "")
+      setValue("newContactCompany", "")
+    }
+  }, [open, forceNewContact, setValue])
+
   const onSubmit = handleSubmit(async (values) => {
     try {
       let clientId = values.clientId
-      if (values.isNewContact) {
+      if (values.isNewContact || forceNewContact) {
         const created = await addContact({
           name: values.newContactName,
           email: values.newContactEmail || undefined,
@@ -228,30 +258,32 @@ export function CreateProjectDialog({
 
       {sections.includes("contact") && (
         <Section title="Contato">
-          <label className="flex items-center gap-2 text-sm text-muted-foreground select-none">
-            <input
-              type="checkbox"
-              className="size-4 accent-primary"
-              {...register("isNewContact", {
-                onChange: (e) => {
-                  // switching sides leaves the other one's state behind
-                  // otherwise — a stale clientId or half-filled contact
-                  // fields the user can no longer see.
-                  if (e.target.checked) {
-                    setValue("clientId", "")
-                  } else {
-                    setValue("newContactName", "")
-                    setValue("newContactEmail", "")
-                    setValue("newContactPhone", "")
-                    setValue("newContactCompany", "")
-                  }
-                },
-              })}
-            />
-            Criar um novo contato
-          </label>
+          {!forceNewContact && (
+            <label className="flex items-center gap-2 text-sm text-muted-foreground select-none">
+              <input
+                type="checkbox"
+                className="size-4 accent-primary"
+                {...register("isNewContact", {
+                  onChange: (e) => {
+                    // switching sides leaves the other one's state behind
+                    // otherwise — a stale clientId or half-filled contact
+                    // fields the user can no longer see.
+                    if (e.target.checked) {
+                      setValue("clientId", "")
+                    } else {
+                      setValue("newContactName", "")
+                      setValue("newContactEmail", "")
+                      setValue("newContactPhone", "")
+                      setValue("newContactCompany", "")
+                    }
+                  },
+                })}
+              />
+              Criar um novo contato
+            </label>
+          )}
 
-          {isNewContact ? (
+          {showNewContactFields ? (
             <div
               key="new-contact-fields"
               className="grid animate-in fade-in slide-in-from-top-1 gap-4 duration-200 sm:grid-cols-2"
