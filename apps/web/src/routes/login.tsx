@@ -112,8 +112,8 @@ function LoginPage() {
           color1="#c03a4a"
           color2="#020202"
           color3="#c03a4a"
-          timeSpeed={0.7}
-          colorBalance={-0.15}
+          timeSpeed={0.5}
+          colorBalance={-0.5}
           warpStrength={1}
           warpFrequency={5}
           warpSpeed={2}
