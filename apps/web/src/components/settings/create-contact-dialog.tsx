@@ -25,6 +25,7 @@ import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/toast"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { maskBrPhone } from "@/lib/format"
 import { useRegistry } from "@/lib/registry-store"
 
 const contactSchema = z
@@ -120,7 +121,13 @@ export function CreateContactDialog({
         {(props) => (
           <Input
             {...props}
-            {...register("phone")}
+            {...register("phone", {
+              onChange: (event) => {
+                event.target.value = maskBrPhone(event.target.value)
+              },
+            })}
+            inputMode="tel"
+            autoComplete="tel"
             placeholder="(11) 98765-4321"
           />
         )}
