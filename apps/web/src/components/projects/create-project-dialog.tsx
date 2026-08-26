@@ -35,7 +35,7 @@ import { toast } from "@/components/ui/toast"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { DEAL_KIND_LABEL, type Project } from "@/data/projects"
 import { currencyOptions } from "@/lib/currency"
-import { formatCurrency } from "@/lib/format"
+import { formatCurrency, maskBrPhone } from "@/lib/format"
 import {
   GITHUB_PREFIX,
   emptyProjectForm,
@@ -317,7 +317,13 @@ export function CreateProjectDialog({
                 {(props) => (
                   <Input
                     {...props}
-                    {...register("newContactPhone")}
+                    {...register("newContactPhone", {
+                      onChange: (event) => {
+                        event.target.value = maskBrPhone(event.target.value)
+                      },
+                    })}
+                    inputMode="tel"
+                    autoComplete="tel"
                     placeholder="(11) 98765-4321"
                   />
                 )}

@@ -18,6 +18,18 @@ export function formatCurrency(value: number, currency: string = DEFAULT_CURRENC
   return currencyFormatter(currency).format(value)
 }
 
+/** "(11) 98765-4321" (11 digits) or "(11) 3456-7890" (10). Caps at 11 digits. */
+export function maskBrPhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11)
+  if (digits.length === 0) return ""
+  if (digits.length <= 2) return `(${digits}`
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+  }
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+}
+
 /**
  * "2026-09-05" → "05/09/2026". Parsed by hand on purpose: `new Date("2026-09-05")`
  * is read as UTC and goes back a day in Brazil's timezone.
