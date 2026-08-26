@@ -126,7 +126,7 @@ function LoginPage() {
       <form
         onSubmit={onSubmit}
         noValidate
-        className="relative z-10 flex w-full max-w-sm flex-col gap-4 rounded-xl bg-card/40 p-6 shadow-lg ring-1 ring-white/25 backdrop-blur-xl"
+        className="relative z-10 flex w-full max-w-sm flex-col gap-4 rounded-xl bg-card/40 p-6 shadow-lg ring-1 ring-white/10 backdrop-blur-xl"
       >
         <div className="flex flex-col items-start gap-2">
           <div className="grid size-10 place-items-center rounded-lg bg-muted text-base font-bold text-muted-foreground">
