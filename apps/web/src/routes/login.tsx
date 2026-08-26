@@ -31,7 +31,9 @@ function authSchema(mode: "signin" | "signup", step: "credentials" | "totp") {
         : z.string(),
     password:
       step === "credentials"
-        ? z.string().min(1, "Informe a senha").min(8, "A senha precisa ter pelo menos 8 caracteres")
+        ? mode === "signup"
+          ? z.string().min(1, "Informe a senha").min(8, "A senha precisa ter pelo menos 8 caracteres")
+          : z.string().min(1, "Informe a senha")
         : z.string(),
     totp:
       step === "totp"
@@ -41,6 +43,14 @@ function authSchema(mode: "signin" | "signup", step: "credentials" | "totp") {
 }
 
 type AuthFormValues = z.infer<ReturnType<typeof authSchema>>
+
+function authErrorMessage(
+  error: { code?: string; message?: string },
+  fallback: string,
+) {
+  if (error.code === "INVALID_EMAIL_OR_PASSWORD") return "E-mail ou senha inválidos"
+  return error.message ?? fallback
+}
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -85,7 +95,7 @@ function LoginPage() {
           })
         : await authClient.signIn.email({ email: values.email, password: values.password })
     if (result.error) {
-      setError("password", { message: result.error.message ?? "Não foi possível entrar" })
+      setError("password", { message: authErrorMessage(result.error, "Não foi possível entrar") })
       return
     }
     if (mode === "signin" && result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) {
