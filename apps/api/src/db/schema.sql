@@ -23,6 +23,7 @@ create table if not exists session (
 
 create table if not exists account (
   id text primary key,
+  issuer text not null,
   account_id text not null,
   provider_id text not null,
   user_id text not null references "user"(id) on delete cascade,
@@ -193,6 +194,19 @@ create index if not exists audit_log_user_created_idx on audit_log (user_id, cre
 
 -- Existing DBs were created with single-column FKs and GRANT ALL.
 -- CREATE TABLE IF NOT EXISTS will not reshape them; this tail is idempotent.
+
+-- Better Auth 1.7 scopes accounts by (issuer, account_id). Credential rows
+-- use local:credential and the linked user's id.
+alter table account add column if not exists issuer text;
+update account
+  set issuer = 'local:credential',
+      account_id = user_id
+  where provider_id = 'credential' and (issuer is null or issuer = '');
+update account
+  set issuer = 'local:oauth:' || provider_id
+  where issuer is null or issuer = '';
+alter table account alter column issuer set not null;
+create unique index if not exists "account_issuer_accountId_uidx" on account (issuer, account_id);
 do $$ begin
   alter table contact add constraint contact_id_user_id_key unique (id, user_id);
 exception when duplicate_object or duplicate_table then null;
@@ -248,7 +262,7 @@ end $$;
 -- Runtime role cannot bypass RLS. Superuser still can; withUser() SET ROLE here.
 do $$ begin
   create role app_runtime nosuperuser nobypassrls;
-exception when duplicate_object then null;
+exception when duplicate_object or insufficient_privilege then null;
 end $$;
 
 do $$ begin
@@ -256,14 +270,30 @@ do $$ begin
 exception when others then null;
 end $$;
 
-revoke all on all tables in schema public from app_runtime;
-alter default privileges in schema public revoke select, insert, update, delete on tables from app_runtime;
+-- Creating and granting the role above needs CREATEROLE, which the runtime
+-- user may not have. Both failures are swallowed, so assert the outcome here:
+-- without this the API boots fine and every withUser() query dies on SET ROLE.
+do $$ begin
+  if to_regrole('app_runtime') is null then
+    raise exception 'role app_runtime is missing'
+      using hint =
+        'Run as a superuser: create role app_runtime nosuperuser nobypassrls; grant app_runtime to '
+        || quote_ident(current_user) || ';';
+  end if;
+  if not pg_has_role(current_user, 'app_runtime', 'member') then
+    raise exception 'role app_runtime exists but % is not a member of it', current_user
+      using hint =
+        'Run as a superuser: grant app_runtime to ' || quote_ident(current_user) || ';';
+  end if;
+end $$;
 
-grant usage on schema public to app_runtime;
-grant select, insert, update, delete on
-  contact, project, project_tool, credential, invoice, payment, custom_tool, user_key, audit_log
-  to app_runtime;
-grant usage, select on all sequences in schema public to app_runtime;
+do $$ begin
+  execute 'revoke all on all tables in schema public from app_runtime';
+  execute 'alter default privileges in schema public revoke select, insert, update, delete on tables from app_runtime';
+  execute 'grant usage on schema public to app_runtime';
+  execute 'grant select, insert, update, delete on contact, project, project_tool, credential, invoice, payment, custom_tool, user_key, audit_log to app_runtime';
+  execute 'grant usage, select on all sequences in schema public to app_runtime';
+end $$;
 
 do $$
 declare t text;
