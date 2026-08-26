@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
+import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -95,7 +96,10 @@ function LoginPage() {
           <div className="grid size-10 place-items-center rounded-lg bg-muted text-base font-bold text-muted-foreground">
             P
           </div>
-          <h1 className="font-subtitle text-xl">
+          <h1
+            key={`${step}-${mode}`}
+            className="font-subtitle text-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300"
+          >
             {step === "totp" ? (
               "Código de verificação"
             ) : (
@@ -106,7 +110,10 @@ function LoginPage() {
             )}
           </h1>
           {step === "credentials" && (
-            <p className="text-sm text-muted-foreground">
+            <p
+              key={mode}
+              className="text-sm text-muted-foreground motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
+            >
               {mode === "signin" ? "Não tem uma conta? " : "Já tem uma conta? "}
               <Button
                 type="button"
@@ -120,12 +127,27 @@ function LoginPage() {
             </p>
           )}
         </div>
-        {step === "credentials" && mode === "signup" && (
-          <Field label="Nome">
-            {(props) => (
-              <Input {...props} value={name} onChange={(e) => setName(e.target.value)} required />
+        {step === "credentials" && (
+          <div
+            className={cn(
+              "grid transition-[grid-template-rows,margin] duration-300 ease-out motion-reduce:transition-none",
+              mode === "signup" ? "grid-rows-[1fr]" : "grid-rows-[0fr] -mb-4",
             )}
-          </Field>
+          >
+            <div className="min-h-0 overflow-hidden" inert={mode !== "signup"}>
+              <Field label="Nome">
+                {(props) => (
+                  <Input
+                    {...props}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required={mode === "signup"}
+                    tabIndex={mode === "signup" ? undefined : -1}
+                  />
+                )}
+              </Field>
+            </div>
+          </div>
         )}
         {step === "credentials" && (
           <>
