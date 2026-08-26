@@ -1,4 +1,3 @@
-import { Dialog } from "@base-ui/react/dialog"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, X } from "lucide-react"
 import { useEffect, type ReactNode } from "react"
@@ -12,7 +11,14 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Drawer,
   DrawerContent,
@@ -508,10 +514,10 @@ export function CreateProjectDialog({
       ) : (
         <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="overflow-y-auto px-5 py-4">{formFields}</div>
-          <div className="flex justify-end gap-2 border-t px-5 py-4">
+          <DialogFooter className="border-t px-5 py-4">
             {cancelButton}
             {submitButton}
-          </div>
+          </DialogFooter>
         </form>
       )}
     </FormProvider>
@@ -528,29 +534,24 @@ export function CreateProjectDialog({
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
-        <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 flex max-h-[90svh] w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-2xl transition-all duration-200 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
-          <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
-            <div>
-              <DialogTitle>{heading}</DialogTitle>
-              <DialogDescription className="mt-0.5">
-                {subheading}
-              </DialogDescription>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => onOpenChange(false)}
-              aria-label="Fechar"
-            >
-              <X />
-            </Button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex max-h-[90svh] max-w-2xl flex-col overflow-hidden">
+        <DialogHeader>
+          <div>
+            <DialogTitle>{heading}</DialogTitle>
+            <DialogDescription className="mt-0.5">{subheading}</DialogDescription>
           </div>
-          {formBody}
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onOpenChange(false)}
+            aria-label="Fechar"
+          >
+            <X />
+          </Button>
+        </DialogHeader>
+        {formBody}
+      </DialogContent>
+    </Dialog>
   )
 }

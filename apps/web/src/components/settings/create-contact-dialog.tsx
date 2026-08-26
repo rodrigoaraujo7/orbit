@@ -1,4 +1,3 @@
-import { Dialog } from "@base-ui/react/dialog"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { X } from "lucide-react"
 import { useEffect } from "react"
@@ -6,7 +5,14 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
-import { DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Drawer,
   DrawerContent,
@@ -164,36 +170,33 @@ export function CreateContactDialog({
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
-        <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-card text-card-foreground shadow-2xl transition-all duration-200 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
-          <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
-            <div>
-              <DialogTitle>Novo contato</DialogTitle>
-              <DialogDescription className="mt-0.5">
-                Cadastre um contato para reaproveitar em vários projetos.
-              </DialogDescription>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => onOpenChange(false)}
-              aria-label="Fechar"
-            >
-              <X />
-            </Button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <div>
+            <DialogTitle>Novo contato</DialogTitle>
+            <DialogDescription className="mt-0.5">
+              Cadastre um contato para reaproveitar em vários projetos.
+            </DialogDescription>
           </div>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onOpenChange(false)}
+            aria-label="Fechar"
+          >
+            <X />
+          </Button>
+        </DialogHeader>
 
-          <form onSubmit={onSubmit} className="flex flex-col gap-4 px-5 py-4">
-            {formFields}
-            <div className="mt-2 flex justify-end gap-2">
-              {cancelButton}
-              {submitButton}
-            </div>
-          </form>
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+        <form onSubmit={onSubmit} className="flex flex-col gap-4 px-5 py-4">
+          {formFields}
+          <DialogFooter className="mt-2">
+            {cancelButton}
+            {submitButton}
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
