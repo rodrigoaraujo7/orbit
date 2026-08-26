@@ -1,5 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 import Grainient from "@/components/Grainient"
 import { Button } from "@/components/ui/button"
@@ -12,33 +15,62 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 })
 
+function authSchema(mode: "signin" | "signup", step: "credentials" | "totp") {
+  return z.object({
+    name:
+      step === "credentials" && mode === "signup"
+        ? z.string().trim().min(2, "Informe pelo menos 2 caracteres")
+        : z.string(),
+    email:
+      step === "credentials"
+        ? z
+            .string()
+            .trim()
+            .min(1, "Informe o e-mail")
+            .refine((value) => z.string().email().safeParse(value).success, "E-mail inválido")
+        : z.string(),
+    password:
+      step === "credentials"
+        ? z.string().min(1, "Informe a senha").min(8, "A senha precisa ter pelo menos 8 caracteres")
+        : z.string(),
+    totp:
+      step === "totp"
+        ? z.string().trim().regex(/^\d{6}$/, "Informe o código de 6 dígitos")
+        : z.string(),
+  })
+}
+
+type AuthFormValues = z.infer<ReturnType<typeof authSchema>>
+
 function LoginPage() {
   const navigate = useNavigate()
   const [mode, setMode] = useState<"signin" | "signup">("signin")
   const [step, setStep] = useState<"credentials" | "totp">("credentials")
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [totp, setTotp] = useState("")
-  const [error, setError] = useState<string>()
-  const [pending, setPending] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    setError,
+    clearErrors,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<AuthFormValues>({
+    resolver: (values, context, options) =>
+      zodResolver(authSchema(mode, step))(values, context, options),
+    defaultValues: { name: "", email: "", password: "", totp: "" },
+  })
 
   function switchMode() {
     setMode(mode === "signin" ? "signup" : "signin")
     setStep("credentials")
-    setTotp("")
-    setError(undefined)
+    setValue("totp", "")
+    clearErrors()
   }
 
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault()
-    setError(undefined)
-    setPending(true)
+  const onSubmit = handleSubmit(async (values) => {
     if (step === "totp") {
-      const result = await authClient.twoFactor.verifyTotp({ code: totp })
-      setPending(false)
+      const result = await authClient.twoFactor.verifyTotp({ code: values.totp })
       if (result.error) {
-        setError(result.error.message ?? "Código inválido")
+        setError("totp", { message: result.error.message ?? "Código inválido" })
         return
       }
       await navigate({ to: "/" })
@@ -46,11 +78,14 @@ function LoginPage() {
     }
     const result =
       mode === "signup"
-        ? await authClient.signUp.email({ name, email, password })
-        : await authClient.signIn.email({ email, password })
-    setPending(false)
+        ? await authClient.signUp.email({
+            name: values.name,
+            email: values.email,
+            password: values.password,
+          })
+        : await authClient.signIn.email({ email: values.email, password: values.password })
     if (result.error) {
-      setError(result.error.message ?? "Não foi possível entrar")
+      setError("password", { message: result.error.message ?? "Não foi possível entrar" })
       return
     }
     if (mode === "signin" && result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) {
@@ -58,7 +93,7 @@ function LoginPage() {
       return
     }
     await navigate({ to: "/" })
-  }
+  })
 
   return (
     <main className="relative grid min-h-svh place-items-center overflow-hidden p-6">
@@ -90,6 +125,7 @@ function LoginPage() {
       </div>
       <form
         onSubmit={onSubmit}
+        noValidate
         className="relative z-10 flex w-full max-w-sm flex-col gap-4 rounded-xl bg-card/40 p-6 shadow-lg ring-1 ring-white/25 backdrop-blur-xl"
       >
         <div className="flex flex-col items-start gap-2">
@@ -135,13 +171,12 @@ function LoginPage() {
             )}
           >
             <div className="min-h-0 overflow-hidden" inert={mode !== "signup"}>
-              <Field label="Nome">
+              <Field label="Nome" error={errors.name?.message}>
                 {(props) => (
                   <Input
                     {...props}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required={mode === "signup"}
+                    {...register("name")}
+                    autoComplete="name"
                     tabIndex={mode === "signup" ? undefined : -1}
                   />
                 )}
@@ -151,53 +186,36 @@ function LoginPage() {
         )}
         {step === "credentials" && (
           <>
-            <Field label="E-mail">
+            <Field label="E-mail" error={errors.email?.message}>
               {(props) => (
-                <Input
-                  {...props}
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <Input {...props} {...register("email")} type="email" autoComplete="email" />
               )}
             </Field>
-            <Field label="Senha" error={error}>
+            <Field label="Senha" error={errors.password?.message}>
               {(props) => (
                 <Input
                   {...props}
+                  {...register("password")}
                   type="password"
                   autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  minLength={8}
-                  required
                 />
               )}
             </Field>
           </>
         )}
         {step === "totp" && (
-          <Field label="Código TOTP" error={error}>
+          <Field label="Código TOTP" error={errors.totp?.message}>
             {(props) => (
-              <Input
-                {...props}
-                value={totp}
-                onChange={(e) => setTotp(e.target.value)}
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                required
-              />
+              <Input {...props} {...register("totp")} inputMode="numeric" autoComplete="one-time-code" />
             )}
           </Field>
         )}
         <Button
           type="submit"
           className="shadow-[0_0_16px_rgba(192,58,74,0.45)] transition-shadow duration-[350ms] hover:bg-primary hover:shadow-[0_0_28px_rgba(192,58,74,0.7)] active:translate-y-0"
-          disabled={pending}
+          disabled={isSubmitting}
         >
-          {pending ? "Aguarde…" : step === "totp" ? "Verificar" : mode === "signin" ? "Entrar" : "Cadastrar"}
+          {isSubmitting ? "Aguarde…" : step === "totp" ? "Verificar" : mode === "signin" ? "Entrar" : "Cadastrar"}
         </Button>
       </form>
     </main>
