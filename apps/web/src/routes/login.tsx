@@ -141,7 +141,9 @@ function LoginPage() {
             ) : (
               <>
                 {mode === "signin" ? "Entrar em " : "Criar conta em "}
-                <span className="pm-text-shimmer font-heading text-[1.15em] italic">Projects Manager</span>
+                <span className="shimmer shimmer-color-[oklch(from_var(--primary)_0.82_c_h)] [animation-delay:1s] text-primary font-heading text-[1.15em] italic">
+                  Projects Manager
+                </span>
               </>
             )}
           </h1>
