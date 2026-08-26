@@ -34,8 +34,7 @@ export const axisProps = {
 
 /**
  * 2px of surface between adjacent fills — stacked segments read as separate
- * marks instead of one blurred column. Uses the page surface, not a gray, so it
- * works in both themes.
+ * marks instead of one blurred column. Uses the page surface, not a gray.
  */
 export const surfaceGap = {
   stroke: "var(--background)",

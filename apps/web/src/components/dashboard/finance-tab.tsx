@@ -42,7 +42,7 @@ import {
  * hue as the brand bordô and the pair measures ΔE 10.0 (light) / 12.3 (dark)
  * under normal vision — below the 15 floor, so "recebido" and "atrasado" would
  * blur into each other whenever a month has no pending slice between them.
- * Slots 1/2/3 clear every pair in both themes. The status red stays where it
+ * Slots 1/2/3 clear every pair against the dark surface. The status red stays where it
  * belongs, on the invoice badges; here every series carries its own label.
  */
 const revenueConfig = {

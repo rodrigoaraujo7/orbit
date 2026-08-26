@@ -1,5 +1,5 @@
 import { Menu } from "@base-ui/react/menu"
-import { LogOut, Moon, Pencil, Sun, Users } from "lucide-react"
+import { LogOut, Pencil, Users } from "lucide-react"
 
 import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
@@ -13,15 +13,7 @@ function initials(name: string) {
     .toUpperCase()
 }
 
-export function UserMenu({
-  collapsed = false,
-  theme,
-  onToggleTheme,
-}: {
-  collapsed?: boolean
-  theme: "light" | "dark"
-  onToggleTheme: () => void
-}) {
+export function UserMenu({ collapsed = false }: { collapsed?: boolean }) {
   const { data } = authClient.useSession()
   const user = {
     name: data?.user.name ?? "Conta",
@@ -62,18 +54,6 @@ export function UserMenu({
             <Menu.Item className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground">
               <Users className="size-3.5" />
               Trocar de conta
-            </Menu.Item>
-            <Menu.Item
-              onClick={onToggleTheme}
-              closeOnClick={false}
-              className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
-            >
-              {theme === "dark" ? (
-                <Sun className="size-3.5" />
-              ) : (
-                <Moon className="size-3.5" />
-              )}
-              {theme === "dark" ? "Tema claro" : "Tema escuro"}
             </Menu.Item>
             <Menu.Separator className="my-1 h-px bg-border" />
             <Menu.Item

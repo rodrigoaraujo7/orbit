@@ -40,9 +40,8 @@ function DialogPopup({ className, ...props }: DialogPrimitive.Popup.Props) {
       className={cn(
         // Base.
         "fixed top-1/2 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl text-card-foreground outline-none",
-        // Glass surface. ring-white/10 only reads over a dark surface, so light
-        // mode gets a dark hairline instead.
-        "bg-card/40 shadow-lg ring-1 ring-black/10 backdrop-blur-xl dark:ring-white/10",
+        // Glass surface.
+        "bg-card/40 shadow-lg ring-1 ring-white/10 backdrop-blur-xl",
         // Transitions.
         "transition-all duration-200 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
         className
