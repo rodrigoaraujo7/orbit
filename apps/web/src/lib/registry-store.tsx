@@ -16,6 +16,7 @@ type CustomToolInput = Omit<CustomTool, "id">
 type RegistryContextValue = {
   contacts: Contact[]
   isPending: boolean
+  isContactsPending: boolean
   isError: boolean
   addContact: (contact: ContactInput) => Promise<Contact>
   removeContact: (id: string) => Promise<{ ok: true }>
@@ -83,6 +84,7 @@ export function RegistryProvider({ children }: { children: ReactNode }) {
     () => ({
       contacts,
       isPending: contactsQuery.isPending || toolsQuery.isPending,
+      isContactsPending: contactsQuery.isPending,
       isError: contactsQuery.isError || toolsQuery.isError,
       addContact: (contact) => addContactMut.mutateAsync(contact),
       removeContact: (id) => removeContactMut.mutateAsync(id),
