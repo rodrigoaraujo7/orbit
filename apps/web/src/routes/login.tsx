@@ -99,7 +99,7 @@ function LoginPage() {
     <main className="relative grid min-h-svh place-items-center overflow-hidden p-6">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <Grainient
-          color1="#020202"
+          color1="#c03a4a"
           color2="#020202"
           color3="#c03a4a"
           timeSpeed={0.7}
