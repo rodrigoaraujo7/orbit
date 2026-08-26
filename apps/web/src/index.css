@@ -12,69 +12,12 @@
 @import "@fontsource/instrument-sans/700.css";
 @import "@fontsource/instrument-sans/700-italic.css";
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.09 0 0);
-
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.09 0 0);
-
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.09 0 0);
-
-  /* Accent bordô/vinho — usado só em ações-chave e estado ativo */
-  --primary: oklch(0.35 0.16 18);
-  --primary-foreground: oklch(0.985 0 0);
-
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-
-  --destructive: oklch(0.577 0.245 27.325);
-  --success: oklch(0.596 0.145 163.225);
-  --warning: oklch(0.666 0.179 58.318);
-
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.45 0.16 18);
-
-  /* Paleta categórica: 6 hues em ordem fixa, validada nos dois temas
-     (banda de lightness, chroma, separação CVD e contraste vs. superfície).
-     A ordem é o mecanismo de segurança — não reordenar nem gerar um 7º hue. */
-  --chart-1: oklch(0.52 0.17 18); /* bordô — o hue da marca */
-  --chart-2: oklch(0.6 0.12 195); /* teal */
-  --chart-3: oklch(0.66 0.15 68); /* âmbar */
-  --chart-4: oklch(0.5 0.17 265); /* azul */
-  --chart-5: oklch(0.63 0.16 145); /* verde */
-  --chart-6: oklch(0.55 0.19 320); /* violeta */
-
-  --radius: 0.625rem;
-
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.09 0 0);
-  --sidebar-primary: oklch(0.35 0.16 18);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.45 0.16 18);
-}
-
-.dark {
-  color-scheme: dark;
 
   --background: oklch(0.09 0 0);
   --foreground: oklch(0.985 0 0);
@@ -85,6 +28,7 @@
   --popover: oklch(0.14 0 0);
   --popover-foreground: oklch(0.985 0 0);
 
+  /* Accent bordô/vinho — usado só em ações-chave e estado ativo */
   --primary: oklch(0.55 0.17 18);
   --primary-foreground: oklch(0.985 0 0);
 
@@ -105,14 +49,17 @@
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.55 0.17 18);
 
-  /* Mesmos 6 hues, re-pisados para a superfície escura — não é um flip
-     automático do claro, cada passo foi validado contra o fundo escuro. */
+  /* Paleta categórica: 6 hues em ordem fixa (banda de lightness, chroma,
+     separação CVD e contraste vs. superfície). A ordem é o mecanismo de
+     segurança — não reordenar nem gerar um 7º hue. */
   --chart-1: oklch(0.58 0.18 18);
   --chart-2: oklch(0.63 0.12 195);
   --chart-3: oklch(0.66 0.14 70);
   --chart-4: oklch(0.55 0.17 265);
   --chart-5: oklch(0.65 0.16 145);
   --chart-6: oklch(0.58 0.19 320);
+
+  --radius: 0.625rem;
 
   --sidebar: oklch(0.16 0 0);
   --sidebar-foreground: oklch(0.985 0 0);

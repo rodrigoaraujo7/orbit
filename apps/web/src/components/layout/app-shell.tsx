@@ -1,9 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { ChevronLeft, Menu, Moon, PanelLeftOpen, Sun } from "lucide-react";
+import { ChevronLeft, Menu, PanelLeftOpen } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { SidebarNav } from "./sidebar-nav";
 import { UserMenu } from "./user-menu";
@@ -38,7 +37,7 @@ function CollapseButton({ onClick }: { onClick: () => void }) {
       className={cn(
         "group absolute top-1/2 right-1.5 z-10 h-[65px] w-[8px] -translate-y-1/2 rounded-full bg-border p-0",
         "transition-[height,background-color,opacity] duration-200 ease-out",
-        "hover:h-[100px] hover:bg-muted-foreground/30 active:!translate-y-[-50%] dark:hover:bg-white/20",
+        "hover:h-[100px] hover:bg-white/20 active:!translate-y-[-50%]",
         visible ? "opacity-100" : "opacity-0",
       )}
     >
@@ -47,24 +46,9 @@ function CollapseButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-function ThemeToggle({ theme, onToggle }: { theme: "light" | "dark"; onToggle: () => void }) {
-  return (
-    <Button
-      variant="ghost"
-      size="icon-sm"
-      onClick={onToggle}
-      aria-label={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
-    >
-      <Sun className="size-4 scale-100 rotate-0 transition-transform duration-300 dark:scale-0 dark:-rotate-90" />
-      <Moon className="absolute size-4 scale-0 rotate-90 transition-transform duration-300 dark:scale-100 dark:rotate-0" />
-    </Button>
-  );
-}
-
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === "1");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { theme, toggle } = useTheme();
 
   useEffect(() => {
     localStorage.setItem(COLLAPSED_KEY, collapsed ? "1" : "0");
@@ -95,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Button>
         )}
         <div className="border-t p-2">
-          <UserMenu collapsed={collapsed} theme={theme} onToggleTheme={toggle} />
+          <UserMenu collapsed={collapsed} />
         </div>
 
         {!collapsed && <CollapseButton onClick={() => setCollapsed(true)} />}
@@ -103,11 +87,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile topbar + nav drawer */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} swipeDirection="left">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-3 backdrop-blur-sm md:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center border-b bg-background/80 px-3 backdrop-blur-sm md:hidden">
           <DrawerTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Abrir menu" />}>
             <Menu />
           </DrawerTrigger>
-          <ThemeToggle theme={theme} onToggle={toggle} />
         </header>
 
         <DrawerContent className="w-60 bg-sidebar/40 text-sidebar-foreground after:hidden">
@@ -115,7 +98,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Logo />
           <SidebarNav onNavigate={() => setDrawerOpen(false)} />
           <div className="border-t p-2">
-            <UserMenu theme={theme} onToggleTheme={toggle} />
+            <UserMenu />
           </div>
         </DrawerContent>
       </Drawer>

@@ -121,9 +121,8 @@ function DrawerContent({
           className={cn(
             // Base.
             "group/drawer-popup pointer-events-auto fixed z-50 m-(--drawer-inset,0px) flex h-(--drawer-content-height) max-h-(--drawer-content-max-height,none) min-h-0 w-(--drawer-content-width,auto) transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] flex-col rounded-4xl text-sm text-popover-foreground transition-[transform,height,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform outline-none select-none [--drawer-bleed-background:transparent] [--drawer-inset:--spacing(2)] [--drawer-stacked-shadow:0_-20px_25px_-5px_rgb(0_0_0/0.1),0_-8px_10px_-6px_rgb(0_0_0/0.1)] [interpolate-size:allow-keywords] data-[swipe-direction=down]:data-nested-drawer-open:shadow-(--drawer-stacked-shadow)",
-            // Glass surface. ring-white/10 only reads over a dark surface, so
-            // light mode gets a dark hairline instead.
-            "bg-popover/40 shadow-lg ring-1 ring-black/10 backdrop-blur-xl dark:ring-white/10",
+            // Glass surface.
+            "bg-popover/40 shadow-lg ring-1 ring-white/10 backdrop-blur-xl",
             // Nested. The drawer underneath goes opaque so two stacked glass
             // panels don't compound their blur into mud.
             "data-nested-drawer-open:overflow-hidden data-nested-drawer-open:bg-popover data-nested-drawer-open:brightness-95 data-nested-drawer-open:backdrop-blur-none",
