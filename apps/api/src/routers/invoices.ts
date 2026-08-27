@@ -2,7 +2,8 @@ import { and, eq } from "drizzle-orm"
 import { z } from "zod"
 import { fromCents, invoiceStatusSchema, paymentMethodSchema, toCents } from "shared"
 import { invoice, payment } from "../db/schema.ts"
-import { asUser, protectedProcedure, router } from "../trpc/init.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
+import { recordAudit } from "../audit/record.ts"
 
 const money = z.object({
   amount: z.number(),
@@ -57,7 +58,16 @@ export const invoicesRouter = router({
         referenceMonth: input.referenceMonth ?? null,
         hasAttachment: false,
       }
-      await asUser(ctx, (tx) => tx.insert(invoice).values(row))
+      await asUser(ctx, async (tx) => {
+        await tx.insert(invoice).values(row)
+        await recordAudit(tx, auditCtx(ctx), {
+          module: "project",
+          action: "financial.invoice.create",
+          subjectId: row.id,
+          subjectLabel: `${input.amount} ${input.currency}`,
+          projectId: input.projectId,
+        })
+      })
       return { id: row.id }
     }),
 
@@ -70,16 +80,27 @@ export const invoicesRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await asUser(ctx, (tx) =>
-        tx
+      await asUser(ctx, async (tx) => {
+        const [prev] = await tx.select().from(invoice).where(eq(invoice.id, input.id)).limit(1)
+        await tx
           .update(invoice)
           .set({
             status: input.status,
             paymentMethod: input.paymentMethod ?? null,
             paidAt: input.status === "paid" ? new Date() : null,
           })
-          .where(eq(invoice.id, input.id)),
-      )
+          .where(eq(invoice.id, input.id))
+        if (prev && prev.status !== input.status) {
+          await recordAudit(tx, auditCtx(ctx), {
+            module: "project",
+            action: "financial.invoice.status",
+            subjectId: input.id,
+            subjectLabel: prev.payerName || prev.id,
+            projectId: prev.projectId,
+            changes: [{ field: "status", from: prev.status, to: input.status }],
+          })
+        }
+      })
       return { ok: true }
     }),
 })
@@ -96,6 +117,7 @@ export const paymentsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const id = crypto.randomUUID()
       await asUser(ctx, async (tx) => {
+        const [inv] = await tx.select().from(invoice).where(eq(invoice.id, input.invoiceId)).limit(1)
         await tx.insert(payment).values({
           id,
           userId: ctx.userId,
@@ -108,6 +130,13 @@ export const paymentsRouter = router({
           .update(invoice)
           .set({ status: "paid", paidAt: new Date(), paymentMethod: input.method })
           .where(and(eq(invoice.id, input.invoiceId)))
+        await recordAudit(tx, auditCtx(ctx), {
+          module: "project",
+          action: "financial.payment.create",
+          subjectId: id,
+          subjectLabel: `${input.amount} ${input.method}`,
+          projectId: inv?.projectId ?? null,
+        })
       })
       return { id }
     }),

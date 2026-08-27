@@ -12,7 +12,8 @@ import {
   wrapDek,
 } from "../crypto/envelope.ts"
 import { env } from "../env.ts"
-import { asUser, protectedProcedure, router } from "../trpc/init.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
+import { recordAudit } from "../audit/record.ts"
 import type { Tx } from "../db/with-user.ts"
 
 const REVEAL_LIMIT = 10
@@ -95,13 +96,10 @@ export async function recordRevealAttempt(
   ip?: string | null,
   userAgent?: string | null,
 ) {
-  await tx.insert(auditLog).values({
-    id: crypto.randomUUID(),
-    userId,
+  await recordAudit(tx, { userId, ip, userAgent }, {
+    module: "security",
     action: REVEAL_ATTEMPT,
     subjectId,
-    ip: ip ?? null,
-    userAgent: userAgent ?? null,
   })
 }
 
@@ -171,13 +169,11 @@ export const credentialsRouter = router({
           { ciphertext: row.ciphertext, iv: row.iv, tag: row.tag },
           secretAad(ctx.userId, row.id, row.version),
         )
-        await tx.insert(auditLog).values({
-          id: crypto.randomUUID(),
-          userId: ctx.userId,
+        await recordAudit(tx, auditCtx(ctx), {
+          module: "security",
           action: "credential.reveal",
           subjectId: row.id,
-          ip: ctx.req.headers.get("x-forwarded-for"),
-          userAgent: ctx.req.headers.get("user-agent"),
+          subjectLabel: row.label,
         })
         return { id: row.id, label: row.label, value }
       })

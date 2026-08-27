@@ -1,7 +1,8 @@
 import { desc, eq } from "drizzle-orm"
 import { z } from "zod"
 import { contact } from "../db/schema.ts"
-import { asUser, protectedProcedure, router } from "../trpc/init.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
+import { recordAudit } from "../audit/record.ts"
 
 const contactInput = z.object({
   name: z.string().trim().min(2),
@@ -24,15 +25,24 @@ export const contactsRouter = router({
       phone: input.phone || null,
       company: input.company || null,
     }
-    await asUser(ctx, (tx) => tx.insert(contact).values(row))
+    await asUser(ctx, async (tx) => {
+      await tx.insert(contact).values(row)
+      await recordAudit(tx, auditCtx(ctx), {
+        module: "settings",
+        action: "contact.create",
+        subjectId: row.id,
+        subjectLabel: row.name,
+      })
+    })
     return row
   }),
 
   update: protectedProcedure
     .input(contactInput.extend({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await asUser(ctx, (tx) =>
-        tx
+      await asUser(ctx, async (tx) => {
+        const [prev] = await tx.select().from(contact).where(eq(contact.id, input.id)).limit(1)
+        await tx
           .update(contact)
           .set({
             name: input.name,
@@ -40,13 +50,40 @@ export const contactsRouter = router({
             phone: input.phone || null,
             company: input.company || null,
           })
-          .where(eq(contact.id, input.id)),
-      )
+          .where(eq(contact.id, input.id))
+        if (!prev) return
+        const changes = [
+          { field: "name", from: prev.name, to: input.name },
+          { field: "email", from: prev.email ?? "", to: input.email || "" },
+          { field: "phone", from: prev.phone ?? "", to: input.phone || "" },
+          { field: "company", from: prev.company ?? "", to: input.company || "" },
+        ].filter((c) => c.from !== c.to)
+        if (changes.length) {
+          await recordAudit(tx, auditCtx(ctx), {
+            module: "settings",
+            action: "contact.update",
+            subjectId: input.id,
+            subjectLabel: input.name,
+            changes,
+          })
+        }
+      })
       return { ok: true as const }
     }),
 
   delete: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
-    await asUser(ctx, (tx) => tx.delete(contact).where(eq(contact.id, input.id)))
+    await asUser(ctx, async (tx) => {
+      const [prev] = await tx.select().from(contact).where(eq(contact.id, input.id)).limit(1)
+      await tx.delete(contact).where(eq(contact.id, input.id))
+      if (prev) {
+        await recordAudit(tx, auditCtx(ctx), {
+          module: "settings",
+          action: "contact.delete",
+          subjectId: input.id,
+          subjectLabel: prev.name,
+        })
+      }
+    })
     return { ok: true }
   }),
 })

@@ -3,8 +3,42 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client"
 import type { Contact } from "@/data/contacts"
 import type { CustomTool } from "@/data/custom-tools"
 import type { Project, ProjectStatus } from "@/data/projects"
+import type { AuditChange, AuditModule } from "shared"
+
+type AuditListInput = {
+  search?: string
+  modules?: AuditModule[]
+  projectId?: string
+  from?: string
+  to?: string
+  cursor?: { createdAt: string; id: string; module?: string } | null
+  limit?: number
+  sortBy?: "createdAt" | "module"
+  sortDir?: "asc" | "desc"
+}
+
+type AuditListItem = {
+  id: string
+  module: string
+  action: string
+  subjectId: string | null
+  subjectLabel: string | null
+  projectId: string | null
+  changes: AuditChange[]
+  createdAt: string
+  ip: string | null
+  userAgent: string | null
+}
 
 type BrowserRouter = {
+  audit: {
+    list: {
+      query: (input: AuditListInput) => Promise<{
+        items: AuditListItem[]
+        nextCursor: { createdAt: string; id: string; module?: string } | null
+      }>
+    }
+  }
   contacts: {
     list: { query: () => Promise<Contact[]> }
     create: {
