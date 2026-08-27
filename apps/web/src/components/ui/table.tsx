@@ -42,12 +42,21 @@ const PAGE_SIZE_OPTIONS: SelectOption[] = [
   { value: "50", label: "50 por página" },
 ]
 
+export type ServerPagination = {
+  hasPrev: boolean
+  hasNext: boolean
+  pageSize: string
+  onPrev: () => void
+  onNext: () => void
+  onPageSizeChange: (pageSize: string) => void
+}
+
 /**
  * The platform's single table: declarative columns, 3-state sorting
  * (asc → desc → unsorted) and built-in pagination.
  *
- * Sorts and paginates `data` in memory. Once the backend does that, this is
- * where a controlled mode goes in.
+ * Sorts and paginates `data` in memory unless `serverPagination` is set, in
+ * which case the parent already sliced the page and owns prev/next.
  */
 export function DataTable<T>({
   data,
@@ -56,6 +65,7 @@ export function DataTable<T>({
   onRowClick,
   initialSort = null,
   pagination = true,
+  serverPagination,
   emptyMessage = "Nenhum resultado encontrado.",
   className,
 }: {
@@ -65,12 +75,14 @@ export function DataTable<T>({
   onRowClick?: (row: T) => void
   initialSort?: SortState
   pagination?: boolean
+  serverPagination?: ServerPagination
   emptyMessage?: React.ReactNode
   className?: string
 }) {
   const [sort, setSort] = useState<SortState>(initialSort)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState("10")
+  const isServer = Boolean(serverPagination)
 
   function toggleSort(key: string) {
     setSort((current) => nextSort(current, key))
@@ -78,10 +90,11 @@ export function DataTable<T>({
   }
 
   const sortColumn = sort ? columns.find((c) => c.key === sort.key) : undefined
-  const sorted = sortRows(data, sort, sortColumn?.sortValue)
+  const sorted = isServer ? data : sortRows(data, sort, sortColumn?.sortValue)
 
   const sliced = paginate(sorted, page, Number(pageSize))
-  const rows = pagination ? sliced.pageItems : sorted
+  const rows = isServer ? data : pagination ? sliced.pageItems : sorted
+  const showPager = isServer || pagination
 
   return (
     <div className={className}>
@@ -173,12 +186,16 @@ export function DataTable<T>({
         </table>
       </div>
 
-      {pagination && (
+      {showPager && (
         <div className="mt-3 flex items-center justify-between gap-2">
           <div className="w-44 min-w-0">
             <Select
-              value={pageSize}
+              value={serverPagination?.pageSize ?? pageSize}
               onValueChange={(next) => {
+                if (serverPagination) {
+                  serverPagination.onPageSizeChange(next)
+                  return
+                }
                 setPageSize(next)
                 setPage(1)
               }}
@@ -188,13 +205,17 @@ export function DataTable<T>({
 
           <div className="flex shrink-0 items-center gap-2">
             <span className="sr-only">
-              Página {sliced.page} de {sliced.pageCount}
+              {isServer
+                ? "Paginação"
+                : `Página ${sliced.page} de ${sliced.pageCount}`}
             </span>
             <Button
               variant="outline"
               size="icon-sm"
-              disabled={sliced.page <= 1}
-              onClick={() => setPage(sliced.page - 1)}
+              disabled={isServer ? !serverPagination?.hasPrev : sliced.page <= 1}
+              onClick={() =>
+                isServer ? serverPagination?.onPrev() : setPage(sliced.page - 1)
+              }
               aria-label="Página anterior"
             >
               <ChevronLeft />
@@ -202,8 +223,12 @@ export function DataTable<T>({
             <Button
               variant="outline"
               size="icon-sm"
-              disabled={sliced.page >= sliced.pageCount}
-              onClick={() => setPage(sliced.page + 1)}
+              disabled={
+                isServer ? !serverPagination?.hasNext : sliced.page >= sliced.pageCount
+              }
+              onClick={() =>
+                isServer ? serverPagination?.onNext() : setPage(sliced.page + 1)
+              }
               aria-label="Próxima página"
             >
               <ChevronRight />

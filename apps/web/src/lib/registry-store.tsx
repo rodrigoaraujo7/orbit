@@ -49,9 +49,11 @@ export function RegistryProvider({ children }: { children: ReactNode }) {
 
   function invalidateContacts() {
     void queryClient.invalidateQueries({ queryKey: ["contacts"] })
+    void queryClient.invalidateQueries({ queryKey: ["audit"] })
   }
   function invalidateTools() {
     void queryClient.invalidateQueries({ queryKey: ["custom-tools"] })
+    void queryClient.invalidateQueries({ queryKey: ["audit"] })
   }
 
   const addContactMut = useMutation({

@@ -7,7 +7,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import type { Project, ProjectStatus } from "@/data/projects"
-import { recordProjectHistory } from "./project-history"
 import { moveProjectInList } from "./project-status"
 import { trpc } from "./trpc"
 
@@ -35,6 +34,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
   function invalidate() {
     void queryClient.invalidateQueries({ queryKey: ["projects"] })
+    void queryClient.invalidateQueries({ queryKey: ["audit"] })
   }
 
   const create = useMutation({
@@ -70,13 +70,10 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
         const next = moveProjectInList(projects, id, toStatus, toIndex)
         const moved = next.find((p) => p.id === id)
         if (moved) void move.mutateAsync({ id, status: toStatus, index: toIndex })
-        const recorded = recordProjectHistory(projects, next)
-        queryClient.setQueryData(["projects"], recorded)
+        queryClient.setQueryData(["projects"], next)
       },
       replaceProjects: (next) => {
-        void Promise.all(
-          recordProjectHistory(projects, next).map((project) => update.mutateAsync(project)),
-        )
+        void Promise.all(next.map((project) => update.mutateAsync(project)))
       },
       deleteProject: (id) => remove.mutateAsync(id),
       findProject: (id) => projects.find((p) => p.id === id),

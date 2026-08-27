@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm"
 import { z } from "zod"
 import { customTool } from "../db/schema.ts"
-import { asUser, protectedProcedure, router } from "../trpc/init.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
+import { recordAudit } from "../audit/record.ts"
 
 const input = z.object({
   name: z.string().trim().min(2),
@@ -20,26 +21,60 @@ export const toolsRouter = router({
       name: body.name,
       category: body.category,
     }
-    await asUser(ctx, (tx) => tx.insert(customTool).values(row))
+    await asUser(ctx, async (tx) => {
+      await tx.insert(customTool).values(row)
+      await recordAudit(tx, auditCtx(ctx), {
+        module: "settings",
+        action: "tools.custom.create",
+        subjectId: row.id,
+        subjectLabel: row.name,
+      })
+    })
     return row
   }),
 
   updateCustom: protectedProcedure
     .input(input.extend({ id: z.string() }))
     .mutation(async ({ ctx, input: body }) => {
-      await asUser(ctx, (tx) =>
-        tx
+      await asUser(ctx, async (tx) => {
+        const [prev] = await tx.select().from(customTool).where(eq(customTool.id, body.id)).limit(1)
+        await tx
           .update(customTool)
           .set({ name: body.name, category: body.category })
-          .where(eq(customTool.id, body.id)),
-      )
+          .where(eq(customTool.id, body.id))
+        if (!prev) return
+        const changes = [
+          { field: "name", from: prev.name, to: body.name },
+          { field: "category", from: prev.category, to: body.category },
+        ].filter((c) => c.from !== c.to)
+        if (changes.length) {
+          await recordAudit(tx, auditCtx(ctx), {
+            module: "settings",
+            action: "tools.custom.update",
+            subjectId: body.id,
+            subjectLabel: body.name,
+            changes,
+          })
+        }
+      })
       return { ok: true as const }
     }),
 
   deleteCustom: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input: body }) => {
-      await asUser(ctx, (tx) => tx.delete(customTool).where(eq(customTool.id, body.id)))
+      await asUser(ctx, async (tx) => {
+        const [prev] = await tx.select().from(customTool).where(eq(customTool.id, body.id)).limit(1)
+        await tx.delete(customTool).where(eq(customTool.id, body.id))
+        if (prev) {
+          await recordAudit(tx, auditCtx(ctx), {
+            module: "settings",
+            action: "tools.custom.delete",
+            subjectId: body.id,
+            subjectLabel: prev.name,
+          })
+        }
+      })
       return { ok: true }
     }),
 })
