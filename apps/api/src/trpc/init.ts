@@ -34,3 +34,11 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 export function asUser<T>(ctx: { userId: string }, fn: (tx: Tx) => Promise<T>) {
   return withUser(getDb(), ctx.userId, fn)
 }
+
+export function auditCtx(ctx: { userId: string; req: Request }) {
+  return {
+    userId: ctx.userId,
+    ip: ctx.req.headers.get("x-forwarded-for"),
+    userAgent: ctx.req.headers.get("user-agent"),
+  }
+}

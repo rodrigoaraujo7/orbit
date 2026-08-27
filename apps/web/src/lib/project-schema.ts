@@ -306,7 +306,6 @@ export function toProject(values: ProjectFormValues, existing?: Project): Projec
       repo: repo ? { ...repo, workflow } : null,
       description: existing?.description,
       comments: existing?.comments,
-      history: existing?.history,
     },
     values.status
   )

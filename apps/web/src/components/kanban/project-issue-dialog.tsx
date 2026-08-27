@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router"
 import { ExternalLink, Pencil, User, X } from "lucide-react"
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
+import { useQuery } from "@tanstack/react-query"
 
 import { StatusLabel, StatusSelect, WorkflowBadge } from "@/components/projects/status-badges"
 import { Button } from "@/components/ui/button"
@@ -30,10 +31,11 @@ import {
   formatToolsProgress,
 } from "@/lib/format"
 import { generateInvoices } from "@/lib/invoices"
-import { formatHistoryEntry } from "@/lib/project-history"
+import { formatAuditAt, formatAuditDetails } from "@/lib/audit-labels"
 import { withProjectStatus } from "@/lib/project-status"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
+import { trpc } from "@/lib/trpc"
 
 const COMMENT_AUTHOR = "Rodrigo Araujo"
 
@@ -83,12 +85,17 @@ export function ProjectIssueDialog({
   const { updateProject } = useProjects()
   const { findContact } = useRegistry()
   const [draft, setDraft] = useState("")
+  const { data: audit, isPending: auditPending } = useQuery({
+    queryKey: ["audit", "project", project?.id],
+    queryFn: () => trpc.audit.list.query({ projectId: project!.id, limit: 50 }),
+    enabled: open && Boolean(project),
+  })
 
   if (!project) return null
 
   const invoices = generateInvoices(project, contact?.name ?? "—")
   const comments = project.comments ?? []
-  const history = [...(project.history ?? [])].reverse()
+  const history = audit?.items ?? []
   const costLabel = monthlyCostLabel(project)
   const dealAmount = isDealFree(project.deal)
     ? FREE_LABEL
@@ -166,17 +173,23 @@ export function ProjectIssueDialog({
               <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Histórico
               </h3>
-              {history.length === 0 ? (
+              {auditPending ? (
+                <p className="text-sm text-muted-foreground">Carregando…</p>
+              ) : history.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Nenhuma alteração ainda.</p>
               ) : (
                 <ul className="flex flex-col gap-3">
                   {history.map((entry) => (
                     <li key={entry.id} className="flex flex-col gap-0.5">
                       <p className="text-sm">
-                        {formatHistoryEntry(entry, (id) => findContact(id)?.name ?? id)}
+                        {formatAuditDetails(
+                          entry.changes,
+                          entry.action,
+                          (id) => findContact(id)?.name ?? id,
+                        )}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatDateTime(entry.at)}
+                        {formatAuditAt(entry.createdAt)}
                       </p>
                     </li>
                   ))}

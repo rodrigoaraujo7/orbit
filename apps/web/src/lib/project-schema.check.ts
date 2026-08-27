@@ -264,12 +264,8 @@ original.description = "Nota do kanban"
 original.comments = [
   { id: "c1", author: "Rodrigo Araujo", createdAt: "2026-08-01T10:00", body: "Oi" },
 ]
-original.history = [
-  { id: "h1", at: "2026-08-01T10:00", field: "name", from: "X", to: original.name },
-]
 const editedNotes = toProject(fromProject(original), original)
 assert.equal(editedNotes.description, "Nota do kanban")
 assert.deepEqual(editedNotes.comments, original.comments)
-assert.deepEqual(editedNotes.history, original.history)
 
 console.log("project-schema: all checks passed")

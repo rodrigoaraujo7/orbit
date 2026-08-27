@@ -10,6 +10,7 @@ import {
   paymentMethodSchema,
   projectStatusSchema,
 } from "./domain.ts"
+import { AUDIT_ACTIONS, auditModuleSchema } from "./audit.ts"
 
 const assert = {
   ok(value: unknown, message: string) {
@@ -26,5 +27,9 @@ assert.ok(payerSchema.safeParse("me").success, "me is a payer")
 assert.ok(invoiceStatusSchema.safeParse("overdue").success, "overdue is a status")
 assert.ok(paymentMethodSchema.safeParse("pix").success, "pix is a method")
 assert.ok(projectStatusSchema.options.length === 5, "five statuses")
+assert.ok(auditModuleSchema.safeParse("settings").success, "settings is a module")
+assert.ok(!auditModuleSchema.safeParse("financial").success, "financial is not a module")
+assert.ok(!auditModuleSchema.safeParse("billing").success, "billing is not a module")
+assert.ok(AUDIT_ACTIONS.includes("credential.reveal"), "reveal is a known action")
 
 console.log("domain.check.ts: ok")

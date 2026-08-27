@@ -117,7 +117,6 @@ export const project = pgTable(
     repoWorkflow: text("repo_workflow"),
     description: text("description"),
     comments: jsonb("comments").notNull().default([]),
-    history: jsonb("history").notNull().default([]),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -261,8 +260,15 @@ export const auditLog = pgTable("audit_log", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  module: text("module").notNull(),
   action: text("action").notNull(),
   subjectId: text("subject_id"),
+  subjectLabel: text("subject_label"),
+  projectId: text("project_id"),
+  changes: jsonb("changes")
+    .$type<{ field: string; from: string; to: string }[]>()
+    .notNull()
+    .default([]),
   ip: text("ip"),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
