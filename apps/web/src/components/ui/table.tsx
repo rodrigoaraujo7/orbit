@@ -51,12 +51,17 @@ export type ServerPagination = {
   onPageSizeChange: (pageSize: string) => void
 }
 
+export type ServerSort = {
+  sort: SortState
+  onSortChange: (sort: SortState) => void
+}
+
 /**
  * The platform's single table: declarative columns, 3-state sorting
  * (asc → desc → unsorted) and built-in pagination.
  *
- * Sorts and paginates `data` in memory unless `serverPagination` is set, in
- * which case the parent already sliced the page and owns prev/next.
+ * Sorts and paginates `data` in memory unless `serverPagination` or `serverSort`
+ * is set, in which case the parent owns page order and/or sort.
  */
 export function DataTable<T>({
   data,
@@ -66,6 +71,7 @@ export function DataTable<T>({
   initialSort = null,
   pagination = true,
   serverPagination,
+  serverSort,
   emptyMessage = "Nenhum resultado encontrado.",
   className,
 }: {
@@ -76,6 +82,7 @@ export function DataTable<T>({
   initialSort?: SortState
   pagination?: boolean
   serverPagination?: ServerPagination
+  serverSort?: ServerSort
   emptyMessage?: React.ReactNode
   className?: string
 }) {
@@ -83,14 +90,22 @@ export function DataTable<T>({
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState("10")
   const isServer = Boolean(serverPagination)
+  const activeSort = serverSort?.sort ?? sort
 
   function toggleSort(key: string) {
+    if (serverSort) {
+      serverSort.onSortChange(nextSort(serverSort.sort, key))
+      return
+    }
     setSort((current) => nextSort(current, key))
     setPage(1)
   }
 
-  const sortColumn = sort ? columns.find((c) => c.key === sort.key) : undefined
-  const sorted = isServer ? data : sortRows(data, sort, sortColumn?.sortValue)
+  const sortColumn = activeSort
+    ? columns.find((c) => c.key === activeSort.key)
+    : undefined
+  const sorted =
+    isServer || serverSort ? data : sortRows(data, sort, sortColumn?.sortValue)
 
   const sliced = paginate(sorted, page, Number(pageSize))
   const rows = isServer ? data : pagination ? sliced.pageItems : sorted
@@ -103,9 +118,9 @@ export function DataTable<T>({
           <thead>
             <tr className="border-b bg-muted/40 text-left">
               {columns.map((column) => {
-                const active = sort?.key === column.key
+                const active = activeSort?.key === column.key
                 const Icon = active
-                  ? sort.direction === "asc"
+                  ? activeSort.direction === "asc"
                     ? ArrowUp
                     : ArrowDown
                   : ArrowUpDown
@@ -119,7 +134,7 @@ export function DataTable<T>({
                     )}
                     aria-sort={
                       active
-                        ? sort.direction === "asc"
+                        ? activeSort.direction === "asc"
                           ? "ascending"
                           : "descending"
                         : undefined
