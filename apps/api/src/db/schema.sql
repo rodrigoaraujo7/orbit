@@ -88,7 +88,6 @@ create table if not exists project (
   repo_workflow text,
   description text,
   comments jsonb not null default '[]',
-  history jsonb not null default '[]',
   created_at timestamptz not null default now(),
   constraint project_id_user_id_key unique (id, user_id),
   constraint project_contact_user_fk
@@ -177,8 +176,12 @@ create table if not exists user_key (
 create table if not exists audit_log (
   id text primary key,
   user_id text not null references "user"(id) on delete cascade,
+  module text not null,
   action text not null,
   subject_id text,
+  subject_label text,
+  project_id text,
+  changes jsonb not null default '[]',
   ip text,
   user_agent text,
   created_at timestamptz not null default now()
@@ -291,7 +294,8 @@ do $$ begin
   execute 'revoke all on all tables in schema public from app_runtime';
   execute 'alter default privileges in schema public revoke select, insert, update, delete on tables from app_runtime';
   execute 'grant usage on schema public to app_runtime';
-  execute 'grant select, insert, update, delete on contact, project, project_tool, credential, invoice, payment, custom_tool, user_key, audit_log to app_runtime';
+  execute 'grant select, insert, update, delete on contact, project, project_tool, credential, invoice, payment, custom_tool, user_key to app_runtime';
+  execute 'grant select, insert on audit_log to app_runtime';
   execute 'grant usage, select on all sequences in schema public to app_runtime';
 end $$;
 
@@ -314,3 +318,18 @@ begin
     );
   end loop;
 end $$;
+
+-- Audit log: extra columns, append-only grants, drop client-side project history.
+alter table audit_log add column if not exists module text;
+alter table audit_log add column if not exists subject_label text;
+alter table audit_log add column if not exists project_id text;
+alter table audit_log add column if not exists changes jsonb not null default '[]';
+update audit_log set module = 'security' where module is null;
+update audit_log set module = 'settings' where module = 'contact';
+update audit_log set module = 'settings' where module = 'tools' and action like 'tools.custom.%';
+update audit_log set module = 'project' where module in ('financial', 'tools');
+alter table audit_log alter column module set not null;
+alter table project drop column if exists history;
+
+create index if not exists audit_log_user_module_idx on audit_log (user_id, module, created_at desc);
+create index if not exists audit_log_user_project_idx on audit_log (user_id, project_id, created_at desc);

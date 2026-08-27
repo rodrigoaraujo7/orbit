@@ -10,7 +10,8 @@
     "check:isolation": "node --experimental-strip-types src/db/isolation.check.ts",
     "check:auth-schema": "node --experimental-strip-types src/db/schema.auth.check.ts",
     "check:crypto": "node --experimental-strip-types src/crypto/envelope.check.ts && node --experimental-strip-types src/routers/projects.secrets.check.ts && node --experimental-strip-types src/routers/credentials.reveal.check.ts",
-    "lint": "pnpm check && pnpm check:isolation && pnpm check:crypto && pnpm check:auth-schema",
+    "check:audit": "node --experimental-strip-types src/audit/diff.check.ts && node --experimental-strip-types src/routers/audit.check.ts",
+    "lint": "pnpm check && pnpm check:isolation && pnpm check:crypto && pnpm check:auth-schema && pnpm check:audit",
     "build": "pnpm lint"
   },
   "dependencies": {
