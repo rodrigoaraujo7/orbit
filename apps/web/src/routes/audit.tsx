@@ -18,6 +18,7 @@ import { FilterDrawer } from "@/components/ui/filter-drawer"
 import { Input } from "@/components/ui/input"
 import { Select, type SelectOption } from "@/components/ui/select"
 import { DataTable, type Column, type SortState } from "@/components/ui/table"
+import { Tooltip } from "@/components/ui/tooltip"
 import {
   AUDIT_ACTION_LABEL,
   AUDIT_MODULE_LABEL,
@@ -266,14 +267,16 @@ function AuditPage() {
       header: "",
       className: "text-right",
       cell: (row) => (
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Ver detalhes"
-          onClick={() => setSelected(row)}
-        >
-          <Info />
-        </Button>
+        <Tooltip label="Ver detalhes" side="top">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Ver detalhes"
+            onClick={() => setSelected(row)}
+          >
+            <Info />
+          </Button>
+        </Tooltip>
       ),
     },
   ]
@@ -397,13 +400,18 @@ function AuditPage() {
                   {objectCell(selected)}
                 </div>
                 {selected.changes.length > 0 && (
-                  <ul className="flex flex-col gap-1">
-                    {selected.changes.map((change, index) => (
-                      <li key={index}>
-                        {formatAuditChange(change, (id) => findContact(id)?.name ?? id)}
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                      Mudanças
+                    </span>
+                    <ul className="list-disc space-y-1 pl-4">
+                      {selected.changes.map((change, index) => (
+                        <li key={index}>
+                          {formatAuditChange(change, (id) => findContact(id)?.name ?? id)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
                 {selected.ip ? (
                   <div className="flex flex-col gap-1">
