@@ -30,6 +30,8 @@ async function seed(userId: string, rows: Array<{
   createdAt: string
   subjectLabel?: string
   projectId?: string
+  ip?: string
+  userAgent?: string
 }>) {
   await withUser(db, userId, async (tx) => {
     for (const row of rows) {
@@ -40,6 +42,8 @@ async function seed(userId: string, rows: Array<{
         action: row.action,
         subjectLabel: row.subjectLabel ?? null,
         projectId: row.projectId ?? null,
+        ip: row.ip ?? null,
+        userAgent: row.userAgent ?? null,
         changes: [],
         createdAt: new Date(row.createdAt),
       })
@@ -49,7 +53,7 @@ async function seed(userId: string, rows: Array<{
 
 await seed("user-a", [
   { id: "a1", module: "project", action: "project.create", createdAt: "2026-08-01T10:00:00.000Z", subjectLabel: "Portal" },
-  { id: "a2", module: "kanban", action: "kanban.move", createdAt: "2026-08-02T10:00:00.000Z", subjectLabel: "Portal", projectId: "p1" },
+  { id: "a2", module: "kanban", action: "kanban.move", createdAt: "2026-08-02T10:00:00.000Z", subjectLabel: "Portal", projectId: "p1", ip: "203.0.113.10", userAgent: "Mozilla/5.0" },
   { id: "a3", module: "settings", action: "contact.create", createdAt: "2026-08-03T10:00:00.000Z", subjectLabel: "Ada" },
   { id: "a4", module: "project", action: "project.update", createdAt: "2026-08-04T10:00:00.000Z", subjectLabel: "Portal", projectId: "p1" },
   { id: "a5", module: "security", action: "security.login", createdAt: "2026-08-05T10:00:00.000Z" },
@@ -131,6 +135,9 @@ assert.equal(new Set(moduleIds).size, moduleIds.length, "module keyset no repeat
 
 assert.equal(page1.items[0]?.ip, null, "list payload includes ip")
 assert.equal(page1.items[0]?.userAgent, null, "list payload includes userAgent")
+const withIp = defaultAll.items.find((r) => r.id === "a2")
+assert.equal(withIp?.ip, "203.0.113.10", "list payload returns ip when set")
+assert.equal(withIp?.userAgent, "Mozilla/5.0", "list payload returns userAgent when set")
 
 const kanban = await withUser(db, "user-a", (tx) =>
   listAuditLogs(tx, { modules: ["kanban"] }),
