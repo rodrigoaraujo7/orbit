@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react"
+import { Plus } from "lucide-react"
 import { useState } from "react"
 
 import { Badge } from "@/components/ui/badge"
@@ -7,6 +7,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Emphasis } from "@/components/ui/emphasis"
 import { DataTable, type Column } from "@/components/ui/table"
 import { toast } from "@/components/ui/toast"
+import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import { TOOL_CATEGORY_LABEL } from "@/data/tool-catalog"
 import type { CustomTool } from "@/data/custom-tools"
 import { useRegistry } from "@/lib/registry-store"
@@ -15,6 +16,7 @@ import { CreateCustomToolDialog } from "./create-custom-tool-dialog"
 export function CustomToolsPanel() {
   const { customTools, removeCustomTool } = useRegistry()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingTool, setEditingTool] = useState<CustomTool | null>(null)
   const [deletingTool, setDeletingTool] = useState<CustomTool | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
@@ -38,17 +40,16 @@ export function CustomToolsPanel() {
       header: "",
       className: "text-right",
       cell: (tool) => (
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Excluir ferramenta"
-          onClick={() => {
+        <RowActionsMenu
+          onEdit={() => {
+            setEditingTool(tool)
+            setDialogOpen(true)
+          }}
+          onDelete={() => {
             setDeletingTool(tool)
             setDeleteDialogOpen(true)
           }}
-        >
-          <Trash2 />
-        </Button>
+        />
       ),
     },
   ]
@@ -56,7 +57,12 @@ export function CustomToolsPanel() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex justify-end">
-        <Button onClick={() => setDialogOpen(true)}>
+        <Button
+          onClick={() => {
+            setEditingTool(null)
+            setDialogOpen(true)
+          }}
+        >
           <Plus />
           Nova ferramenta
         </Button>
@@ -70,7 +76,11 @@ export function CustomToolsPanel() {
         emptyMessage="Nenhuma ferramenta cadastrada."
       />
 
-      <CreateCustomToolDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CreateCustomToolDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        tool={editingTool ?? undefined}
+      />
 
       <ConfirmDialog
         open={deleteDialogOpen}
