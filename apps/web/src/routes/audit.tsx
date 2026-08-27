@@ -352,7 +352,7 @@ function AuditPage() {
       </div>
 
       <Dialog open={selected != null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
-        <DialogContent>
+        <DialogContent className="max-h-[85svh] overflow-y-auto">
           {selected && (
             <>
               <DialogHeader>
