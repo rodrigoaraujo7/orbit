@@ -11,8 +11,10 @@ type AuditListInput = {
   projectId?: string
   from?: string
   to?: string
-  cursor?: { createdAt: string; id: string } | null
+  cursor?: { createdAt: string; id: string; module?: string } | null
   limit?: number
+  sortBy?: "createdAt" | "module"
+  sortDir?: "asc" | "desc"
 }
 
 type AuditListItem = {
@@ -24,6 +26,8 @@ type AuditListItem = {
   projectId: string | null
   changes: AuditChange[]
   createdAt: string
+  ip: string | null
+  userAgent: string | null
 }
 
 type BrowserRouter = {
@@ -31,7 +35,7 @@ type BrowserRouter = {
     list: {
       query: (input: AuditListInput) => Promise<{
         items: AuditListItem[]
-        nextCursor: { createdAt: string; id: string } | null
+        nextCursor: { createdAt: string; id: string; module?: string } | null
       }>
     }
   }

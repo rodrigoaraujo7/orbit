@@ -78,6 +78,60 @@ assert.equal(page3.nextCursor, null, "no extra page")
 const allIds = [...page1.items, ...page2.items, ...page3.items].map((r) => r.id)
 assert.equal(new Set(allIds).size, allIds.length, "no repeats across pages")
 
+const defaultAll = await withUser(db, "user-a", (tx) => listAuditLogs(tx, { limit: 5 }))
+assert.equal(
+  defaultAll.items.map((r) => r.id).join(","),
+  "a5,a4,a3,a2,a1",
+  "default (no sort params) still newest-first",
+)
+
+const dateAsc1 = await withUser(db, "user-a", (tx) =>
+  listAuditLogs(tx, { limit: 2, sortBy: "createdAt", sortDir: "asc" }),
+)
+assert.equal(dateAsc1.items.map((r) => r.id).join(","), "a1,a2", "date asc oldest first")
+assert.ok(dateAsc1.nextCursor, "date asc has next cursor")
+
+const dateAsc2 = await withUser(db, "user-a", (tx) =>
+  listAuditLogs(tx, { limit: 2, sortBy: "createdAt", sortDir: "asc", cursor: dateAsc1.nextCursor }),
+)
+assert.equal(dateAsc2.items.map((r) => r.id).join(","), "a3,a4", "date asc page 2 continues")
+
+const dateAsc3 = await withUser(db, "user-a", (tx) =>
+  listAuditLogs(tx, { limit: 2, sortBy: "createdAt", sortDir: "asc", cursor: dateAsc2.nextCursor }),
+)
+assert.equal(dateAsc3.items.map((r) => r.id).join(","), "a5", "date asc last page")
+assert.equal(dateAsc3.nextCursor, null, "date asc no extra page")
+
+const dateAscIds = [...dateAsc1.items, ...dateAsc2.items, ...dateAsc3.items].map((r) => r.id)
+assert.equal(dateAscIds.join(","), "a1,a2,a3,a4,a5", "date asc no gaps")
+assert.equal(new Set(dateAscIds).size, dateAscIds.length, "date asc no repeats")
+
+const module1 = await withUser(db, "user-a", (tx) =>
+  listAuditLogs(tx, { limit: 3, sortBy: "module", sortDir: "asc" }),
+)
+assert.equal(
+  module1.items.map((r) => r.id).join(","),
+  "a3,a2,a4",
+  "module order: settings, kanban, then newest project",
+)
+
+const module2 = await withUser(db, "user-a", (tx) =>
+  listAuditLogs(tx, { limit: 3, sortBy: "module", sortDir: "asc", cursor: module1.nextCursor }),
+)
+assert.equal(
+  module2.items.map((r) => r.id).join(","),
+  "a1,a5",
+  "module keyset continues shared project then security",
+)
+assert.equal(module2.nextCursor, null, "module keyset last page")
+
+const moduleIds = [...module1.items, ...module2.items].map((r) => r.id)
+assert.equal(moduleIds.join(","), "a3,a2,a4,a1,a5", "module order no gaps")
+assert.equal(new Set(moduleIds).size, moduleIds.length, "module keyset no repeats")
+
+assert.equal(page1.items[0]?.ip, null, "list payload includes ip")
+assert.equal(page1.items[0]?.userAgent, null, "list payload includes userAgent")
+
 const kanban = await withUser(db, "user-a", (tx) =>
   listAuditLogs(tx, { modules: ["kanban"] }),
 )
