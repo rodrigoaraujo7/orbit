@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react"
+import { Plus } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -6,6 +6,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Emphasis } from "@/components/ui/emphasis"
 import { DataTable, type Column } from "@/components/ui/table"
 import { toast } from "@/components/ui/toast"
+import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import type { Contact } from "@/data/contacts"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
@@ -15,6 +16,7 @@ export function ContactsPanel() {
   const { contacts, removeContact } = useRegistry()
   const { projects } = useProjects()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingContact, setEditingContact] = useState<Contact | null>(null)
   const [deletingContact, setDeletingContact] = useState<Contact | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
@@ -51,17 +53,16 @@ export function ContactsPanel() {
       header: "",
       className: "text-right",
       cell: (contact) => (
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Excluir contato"
-          onClick={() => {
+        <RowActionsMenu
+          onEdit={() => {
+            setEditingContact(contact)
+            setDialogOpen(true)
+          }}
+          onDelete={() => {
             setDeletingContact(contact)
             setDeleteDialogOpen(true)
           }}
-        >
-          <Trash2 />
-        </Button>
+        />
       ),
     },
   ]
@@ -69,7 +70,12 @@ export function ContactsPanel() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex justify-end">
-        <Button onClick={() => setDialogOpen(true)}>
+        <Button
+          onClick={() => {
+            setEditingContact(null)
+            setDialogOpen(true)
+          }}
+        >
           <Plus />
           Novo contato
         </Button>
@@ -83,7 +89,11 @@ export function ContactsPanel() {
         emptyMessage="Nenhum contato cadastrado."
       />
 
-      <CreateContactDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CreateContactDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        contact={editingContact ?? undefined}
+      />
 
       <ConfirmDialog
         open={deleteDialogOpen}

@@ -28,6 +28,23 @@ export const contactsRouter = router({
     return row
   }),
 
+  update: protectedProcedure
+    .input(contactInput.extend({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await asUser(ctx, (tx) =>
+        tx
+          .update(contact)
+          .set({
+            name: input.name,
+            email: input.email || null,
+            phone: input.phone || null,
+            company: input.company || null,
+          })
+          .where(eq(contact.id, input.id)),
+      )
+      return { ok: true as const }
+    }),
+
   delete: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     await asUser(ctx, (tx) => tx.delete(contact).where(eq(contact.id, input.id)))
     return { ok: true }

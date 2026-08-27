@@ -3,7 +3,7 @@
  * Run: pnpm --filter api check:isolation
  */
 import { eq, sql } from "drizzle-orm"
-import { contact, invoice, project, projectTool } from "./schema.ts"
+import { contact, customTool, invoice, project, projectTool } from "./schema.ts"
 import { createTestDb, insertUser } from "./test-db.ts"
 import { withUser } from "./with-user.ts"
 
@@ -157,6 +157,34 @@ try {
   missingContactFailed = true
 }
 assert.equal(missingContactFailed, true, "project cannot point at a contact that does not exist")
+
+await withUser(db, "user-a", async (tx) => {
+  await tx.update(contact).set({ name: "Alice Renamed" }).where(eq(contact.id, "c-a"))
+  await tx.insert(customTool).values({
+    id: "tool-a",
+    userId: "user-a",
+    name: "Acme Tool",
+    category: "infra",
+  })
+})
+
+const updatedAsB = await withUser(db, "user-b", async (tx) => {
+  await tx.update(contact).set({ name: "Stolen" }).where(eq(contact.id, "c-a"))
+  await tx.update(customTool).set({ name: "Stolen Tool" }).where(eq(customTool.id, "tool-a"))
+  return {
+    contacts: await tx.select().from(contact),
+    tools: await tx.select().from(customTool),
+  }
+})
+assert.equal(updatedAsB.contacts.length, 0, "update contact as B")
+assert.equal(updatedAsB.tools.length, 0, "update custom tool as B")
+
+const stillA = await withUser(db, "user-a", async (tx) => ({
+  contact: (await tx.select().from(contact).where(eq(contact.id, "c-a")))[0],
+  tool: (await tx.select().from(customTool).where(eq(customTool.id, "tool-a")))[0],
+}))
+assert.equal(stillA.contact?.name, "Alice Renamed", "A contact unchanged by B")
+assert.equal(stillA.tool?.name, "Acme Tool", "A custom tool unchanged by B")
 
 await client.close()
 console.log("isolation.check.ts: ok")

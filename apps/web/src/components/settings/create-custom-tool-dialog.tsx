@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { X } from "lucide-react"
-import { useEffect } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
 import { useIsMobile } from "@/hooks/use-mobile"
+import type { CustomTool } from "@/data/custom-tools"
 import {
   TOOL_CATEGORY_LABEL,
   TOOL_CATEGORY_ORDER,
@@ -56,11 +57,14 @@ const emptyCustomToolForm: CustomToolFormValues = {
 export function CreateCustomToolDialog({
   open,
   onOpenChange,
+  tool,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** present = editing this tool; absent = creating a new one */
+  tool?: CustomTool
 }) {
-  const { addCustomTool } = useRegistry()
+  const { addCustomTool, updateCustomTool } = useRegistry()
   const {
     register,
     control,
@@ -72,20 +76,40 @@ export function CreateCustomToolDialog({
     defaultValues: emptyCustomToolForm,
   })
 
-  useEffect(() => {
-    if (open) reset(emptyCustomToolForm)
-  }, [open, reset])
+  // Keep title/CTA from the open snapshot — the popup still paints while closing.
+  const [activeTool, setActiveTool] = useState<CustomTool | undefined>(tool)
+  const wasOpen = useRef(false)
+  useLayoutEffect(() => {
+    if (open && !wasOpen.current) {
+      setActiveTool(tool)
+      reset(
+        tool
+          ? { name: tool.name, category: tool.category }
+          : emptyCustomToolForm,
+      )
+    }
+    wasOpen.current = open
+  }, [open, tool, reset])
 
   const onSubmit = handleSubmit(async (values) => {
+    const payload = {
+      name: values.name,
+      category: values.category as ToolCategory,
+    }
     try {
-      await addCustomTool({
-        name: values.name,
-        category: values.category as ToolCategory,
-      })
-      toast.add({ title: "Ferramenta criada", type: "success" })
+      if (activeTool) {
+        await updateCustomTool(activeTool.id, payload)
+        toast.add({ title: "Ferramenta atualizada", type: "success" })
+      } else {
+        await addCustomTool(payload)
+        toast.add({ title: "Ferramenta criada", type: "success" })
+      }
       onOpenChange(false)
     } catch {
-      toast.add({ title: "Erro ao criar ferramenta", type: "error" })
+      toast.add({
+        title: activeTool ? "Erro ao atualizar ferramenta" : "Erro ao criar ferramenta",
+        type: "error",
+      })
     }
   })
 
@@ -127,7 +151,9 @@ export function CreateCustomToolDialog({
       Cancelar
     </Button>
   )
-  const submitButton = <Button type="submit">Criar ferramenta</Button>
+  const submitButton = (
+    <Button type="submit">{activeTool ? "Salvar" : "Criar ferramenta"}</Button>
+  )
 
   if (isMobile) {
     return (
@@ -135,10 +161,11 @@ export function CreateCustomToolDialog({
         <DrawerContent>
           <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
             <DrawerHeader>
-              <DrawerTitle>Nova ferramenta</DrawerTitle>
+              <DrawerTitle>{activeTool ? "Editar ferramenta" : "Nova ferramenta"}</DrawerTitle>
               <DrawerDescription>
-                Cadastre uma ferramenta fora do catálogo para reaproveitar em
-                vários projetos.
+                {activeTool
+                  ? "Atualize os dados desta ferramenta."
+                  : "Cadastre uma ferramenta fora do catálogo para reaproveitar em vários projetos."}
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
@@ -159,10 +186,11 @@ export function CreateCustomToolDialog({
       <DialogContent>
         <DialogHeader>
           <div>
-            <DialogTitle>Nova ferramenta</DialogTitle>
+            <DialogTitle>{activeTool ? "Editar ferramenta" : "Nova ferramenta"}</DialogTitle>
             <DialogDescription className="mt-0.5">
-              Cadastre uma ferramenta fora do catálogo para reaproveitar em
-              vários projetos.
+              {activeTool
+                ? "Atualize os dados desta ferramenta."
+                : "Cadastre uma ferramenta fora do catálogo para reaproveitar em vários projetos."}
             </DialogDescription>
           </div>
           <Button

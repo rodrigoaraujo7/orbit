@@ -24,6 +24,18 @@ export const toolsRouter = router({
     return row
   }),
 
+  updateCustom: protectedProcedure
+    .input(input.extend({ id: z.string() }))
+    .mutation(async ({ ctx, input: body }) => {
+      await asUser(ctx, (tx) =>
+        tx
+          .update(customTool)
+          .set({ name: body.name, category: body.category })
+          .where(eq(customTool.id, body.id)),
+      )
+      return { ok: true as const }
+    }),
+
   deleteCustom: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input: body }) => {

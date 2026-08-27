@@ -15,6 +15,15 @@ type BrowserRouter = {
         company?: string
       }) => Promise<Contact>
     }
+    update: {
+      mutate: (input: {
+        id: string
+        name: string
+        email?: string
+        phone?: string
+        company?: string
+      }) => Promise<{ ok: true }>
+    }
     delete: { mutate: (input: { id: string }) => Promise<{ ok: true }> }
   }
   projects: {
@@ -30,6 +39,13 @@ type BrowserRouter = {
     listCustom: { query: () => Promise<CustomTool[]> }
     createCustom: {
       mutate: (input: { name: string; category: string }) => Promise<CustomTool>
+    }
+    updateCustom: {
+      mutate: (input: {
+        id: string
+        name: string
+        category: string
+      }) => Promise<{ ok: true }>
     }
     deleteCustom: { mutate: (input: { id: string }) => Promise<{ ok: true }> }
   }

@@ -19,10 +19,12 @@ type RegistryContextValue = {
   isContactsPending: boolean
   isError: boolean
   addContact: (contact: ContactInput) => Promise<Contact>
+  updateContact: (id: string, contact: ContactInput) => Promise<{ ok: true }>
   removeContact: (id: string) => Promise<{ ok: true }>
   findContact: (id: string) => Contact | undefined
   customTools: CustomTool[]
   addCustomTool: (tool: CustomToolInput) => Promise<CustomTool>
+  updateCustomTool: (id: string, tool: CustomToolInput) => Promise<{ ok: true }>
   removeCustomTool: (id: string) => Promise<{ ok: true }>
 }
 
@@ -68,9 +70,31 @@ export function RegistryProvider({ children }: { children: ReactNode }) {
     onSuccess: invalidateContacts,
     onError: invalidateContacts,
   })
+  const updateContactMut = useMutation({
+    mutationFn: ({ id, contact }: { id: string; contact: ContactInput }) =>
+      trpc.contacts.update.mutate({
+        id,
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        company: contact.company,
+      }),
+    onSuccess: invalidateContacts,
+    onError: invalidateContacts,
+  })
   const addToolMut = useMutation({
     mutationFn: (tool: CustomToolInput) =>
       trpc.tools.createCustom.mutate({ name: tool.name, category: tool.category }),
+    onSuccess: invalidateTools,
+    onError: invalidateTools,
+  })
+  const updateToolMut = useMutation({
+    mutationFn: ({ id, tool }: { id: string; tool: CustomToolInput }) =>
+      trpc.tools.updateCustom.mutate({
+        id,
+        name: tool.name,
+        category: tool.category,
+      }),
     onSuccess: invalidateTools,
     onError: invalidateTools,
   })
@@ -87,13 +111,17 @@ export function RegistryProvider({ children }: { children: ReactNode }) {
       isContactsPending: contactsQuery.isPending,
       isError: contactsQuery.isError || toolsQuery.isError,
       addContact: (contact) => addContactMut.mutateAsync(contact),
+      updateContact: (id, contact) =>
+        updateContactMut.mutateAsync({ id, contact }),
       removeContact: (id) => removeContactMut.mutateAsync(id),
       findContact: (id) => contacts.find((c) => c.id === id),
       customTools,
       addCustomTool: (tool) => addToolMut.mutateAsync(tool),
+      updateCustomTool: (id, tool) =>
+        updateToolMut.mutateAsync({ id, tool }),
       removeCustomTool: (id) => removeToolMut.mutateAsync(id),
     }),
-    [contacts, customTools, contactsQuery.isPending, contactsQuery.isError, toolsQuery.isPending, toolsQuery.isError, addContactMut, removeContactMut, addToolMut, removeToolMut],
+    [contacts, customTools, contactsQuery.isPending, contactsQuery.isError, toolsQuery.isPending, toolsQuery.isError, addContactMut, updateContactMut, removeContactMut, addToolMut, updateToolMut, removeToolMut],
   )
 
   return <RegistryContext value={value}>{children}</RegistryContext>

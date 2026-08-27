@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { X } from "lucide-react"
-import { useEffect } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -24,6 +24,7 @@ import {
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/toast"
+import type { Contact } from "@/data/contacts"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { maskBrPhone } from "@/lib/format"
 import { useRegistry } from "@/lib/registry-store"
@@ -54,14 +55,26 @@ const emptyContactForm: ContactFormValues = {
   company: "",
 }
 
+function fromContact(contact: Contact): ContactFormValues {
+  return {
+    name: contact.name,
+    email: contact.email ?? "",
+    phone: contact.phone ?? "",
+    company: contact.company ?? "",
+  }
+}
+
 export function CreateContactDialog({
   open,
   onOpenChange,
+  contact,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** present = editing this contact; absent = creating a new one */
+  contact?: Contact
 }) {
-  const { addContact } = useRegistry()
+  const { addContact, updateContact } = useRegistry()
   const {
     register,
     handleSubmit,
@@ -72,23 +85,38 @@ export function CreateContactDialog({
     defaultValues: emptyContactForm,
   })
 
-  // the dialog stays mounted the whole time — clear the form every time it opens
-  useEffect(() => {
-    if (open) reset(emptyContactForm)
-  }, [open, reset])
+  // Keep title/CTA from the open snapshot — the popup still paints while closing.
+  const [activeContact, setActiveContact] = useState<Contact | undefined>(contact)
+  const wasOpen = useRef(false)
+  useLayoutEffect(() => {
+    if (open && !wasOpen.current) {
+      setActiveContact(contact)
+      reset(contact ? fromContact(contact) : emptyContactForm)
+    }
+    wasOpen.current = open
+  }, [open, contact, reset])
 
   const onSubmit = handleSubmit(async (values) => {
+    const payload = {
+      name: values.name,
+      email: values.email || undefined,
+      phone: values.phone,
+      company: values.company,
+    }
     try {
-      await addContact({
-        name: values.name,
-        email: values.email || undefined,
-        phone: values.phone,
-        company: values.company,
-      })
-      toast.add({ title: "Contato criado", type: "success" })
+      if (activeContact) {
+        await updateContact(activeContact.id, payload)
+        toast.add({ title: "Contato atualizado", type: "success" })
+      } else {
+        await addContact(payload)
+        toast.add({ title: "Contato criado", type: "success" })
+      }
       onOpenChange(false)
     } catch {
-      toast.add({ title: "Erro ao criar contato", type: "error" })
+      toast.add({
+        title: activeContact ? "Erro ao atualizar contato" : "Erro ao criar contato",
+        type: "error",
+      })
     }
   })
 
@@ -150,7 +178,9 @@ export function CreateContactDialog({
       Cancelar
     </Button>
   )
-  const submitButton = <Button type="submit">Criar contato</Button>
+  const submitButton = (
+    <Button type="submit">{activeContact ? "Salvar" : "Criar contato"}</Button>
+  )
 
   if (isMobile) {
     return (
@@ -158,9 +188,11 @@ export function CreateContactDialog({
         <DrawerContent>
           <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
             <DrawerHeader>
-              <DrawerTitle>Novo contato</DrawerTitle>
+              <DrawerTitle>{activeContact ? "Editar contato" : "Novo contato"}</DrawerTitle>
               <DrawerDescription>
-                Cadastre um contato para reaproveitar em vários projetos.
+                {activeContact
+                  ? "Atualize os dados deste contato."
+                  : "Cadastre um contato para reaproveitar em vários projetos."}
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
@@ -181,9 +213,11 @@ export function CreateContactDialog({
       <DialogContent>
         <DialogHeader>
           <div>
-            <DialogTitle>Novo contato</DialogTitle>
+            <DialogTitle>{activeContact ? "Editar contato" : "Novo contato"}</DialogTitle>
             <DialogDescription className="mt-0.5">
-              Cadastre um contato para reaproveitar em vários projetos.
+              {activeContact
+                ? "Atualize os dados deste contato."
+                : "Cadastre um contato para reaproveitar em vários projetos."}
             </DialogDescription>
           </div>
           <Button
