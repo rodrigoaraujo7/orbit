@@ -1,19 +1,28 @@
 import { useState } from "react"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { Info, X } from "lucide-react"
 import type { AuditChange, AuditModule } from "shared"
 
 import { PageHeader } from "@/components/layout/page"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { FilterDrawer } from "@/components/ui/filter-drawer"
 import { Input } from "@/components/ui/input"
 import { Select, type SelectOption } from "@/components/ui/select"
-import { DataTable, type Column } from "@/components/ui/table"
+import { DataTable, type Column, type SortState } from "@/components/ui/table"
 import {
   AUDIT_ACTION_LABEL,
   AUDIT_MODULE_LABEL,
   formatAuditAt,
-  formatAuditDetails,
+  formatAuditChange,
 } from "@/lib/audit-labels"
 import { periodBounds, type PeriodPreset } from "@/lib/audit-period"
 import { useProjects } from "@/lib/projects-store"
@@ -21,7 +30,7 @@ import { useRegistry } from "@/lib/registry-store"
 import { trpc } from "@/lib/trpc"
 import { useDebouncedValue } from "@/lib/use-debounced-value"
 
-type AuditCursor = { createdAt: string; id: string }
+type AuditCursor = { createdAt: string; id: string; module?: string }
 
 type AuditEntry = {
   id: string
@@ -32,6 +41,8 @@ type AuditEntry = {
   projectId: string | null
   changes: AuditChange[]
   createdAt: string
+  ip: string | null
+  userAgent: string | null
 }
 
 const MODULE_OPTIONS: SelectOption[] = [
@@ -89,7 +100,12 @@ function AuditFilterFields({
         className={stacked ? "w-full" : "flex-1"}
       />
       <div className={stacked ? "w-full" : "w-48"}>
-        <Select value={module} onValueChange={onModule} options={MODULE_OPTIONS} />
+        <Select
+          value={module}
+          onValueChange={onModule}
+          options={MODULE_OPTIONS}
+          placeholder="Módulo"
+        />
       </div>
       <div className={stacked ? "w-full" : "w-44"}>
         <Select
@@ -131,6 +147,8 @@ function AuditPage() {
   const [pageSize, setPageSize] = useState("25")
   const [cursors, setCursors] = useState<(AuditCursor | null)[]>([null])
   const [page, setPage] = useState(0)
+  const [sort, setSort] = useState<SortState>(null)
+  const [selected, setSelected] = useState<AuditEntry | null>(null)
 
   const debouncedSearch = useDebouncedValue(search)
   const range = periodBounds(period, customFrom, customTo)
@@ -141,6 +159,7 @@ function AuditPage() {
     customFrom,
     customTo,
     pageSize,
+    sort,
   })
   const [appliedKey, setAppliedKey] = useState(filterKey)
   let pageIndex = page
@@ -153,6 +172,13 @@ function AuditPage() {
     cursorStack = [null]
   }
 
+  const sortParams =
+    sort?.key === "createdAt"
+      ? { sortBy: "createdAt" as const, sortDir: sort.direction }
+      : sort?.key === "module"
+        ? { sortBy: "module" as const, sortDir: sort.direction }
+        : {}
+
   const query = useQuery({
     queryKey: [
       "audit",
@@ -163,6 +189,7 @@ function AuditPage() {
         to: range.to,
         cursor: cursorStack[pageIndex],
         limit: Number(pageSize),
+        ...sortParams,
       },
     ],
     queryFn: () =>
@@ -173,6 +200,7 @@ function AuditPage() {
         to: range.to,
         cursor: cursorStack[pageIndex],
         limit: Number(pageSize),
+        ...sortParams,
       }),
     placeholderData: keepPreviousData,
   })
@@ -191,16 +219,34 @@ function AuditPage() {
     setCustomTo("")
   }
 
+  function objectCell(row: AuditEntry) {
+    const label = row.subjectLabel || "—"
+    if (row.projectId && findProject(row.projectId)) {
+      return (
+        <Link
+          to="/projects/$projectId"
+          params={{ projectId: row.projectId }}
+          className="rounded-sm font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {label}
+        </Link>
+      )
+    }
+    return label
+  }
+
   const columns: Column<AuditEntry>[] = [
     {
       key: "createdAt",
       header: "Data",
       className: "whitespace-nowrap",
+      sortValue: (row) => row.createdAt,
       cell: (row) => formatAuditAt(row.createdAt),
     },
     {
       key: "module",
       header: "Módulo",
+      sortValue: (row) => row.module,
       cell: (row) => (
         <Badge variant={MODULE_BADGE[row.module]}>{AUDIT_MODULE_LABEL[row.module]}</Badge>
       ),
@@ -213,30 +259,21 @@ function AuditPage() {
     {
       key: "subject",
       header: "Objeto",
-      cell: (row) => {
-        const label = row.subjectLabel || "—"
-        if (row.projectId && findProject(row.projectId)) {
-          return (
-            <Link
-              to="/projects/$projectId"
-              params={{ projectId: row.projectId }}
-              className="rounded-sm font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {label}
-            </Link>
-          )
-        }
-        return label
-      },
+      cell: objectCell,
     },
     {
       key: "details",
-      header: "Detalhes",
-      className: "hidden md:table-cell",
+      header: "",
+      className: "text-right",
       cell: (row) => (
-        <span className="text-muted-foreground">
-          {formatAuditDetails(row.changes, row.action, (id) => findContact(id)?.name ?? id)}
-        </span>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Ver detalhes"
+          onClick={() => setSelected(row)}
+        >
+          <Info />
+        </Button>
       ),
     },
   ]
@@ -293,6 +330,7 @@ function AuditPage() {
             emptyMessage={
               query.isPending ? "Carregando…" : "Nenhum evento encontrado com esses filtros."
             }
+            serverSort={{ sort, onSortChange: setSort }}
             serverPagination={{
               hasPrev: pageIndex > 0,
               hasNext: Boolean(nextCursor),
@@ -312,6 +350,82 @@ function AuditPage() {
           />
         )}
       </div>
+
+      <Dialog open={selected != null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
+        <DialogContent>
+          {selected && (
+            <>
+              <DialogHeader>
+                <div>
+                  <DialogTitle>
+                    {AUDIT_ACTION_LABEL[selected.action] ?? selected.action}
+                  </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Detalhes do evento
+                  </DialogDescription>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => setSelected(null)}
+                  aria-label="Fechar"
+                >
+                  <X />
+                </Button>
+              </DialogHeader>
+              <div className="flex flex-col gap-4 px-5 py-4 text-sm">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    Data
+                  </span>
+                  {formatAuditAt(selected.createdAt)}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    Módulo
+                  </span>
+                  <span>
+                    <Badge variant={MODULE_BADGE[selected.module]}>
+                      {AUDIT_MODULE_LABEL[selected.module]}
+                    </Badge>
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    Objeto
+                  </span>
+                  {objectCell(selected)}
+                </div>
+                {selected.changes.length > 0 && (
+                  <ul className="flex flex-col gap-1">
+                    {selected.changes.map((change, index) => (
+                      <li key={index}>
+                        {formatAuditChange(change, (id) => findContact(id)?.name ?? id)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {selected.ip ? (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                      IP
+                    </span>
+                    {selected.ip}
+                  </div>
+                ) : null}
+                {selected.userAgent ? (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                      User-Agent
+                    </span>
+                    <span className="break-all">{selected.userAgent}</span>
+                  </div>
+                ) : null}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
