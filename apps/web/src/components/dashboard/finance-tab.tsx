@@ -50,7 +50,7 @@ export function FinanceTab({
   /**
    * Three states of the same money, so the three chart slots are picked as a set
    * rather than borrowed from the status tokens: `--destructive` sits at the same
-   * hue as the brand bordô and the pair measures ΔE 10.0 (light) / 12.3 (dark)
+   * hue as the brand burgundy and the pair measures ΔE 10.0 (light) / 12.3 (dark)
    * under normal vision — below the 15 floor, so "recebido" and "atrasado" would
    * blur into each other whenever a month has no pending slice between them.
    * Slots 1/2/3 clear every pair against the dark surface. The status red stays where it

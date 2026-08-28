@@ -1,40 +1,39 @@
 # projects-manager
 
-## O que é
+## What it is
 
-Plataforma SaaS de gestão de projetos para desenvolvedores freelancers. Cada
-usuário (freelancer) gerencia seus próprios clientes, projetos e finanças de
-forma isolada.
+SaaS project-management platform for freelance developers. Each user
+(freelancer) manages their own clients, projects, and finances in isolation.
 
-## Dor que resolve
+## Problem it solves
 
-Freelancer com vários projetos/clientes ao mesmo tempo perde o controle de:
+A freelancer juggling several projects and clients at once loses track of:
 
-- Quanto cada cliente já pagou e quanto ainda deve.
-- Quais ferramentas pagas (AWS, Railway, Resend, Sentry, Datadog etc.) foram
-  usadas em qual projeto, e quem está pagando por elas.
-- Em qual conta/login o acesso a cada ferramenta foi feito.
-- O que está em desenvolvimento e o que está na fila, entre vários projetos
-  simultâneos.
+- How much each client has already paid and how much they still owe.
+- Which paid tools (AWS, Railway, Resend, Sentry, Datadog, etc.) were used on
+  which project, and who is paying for them.
+- Which account/login was used to access each tool.
+- What is in development and what is queued, across several simultaneous
+  projects.
 
-## Módulos principais
+## Main modules
 
-### Financeiro
-- Cobrança por cliente e controle de pagamentos pendentes.
-- Registro de valor fechado por projeto (grátis, parcelado, à vista).
-- Custos de ferramentas pagas por projeto (quem paga, quanto, qual conta).
-- Dashboard com visualização de números, metas e indicadores financeiros.
+### Finance
+- Per-client billing and pending-payment tracking.
+- Recorded agreed amount per project (free, installments, upfront).
+- Paid-tool costs per project (who pays, how much, which account).
+- Dashboard with figures, goals, and financial indicators.
 
-### Projetos
-- Cadastro completo: contato principal, valor fechado, ferramentas usadas
-  (pagas e free) e a conta/login usado em cada uma.
-- Link com o repositório GitHub do projeto e acompanhamento do GitHub Actions.
+### Projects
+- Full record: primary contact, agreed amount, tools in use (paid and free)
+  and the account/login used for each.
+- Link to the project's GitHub repository and GitHub Actions tracking.
 
 ### Kanban
-- Visualização do que está em desenvolvimento e do que está na fila, entre
-  todos os projetos.
+- View of what is in development and what is in the queue, across all
+  projects.
 
-## Público-alvo
+## Audience
 
-Multi-usuário / SaaS — cada freelancer com seus próprios clientes, projetos e
-dados financeiros isolados dos demais.
+Multi-user / SaaS — each freelancer has their own clients, projects, and
+financial data isolated from everyone else.

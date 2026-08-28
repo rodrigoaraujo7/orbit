@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Same three slots as the revenue chart, for the same reason: `--destructive`
- * is too close to the brand bordô to sit beside it as a fill. Texture does the
+ * is too close to the brand burgundy to sit beside it as a fill. Texture does the
  * rest of the work — solid, dashed outline, hatched — so the ruler survives
  * both colorblindness and a black-and-white print.
  */

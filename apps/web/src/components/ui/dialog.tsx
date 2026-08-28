@@ -89,7 +89,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-/** Título padrão de modal/dialog: serif, sem peso extra, tracking mais aberto. */
+/** Default modal/dialog title: serif, no extra weight, more open tracking. */
 function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
@@ -100,7 +100,7 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   )
 }
 
-/** Subtítulo/descrição padrão de modal/dialog, logo abaixo do DialogTitle. */
+/** Default modal/dialog subtitle, directly under DialogTitle. */
 function DialogDescription({
   className,
   ...props
