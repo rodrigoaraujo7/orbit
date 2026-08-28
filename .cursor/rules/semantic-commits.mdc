@@ -1,0 +1,24 @@
+---
+description: Commit messages are conventional commits in English, every time.
+alwaysApply: true
+---
+
+# Semantic commits in English
+
+Every commit subject is English and follows `type(scope): subject`. Never Portuguese. Never a free-form title.
+
+```
+# ❌ BAD
+feat: persiste projetos via tRPC
+Add i18next with English-first catalogs
+
+# ✅ GOOD
+feat(auth): add Better Auth with login and 2FA
+fix(kanban): stack project detail in the mobile drawer
+```
+
+- **type:** `feat` `fix` `docs` `style` `refactor` `test` `chore` `merge`
+- **scope** (required unless the change is repo-wide docs): `i18n` `ui` `auth` `login` `kanban` `audit` `filters` `contacts` `projects` `invoices` `tools` `dashboard` `finance` `settings` `nav` `api` `db` `secrets` `github` `shared` `repo`
+- **subject:** imperative, lowercase, no trailing period, ~72 characters
+- One logical change per commit. Body (optional) is English too.
+- Merge commits: `merge(scope): pull request #N` or `merge(scope): short reason`
