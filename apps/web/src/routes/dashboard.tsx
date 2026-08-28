@@ -3,8 +3,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Wallet, Wrench } from "lucide-react";
 import {
   compactSearch,
+  dashboardOptions,
   dashboardSearchSchema,
-  DEFAULT_CURRENCY,
   emptyFilters,
   parseSearch,
   toDashboardFilters,
@@ -19,6 +19,8 @@ import { PageHeader } from "@/components/layout/page";
 import { DashboardFilterSkeleton, FilterPending } from "@/components/ui/filter-pending";
 import { Tabs, TabsDock, TabsDockTab, TabsPanel } from "@/components/ui/tabs";
 import { formatMonthLong, formatPercent } from "@/lib/format";
+import { useProjects } from "@/lib/projects-store";
+import { useRegistry } from "@/lib/registry-store";
 import { trpc } from "@/lib/trpc";
 
 function profitHint(current: number, previous: number) {
@@ -41,6 +43,8 @@ function searchToFilters(search: ReturnType<typeof Route.useSearch>): DashboardF
 function DashboardPage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
+  const { projects } = useProjects();
+  const { contacts } = useRegistry();
   const filters = searchToFilters(search);
 
   const query = useQuery({
@@ -60,7 +64,7 @@ function DashboardPage() {
   const summary = metrics?.summary;
   const months = metrics?.months ?? [];
   const currency = metrics?.currency ?? filters.currency;
-  const options = metrics?.options ?? { clients: [], projects: [], currencies: [DEFAULT_CURRENCY] };
+  const options = metrics?.options ?? dashboardOptions(projects, contacts);
 
   const period =
     months.length === 0
