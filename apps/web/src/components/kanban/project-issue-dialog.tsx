@@ -1,18 +1,20 @@
 import { Link } from "@tanstack/react-router"
-import { ExternalLink, Pencil, User, X } from "lucide-react"
+import { ExternalLink, Pencil, User } from "lucide-react"
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
 import { useQuery } from "@tanstack/react-query"
 
 import { StatusLabel, StatusSelect, WorkflowBadge } from "@/components/projects/status-badges"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog"
 import { Textarea } from "@/components/ui/textarea"
 import type { Contact } from "@/data/contacts"
 import {
@@ -129,19 +131,19 @@ export function ProjectIssueDialog({
   }
 
   return (
-    <Dialog
+    <ResponsiveDialog
       open={open}
       onOpenChange={(next) => {
         if (!next) setDraft("")
         onOpenChange(next)
       }}
     >
-      <DialogContent className="flex h-[90svh] max-w-6xl flex-col overflow-hidden">
-        <DialogHeader>
+      <ResponsiveDialogContent dialogClassName="h-[90svh] max-w-6xl">
+        <ResponsiveDialogHeader>
           <div className="min-w-0">
             <StatusLabel status={project.status} className="text-sm" />
-            <DialogTitle className="truncate text-2xl">{project.name}</DialogTitle>
-            <DialogDescription className="sr-only">Detalhes do projeto</DialogDescription>
+            <ResponsiveDialogTitle className="truncate text-2xl">{project.name}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription className="sr-only">Detalhes do projeto</ResponsiveDialogDescription>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <Button
@@ -154,18 +156,11 @@ export function ProjectIssueDialog({
               <ExternalLink data-icon="inline-start" />
               Acessar projeto
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => onOpenChange(false)}
-              aria-label="Fechar"
-            >
-              <X />
-            </Button>
+            <ResponsiveDialogClose />
           </div>
-        </DialogHeader>
+        </ResponsiveDialogHeader>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+        <ResponsiveDialogBody className="flex flex-col p-0 lg:flex-row lg:overflow-hidden">
           <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-5 py-5">
             <EditableDescription
               key={project.id}
@@ -311,9 +306,9 @@ export function ProjectIssueDialog({
               )}
             </Meta>
           </aside>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogBody>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }
 

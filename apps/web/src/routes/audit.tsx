@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { Info, X } from "lucide-react"
+import { Info } from "lucide-react"
 import {
   auditSearchSchema,
   compactSearch,
@@ -13,16 +13,18 @@ import {
 import { PageHeader } from "@/components/layout/page"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { FilterDrawer } from "@/components/ui/filter-drawer"
 import { FilterPending, TableFilterSkeleton } from "@/components/ui/filter-pending"
 import { Input } from "@/components/ui/input"
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog"
 import { Select, type SelectOption } from "@/components/ui/select"
 import { DataTable, type Column, type SortState } from "@/components/ui/table"
 import { Tooltip } from "@/components/ui/tooltip"
@@ -398,29 +400,22 @@ function AuditPage() {
         </div>
       </FilterPending>
 
-      <Dialog open={selected != null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
-        <DialogContent className="max-h-[85svh] overflow-y-auto">
+      <ResponsiveDialog open={selected != null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
+        <ResponsiveDialogContent>
           {selected && (
             <>
-              <DialogHeader>
+              <ResponsiveDialogHeader>
                 <div>
-                  <DialogTitle>
+                  <ResponsiveDialogTitle>
                     {AUDIT_ACTION_LABEL[selected.action] ?? selected.action}
-                  </DialogTitle>
-                  <DialogDescription className="sr-only">
+                  </ResponsiveDialogTitle>
+                  <ResponsiveDialogDescription className="sr-only">
                     Detalhes do evento
-                  </DialogDescription>
+                  </ResponsiveDialogDescription>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => setSelected(null)}
-                  aria-label="Fechar"
-                >
-                  <X />
-                </Button>
-              </DialogHeader>
-              <div className="flex flex-col gap-4 px-5 py-4 text-sm">
+                <ResponsiveDialogClose />
+              </ResponsiveDialogHeader>
+              <ResponsiveDialogBody className="flex flex-col gap-4 text-sm">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     Data
@@ -473,11 +468,11 @@ function AuditPage() {
                     <span className="break-all">{selected.userAgent}</span>
                   </div>
                 ) : null}
-              </div>
+              </ResponsiveDialogBody>
             </>
           )}
-        </DialogContent>
-      </Dialog>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </>
   )
 }
