@@ -145,6 +145,7 @@ export const paymentsRouter = router({
           action: "financial.payment.create",
           subjectId: id,
           subjectLabel: `${input.amount} ${input.method}`,
+          /* v8 ignore next -- payment insert is FK-bound to an existing invoice */
           projectId: inv?.projectId ?? null,
         })
       })

@@ -7,11 +7,17 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "check": "node --experimental-strip-types src/money.check.ts && node --experimental-strip-types src/domain.check.ts && node --experimental-strip-types src/invoice-table.check.ts && node --experimental-strip-types src/dashboard-metrics.check.ts",
-    "lint": "pnpm check",
-    "build": "pnpm check"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "lint": "pnpm test",
+    "build": "pnpm test"
   },
   "dependencies": {
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.1.11",
+    "vitest": "4.1.11"
   }
 }

@@ -1,0 +1,55 @@
+import { defineConfig } from "vitest/config"
+
+export default defineConfig({
+  test: {
+    projects: [
+      "packages/shared/vitest.config.ts",
+      "apps/api/vitest.config.ts",
+      "apps/web/vitest.config.ts",
+    ],
+    coverage: {
+      provider: "v8",
+      all: true,
+      reporter: ["text", "html", "lcov"],
+      reportsDirectory: "./coverage",
+      include: [
+        "packages/shared/src/**/*.ts",
+        "apps/api/src/**/*.ts",
+        "apps/web/src/**/*.{ts,tsx}",
+      ],
+      exclude: [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.check.ts",
+        "**/*.config.*",
+        "**/db/test-db.ts",
+        "apps/api/src/index.ts",
+        "apps/web/src/main.tsx",
+        "apps/web/src/routeTree.gen.ts",
+        "apps/web/src/components/Grainient.jsx",
+        "apps/web/src/test/**",
+        "apps/api/src/test/**",
+        "apps/web/src/components/ui/badge.tsx",
+        "apps/web/src/components/ui/button.tsx",
+        "apps/web/src/components/ui/card.tsx",
+        "apps/web/src/components/ui/chart.tsx",
+        "apps/web/src/components/ui/dialog.tsx",
+        "apps/web/src/components/ui/drawer.tsx",
+        "apps/web/src/components/ui/emphasis.tsx",
+        "apps/web/src/components/ui/field.tsx",
+        "apps/web/src/components/ui/input.tsx",
+        "apps/web/src/components/ui/label.tsx",
+        "apps/web/src/components/ui/select.tsx",
+        "apps/web/src/components/ui/tabs.tsx",
+        "apps/web/src/components/ui/textarea.tsx",
+        "apps/web/src/components/ui/tooltip.tsx",
+      ],
+      thresholds: {
+        lines: 100,
+        functions: 100,
+        branches: 100,
+        statements: 100,
+      },
+    },
+  },
+})

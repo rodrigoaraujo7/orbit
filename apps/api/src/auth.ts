@@ -39,6 +39,53 @@ async function userIdByEmail(email: string) {
   return row?.id
 }
 
+type AuthHookCtx = {
+  path: string
+  headers?: Headers | null
+  request?: { headers?: Headers } | null
+  body?: unknown
+  context: {
+    newSession?: { user: { id: string } } | null
+    session?: { user: { id: string } } | null
+    returned?: unknown
+  }
+}
+
+export async function afterAuthHook(ctx: AuthHookCtx) {
+  const headers = ctx.headers ?? ctx.request?.headers
+  const sessionUserId = ctx.context.newSession?.user.id ?? ctx.context.session?.user.id ?? null
+  const failed = isAPIError(ctx.context.returned) || ctx.context.returned instanceof APIError
+
+  if (ctx.path === "/sign-in/email") {
+    if (ctx.context.newSession) {
+      await logSecurity(ctx.context.newSession.user.id, "security.login", headers)
+      return
+    }
+    if (failed) {
+      const email =
+        ctx.body && typeof ctx.body === "object" && "email" in ctx.body
+          ? String((ctx.body as { email?: string }).email ?? "")
+          : ""
+      if (!email) return
+      const id = await userIdByEmail(email)
+      if (id) await logSecurity(id, "security.login.failed", headers)
+    }
+    return
+  }
+
+  if (!sessionUserId || failed) return
+
+  if (ctx.path === "/sign-out") {
+    await logSecurity(sessionUserId, "security.logout", headers)
+  } else if (ctx.path === "/change-password") {
+    await logSecurity(sessionUserId, "security.password.change", headers)
+  } else if (ctx.path === "/two-factor/enable") {
+    await logSecurity(sessionUserId, "security.2fa.enable", headers)
+  } else if (ctx.path === "/two-factor/disable") {
+    await logSecurity(sessionUserId, "security.2fa.disable", headers)
+  }
+}
+
 export function createAuth() {
   const secret =
     optionalEnv("BETTER_AUTH_SECRET") ??
@@ -64,41 +111,7 @@ export function createAuth() {
     },
     plugins: [twoFactor({ issuer: "Projects Manager" }), dash()],
     hooks: {
-      after: createAuthMiddleware(async (ctx) => {
-        const headers = ctx.headers ?? ctx.request?.headers
-        const sessionUserId =
-          ctx.context.newSession?.user.id ?? ctx.context.session?.user.id ?? null
-        const failed = isAPIError(ctx.context.returned) || ctx.context.returned instanceof APIError
-
-        if (ctx.path === "/sign-in/email") {
-          if (ctx.context.newSession) {
-            await logSecurity(ctx.context.newSession.user.id, "security.login", headers)
-            return
-          }
-          if (failed) {
-            const email =
-              ctx.body && typeof ctx.body === "object" && "email" in ctx.body
-                ? String((ctx.body as { email?: string }).email ?? "")
-                : ""
-            if (!email) return
-            const id = await userIdByEmail(email)
-            if (id) await logSecurity(id, "security.login.failed", headers)
-          }
-          return
-        }
-
-        if (!sessionUserId || failed) return
-
-        if (ctx.path === "/sign-out") {
-          await logSecurity(sessionUserId, "security.logout", headers)
-        } else if (ctx.path === "/change-password") {
-          await logSecurity(sessionUserId, "security.password.change", headers)
-        } else if (ctx.path === "/two-factor/enable") {
-          await logSecurity(sessionUserId, "security.2fa.enable", headers)
-        } else if (ctx.path === "/two-factor/disable") {
-          await logSecurity(sessionUserId, "security.2fa.disable", headers)
-        }
-      }),
+      after: createAuthMiddleware(afterAuthHook),
     },
   })
 }
@@ -110,4 +123,8 @@ let singleton: Auth | undefined
 export function getAuth() {
   singleton ??= createAuth()
   return singleton
+}
+
+export function resetAuth() {
+  singleton = undefined
 }

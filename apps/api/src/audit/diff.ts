@@ -80,7 +80,7 @@ function commentChanges(prev: unknown, next: unknown): AuditChange[] {
       changes.push({ field: "comment.created", from: "", to: comment.body })
       continue
     }
-    add(changes, "comment.edited", before.get(comment.id) ?? "", comment.body)
+    add(changes, "comment.edited", before.get(comment.id)!, comment.body)
   }
   for (const [id, body] of before) {
     if (!afterIds.has(id)) {

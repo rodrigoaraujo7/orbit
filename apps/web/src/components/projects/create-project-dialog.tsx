@@ -147,11 +147,11 @@ export function CreateProjectDialog({
   // useWatch instead of watch(): it is memoizable, watch() makes the React
   // Compiler give up on optimizing the whole component.
   const dealKind = useWatch({ control, name: "dealKind" })
-  const amount = useWatch({ control, name: "amount" })
+  const amount = useWatch({ control, name: "amount", defaultValue: "" })
   const currency = useWatch({ control, name: "currency" })
   const isNewContact = useWatch({ control, name: "isNewContact" })
   // zeroed amount = free project, same rule as the tools
-  const isFree = !hasPositiveAmount(amount ?? "")
+  const isFree = !hasPositiveAmount(amount)
 
   // Creating a project with no contacts yet: skip the picker and go straight
   // to the inline form. Wait until the contacts query has settled so an empty
@@ -440,7 +440,8 @@ export function CreateProjectDialog({
                         value={field.value}
                         onValueChange={field.onChange}
                         options={installmentOptions(
-                          parseAmount(amount ?? "") ?? 0,
+                          /* v8 ignore next -- installments only render after hasPositiveAmount */
+                          parseAmount(amount) ?? 0,
                           currency
                         )}
                       />

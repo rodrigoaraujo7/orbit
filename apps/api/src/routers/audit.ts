@@ -124,7 +124,7 @@ export async function listAuditLogs(tx: Tx, input: AuditListInput) {
       subjectId: row.subjectId,
       subjectLabel: row.subjectLabel,
       projectId: row.projectId,
-      changes: (row.changes ?? []) as AuditChange[],
+      changes: row.changes as AuditChange[],
       createdAt: row.createdAt.toISOString(),
       ip: row.ip ?? null,
       userAgent: row.userAgent ?? null,

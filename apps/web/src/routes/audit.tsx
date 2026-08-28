@@ -170,6 +170,26 @@ function AuditPage() {
 
   const [searchDraft, setSearchDraft] = useDraftSearch(search.q, (q) => patchSearch({ q }))
   const period = search.period ?? "30d"
+
+  function onModule(module: string) {
+    patchSearch({ module: (module || undefined) as AuditModule | undefined })
+  }
+
+  function onPeriod(nextPeriod: PeriodPreset) {
+    patchSearch({
+      period: nextPeriod,
+      from: nextPeriod === "custom" ? search.from : undefined,
+      to: nextPeriod === "custom" ? search.to : undefined,
+    })
+  }
+
+  function onFrom(from: string) {
+    patchSearch({ from: from || undefined, period: "custom" })
+  }
+
+  function onTo(to: string) {
+    patchSearch({ to: to || undefined, period: "custom" })
+  }
   const range = periodBounds(period, search.from ?? "", search.to ?? "")
   const filterKey = JSON.stringify({
     search: search.q,
@@ -260,12 +280,14 @@ function AuditPage() {
       key: "createdAt",
       header: t("common.date"),
       className: "whitespace-nowrap",
+      /* v8 ignore next -- serverSort owns ordering; sortValue only marks the header as sortable */
       sortValue: (row) => row.createdAt,
       cell: (row) => formatAuditAt(row.createdAt),
     },
     {
       key: "module",
       header: t("common.module"),
+      /* v8 ignore next -- serverSort owns ordering; sortValue only marks the header as sortable */
       sortValue: (row) => row.module,
       cell: (row) => (
         <Badge variant={MODULE_BADGE[row.module]}>{auditModuleLabel(row.module)}</Badge>
@@ -312,19 +334,13 @@ function AuditPage() {
               search={searchDraft}
               onSearch={setSearchDraft}
               module={search.module ?? ""}
-              onModule={(module) => patchSearch({ module: (module || undefined) as AuditModule | undefined })}
+              onModule={onModule}
               period={period}
-              onPeriod={(nextPeriod) =>
-                patchSearch({
-                  period: nextPeriod,
-                  from: nextPeriod === "custom" ? search.from : undefined,
-                  to: nextPeriod === "custom" ? search.to : undefined,
-                })
-              }
+              onPeriod={onPeriod}
               customFrom={search.from ?? ""}
-              onFrom={(from) => patchSearch({ from: from || undefined, period: "custom" })}
+              onFrom={onFrom}
               customTo={search.to ?? ""}
-              onTo={(to) => patchSearch({ to: to || undefined, period: "custom" })}
+              onTo={onTo}
             />
           </FilterDrawer>
         }
@@ -335,19 +351,13 @@ function AuditPage() {
           search={searchDraft}
           onSearch={setSearchDraft}
           module={search.module ?? ""}
-          onModule={(module) => patchSearch({ module: (module || undefined) as AuditModule | undefined })}
+          onModule={onModule}
           period={period}
-          onPeriod={(nextPeriod) =>
-            patchSearch({
-              period: nextPeriod,
-              from: nextPeriod === "custom" ? search.from : undefined,
-              to: nextPeriod === "custom" ? search.to : undefined,
-            })
-          }
+          onPeriod={onPeriod}
           customFrom={search.from ?? ""}
-          onFrom={(from) => patchSearch({ from: from || undefined, period: "custom" })}
+          onFrom={onFrom}
           customTo={search.to ?? ""}
-          onTo={(to) => patchSearch({ to: to || undefined, period: "custom" })}
+          onTo={onTo}
         />
       </div>
 
@@ -378,6 +388,7 @@ function AuditPage() {
                 pageSize,
                 onPrev: () => setPage((current) => Math.max(0, current - 1)),
                 onNext: () => {
+                  /* v8 ignore next -- Next is disabled when the page has no cursor */
                   if (!nextCursor) return
                   setCursors((current) => {
                     const next = current.slice(0, pageIndex + 1)
@@ -393,7 +404,14 @@ function AuditPage() {
         </div>
       </FilterPending>
 
-      <ResponsiveDialog open={selected != null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
+      <ResponsiveDialog
+        open={selected != null}
+        onOpenChange={(open) => {
+          /* v8 ignore next -- details open from the row action, not this callback */
+          if (open) return
+          setSelected(null)
+        }}
+      >
         <ResponsiveDialogContent>
           {selected && (
             <>

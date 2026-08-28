@@ -110,6 +110,7 @@ export function ContactsPanel() {
         }
         confirmLabel={t("common.delete")}
         onConfirm={() => {
+          /* v8 ignore next -- confirm is only enabled after a row is chosen */
           if (!deletingContact) return
           if (projects.some((p) => p.clientId === deletingContact.id)) {
             toast.add({

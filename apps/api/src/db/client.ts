@@ -27,3 +27,7 @@ export function getDb() {
   singleton ??= createDb()
   return singleton.db
 }
+
+export function resetDb() {
+  singleton = undefined
+}

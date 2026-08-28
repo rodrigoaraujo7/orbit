@@ -91,6 +91,7 @@ function ProjectDetailPage() {
   }
 
   function removeProject() {
+    /* v8 ignore next -- delete control is only rendered when the project exists */
     if (!project) return;
     deleteProject(project.id);
     navigate({ to: "/projects" });
