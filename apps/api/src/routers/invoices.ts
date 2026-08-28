@@ -1,7 +1,16 @@
 import { and, eq } from "drizzle-orm"
 import { z } from "zod"
-import { fromCents, invoiceStatusSchema, paymentMethodSchema, toCents } from "shared"
-import { invoice, payment } from "../db/schema.ts"
+import {
+  filterInvoices,
+  fromCents,
+  generateInvoices,
+  invoiceListFiltersSchema,
+  invoiceStatusSchema,
+  paymentMethodSchema,
+  toCents,
+} from "shared"
+import { contact, invoice, payment } from "../db/schema.ts"
+import { listProjects } from "./projects.ts"
 import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
 import { recordAudit } from "../audit/record.ts"
 
@@ -11,30 +20,31 @@ const money = z.object({
 })
 
 export const invoicesRouter = router({
-  list: protectedProcedure
-    .input(z.object({ projectId: z.string().optional() }).optional())
-    .query(async ({ ctx, input }) => {
-      const rows = await asUser(ctx, (tx) => {
-        if (input?.projectId) {
-          return tx.select().from(invoice).where(eq(invoice.projectId, input.projectId))
-        }
-        return tx.select().from(invoice)
+  list: protectedProcedure.input(invoiceListFiltersSchema).query(async ({ ctx, input }) => {
+    return asUser(ctx, async (tx) => {
+      const projects = await listProjects(tx, ctx.userId)
+      const found = projects.find((row) => row.id === input.projectId)
+      if (!found) return { items: [], totals: { count: 0, paid: 0, overdue: 0 } }
+
+      const [client] = found.clientId
+        ? await tx.select({ name: contact.name }).from(contact).where(eq(contact.id, found.clientId)).limit(1)
+        : []
+      const all = generateInvoices(found, client?.name ?? "")
+      const items = filterInvoices(all, {
+        status: input.status ?? "all",
+        monthFrom: input.monthFrom ?? "",
+        monthTo: input.monthTo ?? "",
       })
-      return rows.map((row) => ({
-        id: row.id,
-        projectId: row.projectId,
-        amount: fromCents(row.amountCents),
-        currency: row.currency,
-        status: row.status,
-        dueDate: row.dueDate,
-        paidAt: row.paidAt?.toISOString() ?? null,
-        paymentMethod: row.paymentMethod,
-        referenceMonth: row.referenceMonth,
-        payerName: row.payerName,
-        hasAttachment: row.hasAttachment,
-        generatedAt: row.dueDate,
-      }))
-    }),
+      return {
+        items,
+        totals: {
+          count: all.length,
+          paid: all.filter((row) => row.status === "paid").length,
+          overdue: all.filter((row) => row.status === "overdue").length,
+        },
+      }
+    })
+  }),
 
   create: protectedProcedure
     .input(
