@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "check": "node --experimental-strip-types src/money.check.ts && node --experimental-strip-types src/domain.check.ts",
+    "check": "node --experimental-strip-types src/money.check.ts && node --experimental-strip-types src/domain.check.ts && node --experimental-strip-types src/invoice-table.check.ts && node --experimental-strip-types src/dashboard-metrics.check.ts",
     "lint": "pnpm check",
     "build": "pnpm check"
   },
