@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,12 +9,13 @@ import { Emphasis } from "@/components/ui/emphasis"
 import { DataTable, type Column } from "@/components/ui/table"
 import { toast } from "@/components/ui/toast"
 import { RowActionsMenu } from "@/components/ui/row-actions-menu"
-import { TOOL_CATEGORY_LABEL } from "@/data/tool-catalog"
 import type { CustomTool } from "@/data/custom-tools"
+import { toolCategoryLabel } from "@/i18n/labels"
 import { useRegistry } from "@/lib/registry-store"
 import { CreateCustomToolDialog } from "./create-custom-tool-dialog"
 
 export function CustomToolsPanel() {
+  useTranslation()
   const { customTools, removeCustomTool } = useRegistry()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTool, setEditingTool] = useState<CustomTool | null>(null)
@@ -30,9 +32,9 @@ export function CustomToolsPanel() {
     {
       key: "category",
       header: "Categoria",
-      sortValue: (tool) => TOOL_CATEGORY_LABEL[tool.category],
+      sortValue: (tool) => toolCategoryLabel(tool.category),
       cell: (tool) => (
-        <Badge variant="outline">{TOOL_CATEGORY_LABEL[tool.category]}</Badge>
+        <Badge variant="outline">{toolCategoryLabel(tool.category)}</Badge>
       ),
     },
     {

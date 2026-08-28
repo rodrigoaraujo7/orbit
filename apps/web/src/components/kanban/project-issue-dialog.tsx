@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router"
 import { ExternalLink, Pencil, User, X } from "lucide-react"
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useTranslation } from "react-i18next"
 
 import { StatusLabel, StatusSelect, WorkflowBadge } from "@/components/projects/status-badges"
 import { Button } from "@/components/ui/button"
@@ -15,12 +16,8 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { Contact } from "@/data/contacts"
-import {
-  FREE_LABEL,
-  isDealFree,
-  type Project,
-  type ProjectStatus,
-} from "@/data/projects"
+import { isDealFree, type Project, type ProjectStatus } from "@/data/projects"
+import { freeLabel } from "@/i18n/labels"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
 import { nowDateTimeIso } from "@/lib/dates"
 import {
@@ -82,6 +79,7 @@ export function ProjectIssueDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  useTranslation()
   const { updateProject } = useProjects()
   const { findContact } = useRegistry()
   const [draft, setDraft] = useState("")
@@ -98,7 +96,7 @@ export function ProjectIssueDialog({
   const history = audit?.items ?? []
   const costLabel = monthlyCostLabel(project)
   const dealAmount = isDealFree(project.deal)
-    ? FREE_LABEL
+    ? freeLabel()
     : formatCurrency(project.deal.amount, project.deal.currency)
 
   function setStatus(status: ProjectStatus) {

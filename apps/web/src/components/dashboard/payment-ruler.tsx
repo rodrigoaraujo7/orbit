@@ -1,5 +1,7 @@
+import { useTranslation } from "react-i18next";
+
 import type { Invoice, InvoiceStatus, Project } from "@/data/projects";
-import { INVOICE_STATUS_LABEL } from "@/data/projects";
+import { invoiceStatusLabel } from "@/i18n/labels";
 import { dealCurrency } from "@/lib/dashboard-metrics";
 import { monthOf, todayIso } from "@/lib/dates";
 import { formatCurrency, formatMonth, formatMonthLong } from "@/lib/format";
@@ -22,12 +24,13 @@ const TICK_CLASS: Record<InvoiceStatus, string> = {
 };
 
 function Legend() {
+  useTranslation();
   return (
     <ul className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
       {(["paid", "pending", "overdue"] as InvoiceStatus[]).map((status) => (
         <li key={status} className="flex items-center gap-1.5">
           <span className={cn("h-3 w-5 rounded-sm", TICK_CLASS[status])} aria-hidden="true" />
-          {INVOICE_STATUS_LABEL[status]}
+          {invoiceStatusLabel(status)}
         </li>
       ))}
     </ul>
@@ -58,6 +61,7 @@ export function PaymentRuler({
   months: string[];
   currency: string;
 }) {
+  useTranslation();
   const reduced = useReducedMotion();
   const currentMonth = monthOf(todayIso());
   const monthSet = new Set(months);
@@ -140,7 +144,7 @@ export function PaymentRuler({
                       : invoices.every((invoice) => invoice.status === "paid")
                         ? "paid"
                         : "pending";
-                    const label = `${lane.project.name} · ${formatMonthLong(month)} · ${formatCurrency(total, lane.currency)} · ${INVOICE_STATUS_LABEL[status]}`;
+                    const label = `${lane.project.name} · ${formatMonthLong(month)} · ${formatCurrency(total, lane.currency)} · ${invoiceStatusLabel(status)}`;
 
                     return (
                       <span

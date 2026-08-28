@@ -1,6 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { CreateProjectDialog, type ProjectDialogSection } from "@/components/projects/create-project-dialog";
 import { InvoicesTable } from "@/components/projects/invoices-table";
@@ -11,7 +12,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Emphasis } from "@/components/ui/emphasis";
 import { Tabs, TabsDock, TabsDockTab, TabsPanel } from "@/components/ui/tabs";
 import { Tooltip } from "@/components/ui/tooltip";
-import { FREE_LABEL, isDealFree } from "@/data/projects";
+import { isDealFree } from "@/data/projects";
+import { freeLabel } from "@/i18n/labels";
 import { DEFAULT_CURRENCY } from "@/lib/currency";
 import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/format";
 import { generateInvoices } from "@/lib/invoices";
@@ -55,6 +57,7 @@ function BackLink() {
 }
 
 function ProjectDetailPage() {
+  useTranslation();
   const { projectId } = Route.useParams();
   const { findProject, deleteProject } = useProjects();
   const { findContact } = useRegistry();
@@ -245,7 +248,7 @@ function ProjectDetailPage() {
               }
             >
               <p className="font-subtitle text-2xl font-semibold tracking-tight">
-                {isDealFree(deal) ? FREE_LABEL : formatCurrency(deal.amount, deal.currency)}
+                {isDealFree(deal) ? freeLabel() : formatCurrency(deal.amount, deal.currency)}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">{formatDealProgress(deal, invoices)}</p>
 

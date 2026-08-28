@@ -104,14 +104,6 @@ export type Project = {
   comments?: ProjectComment[]
 }
 
-export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
-  queued: "Na fila",
-  "in-development": "Em desenvolvimento",
-  paused: "Pausado",
-  "in-validation": "Em validação",
-  completed: "Concluído",
-}
-
 /** Kanban column order. */
 export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
   "queued",
@@ -120,13 +112,6 @@ export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
   "in-validation",
   "completed",
 ]
-
-export const DEAL_KIND_LABEL: Record<DealKind, string> = {
-  upfront: "À vista",
-  installment: "Parcelado",
-}
-
-export const FREE_LABEL = "Grátis"
 
 export type InvoiceStatus = "pending" | "paid" | "overdue"
 export type PaymentMethod = "boleto" | "pix"
@@ -147,43 +132,6 @@ export type Invoice = {
   hasAttachment: boolean
   /** ISO 4217 code, inherited from the project's `deal`. */
   currency: string
-}
-
-export const INVOICE_STATUS_LABEL: Record<InvoiceStatus, string> = {
-  pending: "Pendente",
-  paid: "Paga",
-  overdue: "Atrasada",
-}
-
-export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
-  boleto: "Boleto",
-  pix: "Pix",
-}
-
-export const BILLING_CYCLE_LABEL: Record<BillingCycle, string> = {
-  monthly: "Mensal",
-  yearly: "Anual",
-  "one-off": "Avulso",
-}
-
-export const PAYER_LABEL: Record<Payer, string> = {
-  me: "Eu",
-  client: "Cliente",
-}
-
-export const WORKFLOW_STATUS_LABEL: Record<WorkflowStatus, string> = {
-  success: "Passou",
-  failure: "Falhou",
-  running: "Rodando",
-  none: "Sem runs",
-}
-
-/** Tooltip text for when the workflow badge shows only the icon. */
-export const WORKFLOW_STATUS_TOOLTIP: Record<WorkflowStatus, string> = {
-  success: "GitHub Actions passou",
-  failure: "GitHub Actions falhou",
-  running: "GitHub Actions rodando",
-  none: "Sem runs do GitHub Actions",
 }
 
 const MY_ACCOUNT = "rodrigo@fastbuilt.com.br"

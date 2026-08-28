@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { Info, X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import type { AuditChange, AuditModule } from "shared"
 
 import { PageHeader } from "@/components/layout/page"
@@ -19,12 +20,8 @@ import { Input } from "@/components/ui/input"
 import { Select, type SelectOption } from "@/components/ui/select"
 import { DataTable, type Column, type SortState } from "@/components/ui/table"
 import { Tooltip } from "@/components/ui/tooltip"
-import {
-  AUDIT_ACTION_LABEL,
-  AUDIT_MODULE_LABEL,
-  formatAuditAt,
-  formatAuditChange,
-} from "@/lib/audit-labels"
+import { auditActionLabel, auditModuleLabel, auditModuleOptions } from "@/i18n/labels"
+import { formatAuditAt, formatAuditChange } from "@/lib/audit-labels"
 import { periodBounds, type PeriodPreset } from "@/lib/audit-period"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
@@ -45,11 +42,6 @@ type AuditEntry = {
   ip: string | null
   userAgent: string | null
 }
-
-const MODULE_OPTIONS: SelectOption[] = [
-  { value: "", label: "Todos os módulos" },
-  ...Object.entries(AUDIT_MODULE_LABEL).map(([value, label]) => ({ value, label })),
-]
 
 const PERIOD_OPTIONS: SelectOption[] = [
   { value: "today", label: "Hoje" },
@@ -92,6 +84,7 @@ function AuditFilterFields({
   customTo: string
   onTo: (value: string) => void
 }) {
+  useTranslation()
   return (
     <>
       <Input
@@ -104,7 +97,7 @@ function AuditFilterFields({
         <Select
           value={module}
           onValueChange={onModule}
-          options={MODULE_OPTIONS}
+          options={auditModuleOptions()}
           placeholder="Módulo"
         />
       </div>
@@ -138,6 +131,7 @@ function AuditFilterFields({
 }
 
 function AuditPage() {
+  useTranslation()
   const { findProject } = useProjects()
   const { findContact } = useRegistry()
   const [search, setSearch] = useState("")
@@ -249,13 +243,13 @@ function AuditPage() {
       header: "Módulo",
       sortValue: (row) => row.module,
       cell: (row) => (
-        <Badge variant={MODULE_BADGE[row.module]}>{AUDIT_MODULE_LABEL[row.module]}</Badge>
+        <Badge variant={MODULE_BADGE[row.module]}>{auditModuleLabel(row.module)}</Badge>
       ),
     },
     {
       key: "action",
       header: "Ação",
-      cell: (row) => AUDIT_ACTION_LABEL[row.action] ?? row.action,
+      cell: (row) => auditActionLabel(row.action),
     },
     {
       key: "subject",
@@ -361,7 +355,7 @@ function AuditPage() {
               <DialogHeader>
                 <div>
                   <DialogTitle>
-                    {AUDIT_ACTION_LABEL[selected.action] ?? selected.action}
+                    {auditActionLabel(selected.action)}
                   </DialogTitle>
                   <DialogDescription className="sr-only">
                     Detalhes do evento
@@ -389,7 +383,7 @@ function AuditPage() {
                   </span>
                   <span>
                     <Badge variant={MODULE_BADGE[selected.module]}>
-                      {AUDIT_MODULE_LABEL[selected.module]}
+                      {auditModuleLabel(selected.module)}
                     </Badge>
                   </span>
                 </div>

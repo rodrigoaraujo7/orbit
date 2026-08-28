@@ -6,7 +6,7 @@
  * `node --experimental-strip-types`, and Node does not resolve the alias.
  */
 import type { BillingCycle, Payer, Project, Tool } from "../data/projects.ts"
-import { TOOL_CATEGORY_LABEL, type ToolCategory } from "../data/tool-catalog.ts"
+import type { ToolCategory } from "../data/tool-catalog.ts"
 import { DEFAULT_CURRENCY } from "./currency.ts"
 import { addMonths, monthOf, monthRange, todayIso } from "./dates.ts"
 import { effectiveMonth } from "./invoice-table.ts"
@@ -304,7 +304,7 @@ export function toolCostByTool(
 /**
  * Categories folded onto the 6 chart slots. The mapping is **fixed by
  * category**, never by rank: filtering must not repaint the categories that
- * survive. The four that don't get their own slot share "Outras" — a freelance
+ * survive. The four that don't get their own slot share "other" — a freelance
  * dev's recurring spend concentrates in the first five.
  */
 export const CATEGORY_SLOT: Record<ToolCategory, number> = {
@@ -318,9 +318,7 @@ export const CATEGORY_SLOT: Record<ToolCategory, number> = {
   other: 6,
 }
 
-const OTHER_CATEGORY_LABEL = "Outras"
-
-export type CategoryCost = { key: string; label: string; slot: number; total: number }
+export type CategoryCost = { key: string; slot: number; total: number }
 
 export function toolCostByCategory(
   projects: Project[],
@@ -331,10 +329,9 @@ export function toolCostByCategory(
 
   for (const { category, total } of toolCostByTool(projects, months, currency)) {
     const slot = CATEGORY_SLOT[category]
-    // everything on slot 6 collapses into a single "Outras" bucket
-    const key = slot === 6 ? "outras" : category
-    const label = slot === 6 ? OTHER_CATEGORY_LABEL : TOOL_CATEGORY_LABEL[category]
-    const entry = byKey.get(key) ?? { key, label, slot, total: 0 }
+    // everything on slot 6 collapses into a single "other" bucket
+    const key = slot === 6 ? "other" : category
+    const entry = byKey.get(key) ?? { key, slot, total: 0 }
     entry.total += total
     byKey.set(key, entry)
   }

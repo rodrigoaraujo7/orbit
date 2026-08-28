@@ -1,11 +1,9 @@
 import { useDroppable } from "@dnd-kit/react"
+import { useTranslation } from "react-i18next"
 
 import { StatusDot } from "@/components/projects/status-badges"
-import {
-  PROJECT_STATUS_LABEL,
-  type Project,
-  type ProjectStatus,
-} from "@/data/projects"
+import { type Project, type ProjectStatus } from "@/data/projects"
+import { statusLabel } from "@/i18n/labels"
 import { cn } from "@/lib/utils"
 import { KanbanCard } from "./kanban-card"
 
@@ -22,6 +20,7 @@ export function KanbanColumn({
   reducedMotion: boolean
   onOpen: (id: string) => void
 }) {
+  useTranslation()
   const { ref, isDropTarget } = useDroppable({
     id: status,
     accept: "project",
@@ -41,7 +40,7 @@ export function KanbanColumn({
       <header className="flex shrink-0 items-center gap-2 px-3 py-3">
         <StatusDot status={status} />
         <h2 className="min-w-0 flex-1 truncate text-sm font-medium">
-          {PROJECT_STATUS_LABEL[status]}
+          {statusLabel(status)}
         </h2>
         <span className="text-xs text-muted-foreground tabular-nums">{projects.length}</span>
       </header>
