@@ -183,10 +183,8 @@ function KanbanPage() {
       </div>
 
       <KanbanBoard
+        projects={filtered}
         clientName={clientNameOf}
-        filter={(item) =>
-          matchesKanbanFilter(item, filters, findContact(item.clientId)?.name ?? "")
-        }
         onOpen={(id) => {
           setSelectedId(id)
           setOpen(true)
