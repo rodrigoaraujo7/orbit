@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { BILLING_CYCLE_LABEL, PAYER_LABEL } from "@/data/projects"
 import { OTHER_TOOL_ID } from "@/data/tool-catalog"
-import { currencyOptions } from "@/lib/currency"
+import { getCurrencyOptions } from "@/lib/currency"
 import { hasPositiveAmount, type ProjectFormValues } from "@/lib/project-schema"
 import { ToolSelect } from "./tool-select"
 
@@ -195,7 +195,7 @@ export function ToolField({
                     {...props}
                     value={field.value}
                     onValueChange={field.onChange}
-                    options={currencyOptions}
+                    options={getCurrencyOptions()}
                   />
                 )}
               />

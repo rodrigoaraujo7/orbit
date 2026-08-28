@@ -3,21 +3,25 @@ import {
   billingCycleSchema,
   dealKindSchema,
   DEFAULT_CURRENCY,
-  hasPositiveAmount,
-  parseAmount,
+  hasPositiveAmount as hasPositiveAmountWithLocale,
+  parseAmount as parseAmountWithLocale,
   payerSchema,
   projectStatusSchema,
 } from "shared"
 
-export { hasPositiveAmount, parseAmount }
-
-// Relative imports (not the "@/" alias) on purpose: this module also runs
-// outside Vite, in the self-check with `node --experimental-strip-types`, and
-// Node does not resolve the alias.
 import type { Deal, Project, Tool } from "../data/projects.ts"
 import { OTHER_TOOL_ID, findCatalogTool } from "../data/tool-catalog.ts"
+import { getLocale } from "../i18n/index.ts"
 import { todayIso } from "./dates.ts"
 import { withProjectStatus } from "./project-status.ts"
+
+export function parseAmount(raw: string) {
+  return parseAmountWithLocale(raw, getLocale())
+}
+
+export function hasPositiveAmount(amount: string) {
+  return hasPositiveAmountWithLocale(amount, getLocale())
+}
 
 /**
  * Number and date fields stay as strings because they come from `<input>`; the
@@ -217,11 +221,11 @@ export const emptyProjectForm: ProjectFormValues = {
 /**
  * Inverse of `parseAmount` — used by `fromProject` to refill the amount field
  * when editing. `String(340.5)` would give "340.5" (decimal point), which
- * `parseAmount` would read as a thousands separator and blow the value up 10x;
- * formats in pt-BR (decimal comma) to close the roundtrip.
+ * `parseAmount` would misread depending on locale and blow the value up;
+ * formats with the active locale to close the roundtrip.
  */
 function formatAmountInput(value: number): string {
-  return value.toLocaleString("pt-BR", {
+  return value.toLocaleString(getLocale(), {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })

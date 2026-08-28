@@ -42,9 +42,13 @@ assert.deepEqual(
   ["a", "c", "b"]
 )
 
-// text: accents follow pt-BR order and case does not split the groups
+// text: accents follow locale order and case does not split the groups
 assert.deepEqual(
-  sortRows(rows, { key: "name", direction: "asc" }, (r) => r.name).map((r) => r.id),
+  sortRows(rows, { key: "name", direction: "asc" }, (r) => r.name, "pt-BR").map((r) => r.id),
+  ["b", "c", "a"]
+)
+assert.deepEqual(
+  sortRows(rows, { key: "name", direction: "asc" }, (r) => r.name, "en-US").map((r) => r.id),
   ["b", "c", "a"]
 )
 

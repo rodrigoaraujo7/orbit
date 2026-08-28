@@ -12,12 +12,13 @@ import { FilterDrawer } from "@/components/ui/filter-drawer"
 import { Input } from "@/components/ui/input"
 import { MonthPicker } from "@/components/ui/month-picker"
 import { Select, type SelectOption } from "@/components/ui/select"
+import { getLocale } from "@/i18n"
 import { formatPercent } from "@/lib/format"
 import { emptyKanbanFilters, matchesKanbanFilter, type KanbanFilters } from "@/lib/kanban-filter"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
 
-const count = (value: number) => Math.round(value).toLocaleString("pt-BR")
+const count = (value: number) => Math.round(value).toLocaleString(getLocale())
 
 function KanbanFilterFields({
   stacked = false,

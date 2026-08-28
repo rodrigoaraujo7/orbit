@@ -2,6 +2,7 @@
  * Self-check of the schema logic (money parsing, conditional rules, repo URL).
  * Run with: pnpm check:schema
  */
+import i18n from "../i18n/index.ts"
 import {
   emptyProjectForm,
   emptyToolForm,
@@ -11,6 +12,8 @@ import {
   type ProjectFormValues,
   type ToolFormValues,
 } from "./project-schema.ts"
+
+await i18n.changeLanguage("pt-BR")
 
 // local assert instead of node:assert — avoids depending on @types/node in a
 // file that lives next to browser code.
@@ -267,5 +270,15 @@ original.comments = [
 const editedNotes = toProject(fromProject(original), original)
 assert.equal(editedNotes.description, "Nota do kanban")
 assert.deepEqual(editedNotes.comments, original.comments)
+
+await i18n.changeLanguage("en-US")
+assert.equal(
+  toProject(form({ dealKind: "upfront", amount: "18,000.50" })).deal.amount,
+  18000.5
+)
+assert.equal(
+  toProject(form({ dealKind: "upfront", amount: "18000.50" })).deal.amount,
+  18000.5
+)
 
 console.log("project-schema: all checks passed")

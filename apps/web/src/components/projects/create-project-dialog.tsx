@@ -34,7 +34,7 @@ import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { DEAL_KIND_LABEL, type Project } from "@/data/projects"
-import { currencyOptions } from "@/lib/currency"
+import { getCurrencyOptions } from "@/lib/currency"
 import { formatCurrency, maskBrPhone } from "@/lib/format"
 import {
   GITHUB_PREFIX,
@@ -380,7 +380,7 @@ export function CreateProjectDialog({
                       {...props}
                       value={field.value}
                       onValueChange={field.onChange}
-                      options={currencyOptions}
+                      options={getCurrencyOptions()}
                     />
                   )}
                 />

@@ -23,6 +23,7 @@ import {
   type InvoiceStatus,
   type PaymentMethod,
 } from "@/data/projects";
+import { getLocale } from "@/i18n";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { effectiveMonth, filterInvoices } from "@/lib/invoice-table";
 import { cn } from "@/lib/utils";
@@ -84,7 +85,7 @@ function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
 function formatReference(invoice: Invoice) {
   if (!invoice.referenceMonth) return "Pagamento único";
   const [year, month] = invoice.referenceMonth.split("-");
-  const label = new Date(Number(year), Number(month) - 1).toLocaleDateString("pt-BR", {
+  const label = new Date(Number(year), Number(month) - 1).toLocaleDateString(getLocale(), {
     month: "long",
     year: "numeric",
   });
