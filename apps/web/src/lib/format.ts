@@ -61,13 +61,21 @@ export function formatDeal(deal: Deal) {
 }
 
 /** "Upfront", "3 of 3 installments paid" or "1 of 3 installments paid · 2 overdue". */
-export function formatDealProgress(deal: Deal, invoices: Invoice[]) {
+export function formatDealProgress(
+  deal: Deal,
+  invoices: Pick<Invoice, "status">[] | { paid: number; total: number; overdue: number },
+) {
   if (isDealFree(deal)) return i18n.t("deal.free")
   if (deal.kind === "upfront") return i18n.t("deal.upfront")
 
-  const paid = invoices.filter((invoice) => invoice.status === "paid").length
-  const overdue = invoices.filter((invoice) => invoice.status === "overdue").length
-  const base = i18n.t("format.installmentsPaid", { paid, total: invoices.length })
+  const paid = Array.isArray(invoices)
+    ? invoices.filter((invoice) => invoice.status === "paid").length
+    : invoices.paid
+  const overdue = Array.isArray(invoices)
+    ? invoices.filter((invoice) => invoice.status === "overdue").length
+    : invoices.overdue
+  const total = Array.isArray(invoices) ? invoices.length : invoices.total
+  const base = i18n.t("format.installmentsPaid", { paid, total })
   return overdue > 0 ? `${base} · ${i18n.t("format.overdue", { count: overdue })}` : base
 }
 

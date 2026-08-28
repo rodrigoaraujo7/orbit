@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Plus, X } from "lucide-react"
+import { Plus } from "lucide-react"
 import { useLayoutEffect, useRef, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -12,28 +12,21 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog"
 import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { type Project } from "@/data/projects"
 import { dealKindOptions, freeLabel } from "@/i18n/labels"
 import { getCurrencyOptions } from "@/lib/currency"
@@ -130,8 +123,7 @@ export function CreateProjectDialog({
   // the whole form goes into FormProvider: ToolField/SecretRow are nested and
   // consume it via useFormContext instead of taking control/register as props
   const form = useForm<ProjectFormValues>({
-    resolver: (values, context, options) =>
-      zodResolver(projectSchema())(values, context, options),
+    resolver: (values, ctx, opts) => zodResolver(projectSchema())(values, ctx, opts),
     defaultValues: emptyProjectForm,
   })
   const {
@@ -220,7 +212,6 @@ export function CreateProjectDialog({
     }
   })
 
-  const isMobile = useIsMobile()
   const heading = title ?? (project ? t("projects.editTitle") : t("projects.newTitle"))
   const subheading =
     description ?? t("projects.createDescription")
@@ -529,70 +520,30 @@ export function CreateProjectDialog({
     </div>
   )
 
-  const cancelButton = (
-    <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-      {t("common.cancel")}
-    </Button>
-  )
-  const submitButton = (
-    <Button type="submit">{project ? t("common.saveChanges") : t("projects.create")}</Button>
-  )
-
-  const formBody = (
-    <FormProvider {...form}>
-      {isMobile ? (
-        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-          <DrawerHeader>
-            <DrawerTitle>{heading}</DrawerTitle>
-            <DrawerDescription>{subheading}</DrawerDescription>
-          </DrawerHeader>
-          <div className="flex-1 overflow-y-auto p-4">{formFields}</div>
-          <DrawerFooter className="flex-row [&>*]:flex-1">
-            {cancelButton}
-            {submitButton}
-          </DrawerFooter>
-        </form>
-      ) : (
-        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className="overflow-y-auto px-5 py-4">{formFields}</div>
-          <DialogFooter className="border-t px-5 py-4">
-            {cancelButton}
-            {submitButton}
-          </DialogFooter>
-        </form>
-      )}
-    </FormProvider>
-  )
-
-  if (isMobile) {
-    return (
-      <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
-        <DrawerContent className="data-[swipe-axis=y]:max-h-[90dvh]">
-          {formBody}
-        </DrawerContent>
-      </Drawer>
-    )
-  }
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90svh] max-w-2xl flex-col overflow-hidden">
-        <DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent dialogClassName="max-w-2xl">
+        <ResponsiveDialogHeader>
           <div>
-            <DialogTitle>{heading}</DialogTitle>
-            <DialogDescription className="mt-0.5">{subheading}</DialogDescription>
+            <ResponsiveDialogTitle>{heading}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>{subheading}</ResponsiveDialogDescription>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => onOpenChange(false)}
-            aria-label={t("common.close")}
-          >
-            <X />
-          </Button>
-        </DialogHeader>
-        {formBody}
-      </DialogContent>
-    </Dialog>
+          <ResponsiveDialogClose />
+        </ResponsiveDialogHeader>
+        <FormProvider {...form}>
+          <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+            <ResponsiveDialogBody>{formFields}</ResponsiveDialogBody>
+            <ResponsiveDialogFooter>
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit">
+                {project ? t("common.saveChanges") : t("projects.create")}
+              </Button>
+            </ResponsiveDialogFooter>
+          </form>
+        </FormProvider>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

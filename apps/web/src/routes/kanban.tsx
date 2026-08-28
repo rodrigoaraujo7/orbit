@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react"
+import { useCallback, useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { CircleCheck, Code, FolderKanban, Percent, Plus, X } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { compactSearch, kanbanSearchSchema, parseSearch } from "shared"
 
 import { StatTile } from "@/components/dashboard/cards"
 import { KanbanBoard } from "@/components/kanban/kanban-board"
@@ -10,41 +12,56 @@ import { PageHeader } from "@/components/layout/page"
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog"
 import { Button } from "@/components/ui/button"
 import { FilterDrawer } from "@/components/ui/filter-drawer"
+import { FilterPending, KanbanFilterSkeleton } from "@/components/ui/filter-pending"
 import { Input } from "@/components/ui/input"
 import { MonthPicker } from "@/components/ui/month-picker"
 import { Select, type SelectOption } from "@/components/ui/select"
+import type { Project } from "@/data/projects"
 import { getLocale } from "@/i18n"
 import { formatPercent } from "@/lib/format"
-import { emptyKanbanFilters, matchesKanbanFilter, type KanbanFilters } from "@/lib/kanban-filter"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
+import { trpc } from "@/lib/trpc"
+import { useDraftSearch } from "@/lib/use-draft-search"
 
 const count = (value: number) => Math.round(value).toLocaleString(getLocale())
 
 function KanbanFilterFields({
   stacked = false,
-  filters,
+  search,
+  clientId,
+  monthFrom,
+  monthTo,
   clientOptions,
-  onChange,
+  onSearchChange,
+  onClientChange,
+  onMonthFromChange,
+  onMonthToChange,
 }: {
   stacked?: boolean
-  filters: KanbanFilters
+  search: string
+  clientId: string
+  monthFrom: string
+  monthTo: string
   clientOptions: SelectOption[]
-  onChange: (patch: Partial<KanbanFilters>) => void
+  onSearchChange: (value: string) => void
+  onClientChange: (value: string) => void
+  onMonthFromChange: (value: string) => void
+  onMonthToChange: (value: string) => void
 }) {
   const { t } = useTranslation()
   return (
     <>
       <Input
-        value={filters.search}
-        onChange={(event) => onChange({ search: event.target.value })}
+        value={search}
+        onChange={(event) => onSearchChange(event.target.value)}
         placeholder={t("common.searchByName")}
         className={stacked ? "w-full" : "flex-1"}
       />
       <div className={stacked ? "w-full" : "w-52"}>
         <Select
-          value={filters.clientId}
-          onValueChange={(clientId) => onChange({ clientId })}
+          value={clientId}
+          onValueChange={onClientChange}
           options={clientOptions}
           placeholder={t("common.allClients")}
         />
@@ -57,8 +74,8 @@ function KanbanFilterFields({
         }
       >
         <MonthPicker
-          value={filters.monthFrom}
-          onChange={(monthFrom) => onChange({ monthFrom })}
+          value={monthFrom}
+          onChange={onMonthFromChange}
           placeholder={t("common.start")}
           aria-label={t("common.startMonth")}
         />
@@ -66,8 +83,8 @@ function KanbanFilterFields({
           {t("common.until")}
         </span>
         <MonthPicker
-          value={filters.monthTo}
-          onChange={(monthTo) => onChange({ monthTo })}
+          value={monthTo}
+          onChange={onMonthToChange}
           placeholder={t("common.end")}
           aria-label={t("common.endMonth")}
         />
@@ -80,23 +97,41 @@ function KanbanPage() {
   const { t } = useTranslation()
   const { projects, findProject } = useProjects()
   const { contacts, findContact } = useRegistry()
+  const search = Route.useSearch()
+  const navigate = Route.useNavigate()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [filters, setFilters] = useState<KanbanFilters>(emptyKanbanFilters)
   const project = selectedId ? findProject(selectedId) : undefined
+
+  const patchSearch = useCallback(
+    (patch: Partial<typeof search>) => {
+      void navigate({
+        search: (prev) => compactSearch({ ...prev, ...patch }),
+        replace: true,
+      })
+    },
+    [navigate],
+  )
+
+  const [nameDraft, setNameDraft] = useDraftSearch(search.q, (q) => patchSearch({ q }))
 
   function clientNameOf(clientId: string) {
     return findContact(clientId)?.name ?? t("common.emDash")
   }
 
-  const filtered = useMemo(
-    () =>
-      projects.filter((item) =>
-        matchesKanbanFilter(item, filters, findContact(item.clientId)?.name ?? "")
-      ),
-    [projects, filters, findContact]
-  )
+  const filters = {
+    q: search.q,
+    clientId: search.client,
+    monthFrom: search.from,
+    monthTo: search.to,
+  }
+  const query = useQuery({
+    queryKey: ["projects", filters],
+    queryFn: () => trpc.projects.list.query(filters),
+    placeholderData: keepPreviousData,
+  })
+  const filtered = (query.data ?? []) as Project[]
 
   const completed = filtered.filter((item) => item.status === "completed").length
   const inDevelopment = filtered.filter((item) => item.status === "in-development").length
@@ -110,15 +145,7 @@ function KanbanPage() {
       .map((contact) => ({ value: contact.id, label: contact.name })),
   ]
 
-  const isFiltered =
-    filters.search !== "" ||
-    filters.clientId !== "" ||
-    filters.monthFrom !== "" ||
-    filters.monthTo !== ""
-
-  function setFilter(patch: Partial<KanbanFilters>) {
-    setFilters((current) => ({ ...current, ...patch }))
-  }
+  const isFiltered = Boolean(search.q || search.client || search.from || search.to)
 
   return (
     <>
@@ -131,8 +158,24 @@ function KanbanPage() {
               <Plus />
               {t("common.newProject")}
             </Button>
-            <FilterDrawer hasActive={isFiltered} onClear={() => setFilters(emptyKanbanFilters)}>
-              <KanbanFilterFields stacked filters={filters} clientOptions={clientOptions} onChange={setFilter} />
+            <FilterDrawer
+              hasActive={isFiltered}
+              onClear={() =>
+                patchSearch({ q: undefined, client: undefined, from: undefined, to: undefined })
+              }
+            >
+              <KanbanFilterFields
+                stacked
+                search={nameDraft}
+                clientId={search.client ?? ""}
+                monthFrom={search.from ?? ""}
+                monthTo={search.to ?? ""}
+                clientOptions={clientOptions}
+                onSearchChange={setNameDraft}
+                onClientChange={(client) => patchSearch({ client: client || undefined })}
+                onMonthFromChange={(from) => patchSearch({ from: from || undefined })}
+                onMonthToChange={(to) => patchSearch({ to: to || undefined })}
+              />
             </FilterDrawer>
           </div>
         }
@@ -140,62 +183,82 @@ function KanbanPage() {
 
       <CreateProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
 
-      <div className="grid grid-cols-2 gap-3 px-4 pt-6 xl:grid-cols-4 sm:px-6 lg:px-8">
-        <StatTile
-          label={t("kanban.completed")}
-          value={completed}
-          format={count}
-          tone="success"
-          icon={<CircleCheck />}
-          iconClassName="bg-success/10 text-success"
-          delay={0}
-        />
-        <StatTile
-          label={t("kanban.inDevelopment")}
-          value={inDevelopment}
-          format={count}
-          tone="warning"
-          icon={<Code />}
-          iconClassName="bg-warning/10 text-warning"
-          delay={40}
-        />
-        <StatTile
-          label={t("kanban.total")}
-          value={total}
-          format={count}
-          icon={<FolderKanban />}
-          delay={80}
-        />
-        <StatTile
-          label={t("kanban.completionRate")}
-          value={completionRate}
-          format={formatPercent}
-          icon={<Percent />}
-          iconClassName="bg-primary/10 text-primary"
-          delay={120}
-        />
-      </div>
-
       <div className="hidden gap-3 px-4 pt-4 md:flex md:flex-row md:flex-wrap md:items-center sm:px-6 lg:px-8">
-        <KanbanFilterFields filters={filters} clientOptions={clientOptions} onChange={setFilter} />
+        <KanbanFilterFields
+          search={nameDraft}
+          clientId={search.client ?? ""}
+          monthFrom={search.from ?? ""}
+          monthTo={search.to ?? ""}
+          clientOptions={clientOptions}
+          onSearchChange={setNameDraft}
+          onClientChange={(client) => patchSearch({ client: client || undefined })}
+          onMonthFromChange={(from) => patchSearch({ from: from || undefined })}
+          onMonthToChange={(to) => patchSearch({ to: to || undefined })}
+        />
         {isFiltered && (
-          <Button variant="ghost" size="sm" onClick={() => setFilters(emptyKanbanFilters)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              patchSearch({ q: undefined, client: undefined, from: undefined, to: undefined })
+            }
+          >
             <X />
             {t("common.clear")}
           </Button>
         )}
       </div>
 
-      <KanbanBoard
-        clientName={clientNameOf}
-        filter={(item) =>
-          matchesKanbanFilter(item, filters, findContact(item.clientId)?.name ?? "")
-        }
-        onOpen={(id) => {
-          setSelectedId(id)
-          setOpen(true)
-        }}
-      />
+      <FilterPending
+        isPending={query.isPending}
+        isFetching={query.isFetching}
+        skeleton={<KanbanFilterSkeleton />}
+      >
+        <div className="grid grid-cols-2 gap-3 px-4 pt-6 xl:grid-cols-4 sm:px-6 lg:px-8">
+          <StatTile
+            label={t("kanban.completed")}
+            value={completed}
+            format={count}
+            tone="success"
+            icon={<CircleCheck />}
+            iconClassName="bg-success/10 text-success"
+            delay={0}
+          />
+          <StatTile
+            label={t("kanban.inDevelopment")}
+            value={inDevelopment}
+            format={count}
+            tone="warning"
+            icon={<Code />}
+            iconClassName="bg-warning/10 text-warning"
+            delay={40}
+          />
+          <StatTile
+            label={t("kanban.total")}
+            value={total}
+            format={count}
+            icon={<FolderKanban />}
+            delay={80}
+          />
+          <StatTile
+            label={t("kanban.completionRate")}
+            value={completionRate}
+            format={formatPercent}
+            icon={<Percent />}
+            iconClassName="bg-primary/10 text-primary"
+            delay={120}
+          />
+        </div>
+
+        <KanbanBoard
+          projects={filtered}
+          clientName={clientNameOf}
+          onOpen={(id) => {
+            setSelectedId(id)
+            setOpen(true)
+          }}
+        />
+      </FilterPending>
       <ProjectIssueDialog
         project={project}
         contact={project ? findContact(project.clientId) : undefined}
@@ -207,5 +270,6 @@ function KanbanPage() {
 }
 
 export const Route = createFileRoute("/kanban")({
+  validateSearch: (search) => parseSearch(kanbanSearchSchema, search),
   component: KanbanPage,
 })

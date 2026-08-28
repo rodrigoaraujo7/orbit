@@ -1,12 +1,12 @@
 /**
  * Self-check of the dashboard aggregations (see dashboard-metrics.ts).
- * Run with: pnpm check:dashboard
+ * Run with: pnpm --filter shared check
  *
  * Covers what breaks silently: the yearly → monthly normalization, one-off
  * charges landing on exactly one month, a finished project's tools going off
  * the meter, and the revenue over a full range adding back up to the deal.
  */
-import type { Project, Tool } from "../data/projects.ts"
+import type { Project, Tool } from "./project.ts"
 import { monthRange } from "./dates.ts"
 import {
   clientGrowth,
@@ -63,25 +63,21 @@ function project(overrides: Partial<Project>): Project {
   }
 }
 
-// --- normalization: a yearly plan and a monthly one land on the same scale ---
-
 assert.equal(
   monthlyToolCost(tool({ billing: { amount: 100, cycle: "monthly", nextInvoice: "2026-01-05", payer: "me" } })),
   100,
-  "mensal fica como está"
+  "mensal fica como está",
 )
 assert.close(
   monthlyToolCost(tool({ billing: { amount: 1200, cycle: "yearly", nextInvoice: "2026-01-05", payer: "me" } })),
   100,
-  "anual vira 1/12"
+  "anual vira 1/12",
 )
 assert.equal(
   monthlyToolCost(tool({ billing: { amount: 500, cycle: "one-off", nextInvoice: "2026-01-05", payer: "me" } })),
   0,
-  "avulso não é recorrente"
+  "avulso não é recorrente",
 )
-
-// --- one-off hits exactly one month, and only inside the project's life ---
 
 const oneOff = tool({
   billing: { amount: 500, cycle: "one-off", nextInvoice: "2026-03-20", payer: "me" },
@@ -91,8 +87,6 @@ const running = project({ tools: [oneOff] })
 assert.equal(toolCostInMonth(oneOff, running, "2026-03"), 500, "avulso bate no mês da fatura")
 assert.equal(toolCostInMonth(oneOff, running, "2026-04"), 0, "avulso não repete")
 assert.equal(toolCostInMonth(oneOff, running, "2025-12"), 0, "nada custa antes do projeto começar")
-
-// --- a finished project stops costing after endedAt ---
 
 const monthly = tool({
   billing: { amount: 80, cycle: "monthly", nextInvoice: "2026-01-05", payer: "me" },
@@ -110,10 +104,8 @@ const costMonths = toolCostByMonth([finished], monthRange("2026-01", "2026-04"),
 assert.deepEqual(
   costMonths.map((month) => month.eu),
   [80, 80, 0, 0],
-  "curva mensal cai quando o projeto acaba"
+  "curva mensal cai quando o projeto acaba",
 )
-
-// --- who pays never gets mixed up ---
 
 const shared = project({
   tools: [
@@ -130,7 +122,6 @@ assert.equal(costs[0].cliente, 300, "AWS é do cliente")
 assert.equal(costs[0].eu, 0, "AWS não entra no meu bolso")
 assert.equal(costs[1].eu, 20, "Neon é meu")
 
-// only my tools are subtracted from profit
 const paid = project({
   deal: { kind: "upfront", amount: 1000 },
   startedAt: "2026-01-10",
@@ -141,8 +132,6 @@ assert.equal(profit.receita, 1000, "receita é o valor fechado")
 assert.equal(profit.custo, 20, "custo só conta o que eu pago")
 assert.equal(profit.lucro, 980, "lucro = receita - o que eu pago")
 
-// --- revenue over a full range adds back up to the deal ---
-
 const installment = project({
   deal: { kind: "installment", amount: 3000, installments: 3 },
   startedAt: "2026-01-10",
@@ -151,27 +140,22 @@ const fullRange = monthRange("2026-01", "2026-03")
 const revenue = revenueByMonth([installment], fullRange, "BRL")
 const total = revenue.reduce(
   (sum, month) => sum + month.recebido + month.aReceber + month.atrasado,
-  0
+  0,
 )
 assert.equal(total, 3000, "as parcelas somam o valor fechado")
 assert.equal(revenue.length, 3, "uma barra por mês do range")
 
-// a range that misses the invoices drops them instead of piling them on month 1
 const outside = revenueByMonth([installment], monthRange("2026-06", "2026-07"), "BRL")
 assert.equal(
   outside.reduce((sum, month) => sum + month.recebido + month.aReceber + month.atrasado, 0),
   0,
-  "fatura fora do range não é empurrada pra dentro"
+  "fatura fora do range não é empurrada pra dentro",
 )
-
-// --- another currency is excluded, never converted ---
 
 const inDollars = project({ id: "p2", deal: { kind: "upfront", amount: 5000, currency: "USD" } })
 const mixed = financeSummary([installment, inDollars], fullRange, "BRL")
 assert.equal(mixed.faturado, 3000, "só a moeda selecionada entra na conta")
 assert.equal(mixed.foraDaMoeda, 1, "e o que ficou de fora é contado, não escondido")
-
-// --- clients accumulate on their first project, and never double-count ---
 
 const growth = clientGrowth(
   [
@@ -179,20 +163,18 @@ const growth = clientGrowth(
     project({ id: "b", clientId: "c1", startedAt: "2026-02-05" }),
     project({ id: "c", clientId: "c2", startedAt: "2026-03-05" }),
   ],
-  monthRange("2026-01", "2026-04")
+  monthRange("2026-01", "2026-04"),
 )
 assert.deepEqual(
   growth.map((month) => month.clientes),
   [1, 1, 2, 2],
-  "o segundo projeto do mesmo cliente não cria um cliente novo"
+  "o segundo projeto do mesmo cliente não cria um cliente novo",
 )
 assert.deepEqual(
   growth.map((month) => month.novos),
   [1, 0, 1, 0],
-  "novos clientes por mês"
+  "novos clientes por mês",
 )
-
-// --- categories fold onto fixed slots, never onto their rank ---
 
 const categorized = toolCostByCategory(
   [
@@ -205,7 +187,7 @@ const categorized = toolCostByCategory(
     }),
   ],
   oneMonth,
-  "BRL"
+  "BRL",
 )
 assert.equal(categorized.length, 2, "payments e ai caem juntos em other")
 assert.equal(categorized[0].key, "deploy", "deploy tem slot próprio")
@@ -213,12 +195,10 @@ assert.equal(categorized[0].slot, 1, "e o slot vem da categoria, não da posiç�
 assert.equal(categorized[1].key, "other", "o resto vira other")
 assert.equal(categorized[1].total, 15, "other soma tudo que caiu nela")
 
-// --- the comparison window is the same length, shifted back ---
-
 assert.deepEqual(
   previousMonths(monthRange("2026-03", "2026-05")),
   ["2025-12", "2026-01", "2026-02"],
-  "período anterior tem o mesmo tamanho"
+  "período anterior tem o mesmo tamanho",
 )
 assert.deepEqual(previousMonths([]), [], "range vazio não tem anterior")
 

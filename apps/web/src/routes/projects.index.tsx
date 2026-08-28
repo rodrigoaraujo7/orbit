@@ -1,7 +1,9 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { ExternalLink, Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { compactSearch, parseSearch, projectsSearchSchema } from "shared"
 
 import { PageHeader } from "@/components/layout/page"
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog"
@@ -17,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Emphasis } from "@/components/ui/emphasis"
 import { FilterDrawer } from "@/components/ui/filter-drawer"
+import { FilterPending, TableFilterSkeleton } from "@/components/ui/filter-pending"
 import { Input } from "@/components/ui/input"
 import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import { DataTable, type Column } from "@/components/ui/table"
@@ -26,6 +29,8 @@ import { billingCycleLabel } from "@/i18n/labels"
 import { formatCurrency, formatDeal } from "@/lib/format"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
+import { trpc } from "@/lib/trpc"
+import { useDraftSearch } from "@/lib/use-draft-search"
 
 function ProjectFilterFields({
   stacked = false,
@@ -67,37 +72,41 @@ function ProjectsPage() {
   const { t } = useTranslation()
   const { projects, deleteProject } = useProjects()
   const { findContact } = useRegistry()
+  const search = Route.useSearch()
+  const navigate = useNavigate({ from: Route.fullPath })
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [deletingProject, setDeletingProject] = useState<Project | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const navigate = useNavigate()
 
-  const [nameFilter, setNameFilter] = useState("")
-  const [statusFilter, setStatusFilter] = useState<ProjectStatus | "">("")
-  const [workflowFilter, setWorkflowFilter] = useState<WorkflowStatus | "">("")
+  const patchSearch = useCallback(
+    (patch: Partial<typeof search>) => {
+      void navigate({
+        search: (prev) => compactSearch({ ...prev, ...patch }),
+        replace: true,
+      })
+    },
+    [navigate],
+  )
+
+  const [nameFilter, setNameFilter] = useDraftSearch(search.q, (q) => patchSearch({ q }))
+
+  const filters = {
+    q: search.q,
+    status: search.status,
+    workflow: search.workflow,
+  }
+  const query = useQuery({
+    queryKey: ["projects", filters],
+    queryFn: () => trpc.projects.list.query(filters),
+    placeholderData: keepPreviousData,
+  })
+  const filtered = (query.data ?? []) as Project[]
 
   function editProject(project: Project) {
     setEditingProject(project)
     setDialogOpen(true)
   }
-
-  const search = nameFilter.trim().toLowerCase()
-  const filtered = projects.filter((project) => {
-    const clientName = findContact(project.clientId)?.name ?? ""
-    // name and client in the same search — someone looking for "Acme" wants the
-    // project of client Acme as much as the project named Acme.
-    if (
-      search &&
-      !project.name.toLowerCase().includes(search) &&
-      !clientName.toLowerCase().includes(search)
-    ) {
-      return false
-    }
-    if (statusFilter && project.status !== statusFilter) return false
-    if (workflowFilter && project.repo?.workflow !== workflowFilter) return false
-    return true
-  })
 
   const columns: Column<Project>[] = [
     {
@@ -190,7 +199,6 @@ function ProjectsPage() {
       header: "",
       className: "text-right whitespace-nowrap",
       cell: (project) => (
-        // clicking the actions must not navigate to the detail page too
         <span onClick={(event) => event.stopPropagation()}>
           <RowActionsMenu
             onEdit={() => editProject(project)}
@@ -203,6 +211,8 @@ function ProjectsPage() {
       ),
     },
   ]
+
+  const hasActive = Boolean(search.q || search.status || search.workflow)
 
   return (
     <>
@@ -222,21 +232,17 @@ function ProjectsPage() {
               {t("common.newProject")}
             </Button>
             <FilterDrawer
-              hasActive={nameFilter !== "" || statusFilter !== "" || workflowFilter !== ""}
-              onClear={() => {
-                setNameFilter("")
-                setStatusFilter("")
-                setWorkflowFilter("")
-              }}
+              hasActive={hasActive}
+              onClear={() => patchSearch({ q: undefined, status: undefined, workflow: undefined })}
             >
               <ProjectFilterFields
                 stacked
                 nameFilter={nameFilter}
                 onNameChange={setNameFilter}
-                statusFilter={statusFilter}
-                onStatusChange={setStatusFilter}
-                workflowFilter={workflowFilter}
-                onWorkflowChange={setWorkflowFilter}
+                statusFilter={search.status ?? ""}
+                onStatusChange={(status) => patchSearch({ status: status || undefined })}
+                workflowFilter={search.workflow ?? ""}
+                onWorkflowChange={(workflow) => patchSearch({ workflow: workflow || undefined })}
               />
             </FilterDrawer>
           </div>
@@ -277,33 +283,43 @@ function ProjectsPage() {
         <ProjectFilterFields
           nameFilter={nameFilter}
           onNameChange={setNameFilter}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-          workflowFilter={workflowFilter}
-          onWorkflowChange={setWorkflowFilter}
+          statusFilter={search.status ?? ""}
+          onStatusChange={(status) => patchSearch({ status: status || undefined })}
+          workflowFilter={search.workflow ?? ""}
+          onWorkflowChange={(workflow) => patchSearch({ workflow: workflow || undefined })}
         />
       </div>
 
-      <div className="px-4 py-6 sm:px-6 lg:px-8">
-        <DataTable
-          data={filtered}
-          columns={columns}
-          rowKey={(project) => project.id}
-          initialSort={{ key: "name", direction: "asc" }}
-          // mouse convenience; the keyboard navigates through the name link
-          onRowClick={(project) =>
-            navigate({
-              to: "/projects/$projectId",
-              params: { projectId: project.id },
-            })
-          }
-          emptyMessage={t("projects.empty")}
-        />
-      </div>
+      <FilterPending
+        isPending={query.isPending}
+        isFetching={query.isFetching}
+        skeleton={
+          <div className="px-4 py-6 sm:px-6 lg:px-8">
+            <TableFilterSkeleton />
+          </div>
+        }
+      >
+        <div className="px-4 py-6 sm:px-6 lg:px-8">
+          <DataTable
+            data={filtered}
+            columns={columns}
+            rowKey={(project) => project.id}
+            initialSort={{ key: "name", direction: "asc" }}
+            onRowClick={(project) =>
+              navigate({
+                to: "/projects/$projectId",
+                params: { projectId: project.id },
+              })
+            }
+            emptyMessage={t("projects.empty")}
+          />
+        </div>
+      </FilterPending>
     </>
   )
 }
 
 export const Route = createFileRoute("/projects/")({
+  validateSearch: (search) => parseSearch(projectsSearchSchema, search),
   component: ProjectsPage,
 })

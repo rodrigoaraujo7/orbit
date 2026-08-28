@@ -1,0 +1,14 @@
+---
+description: Filters live in the URL and are matched on the server, never in the browser.
+alwaysApply: true
+---
+
+# Server-side filters
+
+- Filters live in URL search params (`validateSearch` + `replace: true`) and are sent to tRPC. Empty strings are omitted from the URL. Text search (`q`) is local while typing and written after ~300ms debounce.
+- Matching is SQL (`projects.list`, `audit.list`) or a server procedure (`dashboard.metrics`, `invoices.list`). Never `array.filter` on a fetched collection to decide what is visible.
+- Out of scope: DataTable sort/pagination on an already-filtered page result may stay in memory. Audit is the exception — it already keyset-paginates and sorts on the server.
+- Loading uses `FilterPending` around the results (filters stay interactive): skeleton on first load, muted results plus a bordô scan on refetch. Do not blank the page with “Carregando…”.
+- Dropdown option lists come from an unfiltered options payload so a selected filter cannot hide its own controls.
+- After mutations, invalidate `["projects"]`, `["dashboard"]`, `["invoices"]`, and `["audit"]`.
+- Kanban drag-end calls `move` for the dragged card only. Never `replaceProjects` with a filtered subset.

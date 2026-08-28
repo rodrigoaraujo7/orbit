@@ -1,22 +1,29 @@
 import { Link } from "@tanstack/react-router"
-import { ExternalLink, Pencil, User, X } from "lucide-react"
+import { ExternalLink, Pencil, User } from "lucide-react"
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { StatusLabel, StatusSelect, WorkflowBadge } from "@/components/projects/status-badges"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog"
 import { Textarea } from "@/components/ui/textarea"
 import type { Contact } from "@/data/contacts"
-import { isDealFree, type Project, type ProjectStatus } from "@/data/projects"
+import {
+  isDealFree,
+  type Project,
+  type ProjectStatus,
+} from "@/data/projects"
+import i18n from "@/i18n"
 import { freeLabel } from "@/i18n/labels"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
 import { nowDateTimeIso } from "@/lib/dates"
@@ -27,7 +34,6 @@ import {
   formatDealProgress,
   formatToolsProgress,
 } from "@/lib/format"
-import { generateInvoices } from "@/lib/invoices"
 import { formatAuditAt, formatAuditDetails } from "@/lib/audit-labels"
 import { withProjectStatus } from "@/lib/project-status"
 import { useProjects } from "@/lib/projects-store"
@@ -54,6 +60,22 @@ function Meta({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
+function monthlyCostLabel(project: Project) {
+  const totals = project.tools
+    .filter((tool) => tool.billing?.cycle === "monthly")
+    .reduce<Record<string, number>>((acc, tool) => {
+      const { amount, currency = DEFAULT_CURRENCY } = tool.billing!
+      acc[currency] = (acc[currency] ?? 0) + amount
+      return acc
+    }, {})
+  const label = Object.entries(totals)
+    .map(([currency, total]) =>
+      i18n.t("format.amountPerMonth", { amount: formatCurrency(total, currency) }),
+    )
+    .join(" + ")
+  return label || null
+}
+
 export function ProjectIssueDialog({
   project,
   contact,
@@ -74,25 +96,18 @@ export function ProjectIssueDialog({
     queryFn: () => trpc.audit.list.query({ projectId: project!.id, limit: 50 }),
     enabled: open && Boolean(project),
   })
+  const invoicesQuery = useQuery({
+    queryKey: ["invoices", project?.id],
+    queryFn: () => trpc.invoices.list.query({ projectId: project!.id }),
+    enabled: open && Boolean(project),
+  })
 
   if (!project) return null
 
-  const invoices = generateInvoices(project, contact?.name ?? t("common.emDash"))
+  const invoices = invoicesQuery.data?.items ?? []
   const comments = project.comments ?? []
   const history = audit?.items ?? []
-  const totals = project.tools
-    .filter((tool) => tool.billing?.cycle === "monthly")
-    .reduce<Record<string, number>>((acc, tool) => {
-      const { amount, currency = DEFAULT_CURRENCY } = tool.billing!
-      acc[currency] = (acc[currency] ?? 0) + amount
-      return acc
-    }, {})
-  const costLabel =
-    Object.entries(totals)
-      .map(([currency, total]) =>
-        t("format.amountPerMonth", { amount: formatCurrency(total, currency) }),
-      )
-      .join(" + ") || null
+  const costLabel = monthlyCostLabel(project)
   const dealAmount = isDealFree(project.deal)
     ? freeLabel()
     : formatCurrency(project.deal.amount, project.deal.currency)
@@ -121,19 +136,19 @@ export function ProjectIssueDialog({
   }
 
   return (
-    <Dialog
+    <ResponsiveDialog
       open={open}
       onOpenChange={(next) => {
         if (!next) setDraft("")
         onOpenChange(next)
       }}
     >
-      <DialogContent className="flex h-[90svh] max-w-6xl flex-col overflow-hidden">
-        <DialogHeader>
+      <ResponsiveDialogContent dialogClassName="h-[90svh] max-w-6xl">
+        <ResponsiveDialogHeader>
           <div className="min-w-0">
             <StatusLabel status={project.status} className="text-sm" />
-            <DialogTitle className="truncate text-2xl">{project.name}</DialogTitle>
-            <DialogDescription className="sr-only">{t("kanban.issueDetails")}</DialogDescription>
+            <ResponsiveDialogTitle className="truncate text-2xl">{project.name}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription className="sr-only">{t("kanban.issueDetails")}</ResponsiveDialogDescription>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <Button
@@ -146,18 +161,11 @@ export function ProjectIssueDialog({
               <ExternalLink data-icon="inline-start" />
               {t("kanban.openProject")}
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => onOpenChange(false)}
-              aria-label={t("common.close")}
-            >
-              <X />
-            </Button>
+            <ResponsiveDialogClose />
           </div>
-        </DialogHeader>
+        </ResponsiveDialogHeader>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+        <ResponsiveDialogBody className="flex flex-col p-0 lg:flex-row lg:overflow-hidden">
           <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-5 py-5">
             <EditableDescription
               key={project.id}
@@ -303,9 +311,9 @@ export function ProjectIssueDialog({
               )}
             </Meta>
           </aside>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogBody>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }
 
