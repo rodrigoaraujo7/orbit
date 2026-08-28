@@ -24,7 +24,7 @@ import {
   type PaymentMethod,
 } from "@/data/projects";
 import { formatCurrency, formatDateTime } from "@/lib/format";
-import { effectiveMonth } from "@/lib/invoice-table";
+import { effectiveMonth } from "shared";
 import { cn } from "@/lib/utils";
 
 const PAYMENT_METHOD_ICON: Record<PaymentMethod, typeof Barcode> = {
