@@ -156,7 +156,7 @@ export function ProjectIssueDialog({
           </div>
         </ResponsiveDialogHeader>
 
-        <ResponsiveDialogBody className="flex p-0 lg:flex-row lg:overflow-hidden">
+        <ResponsiveDialogBody className="flex flex-col p-0 lg:flex-row lg:overflow-hidden">
           <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-5 py-5">
             <EditableDescription
               key={project.id}
