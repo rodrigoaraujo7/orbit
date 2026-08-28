@@ -94,6 +94,7 @@ export function CustomToolsPanel() {
           </>
         }
         confirmLabel="Excluir"
+        confirmWord="excluir"
         onConfirm={() => {
           if (!deletingTool) return
           try {
