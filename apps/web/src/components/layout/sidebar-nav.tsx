@@ -1,15 +1,16 @@
 import { Link } from "@tanstack/react-router"
 import { Columns3, FolderGit2, LayoutDashboard, ScrollText, Settings } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/projects", label: "Projetos", icon: FolderGit2 },
-  { to: "/kanban", label: "Kanban", icon: Columns3 },
-  { to: "/audit", label: "Auditoria", icon: ScrollText },
-  { to: "/settings", label: "Configurações", icon: Settings },
+  { to: "/dashboard", id: "dashboard", icon: LayoutDashboard },
+  { to: "/projects", id: "projects", icon: FolderGit2 },
+  { to: "/kanban", id: "kanban", icon: Columns3 },
+  { to: "/audit", id: "audit", icon: ScrollText },
+  { to: "/settings", id: "settings", icon: Settings },
 ] as const
 
 export function SidebarNav({
@@ -19,10 +20,12 @@ export function SidebarNav({
   collapsed?: boolean
   onNavigate?: () => void
 }) {
+  const { t } = useTranslation()
   return (
     <TooltipProvider>
       <nav className="flex flex-1 flex-col gap-0.5 p-2">
-        {navItems.map(({ to, label, icon: Icon }) => {
+        {navItems.map(({ to, id, icon: Icon }) => {
+          const label = t(`nav.${id}`)
           const link = (
             <Link
               key={to}

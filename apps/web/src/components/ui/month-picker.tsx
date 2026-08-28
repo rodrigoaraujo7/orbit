@@ -1,13 +1,16 @@
 import { Popover } from "@base-ui/react/popover";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const MONTHS = Array.from({ length: 12 }, (_, i) =>
-  new Date(2000, i, 1).toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""),
-);
+function monthLabels(locale: string) {
+  return Array.from({ length: 12 }, (_, i) =>
+    new Date(2000, i, 1).toLocaleDateString(locale, { month: "short" }).replace(".", ""),
+  );
+}
 
 /**
  * Replaces the native `<input type="month">`: the browser calendar popup cannot
@@ -28,8 +31,10 @@ export function MonthPicker({
 }) {
   const [year, selectedMonth] = value ? value.split("-").map(Number) : [undefined, undefined];
   const [viewYear, setViewYear] = useState(() => year ?? new Date().getFullYear());
+  const { t, i18n } = useTranslation();
+  const months = monthLabels(i18n.language);
 
-  const label = year && selectedMonth ? `${MONTHS[selectedMonth - 1]}/${year}` : placeholder;
+  const label = year && selectedMonth ? `${months[selectedMonth - 1]}/${year}` : placeholder;
 
   return (
     <Popover.Root>
@@ -54,7 +59,7 @@ export function MonthPicker({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Ano anterior"
+                aria-label={t("common.previousYear")}
                 onClick={() => setViewYear((y) => y - 1)}
               >
                 <ChevronLeft className="size-4" />
@@ -64,7 +69,7 @@ export function MonthPicker({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Próximo ano"
+                aria-label={t("common.nextYear")}
                 onClick={() => setViewYear((y) => y + 1)}
               >
                 <ChevronRight className="size-4" />
@@ -72,7 +77,7 @@ export function MonthPicker({
             </div>
 
             <div className="grid grid-cols-3 gap-1">
-              {MONTHS.map((month, i) => {
+              {months.map((month, i) => {
                 const isSelected = year === viewYear && selectedMonth === i + 1;
                 return (
                   <Popover.Close
@@ -96,7 +101,7 @@ export function MonthPicker({
                 onClick={() => onChange("")}
                 className="mt-2 w-full cursor-default rounded-lg px-2 py-1.5 text-center text-sm text-muted-foreground outline-none select-none hover:bg-accent hover:text-accent-foreground"
               >
-                Limpar
+                {t("common.clear")}
               </Popover.Close>
             )}
           </Popover.Popup>

@@ -24,11 +24,18 @@ assert.equal(parseAmount("18.000,50"), 18000.5)
 assert.equal(parseAmount("0"), 0)
 assert.equal(parseAmount("0,00"), 0)
 
+assert.equal(parseAmount("18,000.50", "en-US"), 18000.5)
+assert.equal(parseAmount("18000.50", "en-US"), 18000.5)
+assert.equal(parseAmount("0.00", "en-US"), 0)
+assert.equal(parseAmount("18.000,50", "en-US") === 18000.5, false)
+
 assert.equal(hasPositiveAmount(""), false)
 assert.equal(hasPositiveAmount("0"), false)
 assert.equal(hasPositiveAmount("0,00"), false)
 assert.equal(hasPositiveAmount("1"), true)
 assert.equal(hasPositiveAmount("0,01"), true)
+assert.equal(hasPositiveAmount("0.00", "en-US"), false)
+assert.equal(hasPositiveAmount("0.01", "en-US"), true)
 
 assert.equal(toCents(18.5), 1850n)
 assert.equal(toCents(0), 0n)

@@ -189,11 +189,11 @@ const categorized = toolCostByCategory(
   oneMonth,
   "BRL",
 )
-assert.equal(categorized.length, 2, "payments e ai caem juntos em Outras")
-assert.equal(categorized[0].label, "Deploy & Hosting", "deploy tem slot próprio")
+assert.equal(categorized.length, 2, "payments e ai caem juntos em other")
+assert.equal(categorized[0].key, "deploy", "deploy tem slot próprio")
 assert.equal(categorized[0].slot, 1, "e o slot vem da categoria, não da posição")
-assert.equal(categorized[1].label, "Outras", "o resto vira Outras")
-assert.equal(categorized[1].total, 15, "Outras soma tudo que caiu nela")
+assert.equal(categorized[1].key, "other", "o resto vira other")
+assert.equal(categorized[1].total, 15, "other soma tudo que caiu nela")
 
 assert.deepEqual(
   previousMonths(monthRange("2026-03", "2026-05")),

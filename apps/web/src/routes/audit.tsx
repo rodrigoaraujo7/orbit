@@ -2,6 +2,7 @@ import { useCallback, useState } from "react"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { Info } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import {
   auditSearchSchema,
   compactSearch,
@@ -28,12 +29,8 @@ import {
 import { Select, type SelectOption } from "@/components/ui/select"
 import { DataTable, type Column, type SortState } from "@/components/ui/table"
 import { Tooltip } from "@/components/ui/tooltip"
-import {
-  AUDIT_ACTION_LABEL,
-  AUDIT_MODULE_LABEL,
-  formatAuditAt,
-  formatAuditChange,
-} from "@/lib/audit-labels"
+import { auditActionLabel, auditModuleLabel, auditModuleOptions } from "@/i18n/labels"
+import { formatAuditAt, formatAuditChange } from "@/lib/audit-labels"
 import { periodBounds, type PeriodPreset } from "@/lib/audit-period"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
@@ -54,20 +51,6 @@ type AuditEntry = {
   ip: string | null
   userAgent: string | null
 }
-
-const MODULE_OPTIONS: SelectOption[] = [
-  { value: "", label: "Todos os módulos" },
-  ...Object.entries(AUDIT_MODULE_LABEL).map(([value, label]) => ({ value, label })),
-]
-
-const PERIOD_OPTIONS: SelectOption[] = [
-  { value: "today", label: "Hoje" },
-  { value: "7d", label: "7 dias" },
-  { value: "30d", label: "30 dias" },
-  { value: "90d", label: "90 dias" },
-  { value: "all", label: "Tudo" },
-  { value: "custom", label: "Personalizado" },
-]
 
 const MODULE_BADGE: Record<AuditModule, "default" | "muted" | "outline" | "success" | "warning" | "destructive"> = {
   project: "default",
@@ -101,20 +84,29 @@ function AuditFilterFields({
   customTo: string
   onTo: (value: string) => void
 }) {
+  const { t } = useTranslation()
+  const PERIOD_OPTIONS: SelectOption[] = [
+    { value: "today", label: t("audit.today") },
+    { value: "7d", label: t("audit.days7") },
+    { value: "30d", label: t("audit.days30") },
+    { value: "90d", label: t("audit.days90") },
+    { value: "all", label: t("audit.allTime") },
+    { value: "custom", label: t("audit.custom") },
+  ]
   return (
     <>
       <Input
         value={search}
         onChange={(event) => onSearch(event.target.value)}
-        placeholder="Buscar por ação ou objeto..."
+        placeholder={t("audit.search")}
         className={stacked ? "w-full" : "flex-1"}
       />
       <div className={stacked ? "w-full" : "w-48"}>
         <Select
           value={module}
           onValueChange={onModule}
-          options={MODULE_OPTIONS}
-          placeholder="Módulo"
+          options={auditModuleOptions()}
+          placeholder={t("common.module")}
         />
       </div>
       <div className={stacked ? "w-full" : "w-44"}>
@@ -130,14 +122,14 @@ function AuditFilterFields({
             type="date"
             value={customFrom}
             onChange={(event) => onFrom(event.target.value)}
-            aria-label="De"
+            aria-label={t("common.from")}
             className={stacked ? "w-full" : "w-40"}
           />
           <Input
             type="date"
             value={customTo}
             onChange={(event) => onTo(event.target.value)}
-            aria-label="Até"
+            aria-label={t("common.to")}
             className={stacked ? "w-full" : "w-40"}
           />
         </>
@@ -147,6 +139,7 @@ function AuditFilterFields({
 }
 
 function AuditPage() {
+  const { t } = useTranslation()
   const { findProject } = useProjects()
   const { findContact } = useRegistry()
   const search = Route.useSearch()
@@ -247,7 +240,7 @@ function AuditPage() {
   }
 
   function objectCell(row: AuditEntry) {
-    const label = row.subjectLabel || "—"
+    const label = row.subjectLabel || t("common.emDash")
     if (row.projectId && findProject(row.projectId)) {
       return (
         <Link
@@ -265,27 +258,27 @@ function AuditPage() {
   const columns: Column<AuditEntry>[] = [
     {
       key: "createdAt",
-      header: "Data",
+      header: t("common.date"),
       className: "whitespace-nowrap",
       sortValue: (row) => row.createdAt,
       cell: (row) => formatAuditAt(row.createdAt),
     },
     {
       key: "module",
-      header: "Módulo",
+      header: t("common.module"),
       sortValue: (row) => row.module,
       cell: (row) => (
-        <Badge variant={MODULE_BADGE[row.module]}>{AUDIT_MODULE_LABEL[row.module]}</Badge>
+        <Badge variant={MODULE_BADGE[row.module]}>{auditModuleLabel(row.module)}</Badge>
       ),
     },
     {
       key: "action",
-      header: "Ação",
-      cell: (row) => AUDIT_ACTION_LABEL[row.action] ?? row.action,
+      header: t("common.action"),
+      cell: (row) => auditActionLabel(row.action),
     },
     {
       key: "subject",
-      header: "Objeto",
+      header: t("common.object"),
       cell: objectCell,
     },
     {
@@ -293,11 +286,11 @@ function AuditPage() {
       header: "",
       className: "text-right",
       cell: (row) => (
-        <Tooltip label="Ver detalhes" side="top">
+        <Tooltip label={t("audit.viewDetails")} side="top">
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Ver detalhes"
+            aria-label={t("audit.viewDetails")}
             onClick={() => setSelected(row)}
           >
             <Info />
@@ -310,8 +303,8 @@ function AuditPage() {
   return (
     <>
       <PageHeader
-        title="Auditoria"
-        description="Histórico das ações feitas na sua conta."
+        title={t("audit.title")}
+        description={t("audit.description")}
         actions={
           <FilterDrawer hasActive={hasActive} onClear={clearFilters}>
             <AuditFilterFields
@@ -370,14 +363,14 @@ function AuditPage() {
         <div className="px-4 py-6 sm:px-6 lg:px-8">
           {query.isError ? (
             <p className="text-sm text-muted-foreground">
-              Não foi possível carregar o log de auditoria.
+              {t("audit.loadError")}
             </p>
           ) : (
             <DataTable
               data={items}
               columns={columns}
               rowKey={(row) => row.id}
-              emptyMessage="Nenhum evento encontrado com esses filtros."
+              emptyMessage={t("audit.empty")}
               serverSort={{ sort, onSortChange: setSort }}
               serverPagination={{
                 hasPrev: pageIndex > 0,
@@ -407,10 +400,10 @@ function AuditPage() {
               <ResponsiveDialogHeader>
                 <div>
                   <ResponsiveDialogTitle>
-                    {AUDIT_ACTION_LABEL[selected.action] ?? selected.action}
+                    {auditActionLabel(selected.action)}
                   </ResponsiveDialogTitle>
                   <ResponsiveDialogDescription className="sr-only">
-                    Detalhes do evento
+                    {t("audit.eventDetails")}
                   </ResponsiveDialogDescription>
                 </div>
                 <ResponsiveDialogClose />
@@ -418,30 +411,30 @@ function AuditPage() {
               <ResponsiveDialogBody className="flex flex-col gap-4 text-sm">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    Data
+                    {t("common.date")}
                   </span>
                   {formatAuditAt(selected.createdAt)}
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    Módulo
+                    {t("common.module")}
                   </span>
                   <span>
                     <Badge variant={MODULE_BADGE[selected.module]}>
-                      {AUDIT_MODULE_LABEL[selected.module]}
+                      {auditModuleLabel(selected.module)}
                     </Badge>
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    Objeto
+                    {t("common.object")}
                   </span>
                   {objectCell(selected)}
                 </div>
                 {selected.changes.length > 0 && (
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                      Mudanças
+                      {t("audit.changes")}
                     </span>
                     <ul className="list-disc space-y-1 pl-4">
                       {selected.changes.map((change, index) => (
@@ -455,7 +448,7 @@ function AuditPage() {
                 {selected.ip ? (
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                      IP
+                      {t("audit.ip")}
                     </span>
                     {selected.ip}
                   </div>
@@ -463,7 +456,7 @@ function AuditPage() {
                 {selected.userAgent ? (
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                      User-Agent
+                      {t("audit.userAgent")}
                     </span>
                     <span className="break-all">{selected.userAgent}</span>
                   </div>

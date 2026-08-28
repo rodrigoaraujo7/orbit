@@ -1,4 +1,5 @@
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
+import { useTranslation } from "react-i18next";
 
 import { ChartCard, NoData, StatRow, StatTile } from "@/components/dashboard/cards";
 import { axisProps, surfaceGap, useChartMotion } from "@/components/dashboard/chart-parts";
@@ -13,8 +14,12 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { DataTable, type Column } from "@/components/ui/table";
-import { BILLING_CYCLE_LABEL, PAYER_LABEL } from "@/data/projects";
-import { TOOL_CATEGORY_LABEL } from "@/data/tool-catalog";
+import {
+  billingCycleLabel,
+  categoryCostLabel,
+  payerLabel,
+  toolCategoryLabel,
+} from "@/i18n/labels";
 import type {
   CategoryCost,
   CostMonth,
@@ -28,13 +33,6 @@ import {
   formatMonth,
   formatMonthLong,
 } from "@/lib/format";
-
-// Two payers, two fixed slots. "Eu" keeps the brand hue because it is the
-// number that actually comes out of the freelancer's pocket.
-const payerConfig = {
-  eu: { label: "Eu pago", color: "var(--chart-1)" },
-  cliente: { label: "Cliente paga", color: "var(--chart-2)" },
-} satisfies ChartConfig;
 
 export function ToolsTab({
   summary,
@@ -53,6 +51,14 @@ export function ToolsTab({
   months: string[]
   currency: string
 }) {
+  const { t } = useTranslation();
+  // Two payers, two fixed slots. "Eu" keeps the brand hue because it is the
+  // number that actually comes out of the freelancer's pocket.
+  const payerConfig = {
+    eu: { label: t("dashboard.iPay"), color: "var(--chart-1)" },
+    cliente: { label: t("dashboard.clientPays"), color: "var(--chart-2)" },
+  } satisfies ChartConfig;
+
   const motion = useChartMotion();
 
   const money = (value: number) => formatCurrency(value, currency);
@@ -60,7 +66,7 @@ export function ToolsTab({
   const columns: Column<ToolRow>[] = [
     {
       key: "name",
-      header: "Ferramenta",
+      header: t("common.tool"),
       sortValue: (row) => row.name,
       cell: (row) => (
         <div className="flex items-center gap-2">
@@ -71,52 +77,52 @@ export function ToolsTab({
     },
     {
       key: "project",
-      header: "Projeto",
+      header: t("common.project"),
       sortValue: (row) => row.projectName,
       cell: (row) => <span className="text-muted-foreground">{row.projectName}</span>,
     },
     {
       key: "category",
-      header: "Categoria",
+      header: t("common.category"),
       className: "hidden md:table-cell",
       sortValue: (row) => row.category,
       cell: (row) => (
-        <span className="text-muted-foreground">{TOOL_CATEGORY_LABEL[row.category]}</span>
+        <span className="text-muted-foreground">{toolCategoryLabel(row.category)}</span>
       ),
     },
     {
       key: "account",
-      header: "Conta",
+      header: t("common.account"),
       className: "hidden lg:table-cell",
       sortValue: (row) => row.account,
       cell: (row) => <span className="truncate text-muted-foreground">{row.account}</span>,
     },
     {
       key: "amount",
-      header: "Valor",
+      header: t("common.value"),
       className: "hidden sm:table-cell whitespace-nowrap",
       sortValue: (row) => row.amount,
       cell: (row) => (
         <span className="tabular-nums text-muted-foreground">
-          {money(row.amount)} · {BILLING_CYCLE_LABEL[row.cycle].toLowerCase()}
+          {money(row.amount)} · {billingCycleLabel(row.cycle).toLowerCase()}
         </span>
       ),
     },
     {
       key: "monthly",
-      header: "Por mês",
+      header: t("common.perMonthShort"),
       className: "whitespace-nowrap",
       sortValue: (row) => row.monthly,
       cell: (row) => (
-        <span className="tabular-nums">{row.monthly > 0 ? money(row.monthly) : "—"}</span>
+        <span className="tabular-nums">{row.monthly > 0 ? money(row.monthly) : t("common.emDash")}</span>
       ),
     },
     {
       key: "payer",
-      header: "Quem paga",
+      header: t("common.whoPays"),
       sortValue: (row) => row.payer,
       cell: (row) => (
-        <Badge variant={row.payer === "me" ? "default" : "muted"}>{PAYER_LABEL[row.payer]}</Badge>
+        <Badge variant={row.payer === "me" ? "default" : "muted"}>{payerLabel(row.payer)}</Badge>
       ),
     },
   ];
@@ -125,35 +131,35 @@ export function ToolsTab({
     <div className="flex flex-col gap-4">
       <StatRow>
         <StatTile
-          label="Custo no período"
+          label={t("dashboard.costInPeriod")}
           value={summary.totalPeriodo}
           format={money}
-          hint={`${months.length} ${months.length === 1 ? "mês" : "meses"}`}
+          hint={t("dashboard.month", { count: months.length })}
           delay={0}
         />
         <StatTile
-          label="Você paga"
+          label={t("dashboard.youPay")}
           value={summary.eu}
           format={money}
           tone={summary.eu > 0 ? "warning" : "default"}
           delay={60}
         />
-        <StatTile label="Cliente paga" value={summary.cliente} format={money} delay={120} />
+        <StatTile label={t("dashboard.clientPays")} value={summary.cliente} format={money} delay={120} />
         <StatTile
-          label="Custo mensal atual"
+          label={t("dashboard.currentMonthlyCost")}
           value={summary.runRate}
           format={money}
-          hint="Recorrente do último mês do período"
+          hint={t("dashboard.runRateHint")}
           delay={180}
         />
         <StatTile
-          label="Ferramentas pagas"
+          label={t("dashboard.paidTools")}
           value={summary.pagas}
           format={(value) => String(Math.round(value))}
           hint={
             summary.maisCara
-              ? `${summary.gratis} grátis · maior: ${summary.maisCara.name}`
-              : `${summary.gratis} grátis`
+              ? t("dashboard.freeCountWithMax", { count: summary.gratis, name: summary.maisCara.name })
+              : t("dashboard.freeCount", { count: summary.gratis })
           }
           delay={240}
         />
@@ -161,13 +167,13 @@ export function ToolsTab({
 
       <div className="grid gap-4 xl:grid-cols-3">
         <ChartCard
-          title="Custo por ferramenta"
-          hint="Normalizado por mês: um plano anual entra como 1/12"
+          title={t("dashboard.costByTool")}
+          hint={t("dashboard.costByToolHint")}
           delay={300}
           className="xl:col-span-2"
         >
           {byTool.length === 0 ? (
-            <NoData>Nenhuma ferramenta paga em {currency} nesse período.</NoData>
+            <NoData>{t("dashboard.noPaidTools", { currency })}</NoData>
           ) : (
             <ChartContainer
               config={payerConfig}
@@ -231,7 +237,7 @@ export function ToolsTab({
           )}
         </ChartCard>
 
-        <ChartCard title="Custo por categoria" hint="Onde o dinheiro está indo" delay={360}>
+        <ChartCard title={t("dashboard.costByCategory")} hint={t("dashboard.costByCategoryHint")} delay={360}>
           {byCategory.length === 0 ? (
             <NoData />
           ) : (
@@ -247,7 +253,7 @@ export function ToolsTab({
                           className="size-2.5 shrink-0 rounded-sm"
                           style={{ background: `var(--chart-${category.slot})` }}
                         />
-                        <span className="truncate">{category.label}</span>
+                        <span className="truncate">{categoryCostLabel(category.key)}</span>
                       </span>
                       <span className="shrink-0 tabular-nums">{money(category.total)}</span>
                     </div>
@@ -271,8 +277,8 @@ export function ToolsTab({
       </div>
 
       <ChartCard
-        title="Custo mensal ao longo do tempo"
-        hint="Sobe quando um projeto começa, cai quando ele acaba"
+        title={t("dashboard.costOverTime")}
+        hint={t("dashboard.costOverTimeHint")}
         delay={420}
       >
         <ChartContainer config={payerConfig} className="aspect-auto h-[240px] w-full">
@@ -329,8 +335,8 @@ export function ToolsTab({
       </ChartCard>
 
       <ChartCard
-        title="Todas as ferramentas pagas"
-        hint="Em qual projeto, em qual conta e quem banca"
+        title={t("dashboard.allPaidTools")}
+        hint={t("dashboard.allPaidToolsHint")}
         delay={480}
       >
         <DataTable
@@ -338,7 +344,7 @@ export function ToolsTab({
           columns={columns}
           rowKey={(row) => row.id}
           initialSort={{ key: "monthly", direction: "desc" }}
-          emptyMessage={`Nenhuma ferramenta paga em ${currency} nos projetos filtrados.`}
+          emptyMessage={t("dashboard.noPaidToolsFiltered", { currency })}
         />
       </ChartCard>
     </div>

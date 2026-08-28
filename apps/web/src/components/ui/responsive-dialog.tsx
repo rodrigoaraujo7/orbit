@@ -8,6 +8,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react"
+import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -236,13 +237,14 @@ function ResponsiveDialogClose({
   ...props
 }: ComponentProps<typeof Button>) {
   const { isMobile } = useResponsiveDialog()
+  const { t } = useTranslation()
   if (isMobile) return null
 
   return (
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label="Fechar"
+      aria-label={t("common.close")}
       className={className}
       render={<DialogClose />}
       {...props}

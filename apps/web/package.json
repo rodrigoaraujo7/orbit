@@ -11,6 +11,7 @@
     "check:project-status": "node --experimental-strip-types src/lib/project-status.check.ts",
     "check:pagination": "node --experimental-strip-types src/lib/pagination.check.ts",
     "check:table-sort": "node --experimental-strip-types src/lib/table-sort.check.ts",
+    "check:i18n": "node --experimental-strip-types src/i18n/i18n.check.ts",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -29,11 +30,13 @@
     "better-auth": "^1.7.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "i18next": "^26.4.0",
     "lucide-react": "^1.30.0",
     "ogl": "^1.0.11",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.85.0",
+    "react-i18next": "^17.0.12",
     "recharts": "3.8.0",
     "shadcn": "^4.16.2",
     "shared": "workspace:*",

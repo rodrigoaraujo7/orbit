@@ -1,3 +1,5 @@
+import { getLocale } from "../i18n/index.ts"
+
 export type SortState = { key: string; direction: "asc" | "desc" } | null
 
 /**
@@ -10,10 +12,10 @@ export function nextSort(current: SortState, key: string): SortState {
   return null
 }
 
-function compare(a: string | number, b: string | number) {
-  // localeCompare so text sorts in pt-BR order (accents do not go last)
+function compare(a: string | number, b: string | number, locale: string) {
+  // localeCompare so text sorts in the active locale (accents do not go last)
   if (typeof a === "string" && typeof b === "string") {
-    return a.localeCompare(b, "pt-BR")
+    return a.localeCompare(b, locale)
   }
   return a < b ? -1 : a > b ? 1 : 0
 }
@@ -26,9 +28,10 @@ function compare(a: string | number, b: string | number) {
 export function sortRows<T>(
   rows: T[],
   sort: SortState,
-  sortValue: ((row: T) => string | number) | undefined
+  sortValue: ((row: T) => string | number) | undefined,
+  locale = getLocale(),
 ): T[] {
   if (!sort || !sortValue) return rows
   const factor = sort.direction === "asc" ? 1 : -1
-  return [...rows].sort((a, b) => compare(sortValue(a), sortValue(b)) * factor)
+  return [...rows].sort((a, b) => compare(sortValue(a), sortValue(b), locale) * factor)
 }

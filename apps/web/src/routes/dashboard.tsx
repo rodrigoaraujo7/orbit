@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Wallet, Wrench } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   compactSearch,
   dashboardOptions,
@@ -23,13 +24,6 @@ import { useProjects } from "@/lib/projects-store";
 import { useRegistry } from "@/lib/registry-store";
 import { trpc } from "@/lib/trpc";
 
-function profitHint(current: number, previous: number) {
-  if (previous === 0) return current === 0 ? "Sem movimento no período" : "Sem período anterior pra comparar";
-  const change = (current - previous) / Math.abs(previous);
-  const verb = change >= 0 ? "acima" : "abaixo";
-  return `${formatPercent(Math.abs(change))} ${verb} do período anterior`;
-}
-
 function searchToFilters(search: ReturnType<typeof Route.useSearch>): DashboardFilters {
   return toDashboardFilters({
     monthFrom: search.from,
@@ -41,6 +35,7 @@ function searchToFilters(search: ReturnType<typeof Route.useSearch>): DashboardF
 }
 
 function DashboardPage() {
+  const { t } = useTranslation();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const { projects } = useProjects();
@@ -66,10 +61,19 @@ function DashboardPage() {
   const currency = metrics?.currency ?? filters.currency;
   const options = metrics?.options ?? dashboardOptions(projects, contacts);
 
+  function profitHint(current: number, previous: number) {
+    if (previous === 0) return current === 0 ? t("dashboard.noMovement") : t("dashboard.noPrevious");
+    const change = (current - previous) / Math.abs(previous);
+    return t("dashboard.vsPrevious", {
+      percent: formatPercent(Math.abs(change)),
+      direction: change >= 0 ? t("dashboard.above") : t("dashboard.below"),
+    });
+  }
+
   const period =
     months.length === 0
-      ? "Nenhum mês no período"
-      : `${formatMonthLong(months[0])} — ${formatMonthLong(months[months.length - 1])}`;
+      ? t("dashboard.noMonths")
+      : `${formatMonthLong(months[0])} ${t("common.emDash")} ${formatMonthLong(months[months.length - 1])}`;
 
   function setFilters(next: DashboardFilters) {
     void navigate({
@@ -87,7 +91,7 @@ function DashboardPage() {
   return (
     <>
       <PageHeader
-        title="Dashboard"
+        title={t("dashboard.title")}
         description={period}
         actions={
           summary ? (
@@ -114,10 +118,7 @@ function DashboardPage() {
         <div className="px-4 pt-6 pb-24 sm:px-6 md:pb-6 lg:px-8">
           {summary && summary.foraDaMoeda > 0 && (
             <p className="mb-4 text-xs text-muted-foreground">
-              {summary.foraDaMoeda}{" "}
-              {summary.foraDaMoeda === 1 ? "projeto está" : "projetos estão"} em outra moeda e
-              {summary.foraDaMoeda === 1 ? " ficou" : " ficaram"} de fora — valores nunca são
-              convertidos.
+              {t("dashboard.skipped", { count: summary.foraDaMoeda })}
             </p>
           )}
 
@@ -125,10 +126,10 @@ function DashboardPage() {
             <Tabs defaultValue="finance">
               <TabsDock>
                 <TabsDockTab value="finance" icon={Wallet}>
-                  Financeiro
+                  {t("common.finance")}
                 </TabsDockTab>
                 <TabsDockTab value="tools" icon={Wrench}>
-                  Ferramentas
+                  {t("common.tools")}
                 </TabsDockTab>
               </TabsDock>
 

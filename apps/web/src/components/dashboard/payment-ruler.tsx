@@ -1,14 +1,16 @@
+import { useTranslation } from "react-i18next";
+import type { RulerLane } from "shared";
+
 import type { InvoiceStatus } from "@/data/projects";
-import { INVOICE_STATUS_LABEL } from "@/data/projects";
+import { invoiceStatusLabel } from "@/i18n/labels";
 import { monthOf, todayIso } from "@/lib/dates";
 import { formatCurrency, formatMonth, formatMonthLong } from "@/lib/format";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
-import type { RulerLane } from "shared";
 
 /**
  * Same three slots as the revenue chart, for the same reason: `--destructive`
- * is too close to the brand bordô to sit beside it as a fill. Texture does the
+ * is too close to the brand burgundy to sit beside it as a fill. Texture does the
  * rest of the work — solid, dashed outline, hatched — so the ruler survives
  * both colorblindness and a black-and-white print.
  */
@@ -20,12 +22,13 @@ const TICK_CLASS: Record<InvoiceStatus, string> = {
 };
 
 function Legend() {
+  const { t } = useTranslation();
   return (
     <ul className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
       {(["paid", "pending", "overdue"] as InvoiceStatus[]).map((status) => (
         <li key={status} className="flex items-center gap-1.5">
           <span className={cn("h-3 w-5 rounded-sm", TICK_CLASS[status])} aria-hidden="true" />
-          {INVOICE_STATUS_LABEL[status]}
+          {invoiceStatusLabel(status)}
         </li>
       ))}
     </ul>
@@ -41,13 +44,14 @@ export function PaymentRuler({
   months: string[]
   currency: string
 }) {
+  const { t } = useTranslation();
   const reduced = useReducedMotion();
   const currentMonth = monthOf(todayIso());
 
   if (lanes.length === 0) {
     return (
       <p className="py-10 text-center text-sm text-muted-foreground">
-        Nenhuma parcela cai nesse período.
+        {t("dashboard.noInstallments")}
       </p>
     );
   }
@@ -105,7 +109,7 @@ export function PaymentRuler({
                       : invoices.every((invoice) => invoice.status === "paid")
                         ? "paid"
                         : "pending";
-                    const label = `${lane.projectName} · ${formatMonthLong(month)} · ${formatCurrency(total, currency)} · ${INVOICE_STATUS_LABEL[status]}`;
+                    const label = `${lane.projectName} · ${formatMonthLong(month)} · ${formatCurrency(total, currency)} · ${invoiceStatusLabel(status)}`;
 
                     return (
                       <span

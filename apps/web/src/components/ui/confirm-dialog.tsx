@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Emphasis } from "@/components/ui/emphasis"
@@ -20,9 +21,8 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Confirmar",
-  /** word the user must type to enable the confirm button */
-  confirmWord = "excluir",
+  confirmLabel,
+  confirmWord,
   onConfirm,
 }: {
   open: boolean
@@ -33,6 +33,9 @@ export function ConfirmDialog({
   confirmWord?: string
   onConfirm: () => void
 }) {
+  const { t } = useTranslation()
+  const resolvedConfirmLabel = confirmLabel ?? t("common.confirm")
+  const resolvedConfirmWord = confirmWord ?? t("common.deleteWord")
   const [typed, setTyped] = useState("")
   // the dialog stays mounted all the time (exit animation) — clears the field
   // every time it opens again. Adjusted during render instead of an effect:
@@ -44,7 +47,11 @@ export function ConfirmDialog({
   }
 
   const confirmDisabled =
-    typed.trim().toLowerCase() !== confirmWord.toLowerCase()
+    typed.trim().toLowerCase() !== resolvedConfirmWord.toLowerCase()
+
+  const confirmPrompt = t("common.typeToConfirm", { word: resolvedConfirmWord }).split(
+    resolvedConfirmWord,
+  )
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
@@ -61,11 +68,11 @@ export function ConfirmDialog({
         <ResponsiveDialogBody>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="confirm-word">
-              Digite{" "}
+              {confirmPrompt[0]}
               <Emphasis italic={false} className="text-destructive">
-                {confirmWord}
-              </Emphasis>{" "}
-              para confirmar
+                {resolvedConfirmWord}
+              </Emphasis>
+              {confirmPrompt[1]}
             </Label>
             <Input
               id="confirm-word"
@@ -78,7 +85,7 @@ export function ConfirmDialog({
         </ResponsiveDialogBody>
         <ResponsiveDialogFooter>
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancelar
+            {t("common.cancel")}
           </Button>
           <Button
             variant="destructive"
@@ -88,7 +95,7 @@ export function ConfirmDialog({
               onOpenChange(false)
             }}
           >
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </Button>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>

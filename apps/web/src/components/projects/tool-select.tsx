@@ -1,4 +1,5 @@
 import { Check, ChevronDown } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import {
   SelectGroup,
@@ -15,11 +16,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  TOOL_CATEGORY_LABEL,
+  OTHER_TOOL_ID,
   TOOL_CATEGORY_ORDER,
   findCatalogTool,
   toolsByCategory,
 } from "@/data/tool-catalog"
+import { toolCategoryLabel } from "@/i18n/labels"
 import { ToolIcon } from "./tool-icons"
 
 /**
@@ -41,6 +43,8 @@ export function ToolSelect({
   invalid?: boolean
   describedBy?: string
 }) {
+  const { t } = useTranslation()
+
   return (
     <SelectRoot
       value={value || null}
@@ -52,7 +56,7 @@ export function ToolSelect({
             if (!selected) {
               return (
                 <span className="text-muted-foreground">
-                  Selecione a ferramenta
+                  {t("projects.selectTool")}
                 </span>
               )
             }
@@ -60,7 +64,9 @@ export function ToolSelect({
               <span className="flex min-w-0 items-center gap-2 truncate">
                 <ToolIcon id={selected} className="size-4 shrink-0" />
                 <span className="truncate">
-                  {findCatalogTool(selected)?.name ?? selected}
+                  {selected === OTHER_TOOL_ID
+                    ? t("category.other")
+                    : (findCatalogTool(selected)?.name ?? selected)}
                 </span>
               </span>
             )
@@ -81,12 +87,14 @@ export function ToolSelect({
             {TOOL_CATEGORY_ORDER.map((category) => (
               <SelectGroup key={category}>
                 <SelectGroupLabel>
-                  {TOOL_CATEGORY_LABEL[category]}
+                  {toolCategoryLabel(category)}
                 </SelectGroupLabel>
                 {toolsByCategory(category).map((tool) => (
                   <SelectItem key={tool.id} value={tool.id}>
                     <ToolIcon id={tool.id} className="size-4 shrink-0" />
-                    <SelectItemText>{tool.name}</SelectItemText>
+                    <SelectItemText>
+                      {tool.id === OTHER_TOOL_ID ? t("category.other") : tool.name}
+                    </SelectItemText>
                     <SelectItemIndicator className="ml-auto">
                       <Check className="size-3.5 text-primary" />
                     </SelectItemIndicator>

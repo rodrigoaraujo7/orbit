@@ -2,6 +2,7 @@ import { useCallback, useState } from "react"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { ExternalLink, Plus } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { compactSearch, parseSearch, projectsSearchSchema } from "shared"
 
 import { PageHeader } from "@/components/layout/page"
@@ -23,12 +24,8 @@ import { Input } from "@/components/ui/input"
 import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import { DataTable, type Column } from "@/components/ui/table"
 import { toast } from "@/components/ui/toast"
-import {
-  BILLING_CYCLE_LABEL,
-  type Project,
-  type ProjectStatus,
-  type WorkflowStatus,
-} from "@/data/projects"
+import { type Project, type ProjectStatus, type WorkflowStatus } from "@/data/projects"
+import { billingCycleLabel } from "@/i18n/labels"
 import { formatCurrency, formatDeal } from "@/lib/format"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
@@ -52,12 +49,13 @@ function ProjectFilterFields({
   workflowFilter: WorkflowStatus | ""
   onWorkflowChange: (value: WorkflowStatus | "") => void
 }) {
+  const { t } = useTranslation()
   return (
     <>
       <Input
         value={nameFilter}
         onChange={(event) => onNameChange(event.target.value)}
-        placeholder="Buscar por nome..."
+        placeholder={t("common.searchByName")}
         className={stacked ? "w-full" : "flex-1"}
       />
       <div className={stacked ? "w-full" : "w-44"}>
@@ -71,6 +69,7 @@ function ProjectFilterFields({
 }
 
 function ProjectsPage() {
+  const { t } = useTranslation()
   const { projects, deleteProject } = useProjects()
   const { findContact } = useRegistry()
   const search = Route.useSearch()
@@ -112,7 +111,7 @@ function ProjectsPage() {
   const columns: Column<Project>[] = [
     {
       key: "name",
-      header: "Projeto",
+      header: t("common.project"),
       sortValue: (project) => project.name,
       cell: (project) => (
         <>
@@ -124,20 +123,20 @@ function ProjectsPage() {
             {project.name}
           </Link>
           <div className="text-xs text-muted-foreground">
-            {findContact(project.clientId)?.name ?? "—"}
+            {findContact(project.clientId)?.name ?? t("common.emDash")}
           </div>
         </>
       ),
     },
     {
       key: "status",
-      header: "Status",
+      header: t("common.status"),
       sortValue: (project) => project.status,
       cell: (project) => <StatusBadge status={project.status} />,
     },
     {
       key: "amount",
-      header: "Valor",
+      header: t("common.value"),
       className: "hidden sm:table-cell",
       sortValue: (project) => project.deal.amount,
       cell: (project) => (
@@ -148,7 +147,7 @@ function ProjectsPage() {
     },
     {
       key: "tools",
-      header: "Ferramentas",
+      header: t("common.tools"),
       className: "hidden md:table-cell",
       cell: (project) => (
         <div className="flex flex-wrap gap-1">
@@ -158,8 +157,11 @@ function ProjectsPage() {
               variant={tool.billing ? "default" : "outline"}
               title={
                 tool.billing
-                  ? `Paga · ${formatCurrency(tool.billing.amount, tool.billing.currency)} ${BILLING_CYCLE_LABEL[tool.billing.cycle].toLowerCase()}`
-                  : "Plano free"
+                  ? t("common.paidDot", {
+                      amount: formatCurrency(tool.billing.amount, tool.billing.currency),
+                      cycle: billingCycleLabel(tool.billing.cycle).toLowerCase(),
+                    })
+                  : t("common.freePlan")
               }
             >
               <ToolIcon id={tool.id} className="size-3" />
@@ -171,7 +173,7 @@ function ProjectsPage() {
     },
     {
       key: "github",
-      header: "GitHub",
+      header: t("common.github"),
       className: "hidden lg:table-cell",
       cell: (project) =>
         project.repo ? (
@@ -189,7 +191,7 @@ function ProjectsPage() {
             <ExternalLink className="size-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100" />
           </div>
         ) : (
-          <span className="text-muted-foreground">—</span>
+          <span className="text-muted-foreground">{t("common.emDash")}</span>
         ),
     },
     {
@@ -215,8 +217,8 @@ function ProjectsPage() {
   return (
     <>
       <PageHeader
-        title="Projetos"
-        description={`${projects.length} projetos cadastrados.`}
+        title={t("projects.title")}
+        description={t("projects.count", { count: projects.length })}
         actions={
           <div className="mt-3 flex w-full gap-2 sm:mt-0 sm:w-auto">
             <Button
@@ -227,7 +229,7 @@ function ProjectsPage() {
               className="flex-1 md:flex-none"
             >
               <Plus />
-              Novo projeto
+              {t("common.newProject")}
             </Button>
             <FilterDrawer
               hasActive={hasActive}
@@ -256,23 +258,23 @@ function ProjectsPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Excluir projeto"
+        title={t("projects.deleteTitle")}
         description={
           <>
-            Excluir{" "}
+            {t("common.delete")}{" "}
             <Emphasis className="text-primary">{deletingProject?.name}</Emphasis>
-            ? Essa ação não pode ser desfeita.
+            ? {t("common.cannotUndo")}
           </>
         }
-        confirmLabel="Excluir"
-        confirmWord="excluir"
+        confirmLabel={t("common.delete")}
+        confirmWord={t("common.deleteWord")}
         onConfirm={() => {
           if (!deletingProject) return
           try {
             deleteProject(deletingProject.id)
-            toast.add({ title: "Projeto excluído", type: "success" })
+            toast.add({ title: t("projects.deleted"), type: "success" })
           } catch {
-            toast.add({ title: "Erro ao excluir projeto", type: "error" })
+            toast.add({ title: t("projects.deleteError"), type: "error" })
           }
         }}
       />
@@ -309,7 +311,7 @@ function ProjectsPage() {
                 params: { projectId: project.id },
               })
             }
-            emptyMessage="Nenhum projeto encontrado com esses filtros."
+            emptyMessage={t("projects.empty")}
           />
         </div>
       </FilterPending>

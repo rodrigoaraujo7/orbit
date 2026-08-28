@@ -8,17 +8,6 @@ export type ToolCategory =
   | "ai"
   | "other"
 
-export const TOOL_CATEGORY_LABEL: Record<ToolCategory, string> = {
-  deploy: "Deploy & Hosting",
-  database: "Banco de dados",
-  observability: "Observabilidade",
-  analytics: "Métricas & Analytics",
-  communication: "Comunicação",
-  payments: "Pagamentos",
-  ai: "IA",
-  other: "Outra",
-}
-
 /** Group order in the select. `other` always last. */
 export const TOOL_CATEGORY_ORDER: ToolCategory[] = [
   "deploy",

@@ -15,7 +15,13 @@ export {
   type WorkflowStatus,
 } from "./domain.ts"
 export { CURRENCIES, DEFAULT_CURRENCY, type CurrencyCode } from "./currency.ts"
-export { fromCents, hasPositiveAmount, parseAmount, toCents } from "./money.ts"
+export {
+  fromCents,
+  hasPositiveAmount,
+  parseAmount,
+  toCents,
+  type AmountLocale,
+} from "./money.ts"
 export {
   AUDIT_ACTIONS,
   auditChangeSchema,

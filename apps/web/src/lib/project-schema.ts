@@ -3,29 +3,35 @@ import {
   billingCycleSchema,
   dealKindSchema,
   DEFAULT_CURRENCY,
-  hasPositiveAmount,
-  parseAmount,
+  hasPositiveAmount as hasPositiveAmountWithLocale,
+  parseAmount as parseAmountWithLocale,
   payerSchema,
   projectStatusSchema,
 } from "shared"
 
-export { hasPositiveAmount, parseAmount }
-
-// Relative imports (not the "@/" alias) on purpose: this module also runs
-// outside Vite, in the self-check with `node --experimental-strip-types`, and
-// Node does not resolve the alias.
 import type { Deal, Project, Tool } from "../data/projects.ts"
 import { OTHER_TOOL_ID, findCatalogTool } from "../data/tool-catalog.ts"
+import i18n, { getLocale } from "../i18n/index.ts"
 import { todayIso } from "./dates.ts"
 import { withProjectStatus } from "./project-status.ts"
 
+export function parseAmount(raw: string) {
+  return parseAmountWithLocale(raw, getLocale())
+}
+
+export function hasPositiveAmount(amount: string) {
+  return hasPositiveAmountWithLocale(amount, getLocale())
+}
+
 /**
  * Number and date fields stay as strings because they come from `<input>`; the
- * conversion happens in `superRefine` and in `toProject`.
+ * conversion happens in `superRefine` and in `toProject`. Built as a factory so
+ * Zod messages follow the active language at parse time.
  */
-export const projectSchema = z
+export function projectSchema() {
+  return z
   .object({
-    name: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
+    name: z.string().trim().min(2, i18n.t("validation.minChars")),
     clientId: z.string(),
     // when true, clientId is ignored and a Contact is created from the
     // newContact* fields instead — see the create-project-dialog for the
@@ -42,7 +48,7 @@ export const projectSchema = z
     installments: z.string().trim(),
     tools: z.array(
       z.object({
-        toolId: z.string().min(1, "Selecione a ferramenta"),
+        toolId: z.string().min(1, i18n.t("validation.selectTool")),
         customName: z.string().trim(),
         account: z.string().trim(),
         amount: z.string().trim(),
@@ -52,8 +58,8 @@ export const projectSchema = z
         payer: payerSchema,
         secrets: z.array(
           z.object({
-            key: z.string().trim().min(1, "Informe a chave"),
-            value: z.string().trim().min(1, "Informe o valor"),
+            key: z.string().trim().min(1, i18n.t("validation.enterKey")),
+            value: z.string().trim().min(1, i18n.t("validation.enterValue")),
           })
         ),
       })
@@ -62,14 +68,14 @@ export const projectSchema = z
     repoPath: z.string().trim(),
   })
   .superRefine((values, ctx) => {
-    // Contato: either an existing contact is picked, or a new one is filled
+    // Contact: either an existing contact is picked, or a new one is filled
     // in inline — same required fields as CreateContactDialog's contactSchema.
     if (!values.isNewContact) {
       if (!values.clientId) {
         ctx.addIssue({
           code: "custom",
           path: ["clientId"],
-          message: "Selecione um contato",
+          message: i18n.t("validation.selectContact"),
         })
       }
     } else {
@@ -77,21 +83,21 @@ export const projectSchema = z
         ctx.addIssue({
           code: "custom",
           path: ["newContactName"],
-          message: "Informe pelo menos 2 caracteres",
+          message: i18n.t("validation.minChars"),
         })
       }
       if (!values.newContactPhone) {
         ctx.addIssue({
           code: "custom",
           path: ["newContactPhone"],
-          message: "Informe o telefone",
+          message: i18n.t("validation.enterPhone"),
         })
       }
       if (!values.newContactCompany) {
         ctx.addIssue({
           code: "custom",
           path: ["newContactCompany"],
-          message: "Informe a empresa",
+          message: i18n.t("validation.enterCompany"),
         })
       }
       if (
@@ -101,7 +107,7 @@ export const projectSchema = z
         ctx.addIssue({
           code: "custom",
           path: ["newContactEmail"],
-          message: "E-mail inválido",
+          message: i18n.t("validation.emailInvalid"),
         })
       }
     }
@@ -113,13 +119,13 @@ export const projectSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["amount"],
-        message: "Informe um valor válido",
+        message: i18n.t("validation.invalidAmount"),
       })
     } else if (dealAmount != null && dealAmount < 0) {
       ctx.addIssue({
         code: "custom",
         path: ["amount"],
-        message: "O valor não pode ser negativo",
+        message: i18n.t("validation.negativeAmount"),
       })
     }
 
@@ -130,7 +136,7 @@ export const projectSchema = z
         ctx.addIssue({
           code: "custom",
           path: ["installments"],
-          message: "Mínimo de 2 parcelas",
+          message: i18n.t("validation.minInstallments"),
         })
       }
     }
@@ -140,7 +146,7 @@ export const projectSchema = z
         ctx.addIssue({
           code: "custom",
           path: ["tools", index, "customName"],
-          message: "Informe o nome da ferramenta",
+          message: i18n.t("validation.enterToolName"),
         })
       }
 
@@ -150,13 +156,13 @@ export const projectSchema = z
         ctx.addIssue({
           code: "custom",
           path: ["tools", index, "amount"],
-          message: "Informe um valor válido",
+          message: i18n.t("validation.invalidAmount"),
         })
       } else if (amount != null && amount < 0) {
         ctx.addIssue({
           code: "custom",
           path: ["tools", index, "amount"],
-          message: "O valor não pode ser negativo",
+          message: i18n.t("validation.negativeAmount"),
         })
       }
 
@@ -165,7 +171,7 @@ export const projectSchema = z
         ctx.addIssue({
           code: "custom",
           path: ["tools", index, "nextInvoice"],
-          message: "Informe a data da fatura",
+          message: i18n.t("validation.enterInvoiceDate"),
         })
       }
     })
@@ -174,12 +180,13 @@ export const projectSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["repoPath"],
-        message: "Use o formato usuario/repositorio",
+        message: i18n.t("validation.repoFormat"),
       })
     }
   })
+}
 
-export type ProjectFormValues = z.infer<typeof projectSchema>
+export type ProjectFormValues = z.infer<ReturnType<typeof projectSchema>>
 export type ToolFormValues = ProjectFormValues["tools"][number]
 
 export const emptyToolForm: ToolFormValues = {
@@ -217,11 +224,11 @@ export const emptyProjectForm: ProjectFormValues = {
 /**
  * Inverse of `parseAmount` — used by `fromProject` to refill the amount field
  * when editing. `String(340.5)` would give "340.5" (decimal point), which
- * `parseAmount` would read as a thousands separator and blow the value up 10x;
- * formats in pt-BR (decimal comma) to close the roundtrip.
+ * `parseAmount` would misread depending on locale and blow the value up;
+ * formats with the active locale to close the roundtrip.
  */
 function formatAmountInput(value: number): string {
-  return value.toLocaleString("pt-BR", {
+  return value.toLocaleString(getLocale(), {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })

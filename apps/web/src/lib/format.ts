@@ -1,15 +1,19 @@
-import { FREE_LABEL, isDealFree, type Deal, type Invoice, type Tool } from "@/data/projects"
-import { DEFAULT_CURRENCY } from "@/lib/currency"
+import { isDealFree, type Deal, type Invoice, type Tool } from "../data/projects.ts"
+import i18n, { getLocale } from "../i18n/index.ts"
+import { DEFAULT_CURRENCY } from "./currency.ts"
 
-// one Intl.NumberFormat per currency, created on demand and reused — same
-// idea as the old BRL-only formatter, just keyed by currency.
+// one Intl.NumberFormat per locale+currency, created on demand and reused
 const formatters = new Map<string, Intl.NumberFormat>()
+const percentFormatters = new Map<string, Intl.NumberFormat>()
+const compactFormatters = new Map<string, Intl.NumberFormat>()
 
 function currencyFormatter(currency: string) {
-  let formatter = formatters.get(currency)
+  const locale = getLocale()
+  const key = `${locale}:${currency}`
+  let formatter = formatters.get(key)
   if (!formatter) {
-    formatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency })
-    formatters.set(currency, formatter)
+    formatter = new Intl.NumberFormat(locale, { style: "currency", currency })
+    formatters.set(key, formatter)
   }
   return formatter
 }
@@ -31,36 +35,38 @@ export function maskBrPhone(value: string) {
 }
 
 /**
- * "2026-09-05" → "05/09/2026". Parsed by hand on purpose: `new Date("2026-09-05")`
- * is read as UTC and goes back a day in Brazil's timezone.
+ * "2026-09-05" → "09/05/2026" (en-US) or "05/09/2026" (pt-BR). Parsed by hand
+ * on purpose: `new Date("2026-09-05")` is read as UTC and goes back a day in
+ * Brazil's timezone.
  */
 export function formatDate(iso: string) {
   const [year, month, day] = iso.split("-")
-  return year && month && day ? `${day}/${month}/${year}` : iso
+  if (!year || !month || !day) return iso
+  return getLocale() === "en-US" ? `${month}/${day}/${year}` : `${day}/${month}/${year}`
 }
 
-/** "2026-08-10T14:32" → "10/08/2026 14:32". Same manual parse as `formatDate`. */
+/** "2026-08-10T14:32" → date + time. Same manual parse as `formatDate`. */
 export function formatDateTime(iso: string) {
   const [datePart, time] = iso.split("T")
   return time ? `${formatDate(datePart)} ${time}` : formatDate(datePart)
 }
 
-/** "R$ 18.000,00 em 3x", "R$ 7.200,00 à vista" or "Grátis". */
+/** "$18,000.00 in 3x", "R$ 18.000,00 à vista" or "Free"/"Grátis". */
 export function formatDeal(deal: Deal) {
-  if (isDealFree(deal)) return FREE_LABEL
+  if (isDealFree(deal)) return i18n.t("deal.free")
   const amount = formatCurrency(deal.amount, deal.currency)
   return deal.kind === "installment" && deal.installments
-    ? `${amount} em ${deal.installments}x`
-    : `${amount} à vista`
+    ? i18n.t("format.inInstallments", { amount, count: deal.installments })
+    : i18n.t("format.upfrontAmount", { amount })
 }
 
-/** "À vista", "3 de 3 parcelas pagas" or "1 de 3 parcelas pagas · 2 atrasadas". */
+/** "Upfront", "3 of 3 installments paid" or "1 of 3 installments paid · 2 overdue". */
 export function formatDealProgress(
   deal: Deal,
   invoices: Pick<Invoice, "status">[] | { paid: number; total: number; overdue: number },
 ) {
-  if (isDealFree(deal)) return FREE_LABEL
-  if (deal.kind === "upfront") return "À vista"
+  if (isDealFree(deal)) return i18n.t("deal.free")
+  if (deal.kind === "upfront") return i18n.t("deal.upfront")
 
   const paid = Array.isArray(invoices)
     ? invoices.filter((invoice) => invoice.status === "paid").length
@@ -69,52 +75,65 @@ export function formatDealProgress(
     ? invoices.filter((invoice) => invoice.status === "overdue").length
     : invoices.overdue
   const total = Array.isArray(invoices) ? invoices.length : invoices.total
-  const base = `${paid} de ${total} parcelas pagas`
-  return overdue > 0 ? `${base} · ${overdue} atrasada${overdue > 1 ? "s" : ""}` : base
+  const base = i18n.t("format.installmentsPaid", { paid, total })
+  return overdue > 0 ? `${base} · ${i18n.t("format.overdue", { count: overdue })}` : base
 }
 
-/** "3 pagas · 2 grátis". */
+/** "3 paid · 2 free". */
 export function formatToolsProgress(tools: Tool[]) {
   const paid = tools.filter((tool) => tool.billing).length
   const free = tools.length - paid
-  return `${paid} ${paid === 1 ? "paga" : "pagas"} · ${free} grátis`
+  return i18n.t("format.toolsProgress", { count: paid, paid, free })
 }
 
-/** "2026-09" → "set/26". Short enough to fit an axis tick without rotating it. */
+/** "2026-09" → "Sep/26" or "set/26". Short enough to fit an axis tick. */
 export function formatMonth(month: string) {
   const [year, monthNumber] = month.split("-").map(Number)
   const label = new Date(year, monthNumber - 1, 1)
-    .toLocaleDateString("pt-BR", { month: "short" })
+    .toLocaleDateString(getLocale(), { month: "short" })
     .replace(".", "")
   return `${label}/${String(year).slice(2)}`
 }
 
-/** "set. de 2026" — the long form, for tooltips where there is room. */
+/** Long month label for tooltips where there is room. */
 export function formatMonthLong(month: string) {
   const [year, monthNumber] = month.split("-").map(Number)
-  return new Date(year, monthNumber - 1, 1).toLocaleDateString("pt-BR", {
+  return new Date(year, monthNumber - 1, 1).toLocaleDateString(getLocale(), {
     month: "short",
     year: "numeric",
   })
 }
 
-/** "R$ 18 mil" — axis ticks only; tooltips and tiles always show the full value. */
+/** Compact currency for axis ticks only; tooltips and tiles show the full value. */
 export function formatCompactCurrency(value: number, currency: string = DEFAULT_CURRENCY) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency,
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value)
+  const locale = getLocale()
+  const key = `${locale}:${currency}`
+  let formatter = compactFormatters.get(key)
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      notation: "compact",
+      maximumFractionDigits: 1,
+    })
+    compactFormatters.set(key, formatter)
+  }
+  return formatter.format(value)
 }
 
 /**
- * 0.42 → "42%". Keeps one decimal so a 99,6% margin does not get rounded up to
+ * 0.42 → "42%". Keeps one decimal so a 99.6% margin does not get rounded up to
  * a "100%" that reads as "this project had no costs at all".
  */
 export function formatPercent(ratio: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "percent",
-    maximumFractionDigits: 1,
-  }).format(ratio)
+  const locale = getLocale()
+  let formatter = percentFormatters.get(locale)
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, {
+      style: "percent",
+      maximumFractionDigits: 1,
+    })
+    percentFormatters.set(locale, formatter)
+  }
+  return formatter.format(ratio)
 }

@@ -1,4 +1,5 @@
 import { X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { emptyFilters, type DashboardFilters, type DashboardOptions } from "shared"
 
 import { Button } from "@/components/ui/button"
@@ -7,26 +8,26 @@ import { MonthPicker } from "@/components/ui/month-picker"
 import { Select, type SelectOption } from "@/components/ui/select"
 import { addMonths, monthOf, todayIso } from "@/lib/dates"
 
-type Preset = { label: string; months: number | "year" | "all" }
+type PresetMonths = number | "year" | "all"
 
-const PRESETS: Preset[] = [
-  { label: "6 meses", months: 6 },
-  { label: "12 meses", months: 12 },
-  { label: "Este ano", months: "year" },
-  { label: "Tudo", months: "all" },
+const PRESETS: { id: "preset6" | "preset12" | "presetYear" | "presetAll"; months: PresetMonths }[] = [
+  { id: "preset6", months: 6 },
+  { id: "preset12", months: 12 },
+  { id: "presetYear", months: "year" },
+  { id: "presetAll", months: "all" },
 ]
 
-function presetRange(preset: Preset): { monthFrom: string; monthTo: string } {
+function presetRange(months: PresetMonths): { monthFrom: string; monthTo: string } {
   const current = monthOf(todayIso())
-  if (preset.months === "all") return { monthFrom: "", monthTo: "" }
-  if (preset.months === "year") {
+  if (months === "all") return { monthFrom: "", monthTo: "" }
+  if (months === "year") {
     return { monthFrom: `${current.slice(0, 4)}-01`, monthTo: `${current.slice(0, 4)}-12` }
   }
-  return { monthFrom: addMonths(current, -(preset.months - 1)), monthTo: current }
+  return { monthFrom: addMonths(current, -(months - 1)), monthTo: current }
 }
 
-function isActivePreset(filters: DashboardFilters, preset: Preset) {
-  const range = presetRange(preset)
+function isActivePreset(filters: DashboardFilters, months: PresetMonths) {
+  const range = presetRange(months)
   return filters.monthFrom === range.monthFrom && filters.monthTo === range.monthTo
 }
 
@@ -51,17 +52,19 @@ function FilterFields({
   filters: DashboardFilters
   onChange: (filters: DashboardFilters) => void
 }) {
+  const { t } = useTranslation()
+
   function set(patch: Partial<DashboardFilters>) {
     onChange({ ...filters, ...patch })
   }
 
   const clientOptions: SelectOption[] = [
-    { value: "", label: "Todos os clientes" },
+    { value: "", label: t("common.allClients") },
     ...options.clients.map((contact) => ({ value: contact.id, label: contact.name })),
   ]
 
   const projectOptions: SelectOption[] = [
-    { value: "", label: "Todos os projetos" },
+    { value: "", label: t("common.allProjects") },
     ...options.projects
       .filter((project) => !filters.clientId || project.clientId === filters.clientId)
       .map((project) => ({ value: project.id, label: project.name })),
@@ -72,10 +75,10 @@ function FilterFields({
     label: currency,
   }))
 
-  const activePreset = PRESETS.find((preset) => isActivePreset(filters, preset))
+  const activePreset = PRESETS.find((preset) => isActivePreset(filters, preset.months))
   const periodOptions: SelectOption[] = PRESETS.map((preset) => ({
     value: String(preset.months),
-    label: preset.label,
+    label: t(`dashboard.${preset.id}`),
   }))
 
   return (
@@ -85,10 +88,10 @@ function FilterFields({
           value={activePreset ? String(activePreset.months) : ""}
           onValueChange={(value) => {
             const preset = PRESETS.find((p) => String(p.months) === value)
-            if (preset) set(presetRange(preset))
+            if (preset) set(presetRange(preset.months))
           }}
           options={periodOptions}
-          placeholder="Período"
+          placeholder={t("common.period")}
         />
       </div>
 
@@ -96,17 +99,17 @@ function FilterFields({
         <MonthPicker
           value={filters.monthFrom}
           onChange={(monthFrom) => set({ monthFrom })}
-          placeholder="Início"
-          aria-label="Mês inicial do período"
+          placeholder={t("common.start")}
+          aria-label={t("common.periodStartMonth")}
         />
         <span className="text-sm text-muted-foreground" aria-hidden="true">
-          até
+          {t("common.until")}
         </span>
         <MonthPicker
           value={filters.monthTo}
           onChange={(monthTo) => set({ monthTo })}
-          placeholder="Fim"
-          aria-label="Mês final do período"
+          placeholder={t("common.end")}
+          aria-label={t("common.periodEndMonth")}
         />
       </div>
 
@@ -123,7 +126,7 @@ function FilterFields({
             })
           }
           options={clientOptions}
-          placeholder="Todos os clientes"
+          placeholder={t("common.allClients")}
         />
       </div>
 
@@ -132,7 +135,7 @@ function FilterFields({
           value={filters.projectId}
           onValueChange={(projectId) => set({ projectId })}
           options={projectOptions}
-          placeholder="Todos os projetos"
+          placeholder={t("common.allProjects")}
         />
       </div>
 
@@ -141,14 +144,14 @@ function FilterFields({
           value={filters.currency}
           onValueChange={(currency) => set({ currency })}
           options={currencyOptions}
-          placeholder="Moeda"
+          placeholder={t("common.currency")}
         />
       </div>
 
       {hasActiveFilters(filters) && !stacked && (
         <Button variant="ghost" size="sm" className="shrink-0" onClick={() => onChange(emptyFilters)}>
           <X data-icon="inline-start" />
-          Limpar
+          {t("common.clear")}
         </Button>
       )}
     </>

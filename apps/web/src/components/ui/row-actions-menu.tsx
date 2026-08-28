@@ -1,5 +1,6 @@
 import { Menu } from "@base-ui/react/menu"
 import { MoreVertical, Pencil, Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -11,11 +12,12 @@ export function RowActionsMenu({
   onEdit: () => void
   onDelete: () => void
 }) {
+  const { t } = useTranslation()
   return (
     <Menu.Root>
       <Menu.Trigger
         render={
-          <Button variant="ghost" size="icon-sm" aria-label="Mais ações" />
+          <Button variant="ghost" size="icon-sm" aria-label={t("common.moreActions")} />
         }
       >
         <MoreVertical />
@@ -29,7 +31,7 @@ export function RowActionsMenu({
               className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
             >
               <Pencil className="size-3.5" />
-              Editar
+              {t("common.edit")}
             </Menu.Item>
             <Menu.Item
               onClick={onDelete}
@@ -39,7 +41,7 @@ export function RowActionsMenu({
               )}
             >
               <Trash2 className="size-3.5" />
-              Excluir
+              {t("common.delete")}
             </Menu.Item>
           </Menu.Popup>
         </Menu.Positioner>

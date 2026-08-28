@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useLayoutEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -18,27 +19,30 @@ import {
 } from "@/components/ui/responsive-dialog"
 import { toast } from "@/components/ui/toast"
 import type { Contact } from "@/data/contacts"
+import i18n from "@/i18n"
 import { maskBrPhone } from "@/lib/format"
 import { useRegistry } from "@/lib/registry-store"
 
-const contactSchema = z
-  .object({
-    name: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
-    email: z.string().trim(),
-    phone: z.string().trim().min(1, "Informe o telefone"),
-    company: z.string().trim().min(1, "Informe a empresa"),
-  })
-  .superRefine((values, ctx) => {
-    if (values.email && !z.string().email().safeParse(values.email).success) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["email"],
-        message: "E-mail inválido",
-      })
-    }
-  })
+function contactSchema() {
+  return z
+    .object({
+      name: z.string().trim().min(2, i18n.t("validation.minChars")),
+      email: z.string().trim(),
+      phone: z.string().trim().min(1, i18n.t("validation.enterPhone")),
+      company: z.string().trim().min(1, i18n.t("validation.enterCompany")),
+    })
+    .superRefine((values, ctx) => {
+      if (values.email && !z.string().email().safeParse(values.email).success) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["email"],
+          message: i18n.t("validation.emailInvalid"),
+        })
+      }
+    })
+}
 
-type ContactFormValues = z.infer<typeof contactSchema>
+type ContactFormValues = z.infer<ReturnType<typeof contactSchema>>
 
 const emptyContactForm: ContactFormValues = {
   name: "",
@@ -66,6 +70,7 @@ export function CreateContactDialog({
   /** present = editing this contact; absent = creating a new one */
   contact?: Contact
 }) {
+  const { t } = useTranslation()
   const { addContact, updateContact } = useRegistry()
   const {
     register,
@@ -73,7 +78,7 @@ export function CreateContactDialog({
     reset,
     formState: { errors },
   } = useForm<ContactFormValues>({
-    resolver: zodResolver(contactSchema),
+    resolver: (values, ctx, opts) => zodResolver(contactSchema())(values, ctx, opts),
     defaultValues: emptyContactForm,
   })
 
@@ -98,15 +103,15 @@ export function CreateContactDialog({
     try {
       if (activeContact) {
         await updateContact(activeContact.id, payload)
-        toast.add({ title: "Contato atualizado", type: "success" })
+        toast.add({ title: t("settings.contactUpdated"), type: "success" })
       } else {
         await addContact(payload)
-        toast.add({ title: "Contato criado", type: "success" })
+        toast.add({ title: t("settings.contactCreated"), type: "success" })
       }
       onOpenChange(false)
     } catch {
       toast.add({
-        title: activeContact ? "Erro ao atualizar contato" : "Erro ao criar contato",
+        title: activeContact ? t("settings.contactUpdateError") : t("settings.contactCreateError"),
         type: "error",
       })
     }
@@ -114,28 +119,28 @@ export function CreateContactDialog({
 
   const formFields = (
     <>
-      <Field label="Nome" error={errors.name?.message}>
+      <Field label={t("common.name")} error={errors.name?.message}>
         {(props) => (
           <Input
             {...props}
             {...register("name")}
-            placeholder="Marcelo Tavares"
+            placeholder={t("projects.namePlaceholder")}
           />
         )}
       </Field>
 
-      <Field label="E-mail" error={errors.email?.message} hint="Opcional">
+      <Field label={t("common.email")} error={errors.email?.message} hint={t("common.optional")}>
         {(props) => (
           <Input
             {...props}
             {...register("email")}
             type="email"
-            placeholder="marcelo@empresa.com.br"
+            placeholder={t("projects.emailPlaceholder")}
           />
         )}
       </Field>
 
-      <Field label="Telefone" error={errors.phone?.message}>
+      <Field label={t("common.phone")} error={errors.phone?.message}>
         {(props) => (
           <Input
             {...props}
@@ -146,17 +151,17 @@ export function CreateContactDialog({
             })}
             inputMode="tel"
             autoComplete="tel"
-            placeholder="(11) 98765-4321"
+            placeholder={t("projects.phonePlaceholder")}
           />
         )}
       </Field>
 
-      <Field label="Empresa" error={errors.company?.message}>
+      <Field label={t("common.company")} error={errors.company?.message}>
         {(props) => (
           <Input
             {...props}
             {...register("company")}
-            placeholder="Empresa Ltda"
+            placeholder={t("projects.companyPlaceholder")}
           />
         )}
       </Field>
@@ -169,12 +174,12 @@ export function CreateContactDialog({
         <ResponsiveDialogHeader>
           <div>
             <ResponsiveDialogTitle>
-              {activeContact ? "Editar contato" : "Novo contato"}
+              {activeContact ? t("settings.editContact") : t("settings.newContact")}
             </ResponsiveDialogTitle>
             <ResponsiveDialogDescription>
               {activeContact
-                ? "Atualize os dados deste contato."
-                : "Cadastre um contato para reaproveitar em vários projetos."}
+                ? t("settings.editContactDescription")
+                : t("settings.newContactDescription")}
             </ResponsiveDialogDescription>
           </div>
           <ResponsiveDialogClose />
@@ -185,9 +190,11 @@ export function CreateContactDialog({
           </ResponsiveDialogBody>
           <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancelar
+              {t("common.cancel")}
             </Button>
-            <Button type="submit">{activeContact ? "Salvar" : "Criar contato"}</Button>
+            <Button type="submit">
+              {activeContact ? t("common.save") : t("settings.createContact")}
+            </Button>
           </ResponsiveDialogFooter>
         </form>
       </ResponsiveDialogContent>
