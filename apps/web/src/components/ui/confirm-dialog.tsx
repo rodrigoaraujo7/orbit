@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -26,7 +27,7 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Confirmar",
+  confirmLabel,
   /** present = the user must type this word to enable the confirm button */
   confirmWord,
   onConfirm,
@@ -39,6 +40,7 @@ export function ConfirmDialog({
   confirmWord?: string
   onConfirm: () => void
 }) {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
   const [typed, setTyped] = useState("")
   // the dialog stays mounted all the time (exit animation) — clears the field
@@ -50,18 +52,22 @@ export function ConfirmDialog({
     if (open) setTyped("")
   }
 
+  const resolvedConfirmLabel = confirmLabel ?? t("common.confirm")
   const confirmDisabled =
     confirmWord != null && typed.trim().toLowerCase() !== confirmWord.toLowerCase()
 
+  const confirmPrompt =
+    confirmWord != null ? t("common.typeToConfirm", { word: confirmWord }).split(confirmWord) : null
+
   const confirmField =
-    confirmWord != null ? (
+    confirmWord != null && confirmPrompt != null ? (
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="confirm-word">
-          Digite{" "}
+          {confirmPrompt[0]}
           <Emphasis italic={false} className="text-destructive">
             {confirmWord}
-          </Emphasis>{" "}
-          para confirmar
+          </Emphasis>
+          {confirmPrompt[1]}
         </Label>
         <Input
           id="confirm-word"
@@ -75,7 +81,7 @@ export function ConfirmDialog({
 
   const cancelButton = (
     <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-      Cancelar
+      {t("common.cancel")}
     </Button>
   )
   const confirmButton = (
@@ -87,7 +93,7 @@ export function ConfirmDialog({
         onOpenChange(false)
       }}
     >
-      {confirmLabel}
+      {resolvedConfirmLabel}
     </Button>
   )
 

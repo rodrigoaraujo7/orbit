@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Wallet, Wrench } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { HeroFigure } from "@/components/dashboard/cards";
 import { FiltersBar } from "@/components/dashboard/filters-bar";
@@ -19,15 +20,8 @@ import {
 import { formatMonthLong, formatPercent } from "@/lib/format";
 import { useProjects } from "@/lib/projects-store";
 
-/** "cresceu 18% vs. período anterior" — or an honest note when there is no before. */
-function profitHint(current: number, previous: number) {
-  if (previous === 0) return current === 0 ? "Sem movimento no período" : "Sem período anterior pra comparar";
-  const change = (current - previous) / Math.abs(previous);
-  const verb = change >= 0 ? "acima" : "abaixo";
-  return `${formatPercent(Math.abs(change))} ${verb} do período anterior`;
-}
-
 function DashboardPage() {
+  const { t } = useTranslation();
   const { projects } = useProjects();
   const [filters, setFilters] = useState<DashboardFilters>(emptyFilters);
 
@@ -38,15 +32,26 @@ function DashboardPage() {
   const summary = financeSummary(filtered, months, filters.currency);
   const before = financeSummary(filtered, previous, filters.currency);
 
+  function profitHint(current: number, previousValue: number) {
+    if (previousValue === 0) {
+      return current === 0 ? t("dashboard.noMovement") : t("dashboard.noPrevious");
+    }
+    const change = (current - previousValue) / Math.abs(previousValue);
+    return t("dashboard.vsPrevious", {
+      percent: formatPercent(Math.abs(change)),
+      direction: change >= 0 ? t("dashboard.above") : t("dashboard.below"),
+    });
+  }
+
   const period =
     months.length === 0
-      ? "Nenhum mês no período"
-      : `${formatMonthLong(months[0])} — ${formatMonthLong(months[months.length - 1])}`;
+      ? t("dashboard.noMonths")
+      : `${formatMonthLong(months[0])} ${t("common.emDash")} ${formatMonthLong(months[months.length - 1])}`;
 
   return (
     <>
       <PageHeader
-        title="Dashboard"
+        title={t("dashboard.title")}
         description={period}
         actions={
           <HeroFigure
@@ -62,20 +67,17 @@ function DashboardPage() {
       <div className="px-4 pt-6 pb-24 sm:px-6 md:pb-6 lg:px-8">
         {summary.foraDaMoeda > 0 && (
           <p className="mb-4 text-xs text-muted-foreground">
-            {summary.foraDaMoeda}{" "}
-            {summary.foraDaMoeda === 1 ? "projeto está" : "projetos estão"} em outra moeda e
-            {summary.foraDaMoeda === 1 ? " ficou" : " ficaram"} de fora — valores nunca são
-            convertidos.
+            {t("dashboard.skipped", { count: summary.foraDaMoeda })}
           </p>
         )}
 
         <Tabs defaultValue="finance">
           <TabsDock>
             <TabsDockTab value="finance" icon={Wallet}>
-              Financeiro
+              {t("common.finance")}
             </TabsDockTab>
             <TabsDockTab value="tools" icon={Wrench}>
-              Ferramentas
+              {t("common.tools")}
             </TabsDockTab>
           </TabsDock>
 

@@ -57,7 +57,7 @@ const STATUS_TEXT_CLASS: Record<ProjectStatus, string> = {
   completed: "text-success",
 };
 
-/** Status como texto simples (sem badge) — usado acima do título do projeto. */
+/** Status as plain text (no badge) — used above the project title. */
 export function StatusLabel({ status, className }: { status: ProjectStatus; className?: string }) {
   useTranslation();
   return (

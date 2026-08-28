@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { formatCurrency } from "@/lib/format";
@@ -200,8 +201,11 @@ export function ChartCard({
 }
 
 /** Shown inside a card when the filters leave it with nothing to draw. */
-export function NoData({ children = "Nada nesse período." }: { children?: ReactNode }) {
+export function NoData({ children }: { children?: ReactNode }) {
+  const { t } = useTranslation();
   return (
-    <p className="grid h-[220px] place-items-center text-center text-sm text-muted-foreground">{children}</p>
+    <p className="grid h-[220px] place-items-center text-center text-sm text-muted-foreground">
+      {children ?? t("dashboard.noData")}
+    </p>
   );
 }

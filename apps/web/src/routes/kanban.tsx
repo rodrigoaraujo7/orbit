@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { CircleCheck, Code, FolderKanban, Percent, Plus, X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { StatTile } from "@/components/dashboard/cards"
 import { KanbanBoard } from "@/components/kanban/kanban-board"
@@ -31,12 +32,13 @@ function KanbanFilterFields({
   clientOptions: SelectOption[]
   onChange: (patch: Partial<KanbanFilters>) => void
 }) {
+  const { t } = useTranslation()
   return (
     <>
       <Input
         value={filters.search}
         onChange={(event) => onChange({ search: event.target.value })}
-        placeholder="Buscar por nome..."
+        placeholder={t("common.searchByName")}
         className={stacked ? "w-full" : "flex-1"}
       />
       <div className={stacked ? "w-full" : "w-52"}>
@@ -44,7 +46,7 @@ function KanbanFilterFields({
           value={filters.clientId}
           onValueChange={(clientId) => onChange({ clientId })}
           options={clientOptions}
-          placeholder="Todos os clientes"
+          placeholder={t("common.allClients")}
         />
       </div>
       <div
@@ -57,17 +59,17 @@ function KanbanFilterFields({
         <MonthPicker
           value={filters.monthFrom}
           onChange={(monthFrom) => onChange({ monthFrom })}
-          placeholder="Início"
-          aria-label="Mês inicial"
+          placeholder={t("common.start")}
+          aria-label={t("common.startMonth")}
         />
         <span className="text-sm text-muted-foreground" aria-hidden="true">
-          até
+          {t("common.until")}
         </span>
         <MonthPicker
           value={filters.monthTo}
           onChange={(monthTo) => onChange({ monthTo })}
-          placeholder="Fim"
-          aria-label="Mês final"
+          placeholder={t("common.end")}
+          aria-label={t("common.endMonth")}
         />
       </div>
     </>
@@ -75,6 +77,7 @@ function KanbanFilterFields({
 }
 
 function KanbanPage() {
+  const { t } = useTranslation()
   const { projects, findProject } = useProjects()
   const { contacts, findContact } = useRegistry()
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -84,7 +87,7 @@ function KanbanPage() {
   const project = selectedId ? findProject(selectedId) : undefined
 
   function clientNameOf(clientId: string) {
-    return findContact(clientId)?.name ?? "—"
+    return findContact(clientId)?.name ?? t("common.emDash")
   }
 
   const filtered = useMemo(
@@ -101,7 +104,7 @@ function KanbanPage() {
   const completionRate = total === 0 ? 0 : completed / total
 
   const clientOptions: SelectOption[] = [
-    { value: "", label: "Todos os clientes" },
+    { value: "", label: t("common.allClients") },
     ...contacts
       .filter((contact) => projects.some((item) => item.clientId === contact.id))
       .map((contact) => ({ value: contact.id, label: contact.name })),
@@ -120,13 +123,13 @@ function KanbanPage() {
   return (
     <>
       <PageHeader
-        title="Kanban"
-        description="O que está em desenvolvimento e o que está na fila."
+        title={t("kanban.title")}
+        description={t("kanban.subtitle")}
         actions={
           <div className="mt-3 flex w-full gap-2 sm:mt-0 sm:w-auto">
             <Button onClick={() => setDialogOpen(true)} className="flex-1 md:flex-none">
               <Plus />
-              Novo projeto
+              {t("common.newProject")}
             </Button>
             <FilterDrawer hasActive={isFiltered} onClear={() => setFilters(emptyKanbanFilters)}>
               <KanbanFilterFields stacked filters={filters} clientOptions={clientOptions} onChange={setFilter} />
@@ -139,7 +142,7 @@ function KanbanPage() {
 
       <div className="grid grid-cols-2 gap-3 px-4 pt-6 xl:grid-cols-4 sm:px-6 lg:px-8">
         <StatTile
-          label="Projetos concluídos"
+          label={t("kanban.completed")}
           value={completed}
           format={count}
           tone="success"
@@ -148,7 +151,7 @@ function KanbanPage() {
           delay={0}
         />
         <StatTile
-          label="Em desenvolvimento"
+          label={t("kanban.inDevelopment")}
           value={inDevelopment}
           format={count}
           tone="warning"
@@ -157,14 +160,14 @@ function KanbanPage() {
           delay={40}
         />
         <StatTile
-          label="Total de projetos"
+          label={t("kanban.total")}
           value={total}
           format={count}
           icon={<FolderKanban />}
           delay={80}
         />
         <StatTile
-          label="Taxa de conclusão"
+          label={t("kanban.completionRate")}
           value={completionRate}
           format={formatPercent}
           icon={<Percent />}
@@ -178,7 +181,7 @@ function KanbanPage() {
         {isFiltered && (
           <Button variant="ghost" size="sm" onClick={() => setFilters(emptyKanbanFilters)}>
             <X />
-            Limpar
+            {t("common.clear")}
           </Button>
         )}
       </div>

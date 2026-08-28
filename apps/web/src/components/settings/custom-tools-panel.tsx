@@ -15,7 +15,7 @@ import { useRegistry } from "@/lib/registry-store"
 import { CreateCustomToolDialog } from "./create-custom-tool-dialog"
 
 export function CustomToolsPanel() {
-  useTranslation()
+  const { t } = useTranslation()
   const { customTools, removeCustomTool } = useRegistry()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTool, setEditingTool] = useState<CustomTool | null>(null)
@@ -25,13 +25,13 @@ export function CustomToolsPanel() {
   const columns: Column<CustomTool>[] = [
     {
       key: "name",
-      header: "Nome",
+      header: t("common.name"),
       sortValue: (tool) => tool.name,
       cell: (tool) => <span className="font-medium">{tool.name}</span>,
     },
     {
       key: "category",
-      header: "Categoria",
+      header: t("common.category"),
       sortValue: (tool) => toolCategoryLabel(tool.category),
       cell: (tool) => (
         <Badge variant="outline">{toolCategoryLabel(tool.category)}</Badge>
@@ -66,7 +66,7 @@ export function CustomToolsPanel() {
           }}
         >
           <Plus />
-          Nova ferramenta
+          {t("settings.newTool")}
         </Button>
       </div>
 
@@ -75,7 +75,7 @@ export function CustomToolsPanel() {
         columns={columns}
         rowKey={(tool) => tool.id}
         initialSort={{ key: "name", direction: "asc" }}
-        emptyMessage="Nenhuma ferramenta cadastrada."
+        emptyMessage={t("settings.noTools")}
       />
 
       <CreateCustomToolDialog
@@ -87,22 +87,22 @@ export function CustomToolsPanel() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Excluir ferramenta"
+        title={t("settings.deleteTool")}
         description={
           <>
-            Excluir{" "}
+            {t("common.delete")}{" "}
             <Emphasis className="text-primary">{deletingTool?.name}</Emphasis>
-            ? Essa ação não pode ser desfeita.
+            ? {t("common.cannotUndo")}
           </>
         }
-        confirmLabel="Excluir"
+        confirmLabel={t("common.delete")}
         onConfirm={() => {
           if (!deletingTool) return
           try {
             removeCustomTool(deletingTool.id)
-            toast.add({ title: "Ferramenta excluída", type: "success" })
+            toast.add({ title: t("settings.toolDeleted"), type: "success" })
           } catch {
-            toast.add({ title: "Erro ao excluir ferramenta", type: "error" })
+            toast.add({ title: t("settings.toolDeleteError"), type: "error" })
           }
         }}
       />

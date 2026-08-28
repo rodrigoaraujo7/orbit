@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Select, type SelectOption } from "@/components/ui/select"
@@ -35,12 +36,6 @@ export type Column<T> = {
    */
   className?: string
 }
-
-const PAGE_SIZE_OPTIONS: SelectOption[] = [
-  { value: "10", label: "10 por página" },
-  { value: "25", label: "25 por página" },
-  { value: "50", label: "50 por página" },
-]
 
 export type ServerPagination = {
   hasPrev: boolean
@@ -72,7 +67,7 @@ export function DataTable<T>({
   pagination = true,
   serverPagination,
   serverSort,
-  emptyMessage = "Nenhum resultado encontrado.",
+  emptyMessage,
   className,
 }: {
   data: T[]
@@ -86,11 +81,17 @@ export function DataTable<T>({
   emptyMessage?: React.ReactNode
   className?: string
 }) {
+  const { t } = useTranslation()
   const [sort, setSort] = useState<SortState>(initialSort)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState("10")
   const isServer = Boolean(serverPagination)
   const activeSort = serverSort?.sort ?? sort
+  const PAGE_SIZE_OPTIONS: SelectOption[] = [
+    { value: "10", label: t("common.pageSize", { count: 10 }) },
+    { value: "25", label: t("common.pageSize", { count: 25 }) },
+    { value: "50", label: t("common.pageSize", { count: 50 }) },
+  ]
 
   function toggleSort(key: string) {
     if (serverSort) {
@@ -170,7 +171,7 @@ export function DataTable<T>({
                   colSpan={columns.length}
                   className="px-4 py-8 text-center text-muted-foreground"
                 >
-                  {emptyMessage}
+                  {emptyMessage ?? t("common.noResults")}
                 </td>
               </tr>
             ) : (
@@ -221,8 +222,8 @@ export function DataTable<T>({
           <div className="flex shrink-0 items-center gap-2">
             <span className="sr-only">
               {isServer
-                ? "Paginação"
-                : `Página ${sliced.page} de ${sliced.pageCount}`}
+                ? t("common.pagination")
+                : t("common.pageOf", { page: sliced.page, pageCount: sliced.pageCount })}
             </span>
             <Button
               variant="outline"
@@ -231,7 +232,7 @@ export function DataTable<T>({
               onClick={() =>
                 isServer ? serverPagination?.onPrev() : setPage(sliced.page - 1)
               }
-              aria-label="Página anterior"
+              aria-label={t("common.previousPage")}
             >
               <ChevronLeft />
             </Button>
@@ -244,7 +245,7 @@ export function DataTable<T>({
               onClick={() =>
                 isServer ? serverPagination?.onNext() : setPage(sliced.page + 1)
               }
-              aria-label="Próxima página"
+              aria-label={t("common.nextPage")}
             >
               <ChevronRight />
             </Button>

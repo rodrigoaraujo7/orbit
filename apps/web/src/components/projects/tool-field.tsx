@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { OTHER_TOOL_ID } from "@/data/tool-catalog"
-import { billingCycleOptions, payerOptions } from "@/i18n/labels"
+import { billingCycleOptions, freeLabel, payerOptions } from "@/i18n/labels"
 import { getCurrencyOptions } from "@/lib/currency"
 import { hasPositiveAmount, type ProjectFormValues } from "@/lib/project-schema"
 import { ToolSelect } from "./tool-select"
@@ -24,6 +24,7 @@ function SecretRow({
   index: number
   onRemove: () => void
 }) {
+  const { t } = useTranslation()
   const [revealed, setRevealed] = useState(false)
   const {
     register,
@@ -38,7 +39,7 @@ function SecretRow({
         <Input
           {...register(`tools.${toolIndex}.secrets.${index}.key`)}
           aria-invalid={Boolean(secretErrors?.key)}
-          aria-label="Chave do secret"
+          aria-label={t("common.secretKey")}
           placeholder="API_KEY"
           className="flex-1 font-mono text-xs"
           autoComplete="off"
@@ -49,8 +50,8 @@ function SecretRow({
             {...register(`tools.${toolIndex}.secrets.${index}.value`)}
             type={revealed ? "text" : "password"}
             aria-invalid={Boolean(secretErrors?.value)}
-            aria-label="Valor do secret"
-            placeholder="valor"
+            aria-label={t("common.secretValue")}
+            placeholder={t("common.valuePlaceholder")}
             className="pr-9 font-mono text-xs"
             autoComplete="off"
             spellCheck={false}
@@ -58,7 +59,7 @@ function SecretRow({
           <button
             type="button"
             onClick={() => setRevealed((v) => !v)}
-            aria-label={revealed ? "Ocultar valor" : "Revelar valor"}
+            aria-label={revealed ? t("common.hideValue") : t("common.revealValue")}
             className="absolute top-1/2 right-2 -translate-y-1/2 rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
           >
             {revealed ? (
@@ -73,7 +74,7 @@ function SecretRow({
           variant="ghost"
           size="icon-sm"
           onClick={onRemove}
-          aria-label="Remover secret"
+          aria-label={t("common.removeSecret")}
         >
           <Trash2 />
         </Button>
@@ -94,7 +95,7 @@ export function ToolField({
   index: number
   onRemove: () => void
 }) {
-  useTranslation()
+  const { t } = useTranslation()
   const {
     control,
     register,
@@ -140,7 +141,7 @@ export function ToolField({
           variant="ghost"
           size="icon-sm"
           onClick={onRemove}
-          aria-label="Remover ferramenta"
+          aria-label={t("common.removeTool")}
         >
           <Trash2 />
         </Button>
@@ -148,7 +149,7 @@ export function ToolField({
 
       {toolId === OTHER_TOOL_ID && (
         <Field
-          label="Nome da ferramenta"
+          label={t("projects.toolName")}
           error={toolErrors?.customName?.message}
           className="animate-in fade-in slide-in-from-top-1 duration-200"
         >
@@ -156,30 +157,30 @@ export function ToolField({
             <Input
               {...props}
               {...register(`tools.${index}.customName`)}
-              placeholder="TOTVS Protheus API"
+              placeholder={t("projects.toolNamePlaceholder")}
             />
           )}
         </Field>
       )}
 
-      <Field label="Conta/login usado" error={toolErrors?.account?.message}>
+      <Field label={t("projects.accountUsed")} error={toolErrors?.account?.message}>
         {(props) => (
           <Input
             {...props}
             {...register(`tools.${index}.account`)}
-            placeholder="rodrigo@fastbuilt.com.br (opcional)"
+            placeholder={t("projects.accountPlaceholder")}
           />
         )}
       </Field>
 
       <div className="rounded-lg bg-muted/40 p-3">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <Label className="text-xs text-muted-foreground">Cobrança</Label>
-          {!paid && <Badge variant="outline">Grátis</Badge>}
+          <Label className="text-xs text-muted-foreground">{t("projects.billing")}</Label>
+          {!paid && <Badge variant="outline">{freeLabel()}</Badge>}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Moeda" error={toolErrors?.currency?.message}>
+          <Field label={t("common.currency")} error={toolErrors?.currency?.message}>
             {(props) => (
               <Controller
                 control={control}
@@ -196,7 +197,7 @@ export function ToolField({
             )}
           </Field>
 
-          <Field label="Valor" error={toolErrors?.amount?.message}>
+          <Field label={t("common.value")} error={toolErrors?.amount?.message}>
             {(props) => (
               <Input
                 {...props}
@@ -211,7 +212,7 @@ export function ToolField({
             )}
           </Field>
 
-          <Field label="Ciclo" error={toolErrors?.cycle?.message}>
+          <Field label={t("projects.cycle")} error={toolErrors?.cycle?.message}>
             {(props) => (
               <Controller
                 control={control}
@@ -229,7 +230,7 @@ export function ToolField({
             )}
           </Field>
 
-          <Field label="Data da fatura" error={toolErrors?.nextInvoice?.message}>
+          <Field label={t("projects.invoiceDate")} error={toolErrors?.nextInvoice?.message}>
             {(props) => (
               <Input
                 {...props}
@@ -241,7 +242,7 @@ export function ToolField({
           </Field>
 
           <Field
-            label="Quem paga"
+            label={t("common.whoPays")}
             error={toolErrors?.payer?.message}
             className="sm:col-span-2"
           >
@@ -268,7 +269,7 @@ export function ToolField({
         <div className="flex items-center justify-between">
           <Label className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <KeyRound className="size-3.5" />
-            Secrets (env)
+            {t("projects.secretsEnv")}
           </Label>
           <Button
             type="button"
@@ -277,7 +278,7 @@ export function ToolField({
             onClick={() => append({ key: "", value: "" })}
           >
             <Plus />
-            Adicionar
+            {t("common.add")}
           </Button>
         </div>
 

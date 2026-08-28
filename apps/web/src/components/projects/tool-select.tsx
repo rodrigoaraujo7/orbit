@@ -56,7 +56,7 @@ export function ToolSelect({
             if (!selected) {
               return (
                 <span className="text-muted-foreground">
-                  Selecione a ferramenta
+                  {t("projects.selectTool")}
                 </span>
               )
             }

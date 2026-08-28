@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 
 import { ChartCard, NoData, StatRow, StatTile } from "@/components/dashboard/cards";
 import { axisProps, surfaceGap, useChartMotion } from "@/components/dashboard/chart-parts";
@@ -36,32 +37,6 @@ import {
   formatPercent,
 } from "@/lib/format";
 
-/**
- * Three states of the same money, so the three chart slots are picked as a set
- * rather than borrowed from the status tokens: `--destructive` sits at the same
- * hue as the brand bordô and the pair measures ΔE 10.0 (light) / 12.3 (dark)
- * under normal vision — below the 15 floor, so "recebido" and "atrasado" would
- * blur into each other whenever a month has no pending slice between them.
- * Slots 1/2/3 clear every pair against the dark surface. The status red stays where it
- * belongs, on the invoice badges; here every series carries its own label.
- */
-const revenueConfig = {
-  recebido: { label: "Recebido", color: "var(--chart-1)" },
-  aReceber: { label: "A receber", color: "var(--chart-2)" },
-  atrasado: { label: "Atrasado", color: "var(--chart-3)" },
-} satisfies ChartConfig;
-
-// Nominal bars ordered by value: one hue, because the bar length already
-// encodes the magnitude — coloring by rank would spend the identity channel
-// re-saying it.
-const profitConfig = {
-  lucro: { label: "Lucro", color: "var(--chart-1)" },
-} satisfies ChartConfig;
-
-const clientsConfig = {
-  clientes: { label: "Clientes", color: "var(--chart-1)" },
-} satisfies ChartConfig;
-
 export function FinanceTab({
   projects,
   months,
@@ -71,6 +46,33 @@ export function FinanceTab({
   months: string[];
   currency: string;
 }) {
+  const { t } = useTranslation();
+  /**
+   * Three states of the same money, so the three chart slots are picked as a set
+   * rather than borrowed from the status tokens: `--destructive` sits at the same
+   * hue as the brand bordô and the pair measures ΔE 10.0 (light) / 12.3 (dark)
+   * under normal vision — below the 15 floor, so "recebido" and "atrasado" would
+   * blur into each other whenever a month has no pending slice between them.
+   * Slots 1/2/3 clear every pair against the dark surface. The status red stays where it
+   * belongs, on the invoice badges; here every series carries its own label.
+   */
+  const revenueConfig = {
+    recebido: { label: t("dashboard.received"), color: "var(--chart-1)" },
+    aReceber: { label: t("dashboard.receivable"), color: "var(--chart-2)" },
+    atrasado: { label: t("dashboard.overdue"), color: "var(--chart-3)" },
+  } satisfies ChartConfig;
+
+  // Nominal bars ordered by value: one hue, because the bar length already
+  // encodes the magnitude — coloring by rank would spend the identity channel
+  // re-saying it.
+  const profitConfig = {
+    lucro: { label: t("dashboard.profit"), color: "var(--chart-1)" },
+  } satisfies ChartConfig;
+
+  const clientsConfig = {
+    clientes: { label: t("dashboard.clients"), color: "var(--chart-1)" },
+  } satisfies ChartConfig;
+
   const motion = useChartMotion();
   const summary = financeSummary(projects, months, currency);
   const revenue = revenueByMonth(projects, months, currency);
@@ -85,35 +87,39 @@ export function FinanceTab({
   return (
     <div className="flex flex-col gap-4">
       <StatRow>
-        <StatTile label="Faturado no período" value={summary.faturado} format={money} delay={0} />
+        <StatTile label={t("dashboard.billedInPeriod")} value={summary.faturado} format={money} delay={0} />
         <StatTile
-          label="Recebido"
+          label={t("dashboard.received")}
           value={summary.recebido}
           format={money}
           tone="success"
           delay={60}
         />
-        <StatTile label="A receber" value={summary.aReceber} format={money} delay={120} />
+        <StatTile label={t("dashboard.receivable")} value={summary.aReceber} format={money} delay={120} />
         <StatTile
-          label="Atrasado"
+          label={t("dashboard.overdue")}
           value={summary.atrasado}
           format={money}
           tone={summary.atrasado > 0 ? "destructive" : "default"}
           delay={180}
         />
         <StatTile
-          label="Custo de ferramentas"
+          label={t("dashboard.toolCost")}
           value={summary.custo}
           format={money}
-          hint="Só o que sai do seu bolso"
+          hint={t("dashboard.outOfPocket")}
           delay={240}
         />
       </StatRow>
 
       <div className="grid gap-4 xl:grid-cols-3">
         <ChartCard
-          title="Faturamento por mês"
-          hint={`${summary.projetos} projetos · ${summary.clientes} clientes · margem de ${formatPercent(summary.margem)}`}
+          title={t("dashboard.revenueByMonth")}
+          hint={t("dashboard.revenueHint", {
+            projects: summary.projetos,
+            clients: summary.clientes,
+            margin: formatPercent(summary.margem),
+          })}
           delay={300}
           className="xl:col-span-2"
         >
@@ -159,11 +165,11 @@ export function FinanceTab({
               </BarChart>
             </ChartContainer>
           ) : (
-            <NoData>Nenhuma fatura em {currency} nesse período.</NoData>
+            <NoData>{t("dashboard.noInvoices", { currency })}</NoData>
           )}
         </ChartCard>
 
-        <ChartCard title="Crescimento de clientes" hint="Clientes acumulados" delay={360}>
+        <ChartCard title={t("dashboard.clientGrowth")} hint={t("dashboard.clientsAccumulated")} delay={360}>
           <ChartContainer config={clientsConfig} className="aspect-auto h-[260px] w-full">
             <AreaChart data={growth} margin={{ left: 4, right: 4, top: 4 }}>
               <defs>
@@ -183,12 +189,12 @@ export function FinanceTab({
                     formatter={(value, _name, item) => (
                       <>
                         <span className="text-muted-foreground">
-                          {Number(value) === 1 ? "cliente" : "clientes"}
+                          {t("dashboard.client", { count: Number(value) })}
                         </span>
                         <span className="ml-auto font-medium tabular-nums">{Number(value)}</span>
                         {item?.payload.novos > 0 && (
                           <span className="text-muted-foreground">
-                            (+{item.payload.novos} no mês)
+                            {t("dashboard.newThisMonth", { count: item.payload.novos })}
                           </span>
                         )}
                       </>
@@ -212,12 +218,12 @@ export function FinanceTab({
       </div>
 
       <ChartCard
-        title="Lucro por projeto"
-        hint="Valor faturado menos as ferramentas que você paga"
+        title={t("dashboard.profitByProject")}
+        hint={t("dashboard.profitHint")}
         delay={420}
       >
         {profits.length === 0 ? (
-          <NoData>Nenhum projeto em {currency} nesse período.</NoData>
+          <NoData>{t("dashboard.noProjects", { currency })}</NoData>
         ) : (
           <ChartContainer
             config={profitConfig}
@@ -236,10 +242,13 @@ export function FinanceTab({
                     labelFormatter={(_, payload) => payload?.[0]?.payload.name}
                     formatter={(_value, _name, item) => (
                       <div className="grid gap-0.5 tabular-nums">
-                        <span>Receita {money(item.payload.receita)}</span>
-                        <span>Custo {money(item.payload.custo)}</span>
+                        <span>{t("dashboard.revenue", { amount: money(item.payload.receita) })}</span>
+                        <span>{t("dashboard.cost", { amount: money(item.payload.custo) })}</span>
                         <span className="font-medium">
-                          Lucro {money(item.payload.lucro)} · {formatPercent(item.payload.margem)}
+                          {t("dashboard.profitLine", {
+                            amount: money(item.payload.lucro),
+                            margin: formatPercent(item.payload.margem),
+                          })}
                         </span>
                       </div>
                     )}
@@ -261,8 +270,8 @@ export function FinanceTab({
       </ChartCard>
 
       <ChartCard
-        title="Régua de recebimento"
-        hint="Cada parcela no mês em que vence, por projeto"
+        title={t("dashboard.paymentRuler")}
+        hint={t("dashboard.paymentRulerHint")}
         delay={480}
       >
         <PaymentRuler projects={projects} months={months} currency={currency} />

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ChevronLeft, Menu, PanelLeftOpen } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
@@ -10,17 +11,21 @@ import { UserMenu } from "./user-menu";
 const COLLAPSED_KEY = "pm-sidebar-collapsed";
 
 function Logo({ collapsed = false }: { collapsed?: boolean }) {
+  const { t } = useTranslation();
   return (
     <div className="flex h-14 items-center gap-2.5 px-4">
       <div className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
         P
       </div>
-      <span className={cn("truncate text-sm font-semibold tracking-tight", collapsed && "sr-only")}>Projects</span>
+      <span className={cn("truncate text-sm font-semibold tracking-tight", collapsed && "sr-only")}>
+        {t("layout.brand")}
+      </span>
     </div>
   );
 }
 
 function CollapseButton({ onClick }: { onClick: () => void }) {
+  const { t } = useTranslation();
   // waits for the sidebar to finish expanding (the <aside> duration-400) before showing up
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -33,7 +38,7 @@ function CollapseButton({ onClick }: { onClick: () => void }) {
       variant="ghost"
       size="icon-sm"
       onClick={onClick}
-      aria-label="Recolher menu"
+      aria-label={t("layout.collapseMenu")}
       className={cn(
         "group absolute top-1/2 right-1.5 z-10 h-[65px] w-[8px] -translate-y-1/2 rounded-full bg-border p-0",
         "transition-[height,background-color,opacity] duration-200 ease-out",
@@ -47,6 +52,7 @@ function CollapseButton({ onClick }: { onClick: () => void }) {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === "1");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -72,7 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             variant="ghost"
             size="icon-sm"
             onClick={() => setCollapsed(false)}
-            aria-label="Expandir menu"
+            aria-label={t("layout.expandMenu")}
             className="mx-auto mb-2 animate-in fade-in zoom-in-75 duration-300 ease-out"
           >
             <PanelLeftOpen className="size-4" />
@@ -88,13 +94,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Mobile topbar + nav drawer */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} swipeDirection="left">
         <header className="sticky top-0 z-30 flex h-14 items-center border-b bg-background/80 px-3 backdrop-blur-sm md:hidden">
-          <DrawerTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Abrir menu" />}>
+          <DrawerTrigger render={<Button variant="ghost" size="icon-sm" aria-label={t("layout.openMenu")} />}>
             <Menu />
           </DrawerTrigger>
         </header>
 
         <DrawerContent className="w-60 bg-sidebar/40 text-sidebar-foreground after:hidden">
-          <DrawerTitle className="sr-only">Navegação principal</DrawerTitle>
+          <DrawerTitle className="sr-only">{t("layout.mainNav")}</DrawerTitle>
           <Logo />
           <SidebarNav onNavigate={() => setDrawerOpen(false)} />
           <div className="border-t p-2">

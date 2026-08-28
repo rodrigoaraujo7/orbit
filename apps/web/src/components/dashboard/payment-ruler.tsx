@@ -24,7 +24,6 @@ const TICK_CLASS: Record<InvoiceStatus, string> = {
 };
 
 function Legend() {
-  useTranslation();
   return (
     <ul className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
       {(["paid", "pending", "overdue"] as InvoiceStatus[]).map((status) => (
@@ -61,7 +60,7 @@ export function PaymentRuler({
   months: string[];
   currency: string;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   const reduced = useReducedMotion();
   const currentMonth = monthOf(todayIso());
   const monthSet = new Set(months);
@@ -82,7 +81,7 @@ export function PaymentRuler({
   if (lanes.length === 0) {
     return (
       <p className="py-10 text-center text-sm text-muted-foreground">
-        Nenhuma parcela cai nesse período.
+        {t("dashboard.noInstallments")}
       </p>
     );
   }
