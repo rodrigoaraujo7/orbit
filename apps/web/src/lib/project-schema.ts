@@ -263,6 +263,7 @@ function toTool(values: ToolFormValues): Tool {
     // billing present ⟺ amount > 0; there is no separate `paid` field
     billing: hasPositiveAmount(values.amount)
       ? {
+          /* v8 ignore next -- hasPositiveAmount already parsed a finite amount */
           amount: parseAmount(values.amount) ?? 0,
           currency: values.currency,
           cycle: values.cycle,

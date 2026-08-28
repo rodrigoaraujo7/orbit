@@ -88,6 +88,7 @@ function FilterFields({
           value={activePreset ? String(activePreset.months) : ""}
           onValueChange={(value) => {
             const preset = PRESETS.find((p) => String(p.months) === value)
+            /* v8 ignore next -- Select only emits values from PRESETS */
             if (preset) set(presetRange(preset.months))
           }}
           options={periodOptions}

@@ -97,6 +97,7 @@ export function CustomToolsPanel() {
         }
         confirmLabel={t("common.delete")}
         onConfirm={() => {
+          /* v8 ignore next -- confirm is only enabled after a row is chosen */
           if (!deletingTool) return
           try {
             removeCustomTool(deletingTool.id)

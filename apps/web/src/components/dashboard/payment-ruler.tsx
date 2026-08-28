@@ -22,7 +22,6 @@ const TICK_CLASS: Record<InvoiceStatus, string> = {
 };
 
 function Legend() {
-  const { t } = useTranslation();
   return (
     <ul className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
       {(["paid", "pending", "overdue"] as InvoiceStatus[]).map((status) => (
