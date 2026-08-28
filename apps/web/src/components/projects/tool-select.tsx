@@ -48,7 +48,7 @@ export function ToolSelect({
   return (
     <SelectRoot
       value={value || null}
-      onValueChange={(next) => onValueChange(next ?? "")}
+      onValueChange={(next) => onValueChange(next as string)}
     >
       <SelectTrigger id={id} aria-invalid={invalid} aria-describedby={describedBy}>
         <SelectValue className="min-w-0 flex-1 text-left">

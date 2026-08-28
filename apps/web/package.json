@@ -7,11 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "check:schema": "node --experimental-strip-types src/lib/project-schema.check.ts",
-    "check:project-status": "node --experimental-strip-types src/lib/project-status.check.ts",
-    "check:pagination": "node --experimental-strip-types src/lib/pagination.check.ts",
-    "check:table-sort": "node --experimental-strip-types src/lib/table-sort.check.ts",
-    "check:i18n": "node --experimental-strip-types src/i18n/i18n.check.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "check:i18n": "vitest run src/i18n/i18n.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -48,16 +47,22 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@tanstack/router-plugin": "^1.168.27",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "^14.6.6",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "@vitest/coverage-v8": "4.1.11",
     "eslint": "^10.8.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.7.0",
+    "jsdom": "30.0.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.65.0",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "vitest": "4.1.11"
   }
 }

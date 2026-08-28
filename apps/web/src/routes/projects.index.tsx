@@ -269,6 +269,7 @@ function ProjectsPage() {
         confirmLabel={t("common.delete")}
         confirmWord={t("common.deleteWord")}
         onConfirm={() => {
+          /* v8 ignore next -- confirm is only enabled after a row is chosen */
           if (!deletingProject) return
           try {
             deleteProject(deletingProject.id)

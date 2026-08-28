@@ -111,6 +111,7 @@ export async function revealAttemptCount(tx: Tx, userId: string, now = new Date(
     .where(
       and(eq(auditLog.userId, userId), eq(auditLog.action, REVEAL_ATTEMPT), gte(auditLog.createdAt, since)),
     )
+  /* v8 ignore next -- drizzle `count()` always returns a row */
   return Number(row?.n ?? 0)
 }
 

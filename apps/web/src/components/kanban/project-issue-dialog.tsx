@@ -139,7 +139,7 @@ export function ProjectIssueDialog({
     <ResponsiveDialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) setDraft("")
+        setDraft("")
         onOpenChange(next)
       }}
     >

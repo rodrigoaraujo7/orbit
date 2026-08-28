@@ -120,6 +120,22 @@ function KanbanPage() {
     return findContact(clientId)?.name ?? t("common.emDash")
   }
 
+  function onClientChange(client: string) {
+    patchSearch({ client: client || undefined })
+  }
+
+  function onMonthFromChange(from: string) {
+    patchSearch({ from: from || undefined })
+  }
+
+  function onMonthToChange(to: string) {
+    patchSearch({ to: to || undefined })
+  }
+
+  function clearKanbanFilters() {
+    patchSearch({ q: undefined, client: undefined, from: undefined, to: undefined })
+  }
+
   const filters = {
     q: search.q,
     clientId: search.client,
@@ -158,12 +174,7 @@ function KanbanPage() {
               <Plus />
               {t("common.newProject")}
             </Button>
-            <FilterDrawer
-              hasActive={isFiltered}
-              onClear={() =>
-                patchSearch({ q: undefined, client: undefined, from: undefined, to: undefined })
-              }
-            >
+            <FilterDrawer hasActive={isFiltered} onClear={clearKanbanFilters}>
               <KanbanFilterFields
                 stacked
                 search={nameDraft}
@@ -172,9 +183,9 @@ function KanbanPage() {
                 monthTo={search.to ?? ""}
                 clientOptions={clientOptions}
                 onSearchChange={setNameDraft}
-                onClientChange={(client) => patchSearch({ client: client || undefined })}
-                onMonthFromChange={(from) => patchSearch({ from: from || undefined })}
-                onMonthToChange={(to) => patchSearch({ to: to || undefined })}
+                onClientChange={onClientChange}
+                onMonthFromChange={onMonthFromChange}
+                onMonthToChange={onMonthToChange}
               />
             </FilterDrawer>
           </div>
@@ -191,18 +202,12 @@ function KanbanPage() {
           monthTo={search.to ?? ""}
           clientOptions={clientOptions}
           onSearchChange={setNameDraft}
-          onClientChange={(client) => patchSearch({ client: client || undefined })}
-          onMonthFromChange={(from) => patchSearch({ from: from || undefined })}
-          onMonthToChange={(to) => patchSearch({ to: to || undefined })}
+          onClientChange={onClientChange}
+          onMonthFromChange={onMonthFromChange}
+          onMonthToChange={onMonthToChange}
         />
         {isFiltered && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              patchSearch({ q: undefined, client: undefined, from: undefined, to: undefined })
-            }
-          >
+          <Button variant="ghost" size="sm" onClick={clearKanbanFilters}>
             <X />
             {t("common.clear")}
           </Button>
