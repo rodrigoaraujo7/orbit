@@ -73,7 +73,7 @@ export type InvoiceSearch = z.infer<typeof invoiceSearchSchema>
 export const auditSearchSchema = z.object({
   q: optionalString,
   module: auditModuleSchema.optional(),
-  period: auditPeriodSchema.default("30d"),
+  period: auditPeriodSchema.optional(),
   from: optionalString,
   to: optionalString,
 })
