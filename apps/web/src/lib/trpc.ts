@@ -1,9 +1,17 @@
 import { createTRPCClient, httpBatchLink } from "@trpc/client"
+import type {
+  AuditChange,
+  AuditModule,
+  DashboardFilterInput,
+  DashboardMetrics,
+  Invoice,
+  InvoiceListFilters,
+  ProjectListFilters,
+} from "shared"
 
 import type { Contact } from "@/data/contacts"
 import type { CustomTool } from "@/data/custom-tools"
 import type { Project, ProjectStatus } from "@/data/projects"
-import type { AuditChange, AuditModule } from "shared"
 
 type AuditListInput = {
   search?: string
@@ -28,6 +36,11 @@ type AuditListItem = {
   createdAt: string
   ip: string | null
   userAgent: string | null
+}
+
+type InvoiceListResult = {
+  items: Invoice[]
+  totals: { count: number; paid: number; overdue: number }
 }
 
 type BrowserRouter = {
@@ -60,14 +73,20 @@ type BrowserRouter = {
     }
     delete: { mutate: (input: { id: string }) => Promise<{ ok: true }> }
   }
+  dashboard: {
+    metrics: { query: (input?: DashboardFilterInput) => Promise<DashboardMetrics> }
+  }
   projects: {
-    list: { query: () => Promise<Project[]> }
+    list: { query: (input?: ProjectListFilters) => Promise<Project[]> }
     create: { mutate: (input: Project) => Promise<{ id: string }> }
     update: { mutate: (input: Project) => Promise<{ ok: true }> }
     move: {
       mutate: (input: { id: string; status: ProjectStatus; index: number }) => Promise<{ ok: true }>
     }
     delete: { mutate: (input: { id: string }) => Promise<{ ok: true }> }
+  }
+  invoices: {
+    list: { query: (input: InvoiceListFilters) => Promise<InvoiceListResult> }
   }
   tools: {
     listCustom: { query: () => Promise<CustomTool[]> }

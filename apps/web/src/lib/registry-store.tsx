@@ -49,6 +49,7 @@ export function RegistryProvider({ children }: { children: ReactNode }) {
 
   function invalidateContacts() {
     void queryClient.invalidateQueries({ queryKey: ["contacts"] })
+    void queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     void queryClient.invalidateQueries({ queryKey: ["audit"] })
   }
   function invalidateTools() {
