@@ -32,7 +32,6 @@ import {
   formatDealProgress,
   formatToolsProgress,
 } from "@/lib/format"
-import { generateInvoices } from "@/lib/invoices"
 import { formatAuditAt, formatAuditDetails } from "@/lib/audit-labels"
 import { withProjectStatus } from "@/lib/project-status"
 import { useProjects } from "@/lib/projects-store"
@@ -92,10 +91,15 @@ export function ProjectIssueDialog({
     queryFn: () => trpc.audit.list.query({ projectId: project!.id, limit: 50 }),
     enabled: open && Boolean(project),
   })
+  const invoicesQuery = useQuery({
+    queryKey: ["invoices", project?.id],
+    queryFn: () => trpc.invoices.list.query({ projectId: project!.id }),
+    enabled: open && Boolean(project),
+  })
 
   if (!project) return null
 
-  const invoices = generateInvoices(project, contact?.name ?? "—")
+  const invoices = invoicesQuery.data?.items ?? []
   const comments = project.comments ?? []
   const history = audit?.items ?? []
   const costLabel = monthlyCostLabel(project)

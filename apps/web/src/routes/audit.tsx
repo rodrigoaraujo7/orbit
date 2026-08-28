@@ -1,13 +1,20 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { Info } from "lucide-react"
-import type { AuditChange, AuditModule } from "shared"
+import {
+  auditSearchSchema,
+  compactSearch,
+  parseSearch,
+  type AuditChange,
+  type AuditModule,
+} from "shared"
 
 import { PageHeader } from "@/components/layout/page"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { FilterDrawer } from "@/components/ui/filter-drawer"
+import { FilterPending, TableFilterSkeleton } from "@/components/ui/filter-pending"
 import { Input } from "@/components/ui/input"
 import {
   ResponsiveDialog,
@@ -31,7 +38,7 @@ import { periodBounds, type PeriodPreset } from "@/lib/audit-period"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
 import { trpc } from "@/lib/trpc"
-import { useDebouncedValue } from "@/lib/use-debounced-value"
+import { useDraftSearch } from "@/lib/use-draft-search"
 
 type AuditCursor = { createdAt: string; id: string; module?: string }
 
@@ -142,25 +149,41 @@ function AuditFilterFields({
 function AuditPage() {
   const { findProject } = useProjects()
   const { findContact } = useRegistry()
-  const [search, setSearch] = useState("")
-  const [module, setModule] = useState("")
-  const [period, setPeriod] = useState<PeriodPreset>("30d")
-  const [customFrom, setCustomFrom] = useState("")
-  const [customTo, setCustomTo] = useState("")
+  const search = Route.useSearch()
+  const navigate = Route.useNavigate()
   const [pageSize, setPageSize] = useState("25")
   const [cursors, setCursors] = useState<(AuditCursor | null)[]>([null])
   const [page, setPage] = useState(0)
   const [sort, setSort] = useState<SortState>(null)
   const [selected, setSelected] = useState<AuditEntry | null>(null)
 
-  const debouncedSearch = useDebouncedValue(search)
-  const range = periodBounds(period, customFrom, customTo)
+  const patchSearch = useCallback(
+    (patch: Partial<typeof search>) => {
+      void navigate({
+        search: (prev) => {
+          const next = { ...prev, ...patch }
+          return compactSearch({
+            ...next,
+            period: next.period === "30d" ? undefined : next.period,
+            from: next.period === "custom" ? next.from : undefined,
+            to: next.period === "custom" ? next.to : undefined,
+          })
+        },
+        replace: true,
+      })
+    },
+    [navigate],
+  )
+
+  const [searchDraft, setSearchDraft] = useDraftSearch(search.q, (q) => patchSearch({ q }))
+  const period = search.period ?? "30d"
+  const range = periodBounds(period, search.from ?? "", search.to ?? "")
   const filterKey = JSON.stringify({
-    search: debouncedSearch,
-    module,
+    search: search.q,
+    module: search.module,
     period,
-    customFrom,
-    customTo,
+    from: search.from,
+    to: search.to,
     pageSize,
     sort,
   })
@@ -186,8 +209,8 @@ function AuditPage() {
     queryKey: [
       "audit",
       {
-        search: debouncedSearch,
-        module,
+        search: search.q,
+        module: search.module,
         from: range.from,
         to: range.to,
         cursor: cursorStack[pageIndex],
@@ -197,8 +220,8 @@ function AuditPage() {
     ],
     queryFn: () =>
       trpc.audit.list.query({
-        search: debouncedSearch || undefined,
-        modules: module ? [module as AuditModule] : undefined,
+        search: search.q || undefined,
+        modules: search.module ? [search.module] : undefined,
         from: range.from,
         to: range.to,
         cursor: cursorStack[pageIndex],
@@ -211,15 +234,16 @@ function AuditPage() {
   const items = (query.data?.items ?? []) as AuditEntry[]
   const nextCursor = query.data?.nextCursor ?? null
 
-  const hasActive =
-    search.trim() !== "" || module !== "" || period !== "all"
+  const hasActive = Boolean(search.q?.trim()) || Boolean(search.module) || period !== "all"
 
   function clearFilters() {
-    setSearch("")
-    setModule("")
-    setPeriod("all")
-    setCustomFrom("")
-    setCustomTo("")
+    patchSearch({
+      q: undefined,
+      module: undefined,
+      period: "all",
+      from: undefined,
+      to: undefined,
+    })
   }
 
   function objectCell(row: AuditEntry) {
@@ -292,16 +316,22 @@ function AuditPage() {
           <FilterDrawer hasActive={hasActive} onClear={clearFilters}>
             <AuditFilterFields
               stacked
-              search={search}
-              onSearch={setSearch}
-              module={module}
-              onModule={setModule}
+              search={searchDraft}
+              onSearch={setSearchDraft}
+              module={search.module ?? ""}
+              onModule={(module) => patchSearch({ module: (module || undefined) as AuditModule | undefined })}
               period={period}
-              onPeriod={setPeriod}
-              customFrom={customFrom}
-              onFrom={setCustomFrom}
-              customTo={customTo}
-              onTo={setCustomTo}
+              onPeriod={(nextPeriod) =>
+                patchSearch({
+                  period: nextPeriod,
+                  from: nextPeriod === "custom" ? search.from : undefined,
+                  to: nextPeriod === "custom" ? search.to : undefined,
+                })
+              }
+              customFrom={search.from ?? ""}
+              onFrom={(from) => patchSearch({ from: from || undefined, period: "custom" })}
+              customTo={search.to ?? ""}
+              onTo={(to) => patchSearch({ to: to || undefined, period: "custom" })}
             />
           </FilterDrawer>
         }
@@ -309,52 +339,66 @@ function AuditPage() {
 
       <div className="hidden gap-3 px-4 pt-6 md:flex md:flex-row md:items-center sm:px-6 lg:px-8">
         <AuditFilterFields
-          search={search}
-          onSearch={setSearch}
-          module={module}
-          onModule={setModule}
+          search={searchDraft}
+          onSearch={setSearchDraft}
+          module={search.module ?? ""}
+          onModule={(module) => patchSearch({ module: (module || undefined) as AuditModule | undefined })}
           period={period}
-          onPeriod={setPeriod}
-          customFrom={customFrom}
-          onFrom={setCustomFrom}
-          customTo={customTo}
-          onTo={setCustomTo}
+          onPeriod={(nextPeriod) =>
+            patchSearch({
+              period: nextPeriod,
+              from: nextPeriod === "custom" ? search.from : undefined,
+              to: nextPeriod === "custom" ? search.to : undefined,
+            })
+          }
+          customFrom={search.from ?? ""}
+          onFrom={(from) => patchSearch({ from: from || undefined, period: "custom" })}
+          customTo={search.to ?? ""}
+          onTo={(to) => patchSearch({ to: to || undefined, period: "custom" })}
         />
       </div>
 
-      <div className="px-4 py-6 sm:px-6 lg:px-8">
-        {query.isError ? (
-          <p className="text-sm text-muted-foreground">
-            Não foi possível carregar o log de auditoria.
-          </p>
-        ) : (
-          <DataTable
-            data={items}
-            columns={columns}
-            rowKey={(row) => row.id}
-            emptyMessage={
-              query.isPending ? "Carregando…" : "Nenhum evento encontrado com esses filtros."
-            }
-            serverSort={{ sort, onSortChange: setSort }}
-            serverPagination={{
-              hasPrev: pageIndex > 0,
-              hasNext: Boolean(nextCursor),
-              pageSize,
-              onPrev: () => setPage((current) => Math.max(0, current - 1)),
-              onNext: () => {
-                if (!nextCursor) return
-                setCursors((current) => {
-                  const next = current.slice(0, pageIndex + 1)
-                  next.push(nextCursor)
-                  return next
-                })
-                setPage((current) => current + 1)
-              },
-              onPageSizeChange: setPageSize,
-            }}
-          />
-        )}
-      </div>
+      <FilterPending
+        isPending={query.isPending}
+        isFetching={query.isFetching}
+        skeleton={
+          <div className="px-4 py-6 sm:px-6 lg:px-8">
+            <TableFilterSkeleton />
+          </div>
+        }
+      >
+        <div className="px-4 py-6 sm:px-6 lg:px-8">
+          {query.isError ? (
+            <p className="text-sm text-muted-foreground">
+              Não foi possível carregar o log de auditoria.
+            </p>
+          ) : (
+            <DataTable
+              data={items}
+              columns={columns}
+              rowKey={(row) => row.id}
+              emptyMessage="Nenhum evento encontrado com esses filtros."
+              serverSort={{ sort, onSortChange: setSort }}
+              serverPagination={{
+                hasPrev: pageIndex > 0,
+                hasNext: Boolean(nextCursor),
+                pageSize,
+                onPrev: () => setPage((current) => Math.max(0, current - 1)),
+                onNext: () => {
+                  if (!nextCursor) return
+                  setCursors((current) => {
+                    const next = current.slice(0, pageIndex + 1)
+                    next.push(nextCursor)
+                    return next
+                  })
+                  setPage((current) => current + 1)
+                },
+                onPageSizeChange: setPageSize,
+              }}
+            />
+          )}
+        </div>
+      </FilterPending>
 
       <ResponsiveDialog open={selected != null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
         <ResponsiveDialogContent>
@@ -434,5 +478,6 @@ function AuditPage() {
 }
 
 export const Route = createFileRoute("/audit")({
+  validateSearch: (search) => parseSearch(auditSearchSchema, search),
   component: AuditPage,
 })

@@ -13,16 +13,15 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { DataTable, type Column } from "@/components/ui/table";
-import { BILLING_CYCLE_LABEL, PAYER_LABEL, type Project } from "@/data/projects";
+import { BILLING_CYCLE_LABEL, PAYER_LABEL } from "@/data/projects";
 import { TOOL_CATEGORY_LABEL } from "@/data/tool-catalog";
-import {
-  toolCostByCategory,
-  toolCostByMonth,
-  toolCostByTool,
-  toolRows,
-  toolsSummary,
-  type ToolRow,
-} from "@/lib/dashboard-metrics";
+import type {
+  CategoryCost,
+  CostMonth,
+  ToolCost,
+  ToolRow,
+  ToolsSummary,
+} from "shared";
 import {
   formatCompactCurrency,
   formatCurrency,
@@ -38,20 +37,23 @@ const payerConfig = {
 } satisfies ChartConfig;
 
 export function ToolsTab({
-  projects,
+  summary,
+  byTool,
+  byCategory,
+  byMonth,
+  rows,
   months,
   currency,
 }: {
-  projects: Project[];
-  months: string[];
-  currency: string;
+  summary: ToolsSummary
+  byTool: ToolCost[]
+  byCategory: CategoryCost[]
+  byMonth: CostMonth[]
+  rows: ToolRow[]
+  months: string[]
+  currency: string
 }) {
   const motion = useChartMotion();
-  const summary = toolsSummary(projects, months, currency);
-  const byTool = toolCostByTool(projects, months, currency);
-  const byCategory = toolCostByCategory(projects, months, currency);
-  const byMonth = toolCostByMonth(projects, months, currency);
-  const rows = toolRows(projects, currency);
 
   const money = (value: number) => formatCurrency(value, currency);
 

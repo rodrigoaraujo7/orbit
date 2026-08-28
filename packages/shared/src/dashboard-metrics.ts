@@ -1,16 +1,14 @@
 /**
  * Every number the dashboard shows is computed here. Pure functions, no React,
  * no formatting — the components decide how to draw, this decides what is true.
- *
- * Relative imports (not the "@/" alias) on purpose: the self-check runs on
- * `node --experimental-strip-types`, and Node does not resolve the alias.
  */
-import type { BillingCycle, Payer, Project, Tool } from "../data/projects.ts"
-import { TOOL_CATEGORY_LABEL, type ToolCategory } from "../data/tool-catalog.ts"
 import { DEFAULT_CURRENCY } from "./currency.ts"
 import { addMonths, monthOf, monthRange, todayIso } from "./dates.ts"
+import type { BillingCycle, InvoiceStatus, Payer } from "./domain.ts"
 import { effectiveMonth } from "./invoice-table.ts"
 import { generateInvoices } from "./invoices.ts"
+import type { Project, Tool } from "./project.ts"
+import { TOOL_CATEGORY_LABEL, type ToolCategory } from "./tool-category.ts"
 
 export type DashboardFilters = {
   /** "YYYY-MM", empty = no lower bound. */
@@ -31,6 +29,22 @@ export const emptyFilters: DashboardFilters = {
   projectId: "",
   clientId: "",
   currency: DEFAULT_CURRENCY,
+}
+
+export function toDashboardFilters(input?: {
+  monthFrom?: string
+  monthTo?: string
+  projectId?: string
+  clientId?: string
+  currency?: string
+}): DashboardFilters {
+  return {
+    monthFrom: input?.monthFrom ?? "",
+    monthTo: input?.monthTo ?? "",
+    projectId: input?.projectId ?? "",
+    clientId: input?.clientId ?? "",
+    currency: input?.currency || DEFAULT_CURRENCY,
+  }
 }
 
 export function dealCurrency(project: Project): string {
@@ -121,10 +135,10 @@ export type RevenueMonth = {
 export function revenueByMonth(
   projects: Project[],
   months: string[],
-  currency: string
+  currency: string,
 ): RevenueMonth[] {
   const buckets = new Map<string, RevenueMonth>(
-    months.map((month) => [month, { month, recebido: 0, aReceber: 0, atrasado: 0 }])
+    months.map((month) => [month, { month, recebido: 0, aReceber: 0, atrasado: 0 }]),
   )
 
   for (const project of projects) {
@@ -200,7 +214,7 @@ export type ProjectProfit = {
 export function profitByProject(
   projects: Project[],
   months: string[],
-  currency: string
+  currency: string,
 ): ProjectProfit[] {
   const monthSet = new Set(months)
 
@@ -263,21 +277,14 @@ export type ToolCost = {
   projetos: string[]
 }
 
-export function toolCostByTool(
-  projects: Project[],
-  months: string[],
-  currency: string
-): ToolCost[] {
+export function toolCostByTool(projects: Project[], months: string[], currency: string): ToolCost[] {
   const byKey = new Map<string, ToolCost>()
 
   for (const project of projects) {
     for (const tool of project.tools) {
       if (!tool.billing) continue
       if (toolCurrency(tool) !== currency) continue
-      const total = months.reduce(
-        (sum, month) => sum + toolCostInMonth(tool, project, month),
-        0
-      )
+      const total = months.reduce((sum, month) => sum + toolCostInMonth(tool, project, month), 0)
       if (total === 0) continue
 
       const key = `${tool.id}-${tool.name}`
@@ -325,13 +332,12 @@ export type CategoryCost = { key: string; label: string; slot: number; total: nu
 export function toolCostByCategory(
   projects: Project[],
   months: string[],
-  currency: string
+  currency: string,
 ): CategoryCost[] {
   const byKey = new Map<string, CategoryCost>()
 
   for (const { category, total } of toolCostByTool(projects, months, currency)) {
     const slot = CATEGORY_SLOT[category]
-    // everything on slot 6 collapses into a single "Outras" bucket
     const key = slot === 6 ? "outras" : category
     const label = slot === 6 ? OTHER_CATEGORY_LABEL : TOOL_CATEGORY_LABEL[category]
     const entry = byKey.get(key) ?? { key, label, slot, total: 0 }
@@ -344,11 +350,7 @@ export function toolCostByCategory(
 
 export type CostMonth = { month: string; eu: number; cliente: number }
 
-export function toolCostByMonth(
-  projects: Project[],
-  months: string[],
-  currency: string
-): CostMonth[] {
+export function toolCostByMonth(projects: Project[], months: string[], currency: string): CostMonth[] {
   return months.map((month) => {
     const bucket: CostMonth = { month, eu: 0, cliente: 0 }
     for (const project of projects) {
@@ -365,9 +367,7 @@ export function toolCostByMonth(
 }
 
 export type ToolRow = {
-  /** Unique per project+tool — the table's row key. */
   id: string
-  /** Catalog id, kept apart from `id` so the icon lookup never has to parse it. */
   toolId: string
   name: string
   category: ToolCategory
@@ -419,15 +419,10 @@ export type FinanceSummary = {
   margem: number
   clientes: number
   projetos: number
-  /** Projects skipped because their deal is in another currency. */
   foraDaMoeda: number
 }
 
-export function financeSummary(
-  projects: Project[],
-  months: string[],
-  currency: string
-): FinanceSummary {
+export function financeSummary(projects: Project[], months: string[], currency: string): FinanceSummary {
   const revenue = revenueByMonth(projects, months, currency)
   const recebido = revenue.reduce((total, month) => total + month.recebido, 0)
   const aReceber = revenue.reduce((total, month) => total + month.aReceber, 0)
@@ -435,10 +430,7 @@ export function financeSummary(
   const faturado = recebido + aReceber + atrasado
 
   const inCurrency = projects.filter((project) => dealCurrency(project) === currency)
-  const custo = inCurrency.reduce(
-    (total, project) => total + ownCostOverRange(project, months, currency),
-    0
-  )
+  const custo = inCurrency.reduce((total, project) => total + ownCostOverRange(project, months, currency), 0)
   const lucro = faturado - custo
   const lastMonth = months[months.length - 1] ?? ""
   const active = inCurrency.filter((project) => monthOf(project.startedAt) <= lastMonth)
@@ -458,24 +450,17 @@ export function financeSummary(
 }
 
 export type ToolsSummary = {
-  /** Everything the tools cost across the whole range. */
   totalPeriodo: number
   eu: number
   cliente: number
-  /** Recurring cost of the last month in the range — the current run rate. */
   runRate: number
   pagas: number
   gratis: number
   maisCara: ToolCost | null
-  /** Paid tools skipped because they bill in another currency. */
   foraDaMoeda: number
 }
 
-export function toolsSummary(
-  projects: Project[],
-  months: string[],
-  currency: string
-): ToolsSummary {
+export function toolsSummary(projects: Project[], months: string[], currency: string): ToolsSummary {
   const costs = toolCostByTool(projects, months, currency)
   const byMonth = toolCostByMonth(projects, months, currency)
   const last = byMonth[byMonth.length - 1]
@@ -512,4 +497,110 @@ export function previousMonths(months: string[]): string[] {
   const to = addMonths(months[0], -1)
   const from = addMonths(to, -(months.length - 1))
   return monthRange(from, to)
+}
+
+// ---------------------------------------------------------- payment ruler
+
+export type RulerInvoice = { amount: number; status: InvoiceStatus }
+
+export type RulerLane = {
+  projectId: string
+  projectName: string
+  currency: string
+  byMonth: Record<string, RulerInvoice[]>
+}
+
+export function paymentRulerLanes(projects: Project[], months: string[], currency: string): RulerLane[] {
+  const monthSet = new Set(months)
+  return projects
+    .filter((project) => dealCurrency(project) === currency)
+    .map((project) => {
+      const byMonth: Record<string, RulerInvoice[]> = {}
+      for (const invoice of generateInvoices(project, "")) {
+        const month = effectiveMonth(invoice)
+        if (!monthSet.has(month)) continue
+        byMonth[month] ??= []
+        byMonth[month].push({ amount: invoice.amount, status: invoice.status })
+      }
+      return {
+        projectId: project.id,
+        projectName: project.name,
+        currency,
+        byMonth,
+      }
+    })
+    .filter((lane) => Object.keys(lane.byMonth).length > 0)
+}
+
+// --------------------------------------------------------------- DTO
+
+export type DashboardOptions = {
+  clients: { id: string; name: string }[]
+  projects: { id: string; name: string; clientId: string }[]
+  currencies: string[]
+}
+
+export type DashboardMetrics = {
+  options: DashboardOptions
+  months: string[]
+  currency: string
+  summary: FinanceSummary
+  previous: FinanceSummary
+  revenueByMonth: RevenueMonth[]
+  profitByProject: ProjectProfit[]
+  clientGrowth: ClientMonth[]
+  rulerLanes: RulerLane[]
+  toolsSummary: ToolsSummary
+  toolCostByTool: ToolCost[]
+  toolCostByCategory: CategoryCost[]
+  toolCostByMonth: CostMonth[]
+  toolRows: ToolRow[]
+}
+
+export function dashboardOptions(
+  projects: Project[],
+  contacts: { id: string; name: string }[],
+): DashboardOptions {
+  const withProjects = new Set(projects.map((project) => project.clientId).filter(Boolean))
+  return {
+    clients: contacts.filter((contact) => withProjects.has(contact.id)).map((contact) => ({
+      id: contact.id,
+      name: contact.name,
+    })),
+    projects: projects.map((project) => ({
+      id: project.id,
+      name: project.name,
+      clientId: project.clientId,
+    })),
+    currencies: availableCurrencies(projects),
+  }
+}
+
+export function buildDashboardMetrics(
+  projects: Project[],
+  filters: DashboardFilters,
+  contacts: { id: string; name: string }[],
+): DashboardMetrics {
+  const filtered = applyFilters(projects, filters)
+  const months = resolveMonths(projects, filters)
+  const previous = previousMonths(months)
+  const currency = filters.currency
+  return {
+    options: dashboardOptions(projects, contacts),
+    months,
+    currency,
+    summary: financeSummary(filtered, months, currency),
+    previous: financeSummary(filtered, previous, currency),
+    revenueByMonth: revenueByMonth(filtered, months, currency),
+    profitByProject: profitByProject(filtered, months, currency).filter(
+      (row) => row.receita > 0 || row.custo > 0,
+    ),
+    clientGrowth: clientGrowth(filtered, months),
+    rulerLanes: paymentRulerLanes(filtered, months, currency),
+    toolsSummary: toolsSummary(filtered, months, currency),
+    toolCostByTool: toolCostByTool(filtered, months, currency),
+    toolCostByCategory: toolCostByCategory(filtered, months, currency),
+    toolCostByMonth: toolCostByMonth(filtered, months, currency),
+    toolRows: toolRows(filtered, currency),
+  }
 }
