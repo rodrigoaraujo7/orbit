@@ -99,7 +99,7 @@ export type Project = {
     url: string
     workflow: WorkflowStatus
   } | null
-  /** Shown on the Kanban issue modal; absent = "Sem descrição." */
+  /** Shown on the Kanban issue modal; absent = "No description." */
   description?: string
   comments?: ProjectComment[]
 }

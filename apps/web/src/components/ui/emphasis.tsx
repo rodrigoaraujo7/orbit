@@ -3,12 +3,12 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Destaca uma palavra/nome inline (ex: nome do item a excluir, nome da seção
- * ainda em construção): serif itálico por padrão. A cor/peso continuam a
- * critério de quem usa (className). Passe `italic={false}` quando o trecho
- * ao redor pedir a fonte regular (ex: a palavra "excluir" antes do nome) —
- * a Instrument Serif tem um traço inclinado mesmo no peso normal, então
- * "desligar" o itálico troca pra Instrument Sans em vez de só tirar a classe.
+ * Highlights an inline word/name (e.g. the item being deleted, or a section
+ * still under construction): italic serif by default. Color/weight stay up to
+ * the caller (`className`). Pass `italic={false}` when the surrounding copy
+ * needs the regular face (e.g. the word "delete" before the name) — Instrument
+ * Serif still slants at the normal weight, so turning italics off switches to
+ * Instrument Sans instead of only dropping the class.
  */
 export function Emphasis({ className, italic = true, ...props }: ComponentProps<"span"> & { italic?: boolean }) {
   return (

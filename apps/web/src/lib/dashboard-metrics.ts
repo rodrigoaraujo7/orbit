@@ -501,7 +501,7 @@ export function toolsSummary(
 }
 
 /**
- * The same window, shifted back by its own length — what "vs. período anterior"
+ * The same window, shifted back by its own length — what "vs. previous period"
  * on the hero figure compares against.
  */
 export function previousMonths(months: string[]): string[] {
