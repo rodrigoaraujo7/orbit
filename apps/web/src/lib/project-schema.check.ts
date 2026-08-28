@@ -42,7 +42,7 @@ function tool(overrides: Partial<ToolFormValues> = {}): ToolFormValues {
 }
 
 function errorPaths(values: ProjectFormValues) {
-  const result = projectSchema.safeParse(values)
+  const result = projectSchema().safeParse(values)
   return result.success ? [] : result.error.issues.map((i) => i.path.join("."))
 }
 

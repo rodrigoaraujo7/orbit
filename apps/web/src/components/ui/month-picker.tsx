@@ -31,7 +31,7 @@ export function MonthPicker({
 }) {
   const [year, selectedMonth] = value ? value.split("-").map(Number) : [undefined, undefined];
   const [viewYear, setViewYear] = useState(() => year ?? new Date().getFullYear());
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const months = monthLabels(i18n.language);
 
   const label = year && selectedMonth ? `${months[selectedMonth - 1]}/${year}` : placeholder;
@@ -59,7 +59,7 @@ export function MonthPicker({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Ano anterior"
+                aria-label={t("common.previousYear")}
                 onClick={() => setViewYear((y) => y - 1)}
               >
                 <ChevronLeft className="size-4" />
@@ -69,7 +69,7 @@ export function MonthPicker({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Próximo ano"
+                aria-label={t("common.nextYear")}
                 onClick={() => setViewYear((y) => y + 1)}
               >
                 <ChevronRight className="size-4" />
@@ -101,7 +101,7 @@ export function MonthPicker({
                 onClick={() => onChange("")}
                 className="mt-2 w-full cursor-default rounded-lg px-2 py-1.5 text-center text-sm text-muted-foreground outline-none select-none hover:bg-accent hover:text-accent-foreground"
               >
-                Limpar
+                {t("common.clear")}
               </Popover.Close>
             )}
           </Popover.Popup>

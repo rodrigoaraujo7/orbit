@@ -20,7 +20,7 @@ export function KanbanColumn({
   reducedMotion: boolean
   onOpen: (id: string) => void
 }) {
-  useTranslation()
+  const { t } = useTranslation()
   const { ref, isDropTarget } = useDroppable({
     id: status,
     accept: "project",
@@ -47,7 +47,7 @@ export function KanbanColumn({
 
       <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">
         {projects.length === 0 ? (
-          <p className="px-1 py-6 text-center text-sm text-muted-foreground">Nenhum projeto</p>
+          <p className="px-1 py-6 text-center text-sm text-muted-foreground">{t("kanban.emptyColumn")}</p>
         ) : (
           projects.map((project, index) => (
             <KanbanCard

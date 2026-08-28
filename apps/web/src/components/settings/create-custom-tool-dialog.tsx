@@ -29,18 +29,21 @@ import { toast } from "@/components/ui/toast"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { CustomTool } from "@/data/custom-tools"
 import { TOOL_CATEGORY_ORDER, type ToolCategory } from "@/data/tool-catalog"
+import i18n from "@/i18n"
 import { toolCategoryOptions } from "@/i18n/labels"
 import { useRegistry } from "@/lib/registry-store"
 
-const customToolSchema = z.object({
-  name: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
-  // kept as a plain string (not z.enum) so this doesn't have to duplicate
-  // ToolCategory's literal union — the Select only ever offers valid
-  // categories, so casting on submit is safe.
-  category: z.string().min(1, "Selecione a categoria"),
-})
+function customToolSchema() {
+  return z.object({
+    name: z.string().trim().min(2, i18n.t("validation.minChars")),
+    // kept as a plain string (not z.enum) so this doesn't have to duplicate
+    // ToolCategory's literal union — the Select only ever offers valid
+    // categories, so casting on submit is safe.
+    category: z.string().min(1, i18n.t("validation.selectCategory")),
+  })
+}
 
-type CustomToolFormValues = z.infer<typeof customToolSchema>
+type CustomToolFormValues = z.infer<ReturnType<typeof customToolSchema>>
 
 const emptyCustomToolForm: CustomToolFormValues = {
   name: "",
@@ -57,7 +60,7 @@ export function CreateCustomToolDialog({
   /** present = editing this tool; absent = creating a new one */
   tool?: CustomTool
 }) {
-  useTranslation()
+  const { t } = useTranslation()
   const { addCustomTool, updateCustomTool } = useRegistry()
   const categoryOptions = toolCategoryOptions()
   const {
@@ -67,7 +70,8 @@ export function CreateCustomToolDialog({
     reset,
     formState: { errors },
   } = useForm<CustomToolFormValues>({
-    resolver: zodResolver(customToolSchema),
+    resolver: (values, context, options) =>
+      zodResolver(customToolSchema())(values, context, options),
     defaultValues: emptyCustomToolForm,
   })
 
@@ -94,15 +98,15 @@ export function CreateCustomToolDialog({
     try {
       if (activeTool) {
         await updateCustomTool(activeTool.id, payload)
-        toast.add({ title: "Ferramenta atualizada", type: "success" })
+        toast.add({ title: t("settings.toolUpdated"), type: "success" })
       } else {
         await addCustomTool(payload)
-        toast.add({ title: "Ferramenta criada", type: "success" })
+        toast.add({ title: t("settings.toolCreated"), type: "success" })
       }
       onOpenChange(false)
     } catch {
       toast.add({
-        title: activeTool ? "Erro ao atualizar ferramenta" : "Erro ao criar ferramenta",
+        title: activeTool ? t("settings.toolUpdateError") : t("settings.toolCreateError"),
         type: "error",
       })
     }
@@ -112,17 +116,17 @@ export function CreateCustomToolDialog({
 
   const formFields = (
     <>
-      <Field label="Nome" error={errors.name?.message}>
+      <Field label={t("common.name")} error={errors.name?.message}>
         {(props) => (
           <Input
             {...props}
             {...register("name")}
-            placeholder="TOTVS Protheus"
+            placeholder={t("settings.customToolPlaceholder")}
           />
         )}
       </Field>
 
-      <Field label="Categoria" error={errors.category?.message}>
+      <Field label={t("common.category")} error={errors.category?.message}>
         {(props) => (
           <Controller
             control={control}
@@ -143,11 +147,11 @@ export function CreateCustomToolDialog({
 
   const cancelButton = (
     <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-      Cancelar
+      {t("common.cancel")}
     </Button>
   )
   const submitButton = (
-    <Button type="submit">{activeTool ? "Salvar" : "Criar ferramenta"}</Button>
+    <Button type="submit">{activeTool ? t("common.save") : t("settings.createTool")}</Button>
   )
 
   if (isMobile) {
@@ -156,11 +160,11 @@ export function CreateCustomToolDialog({
         <DrawerContent>
           <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
             <DrawerHeader>
-              <DrawerTitle>{activeTool ? "Editar ferramenta" : "Nova ferramenta"}</DrawerTitle>
+              <DrawerTitle>{activeTool ? t("settings.editTool") : t("settings.newTool")}</DrawerTitle>
               <DrawerDescription>
                 {activeTool
-                  ? "Atualize os dados desta ferramenta."
-                  : "Cadastre uma ferramenta fora do catálogo para reaproveitar em vários projetos."}
+                  ? t("settings.editToolDescription")
+                  : t("settings.newToolDescription")}
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
@@ -181,18 +185,18 @@ export function CreateCustomToolDialog({
       <DialogContent>
         <DialogHeader>
           <div>
-            <DialogTitle>{activeTool ? "Editar ferramenta" : "Nova ferramenta"}</DialogTitle>
+            <DialogTitle>{activeTool ? t("settings.editTool") : t("settings.newTool")}</DialogTitle>
             <DialogDescription className="mt-0.5">
               {activeTool
-                ? "Atualize os dados desta ferramenta."
-                : "Cadastre uma ferramenta fora do catálogo para reaproveitar em vários projetos."}
+                ? t("settings.editToolDescription")
+                : t("settings.newToolDescription")}
             </DialogDescription>
           </div>
           <Button
             variant="ghost"
             size="icon-sm"
             onClick={() => onOpenChange(false)}
-            aria-label="Fechar"
+            aria-label={t("common.close")}
           >
             <X />
           </Button>

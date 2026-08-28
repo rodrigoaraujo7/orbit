@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -13,6 +14,7 @@ import { useRegistry } from "@/lib/registry-store"
 import { CreateContactDialog } from "./create-contact-dialog"
 
 export function ContactsPanel() {
+  const { t } = useTranslation()
   const { contacts, removeContact } = useRegistry()
   const { projects } = useProjects()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -23,30 +25,30 @@ export function ContactsPanel() {
   const columns: Column<Contact>[] = [
     {
       key: "name",
-      header: "Nome",
+      header: t("common.name"),
       sortValue: (contact) => contact.name,
       cell: (contact) => <span className="font-medium">{contact.name}</span>,
     },
     {
       key: "email",
-      header: "E-mail",
+      header: t("common.email"),
       className: "hidden sm:table-cell",
       cell: (contact) =>
-        contact.email ?? <span className="text-muted-foreground">—</span>,
+        contact.email ?? <span className="text-muted-foreground">{t("common.emDash")}</span>,
     },
     {
       key: "phone",
-      header: "Telefone",
+      header: t("common.phone"),
       className: "hidden md:table-cell",
       cell: (contact) =>
-        contact.phone ?? <span className="text-muted-foreground">—</span>,
+        contact.phone ?? <span className="text-muted-foreground">{t("common.emDash")}</span>,
     },
     {
       key: "company",
-      header: "Empresa",
+      header: t("common.company"),
       className: "hidden lg:table-cell",
       cell: (contact) =>
-        contact.company ?? <span className="text-muted-foreground">—</span>,
+        contact.company ?? <span className="text-muted-foreground">{t("common.emDash")}</span>,
     },
     {
       key: "actions",
@@ -77,7 +79,7 @@ export function ContactsPanel() {
           }}
         >
           <Plus />
-          Novo contato
+          {t("settings.newContact")}
         </Button>
       </div>
 
@@ -86,7 +88,7 @@ export function ContactsPanel() {
         columns={columns}
         rowKey={(contact) => contact.id}
         initialSort={{ key: "name", direction: "asc" }}
-        emptyMessage="Nenhum contato cadastrado."
+        emptyMessage={t("settings.noContacts")}
       />
 
       <CreateContactDialog
@@ -98,30 +100,30 @@ export function ContactsPanel() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Excluir contato"
+        title={t("settings.deleteContact")}
         description={
           <>
-            Excluir{" "}
+            {t("common.delete")}{" "}
             <Emphasis className="text-primary">{deletingContact?.name}</Emphasis>
-            ? Essa ação não pode ser desfeita.
+            ? {t("common.cannotUndo")}
           </>
         }
-        confirmLabel="Excluir"
+        confirmLabel={t("common.delete")}
         onConfirm={() => {
           if (!deletingContact) return
           if (projects.some((p) => p.clientId === deletingContact.id)) {
             toast.add({
-              title: "Contato em uso",
-              description: "Este contato está vinculado a um projeto e não pode ser excluído.",
+              title: t("settings.contactInUse"),
+              description: t("settings.contactInUseDescription"),
               type: "error",
             })
             return
           }
           try {
             removeContact(deletingContact.id)
-            toast.add({ title: "Contato excluído", type: "success" })
+            toast.add({ title: t("settings.contactDeleted"), type: "success" })
           } catch {
-            toast.add({ title: "Erro ao excluir contato", type: "error" })
+            toast.add({ title: t("settings.contactDeleteError"), type: "error" })
           }
         }}
       />

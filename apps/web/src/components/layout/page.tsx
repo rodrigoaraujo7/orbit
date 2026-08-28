@@ -1,7 +1,6 @@
 import { Construction } from "lucide-react";
 import type { ReactNode } from "react";
-
-import { Emphasis } from "@/components/ui/emphasis";
+import { useTranslation } from "react-i18next";
 
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
   return (
@@ -17,14 +16,13 @@ export function PageHeader({ title, description, actions }: { title: string; des
 
 /** Placeholder for the sections that have not been designed yet. */
 export function ComingSoon({ section }: { section: string }) {
+  const { t } = useTranslation();
   return (
     <div className="animate-in fade-in zoom-in-95 flex flex-col items-center justify-center gap-3 px-6 py-24 text-center duration-500">
       <div className="grid size-11 place-items-center rounded-xl bg-muted text-muted-foreground">
         <Construction className="size-5" />
       </div>
-      <p className="text-sm text-muted-foreground">
-        A seção <Emphasis className="text-foreground">{section}</Emphasis> ainda está em construção.
-      </p>
+      <p className="text-sm text-muted-foreground">{t("common.comingSoon", { section })}</p>
     </div>
   );
 }

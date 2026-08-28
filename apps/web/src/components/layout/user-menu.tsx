@@ -1,8 +1,13 @@
 import { Menu } from "@base-ui/react/menu"
-import { LogOut, Pencil, Users } from "lucide-react"
+import { Check, Languages, LogOut, Pencil, Users } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
+import { getLocale, setLocale, type Locale } from "@/i18n"
 import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
+
+const itemClass =
+  "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
 
 function initials(name: string) {
   return name
@@ -14,10 +19,16 @@ function initials(name: string) {
 }
 
 export function UserMenu({ collapsed = false }: { collapsed?: boolean }) {
+  const { t } = useTranslation()
+  const locale = getLocale()
   const { data } = authClient.useSession()
   const user = {
-    name: data?.user.name ?? "Conta",
+    name: data?.user.name ?? t("common.accountFallback"),
     email: data?.user.email ?? "",
+  }
+
+  function chooseLocale(next: Locale) {
+    setLocale(next)
   }
 
   return (
@@ -47,13 +58,26 @@ export function UserMenu({ collapsed = false }: { collapsed?: boolean }) {
       <Menu.Portal>
         <Menu.Positioner side="top" align="start" sideOffset={10} className="z-[60] w-[var(--anchor-width)] min-w-56">
           <Menu.Popup className="w-full rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
-            <Menu.Item className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground">
+            <Menu.Item className={itemClass}>
               <Pencil className="size-3.5" />
-              Editar perfil
+              {t("layout.editProfile")}
             </Menu.Item>
-            <Menu.Item className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground">
+            <Menu.Item className={itemClass}>
               <Users className="size-3.5" />
-              Trocar de conta
+              {t("layout.switchAccount")}
+            </Menu.Item>
+            <Menu.Separator className="my-1 h-px bg-border" />
+            <p className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              <Languages className="size-3.5" />
+              {t("common.language")}
+            </p>
+            <Menu.Item className={itemClass} onClick={() => chooseLocale("en-US")}>
+              <span className="flex-1">{t("common.english")}</span>
+              {locale === "en-US" && <Check className="size-3.5 text-primary" />}
+            </Menu.Item>
+            <Menu.Item className={itemClass} onClick={() => chooseLocale("pt-BR")}>
+              <span className="flex-1">{t("common.portuguese")}</span>
+              {locale === "pt-BR" && <Check className="size-3.5 text-primary" />}
             </Menu.Item>
             <Menu.Separator className="my-1 h-px bg-border" />
             <Menu.Item
@@ -64,7 +88,7 @@ export function UserMenu({ collapsed = false }: { collapsed?: boolean }) {
               )}
             >
               <LogOut className="size-3.5" />
-              Sair
+              {t("layout.signOut")}
             </Menu.Item>
           </Menu.Popup>
         </Menu.Positioner>

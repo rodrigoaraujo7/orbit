@@ -42,9 +42,10 @@ const menuItemClass =
 // invoice API for now, the items are UI only (same state as before, in
 // invoice-card.tsx).
 function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
+  const { t } = useTranslation();
   return (
     <Menu.Root>
-      <Menu.Trigger render={<Button variant="ghost" size="icon-sm" aria-label="Mais ações" />}>
+      <Menu.Trigger render={<Button variant="ghost" size="icon-sm" aria-label={t("common.moreActions")} />}>
         <MoreVertical />
       </Menu.Trigger>
 
@@ -53,39 +54,29 @@ function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
           <Menu.Popup className="min-w-44 rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
             <Menu.Item onClick={() => {}} className={menuItemClass}>
               <Share2 className="size-3.5" />
-              Compartilhar fatura
+              {t("invoice.share")}
             </Menu.Item>
             <Menu.Item onClick={() => {}} className={menuItemClass}>
               <Barcode className="size-3.5" />
-              Gerar boleto
+              {t("invoice.generateBoleto")}
             </Menu.Item>
             <Menu.Item onClick={() => {}} className={menuItemClass}>
               <QrCode className="size-3.5" />
-              Gerar pix
+              {t("invoice.generatePix")}
             </Menu.Item>
             <Menu.Item onClick={() => {}} className={menuItemClass}>
               <RefreshCw className="size-3.5" />
-              Alterar status
+              {t("invoice.changeStatus")}
             </Menu.Item>
             <Menu.Item onClick={() => {}} className={menuItemClass}>
               <Paperclip className="size-3.5" />
-              {invoice.hasAttachment ? "Ver anexo" : "Anexar fatura"}
+              {invoice.hasAttachment ? t("invoice.viewAttachment") : t("invoice.attachInvoice")}
             </Menu.Item>
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>
     </Menu.Root>
   );
-}
-
-function formatReference(invoice: Invoice) {
-  if (!invoice.referenceMonth) return "Pagamento único";
-  const [year, month] = invoice.referenceMonth.split("-");
-  const label = new Date(Number(year), Number(month) - 1).toLocaleDateString(getLocale(), {
-    month: "long",
-    year: "numeric",
-  });
-  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 const STATUS_DOT: Record<InvoiceStatus, string> = {
@@ -108,6 +99,16 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
   const [monthFrom, setMonthFrom] = useState("");
   const [monthTo, setMonthTo] = useState("");
 
+  function formatReference(invoice: Invoice) {
+    if (!invoice.referenceMonth) return t("invoice.oneOffPayment");
+    const [year, month] = invoice.referenceMonth.split("-");
+    const label = new Date(Number(year), Number(month) - 1).toLocaleDateString(getLocale(), {
+      month: "long",
+      year: "numeric",
+    });
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  }
+
   const STATUS_OPTIONS: SelectOption[] = [
     { value: "all", label: t("invoice.allStatuses"), icon: <StatusDot className="bg-muted-foreground/40" /> },
     { value: "pending", label: invoiceStatusLabel("pending"), icon: <StatusDot className={STATUS_DOT.pending} /> },
@@ -118,13 +119,13 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
   const COLUMNS: Column<Invoice>[] = [
     {
       key: "month",
-      header: "Referência",
+      header: t("common.reference"),
       sortValue: effectiveMonth,
       cell: formatReference,
     },
     {
       key: "amount",
-      header: "Valor",
+      header: t("common.value"),
       sortValue: (invoice) => invoice.amount,
       cell: (invoice) => (
         <span className="inline-flex items-center gap-1.5">
@@ -135,7 +136,7 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
     },
     {
       key: "paymentMethod",
-      header: "Método",
+      header: t("common.method"),
       sortValue: (invoice) =>
         invoice.paymentMethod ? PAYMENT_METHOD_SORT_WEIGHT[invoice.paymentMethod] : -1,
       cell: (invoice) => {
@@ -151,7 +152,7 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
     },
     {
       key: "status",
-      header: "Status",
+      header: t("common.status"),
       sortValue: (invoice) => STATUS_SORT_WEIGHT[invoice.status],
       cell: (invoice) => (
         <Badge variant={STATUS_VARIANT[invoice.status]}>{invoiceStatusLabel(invoice.status)}</Badge>
@@ -177,15 +178,15 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
             options={STATUS_OPTIONS}
           />
         </div>
-        <MonthPicker aria-label="De" placeholder="De" value={monthFrom} onChange={setMonthFrom} />
-        <MonthPicker aria-label="Até" placeholder="Até" value={monthTo} onChange={setMonthTo} />
+        <MonthPicker aria-label={t("common.from")} placeholder={t("common.from")} value={monthFrom} onChange={setMonthFrom} />
+        <MonthPicker aria-label={t("common.to")} placeholder={t("common.to")} value={monthTo} onChange={setMonthTo} />
       </div>
 
       <DataTable
         data={filtered}
         columns={COLUMNS}
         rowKey={(invoice) => invoice.id}
-        emptyMessage="Nenhuma fatura encontrada com esses filtros."
+        emptyMessage={t("invoice.empty")}
       />
     </div>
   );

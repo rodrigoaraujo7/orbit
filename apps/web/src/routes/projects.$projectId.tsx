@@ -45,19 +45,20 @@ type EditDialogConfig = {
 };
 
 function BackLink() {
+  const { t } = useTranslation();
   return (
     <Link
       to="/projects"
       className="inline-flex items-center gap-1.5 rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
     >
       <ArrowLeft className="size-4" />
-      Projetos
+      {t("nav.projects")}
     </Link>
   );
 }
 
 function ProjectDetailPage() {
-  useTranslation();
+  const { t } = useTranslation();
   const { projectId } = Route.useParams();
   const { findProject, deleteProject } = useProjects();
   const { findContact } = useRegistry();
@@ -87,10 +88,10 @@ function ProjectDetailPage() {
   if (!project) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 px-6 py-24 text-center">
-        <p className="text-sm text-muted-foreground">Projeto não encontrado.</p>
+        <p className="text-sm text-muted-foreground">{t("projects.notFound")}</p>
         <Button variant="outline" size="sm" render={<Link to="/projects" />}>
           <ArrowLeft />
-          Voltar pra lista
+          {t("projects.backToList")}
         </Button>
       </div>
     );
@@ -98,7 +99,7 @@ function ProjectDetailPage() {
 
   const contact = findContact(project.clientId);
   const { deal } = project;
-  const invoices = generateInvoices(project, contact?.name ?? "—");
+  const invoices = generateInvoices(project, contact?.name ?? t("common.emDash"));
   // "is paid" is derived from billing — no separate flag that could drift
   const paidTools = project.tools.filter((tool) => tool.billing);
   // grouped by currency — tools in different currencies cannot be added up
@@ -111,7 +112,7 @@ function ProjectDetailPage() {
       return totals;
     }, {});
   const monthlyCostLabel = Object.entries(monthlyCostByCurrency)
-    .map(([currency, total]) => `${formatCurrency(total, currency)}/mês`)
+    .map(([currency, total]) => t("format.amountPerMonth", { amount: formatCurrency(total, currency) }))
     .join(" + ");
 
   return (
@@ -128,14 +129,14 @@ function ProjectDetailPage() {
       <ConfirmDialog
         open={confirmingDelete}
         onOpenChange={setConfirmingDelete}
-        title="Excluir projeto"
+        title={t("projects.deleteTitle")}
         description={
           <>
-            Excluir <Emphasis className="text-primary">{project.name}</Emphasis>? Essa ação não pode ser desfeita.
+            {t("common.delete")} <Emphasis className="text-primary">{project.name}</Emphasis>? {t("common.cannotUndo")}
           </>
         }
-        confirmLabel="Excluir"
-        confirmWord="excluir"
+        confirmLabel={t("common.delete")}
+        confirmWord={t("common.deleteWord")}
         onConfirm={removeProject}
       />
 
@@ -143,7 +144,7 @@ function ProjectDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <BackLink />
           <div className="flex gap-1">
-            <Tooltip label="Atualizar dados do projeto" side="top">
+            <Tooltip label={t("projects.refreshProject")} side="top">
               {/* ponytail: no-op — there is no real fetch yet (in-memory
                   state, see projects-store.tsx). Plug in a refetch once the
                   API exists. */}
@@ -157,17 +158,17 @@ function ProjectDetailPage() {
               onClick={() =>
                 openEditDialog({
                   sections: ["identity", "contact", "repository"],
-                  title: "Editar projeto",
-                  description: "Atualize nome, status, contato e repositório.",
+                  title: t("projects.editTitle"),
+                  description: t("projects.editIdentityDescription"),
                 })
               }
             >
               <Pencil />
-              Editar
+              {t("common.edit")}
             </Button>
             <Button variant="destructive" size="sm" onClick={() => setConfirmingDelete(true)}>
               <Trash2 />
-              Excluir
+              {t("common.delete")}
             </Button>
           </div>
         </div>
@@ -191,7 +192,7 @@ function ProjectDetailPage() {
         )}
         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
           <User className="size-3.5" />
-          <span>{contact?.name ?? "—"}</span>
+          <span>{contact?.name ?? t("common.emDash")}</span>
           {contact?.email && (
             <>
               <span aria-hidden="true">·</span>
@@ -211,10 +212,10 @@ function ProjectDetailPage() {
         <Tabs defaultValue="finance">
           <TabsDock>
             <TabsDockTab value="finance" icon={Wallet}>
-              Financeiro
+              {t("common.finance")}
             </TabsDockTab>
             <TabsDockTab value="tools" icon={Wrench}>
-              Ferramentas
+              {t("common.tools")}
             </TabsDockTab>
           </TabsDock>
 
@@ -222,22 +223,22 @@ function ProjectDetailPage() {
             <Card
               action={
                 <>
-                  <Tooltip label="Atualizar financeiro" side="top">
+                  <Tooltip label={t("projects.refreshFinance")} side="top">
                     {/* ponytail: no-op — same as the header refresh, no real
                         fetch yet (see the comment further up). */}
                     <Button variant="outline" size="icon-sm" onClick={() => {}}>
                       <RefreshCw />
                     </Button>
                   </Tooltip>
-                  <Tooltip label="Editar financeiro" side="top">
+                  <Tooltip label={t("projects.editFinance")} side="top">
                     <Button
                       variant="outline"
                       size="icon-sm"
                       onClick={() =>
                         openEditDialog({
                           sections: ["billing"],
-                          title: "Editar financeiro",
-                          description: "Atualize o valor e a forma de cobrança.",
+                          title: t("projects.editFinance"),
+                          description: t("projects.editFinanceDescription"),
                         })
                       }
                     >
@@ -260,22 +261,22 @@ function ProjectDetailPage() {
             <Card
               action={
                 <>
-                  <Tooltip label="Atualizar ferramentas" side="top">
+                  <Tooltip label={t("projects.refreshTools")} side="top">
                     {/* ponytail: no-op — same as the header refresh, no real
                         fetch yet (see the comment further up). */}
                     <Button variant="outline" size="icon-sm" onClick={() => {}}>
                       <RefreshCw />
                     </Button>
                   </Tooltip>
-                  <Tooltip label="Editar ferramentas" side="top">
+                  <Tooltip label={t("projects.editTools")} side="top">
                     <Button
                       variant="outline"
                       size="icon-sm"
                       onClick={() =>
                         openEditDialog({
                           sections: ["tools"],
-                          title: "Editar ferramentas",
-                          description: "Atualize as ferramentas usadas no projeto.",
+                          title: t("projects.editTools"),
+                          description: t("projects.editToolsDescription"),
                         })
                       }
                     >
@@ -286,12 +287,12 @@ function ProjectDetailPage() {
               }
             >
               <p className="font-subtitle text-2xl font-semibold tracking-tight">
-                {monthlyCostLabel || (paidTools.length > 0 ? "Sem cobrança mensal" : "Nenhuma ferramenta paga")}
+                {monthlyCostLabel || (paidTools.length > 0 ? t("projects.noMonthlyBilling") : t("projects.noPaidTools"))}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">{formatToolsProgress(project.tools)}</p>
 
               {project.tools.length === 0 ? (
-                <p className="mt-4 text-sm text-muted-foreground">Nenhuma ferramenta registrada.</p>
+                <p className="mt-4 text-sm text-muted-foreground">{t("projects.noTools")}</p>
               ) : (
                 <ul className="mt-4 flex flex-col divide-y">
                   {project.tools.map((tool) => (

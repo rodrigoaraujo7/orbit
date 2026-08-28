@@ -1,4 +1,5 @@
 import { Check, ChevronDown, User } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import {
   SelectIcon,
@@ -23,7 +24,7 @@ function contactSubtitle(contact: Contact) {
  * Contact select for the project form — same styled pieces as `ToolSelect`,
  * composed by hand because each option needs two lines (name + details), not
  * just a label. Creating a contact inline is the create-project-dialog's
- * "Criar um novo contato" checkbox, not this component's job.
+ * "create new contact" checkbox, not this component's job.
  */
 export function ContactSelect({
   id,
@@ -38,6 +39,7 @@ export function ContactSelect({
   "aria-invalid"?: boolean
   "aria-describedby"?: string
 }) {
+  const { t } = useTranslation()
   const { contacts, findContact } = useRegistry()
   const sortedContacts = [...contacts].sort((a, b) => a.name.localeCompare(b.name))
 
@@ -48,7 +50,7 @@ export function ContactSelect({
           {(selected: string | null) => {
             const contact = selected ? findContact(selected) : undefined
             if (!contact) {
-              return <span className="text-muted-foreground">Selecione o contato</span>
+              return <span className="text-muted-foreground">{t("projects.selectContact")}</span>
             }
             return (
               <span className="flex min-w-0 items-center gap-2 truncate">

@@ -35,7 +35,7 @@ import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { type Project } from "@/data/projects"
-import { dealKindOptions } from "@/i18n/labels"
+import { dealKindOptions, freeLabel } from "@/i18n/labels"
 import { getCurrencyOptions } from "@/lib/currency"
 import { formatCurrency, maskBrPhone } from "@/lib/format"
 import {
@@ -96,13 +96,6 @@ function Section({
 /** 2x to 24x — the same range as any installment simulator out there. */
 const MAX_INSTALLMENTS = 24
 
-function installmentOptions(amount: number, currency: string) {
-  return Array.from({ length: MAX_INSTALLMENTS - 1 }, (_, i) => i + 2).map((n) => ({
-    value: String(n),
-    label: `${n}x de ${formatCurrency(amount / n, currency)} sem juros`,
-  }))
-}
-
 export function CreateProjectDialog({
   open,
   onOpenChange,
@@ -120,14 +113,25 @@ export function CreateProjectDialog({
   title?: string
   description?: string
 }) {
-  useTranslation()
+  const { t } = useTranslation()
   const { addProject, updateProject } = useProjects()
   const { addContact, contacts, isContactsPending } = useRegistry()
+
+  function installmentOptions(amount: number, currency: string) {
+    return Array.from({ length: MAX_INSTALLMENTS - 1 }, (_, i) => i + 2).map((n) => ({
+      value: String(n),
+      label: t("format.installmentOption", {
+        count: n,
+        amount: formatCurrency(amount / n, currency),
+      }),
+    }))
+  }
 
   // the whole form goes into FormProvider: ToolField/SecretRow are nested and
   // consume it via useFormContext instead of taking control/register as props
   const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
+    resolver: (values, context, options) =>
+      zodResolver(projectSchema())(values, context, options),
     defaultValues: emptyProjectForm,
   })
   const {
@@ -202,41 +206,41 @@ export function CreateProjectDialog({
 
       if (project) {
         await updateProject(toProject(projectValues, project))
-        toast.add({ title: "Projeto atualizado", type: "success" })
+        toast.add({ title: t("projects.updated"), type: "success" })
       } else {
         await addProject(toProject(projectValues))
-        toast.add({ title: "Projeto criado", type: "success" })
+        toast.add({ title: t("projects.created"), type: "success" })
       }
       onOpenChange(false)
     } catch {
       toast.add({
-        title: project ? "Erro ao atualizar projeto" : "Erro ao criar projeto",
+        title: project ? t("projects.updateError") : t("projects.createError"),
         type: "error",
       })
     }
   })
 
   const isMobile = useIsMobile()
-  const heading = title ?? (project ? "Editar projeto" : "Novo projeto")
+  const heading = title ?? (project ? t("projects.editTitle") : t("projects.newTitle"))
   const subheading =
-    description ?? "Cadastre o projeto, o valor fechado e as ferramentas usadas."
+    description ?? t("projects.createDescription")
 
   const formFields = (
     <div className="flex flex-col gap-6">
       {sections.includes("identity") && (
-        <Section title="Identificação">
+        <Section title={t("projects.identity")}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Nome do projeto" error={errors.name?.message}>
+            <Field label={t("projects.projectName")} error={errors.name?.message}>
               {(props) => (
                 <Input
                   {...props}
                   {...register("name")}
-                  placeholder="Portal do Corretor"
+                  placeholder={t("projects.projectNamePlaceholder")}
                 />
               )}
             </Field>
 
-            <Field label="Status" error={errors.status?.message}>
+            <Field label={t("common.status")} error={errors.status?.message}>
               {(props) => (
                 <Controller
                   control={control}
@@ -256,7 +260,7 @@ export function CreateProjectDialog({
       )}
 
       {sections.includes("contact") && (
-        <Section title="Contato">
+        <Section title={t("projects.contact")}>
           {!forceNewContact && (
             <label className="flex items-center gap-2 text-sm text-muted-foreground select-none">
               <input
@@ -278,7 +282,7 @@ export function CreateProjectDialog({
                   },
                 })}
               />
-              Criar um novo contato
+              {t("projects.createNewContact")}
             </label>
           )}
 
@@ -287,32 +291,32 @@ export function CreateProjectDialog({
               key="new-contact-fields"
               className="grid animate-in fade-in slide-in-from-top-1 gap-4 duration-200 sm:grid-cols-2"
             >
-              <Field label="Nome" error={errors.newContactName?.message}>
+              <Field label={t("common.name")} error={errors.newContactName?.message}>
                 {(props) => (
                   <Input
                     {...props}
                     {...register("newContactName")}
-                    placeholder="Marcelo Tavares"
+                    placeholder={t("projects.namePlaceholder")}
                   />
                 )}
               </Field>
 
               <Field
-                label="E-mail"
+                label={t("common.email")}
                 error={errors.newContactEmail?.message}
-                hint="Opcional"
+                hint={t("common.optional")}
               >
                 {(props) => (
                   <Input
                     {...props}
                     {...register("newContactEmail")}
                     type="email"
-                    placeholder="marcelo@empresa.com.br"
+                    placeholder={t("projects.emailPlaceholder")}
                   />
                 )}
               </Field>
 
-              <Field label="Telefone" error={errors.newContactPhone?.message}>
+              <Field label={t("common.phone")} error={errors.newContactPhone?.message}>
                 {(props) => (
                   <Input
                     {...props}
@@ -323,17 +327,17 @@ export function CreateProjectDialog({
                     })}
                     inputMode="tel"
                     autoComplete="tel"
-                    placeholder="(11) 98765-4321"
+                    placeholder={t("projects.phonePlaceholder")}
                   />
                 )}
               </Field>
 
-              <Field label="Empresa" error={errors.newContactCompany?.message}>
+              <Field label={t("common.company")} error={errors.newContactCompany?.message}>
                 {(props) => (
                   <Input
                     {...props}
                     {...register("newContactCompany")}
-                    placeholder="Empresa Ltda"
+                    placeholder={t("projects.companyPlaceholder")}
                   />
                 )}
               </Field>
@@ -341,7 +345,7 @@ export function CreateProjectDialog({
           ) : (
             <Field
               key="contact-select"
-              label="Contato principal"
+              label={t("projects.mainContact")}
               error={errors.clientId?.message}
               className="animate-in fade-in slide-in-from-top-1 duration-200"
             >
@@ -365,11 +369,11 @@ export function CreateProjectDialog({
 
       {sections.includes("billing") && (
         <Section
-          title="Cobrança"
-          action={isFree && <Badge variant="outline">Grátis</Badge>}
+          title={t("projects.billing")}
+          action={isFree && <Badge variant="outline">{freeLabel()}</Badge>}
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Moeda" error={errors.currency?.message}>
+            <Field label={t("common.currency")} error={errors.currency?.message}>
               {(props) => (
                 <Controller
                   control={control}
@@ -386,7 +390,7 @@ export function CreateProjectDialog({
               )}
             </Field>
 
-            <Field label="Valor fechado" error={errors.amount?.message}>
+            <Field label={t("projects.agreedAmount")} error={errors.amount?.message}>
               {(props) => (
                 <Input
                   {...props}
@@ -406,7 +410,7 @@ export function CreateProjectDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
-              label="Cobrança"
+              label={t("projects.billing")}
               error={errors.dealKind?.message}
               className={
                 dealKind === "installment" && !isFree ? undefined : "sm:col-span-2"
@@ -431,7 +435,7 @@ export function CreateProjectDialog({
 
             {dealKind === "installment" && !isFree && (
               <Field
-                label="Parcelas"
+                label={t("projects.installments")}
                 error={errors.installments?.message}
                 className="animate-in fade-in slide-in-from-top-1 duration-200"
               >
@@ -459,10 +463,10 @@ export function CreateProjectDialog({
       )}
 
       {sections.includes("tools") && (
-        <Section title="Ferramentas">
+        <Section title={t("projects.tools")}>
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <Label>Ferramentas usadas</Label>
+              <Label>{t("projects.toolsUsed")}</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -470,13 +474,13 @@ export function CreateProjectDialog({
                 onClick={() => append(emptyToolForm)}
               >
                 <Plus />
-                Adicionar
+                {t("common.add")}
               </Button>
             </div>
 
             {fields.length === 0 ? (
               <p className="rounded-xl border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
-                Nenhuma ferramenta registrada.
+                {t("projects.noTools")}
               </p>
             ) : (
               <div className="flex flex-col gap-3">
@@ -494,11 +498,11 @@ export function CreateProjectDialog({
       )}
 
       {sections.includes("repository") && (
-        <Section title="Repositório">
+        <Section title={t("projects.repository")}>
           <Field
-            label="Repositório GitHub"
+            label={t("projects.githubRepo")}
             error={errors.repoPath?.message}
-            hint="Opcional"
+            hint={t("common.optional")}
           >
             {(props) => (
               <div
@@ -514,7 +518,7 @@ export function CreateProjectDialog({
                 <input
                   {...props}
                   {...register("repoPath")}
-                  placeholder="usuario/repo"
+                  placeholder={t("projects.repoPlaceholder")}
                   className="min-w-0 flex-1 bg-transparent px-3.5 text-[15px] outline-none placeholder:text-muted-foreground"
                 />
               </div>
@@ -527,11 +531,11 @@ export function CreateProjectDialog({
 
   const cancelButton = (
     <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-      Cancelar
+      {t("common.cancel")}
     </Button>
   )
   const submitButton = (
-    <Button type="submit">{project ? "Salvar alterações" : "Criar projeto"}</Button>
+    <Button type="submit">{project ? t("common.saveChanges") : t("projects.create")}</Button>
   )
 
   const formBody = (
@@ -582,7 +586,7 @@ export function CreateProjectDialog({
             variant="ghost"
             size="icon-sm"
             onClick={() => onOpenChange(false)}
-            aria-label="Fechar"
+            aria-label={t("common.close")}
           >
             <X />
           </Button>

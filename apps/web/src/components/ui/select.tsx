@@ -1,5 +1,6 @@
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { Check, ChevronDown } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { cn } from "@/lib/utils"
 
@@ -98,7 +99,7 @@ export function Select({
   value,
   onValueChange,
   options,
-  placeholder = "Selecione",
+  placeholder,
   disabled,
   "aria-invalid": ariaInvalid,
   "aria-describedby": describedBy,
@@ -112,6 +113,8 @@ export function Select({
   "aria-invalid"?: boolean
   "aria-describedby"?: string
 }) {
+  const { t } = useTranslation()
+  const resolvedPlaceholder = placeholder ?? t("common.select")
   return (
     <SelectRoot
       value={value || null}
@@ -132,7 +135,7 @@ export function Select({
                 <span className="truncate">{option.label}</span>
               </span>
             ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+              <span className="text-muted-foreground">{resolvedPlaceholder}</span>
             )
           }}
         </SelectValue>
