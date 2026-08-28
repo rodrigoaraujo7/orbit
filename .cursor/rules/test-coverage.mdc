@@ -1,0 +1,29 @@
+---
+description: Every behavior change ships with a colocated *.check.ts and a passing check script.
+alwaysApply: true
+---
+
+# Test coverage every time
+
+Do not ship a behavior change without automated coverage in the same change. If you add or change logic, add or update a check. Do not finish with “tests later”.
+
+This repo uses colocated Node self-checks, not Vitest/Jest. Keep that.
+
+```
+# ❌ BAD — new helper, no check
+src/lib/period-bounds.ts
+
+# ✅ GOOD — helper plus colocated check, wired in package.json
+src/lib/period-bounds.ts
+src/lib/period-bounds.check.ts
+```
+
+- Colocate `foo.check.ts` next to `foo.ts` (same folder). Name it after the module, e.g. `pagination.check.ts`.
+- Assert with a small local helper that **throws** on mismatch. End with `console.log("….check.ts: ok")`.
+- Run with `node --experimental-strip-types path/to/file.check.ts`. Wire a `check:` script (or append to existing `check` / `lint`) in that package’s `package.json`.
+- Changing covered behavior means **updating the check**, not deleting assertions.
+- Extract testable logic (pure functions, SQL filters, routers, schemas, parsers) out of UI. Do not add React Testing Library or a new test runner.
+- API DB checks use `createTestDb` / `withUser` like `projects.filters.check.ts`.
+- Run the relevant `pnpm --filter <pkg> check…` and keep it green before declaring done.
+
+**Out of scope** (no new check file): copy-only i18n catalog edits, comments, Cursor rules, docs, and CSS with no behavior change. Still run existing checks if those files are already covered (e.g. `check:i18n`).
