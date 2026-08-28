@@ -1,6 +1,8 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { compactSearch, invoiceSearchSchema, parseSearch } from "shared";
 
 import { CreateProjectDialog, type ProjectDialogSection } from "@/components/projects/create-project-dialog";
 import { InvoicesTable } from "@/components/projects/invoices-table";
@@ -14,9 +16,9 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { FREE_LABEL, isDealFree } from "@/data/projects";
 import { DEFAULT_CURRENCY } from "@/lib/currency";
 import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/format";
-import { generateInvoices } from "@/lib/invoices";
 import { useProjects } from "@/lib/projects-store";
 import { useRegistry } from "@/lib/registry-store";
+import { trpc } from "@/lib/trpc";
 
 // lucide-react has no GitHub brand logo — official svg inlined.
 function GitHubIcon({ className }: { className?: string }) {
@@ -56,19 +58,28 @@ function BackLink() {
 
 function ProjectDetailPage() {
   const { projectId } = Route.useParams();
+  const search = Route.useSearch();
   const { findProject, deleteProject } = useProjects();
   const { findContact } = useRegistry();
   const project = findProject(projectId);
-  // `editDialog` holds the last config used (title/sections) and is never
-  // cleared on close — it only changes when an edit button opens the dialog
-  // again. `dialogOpen` controls visibility alone. If `editDialog` were reset on
-  // close, `sections` would fall back to the default (all of them) while the
-  // modal is still playing its exit animation (~200ms), and the whole form
-  // would flash on screen before disappearing.
   const [editDialog, setEditDialog] = useState<EditDialogConfig | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const navigate = useNavigate();
+  const routeNavigate = Route.useNavigate();
+
+  const invoiceInput = {
+    projectId,
+    status: search.status,
+    monthFrom: search.from,
+    monthTo: search.to,
+  };
+  const invoicesQuery = useQuery({
+    queryKey: ["invoices", invoiceInput],
+    queryFn: () => trpc.invoices.list.query(invoiceInput),
+    placeholderData: keepPreviousData,
+    enabled: Boolean(project),
+  });
 
   function openEditDialog(config: EditDialogConfig) {
     setEditDialog(config);
@@ -79,6 +90,13 @@ function ProjectDetailPage() {
     if (!project) return;
     deleteProject(project.id);
     navigate({ to: "/projects" });
+  }
+
+  function patchInvoiceSearch(patch: Partial<typeof search>) {
+    void routeNavigate({
+      search: (prev) => compactSearch({ ...prev, ...patch }),
+      replace: true,
+    });
   }
 
   if (!project) {
@@ -95,7 +113,8 @@ function ProjectDetailPage() {
 
   const contact = findContact(project.clientId);
   const { deal } = project;
-  const invoices = generateInvoices(project, contact?.name ?? "—");
+  const invoices = invoicesQuery.data?.items ?? [];
+  const totals = invoicesQuery.data?.totals;
   // "is paid" is derived from billing — no separate flag that could drift
   const paidTools = project.tools.filter((tool) => tool.billing);
   // grouped by currency — tools in different currencies cannot be added up
@@ -247,9 +266,30 @@ function ProjectDetailPage() {
               <p className="font-subtitle text-2xl font-semibold tracking-tight">
                 {isDealFree(deal) ? FREE_LABEL : formatCurrency(deal.amount, deal.currency)}
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">{formatDealProgress(deal, invoices)}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {formatDealProgress(
+                  deal,
+                  totals
+                    ? { paid: totals.paid, total: totals.count, overdue: totals.overdue }
+                    : [],
+                )}
+              </p>
 
-              {invoices.length > 0 && <InvoicesTable invoices={invoices} />}
+              {(invoices.length > 0 || invoicesQuery.isPending || invoicesQuery.isFetching) && (
+                <InvoicesTable
+                  invoices={invoices}
+                  status={search.status ?? "all"}
+                  monthFrom={search.from ?? ""}
+                  monthTo={search.to ?? ""}
+                  onStatusChange={(status) =>
+                    patchInvoiceSearch({ status: status === "all" ? undefined : status })
+                  }
+                  onMonthFromChange={(from) => patchInvoiceSearch({ from: from || undefined })}
+                  onMonthToChange={(to) => patchInvoiceSearch({ to: to || undefined })}
+                  isPending={invoicesQuery.isPending}
+                  isFetching={invoicesQuery.isFetching}
+                />
+              )}
             </Card>
           </TabsPanel>
 
@@ -305,5 +345,6 @@ function ProjectDetailPage() {
 }
 
 export const Route = createFileRoute("/projects/$projectId")({
+  validateSearch: (search) => parseSearch(invoiceSearchSchema, search),
   component: ProjectDetailPage,
 });

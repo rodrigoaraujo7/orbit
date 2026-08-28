@@ -21,13 +21,13 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import type { Project } from "@/data/projects";
-import {
-  clientGrowth,
-  financeSummary,
-  profitByProject,
-  revenueByMonth,
-} from "@/lib/dashboard-metrics";
+import type {
+  ClientMonth,
+  FinanceSummary,
+  ProjectProfit,
+  RevenueMonth,
+  RulerLane,
+} from "shared";
 import {
   formatCompactCurrency,
   formatCurrency,
@@ -63,21 +63,23 @@ const clientsConfig = {
 } satisfies ChartConfig;
 
 export function FinanceTab({
-  projects,
+  summary,
+  revenue,
+  profits,
+  growth,
+  rulerLanes,
   months,
   currency,
 }: {
-  projects: Project[];
-  months: string[];
-  currency: string;
+  summary: FinanceSummary
+  revenue: RevenueMonth[]
+  profits: ProjectProfit[]
+  growth: ClientMonth[]
+  rulerLanes: RulerLane[]
+  months: string[]
+  currency: string
 }) {
   const motion = useChartMotion();
-  const summary = financeSummary(projects, months, currency);
-  const revenue = revenueByMonth(projects, months, currency);
-  const profits = profitByProject(projects, months, currency).filter(
-    (project) => project.receita > 0 || project.custo > 0,
-  );
-  const growth = clientGrowth(projects, months);
 
   const money = (value: number) => formatCurrency(value, currency);
   const hasRevenue = revenue.some((month) => month.recebido + month.aReceber + month.atrasado > 0);
@@ -265,7 +267,7 @@ export function FinanceTab({
         hint="Cada parcela no mês em que vence, por projeto"
         delay={480}
       >
-        <PaymentRuler projects={projects} months={months} currency={currency} />
+        <PaymentRuler lanes={rulerLanes} months={months} currency={currency} />
       </ChartCard>
     </div>
   );

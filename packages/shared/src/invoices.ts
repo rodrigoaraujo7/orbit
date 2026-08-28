@@ -1,17 +1,13 @@
-// Relative imports (not the "@/" alias) on purpose: dashboard-metrics.ts pulls
-// this module into a self-check that runs outside Vite, on
-// `node --experimental-strip-types`, and Node does not resolve the alias.
-import { isDealFree, type Invoice, type PaymentMethod, type Project } from "../data/projects.ts"
 import { DEFAULT_CURRENCY } from "./currency.ts"
 import { addMonths, dayOfMonth, monthOf, todayIso } from "./dates.ts"
+import type { InvoiceStatus, PaymentMethod } from "./domain.ts"
+import { isDealFree, type Invoice, type Project } from "./project.ts"
 
 const PAYMENT_METHODS: PaymentMethod[] = ["boleto", "pix"]
 
 /**
- * ponytail: mock derived from the `deal` — there's no invoice API yet, so an
+ * Mock derived from the `deal` — there's no persisted invoice API yet, so an
  * invoice isn't an entity of its own with history, it's computed on the fly.
- * Once the API exists: swap for real backend data (with genuinely editable
- * status and attachment, not decided by the due date).
  *
  * Anchored on `project.startedAt`, not on today: that's what gives the platform
  * a real timeline (past installments already paid, future ones still open) and
@@ -28,7 +24,7 @@ export function generateInvoices(project: Project, payerName: string): Invoice[]
   const billingDay = Number(project.startedAt.slice(8, 10))
 
   const dueDates = Array.from({ length: installments }, (_, index) =>
-    dayOfMonth(addMonths(startMonth, index), billingDay)
+    dayOfMonth(addMonths(startMonth, index), billingDay),
   )
   // Only reason `overdue` exists in the mock: one deterministic late payer, so
   // the dashboard has something to show in the "atrasado" series. A paused
@@ -38,11 +34,7 @@ export function generateInvoices(project: Project, payerName: string): Invoice[]
 
   return dueDates.map((dueDate, index) => {
     const isPaid = dueDate < today && index !== overdueIndex
-    const status: Invoice["status"] = isPaid
-      ? "paid"
-      : index === overdueIndex
-        ? "overdue"
-        : "pending"
+    const status: InvoiceStatus = isPaid ? "paid" : index === overdueIndex ? "overdue" : "pending"
 
     return {
       id: `${project.id}-invoice-${index + 1}`,
@@ -51,7 +43,6 @@ export function generateInvoices(project: Project, payerName: string): Invoice[]
       status,
       paymentMethod: isPaid ? PAYMENT_METHODS[index % 2] : undefined,
       generatedAt: dueDate,
-      // paid on the due date itself — the mock has no separate payment date
       paidAt: isPaid ? `${dueDate}T14:32` : undefined,
       payerName,
       hasAttachment: isPaid,

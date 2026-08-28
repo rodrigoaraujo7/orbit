@@ -9,13 +9,13 @@ import {
   Share2,
   Wallet,
 } from "lucide-react";
-import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { DataTable, type Column } from "@/components/ui/table";
+import { FilterPending, TableFilterSkeleton } from "@/components/ui/filter-pending";
 import {
   INVOICE_STATUS_LABEL,
   PAYMENT_METHOD_LABEL,
@@ -24,7 +24,7 @@ import {
   type PaymentMethod,
 } from "@/data/projects";
 import { formatCurrency, formatDateTime } from "@/lib/format";
-import { effectiveMonth, filterInvoices } from "@/lib/invoice-table";
+import { effectiveMonth } from "shared";
 import { cn } from "@/lib/utils";
 
 const PAYMENT_METHOD_ICON: Record<PaymentMethod, typeof Barcode> = {
@@ -162,33 +162,53 @@ const COLUMNS: Column<Invoice>[] = [
   },
 ];
 
-export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
-  const [status, setStatus] = useState<InvoiceStatus | "all">("all");
-  const [monthFrom, setMonthFrom] = useState("");
-  const [monthTo, setMonthTo] = useState("");
-
-  const filtered = filterInvoices(invoices, { status, monthFrom, monthTo });
-
+export function InvoicesTable({
+  invoices,
+  status,
+  monthFrom,
+  monthTo,
+  onStatusChange,
+  onMonthFromChange,
+  onMonthToChange,
+  isPending,
+  isFetching,
+}: {
+  invoices: Invoice[]
+  status: InvoiceStatus | "all"
+  monthFrom: string
+  monthTo: string
+  onStatusChange: (status: InvoiceStatus | "all") => void
+  onMonthFromChange: (value: string) => void
+  onMonthToChange: (value: string) => void
+  isPending: boolean
+  isFetching: boolean
+}) {
   return (
     <div className="mt-4">
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="w-44">
           <Select
             value={status}
-            onValueChange={(value) => setStatus(value as InvoiceStatus | "all")}
+            onValueChange={(value) => onStatusChange(value as InvoiceStatus | "all")}
             options={STATUS_OPTIONS}
           />
         </div>
-        <MonthPicker aria-label="De" placeholder="De" value={monthFrom} onChange={setMonthFrom} />
-        <MonthPicker aria-label="Até" placeholder="Até" value={monthTo} onChange={setMonthTo} />
+        <MonthPicker aria-label="De" placeholder="De" value={monthFrom} onChange={onMonthFromChange} />
+        <MonthPicker aria-label="Até" placeholder="Até" value={monthTo} onChange={onMonthToChange} />
       </div>
 
-      <DataTable
-        data={filtered}
-        columns={COLUMNS}
-        rowKey={(invoice) => invoice.id}
-        emptyMessage="Nenhuma fatura encontrada com esses filtros."
-      />
+      <FilterPending
+        isPending={isPending}
+        isFetching={isFetching}
+        skeleton={<TableFilterSkeleton rows={5} />}
+      >
+        <DataTable
+          data={invoices}
+          columns={COLUMNS}
+          rowKey={(invoice) => invoice.id}
+          emptyMessage="Nenhuma fatura encontrada com esses filtros."
+        />
+      </FilterPending>
     </div>
   );
 }

@@ -55,13 +55,21 @@ export function formatDeal(deal: Deal) {
 }
 
 /** "À vista", "3 de 3 parcelas pagas" or "1 de 3 parcelas pagas · 2 atrasadas". */
-export function formatDealProgress(deal: Deal, invoices: Invoice[]) {
+export function formatDealProgress(
+  deal: Deal,
+  invoices: Pick<Invoice, "status">[] | { paid: number; total: number; overdue: number },
+) {
   if (isDealFree(deal)) return FREE_LABEL
   if (deal.kind === "upfront") return "À vista"
 
-  const paid = invoices.filter((invoice) => invoice.status === "paid").length
-  const overdue = invoices.filter((invoice) => invoice.status === "overdue").length
-  const base = `${paid} de ${invoices.length} parcelas pagas`
+  const paid = Array.isArray(invoices)
+    ? invoices.filter((invoice) => invoice.status === "paid").length
+    : invoices.paid
+  const overdue = Array.isArray(invoices)
+    ? invoices.filter((invoice) => invoice.status === "overdue").length
+    : invoices.overdue
+  const total = Array.isArray(invoices) ? invoices.length : invoices.total
+  const base = `${paid} de ${total} parcelas pagas`
   return overdue > 0 ? `${base} · ${overdue} atrasada${overdue > 1 ? "s" : ""}` : base
 }
 
