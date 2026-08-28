@@ -1,9 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createRootRoute, Navigate, Outlet, useRouterState } from "@tanstack/react-router"
 import type { ReactNode } from "react"
+import { I18nextProvider } from "react-i18next"
 
 import { AppShell } from "@/components/layout/app-shell"
 import { Toaster } from "@/components/ui/toast"
+import i18n from "@/i18n"
 import { authClient } from "@/lib/auth-client"
 import { ProjectsProvider, useProjects } from "@/lib/projects-store"
 import { RegistryProvider, useRegistry } from "@/lib/registry-store"
@@ -51,6 +53,14 @@ function Gate() {
   )
 }
 
+function Root() {
+  return (
+    <I18nextProvider i18n={i18n}>
+      <Gate />
+    </I18nextProvider>
+  )
+}
+
 export const Route = createRootRoute({
-  component: Gate,
+  component: Root,
 })
