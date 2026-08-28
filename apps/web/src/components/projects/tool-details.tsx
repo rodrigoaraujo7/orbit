@@ -1,15 +1,12 @@
 import { useState } from "react"
 import { Eye, EyeOff, KeyRound } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/toast"
-import {
-  BILLING_CYCLE_LABEL,
-  PAYER_LABEL,
-  type Secret,
-  type Tool,
-} from "@/data/projects"
+import { type Secret, type Tool } from "@/data/projects"
+import { billingCycleLabel, payerLabel } from "@/i18n/labels"
 import { formatCurrency, formatDate } from "@/lib/format"
 import { ToolIcon } from "./tool-icons"
 
@@ -64,6 +61,7 @@ function SecretList({ secrets }: { secrets: Secret[] }) {
 }
 
 export function ToolDetails({ tool }: { tool: Tool }) {
+  useTranslation()
   const { billing } = tool
 
   return (
@@ -76,7 +74,7 @@ export function ToolDetails({ tool }: { tool: Tool }) {
         {billing ? (
           <Badge variant="default">
             {formatCurrency(billing.amount, billing.currency)} ·{" "}
-            {BILLING_CYCLE_LABEL[billing.cycle]}
+            {billingCycleLabel(billing.cycle)}
           </Badge>
         ) : (
           <Badge variant="outline">Free</Badge>
@@ -92,7 +90,7 @@ export function ToolDetails({ tool }: { tool: Tool }) {
           <>
             <div className="flex gap-1">
               <dt>Quem paga:</dt>
-              <dd>{PAYER_LABEL[billing.payer]}</dd>
+              <dd>{payerLabel(billing.payer)}</dd>
             </div>
             <div className="flex gap-1">
               <dt>Fatura:</dt>

@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { X } from "lucide-react"
 import { useLayoutEffect, useRef, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -27,17 +28,9 @@ import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { CustomTool } from "@/data/custom-tools"
-import {
-  TOOL_CATEGORY_LABEL,
-  TOOL_CATEGORY_ORDER,
-  type ToolCategory,
-} from "@/data/tool-catalog"
+import { TOOL_CATEGORY_ORDER, type ToolCategory } from "@/data/tool-catalog"
+import { toolCategoryOptions } from "@/i18n/labels"
 import { useRegistry } from "@/lib/registry-store"
-
-const categoryOptions = TOOL_CATEGORY_ORDER.map((category) => ({
-  value: category,
-  label: TOOL_CATEGORY_LABEL[category],
-}))
 
 const customToolSchema = z.object({
   name: z.string().trim().min(2, "Informe pelo menos 2 caracteres"),
@@ -64,7 +57,9 @@ export function CreateCustomToolDialog({
   /** present = editing this tool; absent = creating a new one */
   tool?: CustomTool
 }) {
+  useTranslation()
   const { addCustomTool, updateCustomTool } = useRegistry()
+  const categoryOptions = toolCategoryOptions()
   const {
     register,
     control,

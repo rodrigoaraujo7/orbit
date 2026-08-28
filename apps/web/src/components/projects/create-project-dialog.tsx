@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, X } from "lucide-react"
 import { useLayoutEffect, useRef, type ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 import {
   Controller,
   FormProvider,
@@ -33,7 +34,8 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { DEAL_KIND_LABEL, type Project } from "@/data/projects"
+import { type Project } from "@/data/projects"
+import { dealKindOptions } from "@/i18n/labels"
 import { getCurrencyOptions } from "@/lib/currency"
 import { formatCurrency, maskBrPhone } from "@/lib/format"
 import {
@@ -53,10 +55,6 @@ import { cn } from "@/lib/utils"
 import { ContactSelect } from "./contact-select"
 import { StatusSelect } from "./status-badges"
 import { ToolField } from "./tool-field"
-
-const dealKindOptions = Object.entries(DEAL_KIND_LABEL).map(
-  ([value, label]) => ({ value, label })
-)
 
 export type ProjectDialogSection =
   | "identity"
@@ -122,6 +120,7 @@ export function CreateProjectDialog({
   title?: string
   description?: string
 }) {
+  useTranslation()
   const { addProject, updateProject } = useProjects()
   const { addContact, contacts, isContactsPending } = useRegistry()
 
@@ -422,7 +421,7 @@ export function CreateProjectDialog({
                       {...props}
                       value={field.value}
                       onValueChange={field.onChange}
-                      options={dealKindOptions}
+                      options={dealKindOptions()}
                       disabled={isFree}
                     />
                   )}

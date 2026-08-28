@@ -10,20 +10,16 @@ import {
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { DataTable, type Column } from "@/components/ui/table";
-import {
-  INVOICE_STATUS_LABEL,
-  PAYMENT_METHOD_LABEL,
-  type Invoice,
-  type InvoiceStatus,
-  type PaymentMethod,
-} from "@/data/projects";
+import { type Invoice, type InvoiceStatus, type PaymentMethod } from "@/data/projects";
 import { getLocale } from "@/i18n";
+import { invoiceStatusLabel, paymentMethodLabel } from "@/i18n/labels";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { effectiveMonth, filterInvoices } from "@/lib/invoice-table";
 import { cn } from "@/lib/utils";
@@ -102,71 +98,72 @@ function StatusDot({ className }: { className?: string }) {
   return <span className={cn("size-2 shrink-0 rounded-full", className)} />;
 }
 
-const STATUS_OPTIONS: SelectOption[] = [
-  { value: "all", label: "Todos os status", icon: <StatusDot className="bg-muted-foreground/40" /> },
-  { value: "pending", label: INVOICE_STATUS_LABEL.pending, icon: <StatusDot className={STATUS_DOT.pending} /> },
-  { value: "paid", label: INVOICE_STATUS_LABEL.paid, icon: <StatusDot className={STATUS_DOT.paid} /> },
-  { value: "overdue", label: INVOICE_STATUS_LABEL.overdue, icon: <StatusDot className={STATUS_DOT.overdue} /> },
-];
-
 // Urgency order, not alphabetical: whatever needs action comes first.
 const STATUS_SORT_WEIGHT: Record<InvoiceStatus, number> = { pending: 0, overdue: 1, paid: 2 };
 const PAYMENT_METHOD_SORT_WEIGHT: Record<PaymentMethod, number> = { boleto: 0, pix: 1 };
 
-const COLUMNS: Column<Invoice>[] = [
-  {
-    key: "month",
-    header: "Referência",
-    sortValue: effectiveMonth,
-    cell: formatReference,
-  },
-  {
-    key: "amount",
-    header: "Valor",
-    sortValue: (invoice) => invoice.amount,
-    cell: (invoice) => (
-      <span className="inline-flex items-center gap-1.5">
-        <Wallet className="size-3.5 shrink-0 text-muted-foreground" />
-        {formatCurrency(invoice.amount, invoice.currency)}
-      </span>
-    ),
-  },
-  {
-    key: "paymentMethod",
-    header: "Método",
-    sortValue: (invoice) =>
-      invoice.paymentMethod ? PAYMENT_METHOD_SORT_WEIGHT[invoice.paymentMethod] : -1,
-    cell: (invoice) => {
-      const MethodIcon = invoice.paymentMethod ? PAYMENT_METHOD_ICON[invoice.paymentMethod] : CreditCard;
-      return (
-        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-          <MethodIcon className="size-3.5 shrink-0" />
-          {invoice.paymentMethod ? PAYMENT_METHOD_LABEL[invoice.paymentMethod] : "Não definido"}
-          {invoice.paidAt && ` (${formatDateTime(invoice.paidAt)})`}
-        </span>
-      );
-    },
-  },
-  {
-    key: "status",
-    header: "Status",
-    sortValue: (invoice) => STATUS_SORT_WEIGHT[invoice.status],
-    cell: (invoice) => (
-      <Badge variant={STATUS_VARIANT[invoice.status]}>{INVOICE_STATUS_LABEL[invoice.status]}</Badge>
-    ),
-  },
-  {
-    key: "actions",
-    header: "",
-    className: "w-10 text-right",
-    cell: (invoice) => <InvoiceActionsMenu invoice={invoice} />,
-  },
-];
-
 export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<InvoiceStatus | "all">("all");
   const [monthFrom, setMonthFrom] = useState("");
   const [monthTo, setMonthTo] = useState("");
+
+  const STATUS_OPTIONS: SelectOption[] = [
+    { value: "all", label: t("invoice.allStatuses"), icon: <StatusDot className="bg-muted-foreground/40" /> },
+    { value: "pending", label: invoiceStatusLabel("pending"), icon: <StatusDot className={STATUS_DOT.pending} /> },
+    { value: "paid", label: invoiceStatusLabel("paid"), icon: <StatusDot className={STATUS_DOT.paid} /> },
+    { value: "overdue", label: invoiceStatusLabel("overdue"), icon: <StatusDot className={STATUS_DOT.overdue} /> },
+  ];
+
+  const COLUMNS: Column<Invoice>[] = [
+    {
+      key: "month",
+      header: "Referência",
+      sortValue: effectiveMonth,
+      cell: formatReference,
+    },
+    {
+      key: "amount",
+      header: "Valor",
+      sortValue: (invoice) => invoice.amount,
+      cell: (invoice) => (
+        <span className="inline-flex items-center gap-1.5">
+          <Wallet className="size-3.5 shrink-0 text-muted-foreground" />
+          {formatCurrency(invoice.amount, invoice.currency)}
+        </span>
+      ),
+    },
+    {
+      key: "paymentMethod",
+      header: "Método",
+      sortValue: (invoice) =>
+        invoice.paymentMethod ? PAYMENT_METHOD_SORT_WEIGHT[invoice.paymentMethod] : -1,
+      cell: (invoice) => {
+        const MethodIcon = invoice.paymentMethod ? PAYMENT_METHOD_ICON[invoice.paymentMethod] : CreditCard;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+            <MethodIcon className="size-3.5 shrink-0" />
+            {invoice.paymentMethod ? paymentMethodLabel(invoice.paymentMethod) : t("invoice.undefinedMethod")}
+            {invoice.paidAt && ` (${formatDateTime(invoice.paidAt)})`}
+          </span>
+        );
+      },
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortValue: (invoice) => STATUS_SORT_WEIGHT[invoice.status],
+      cell: (invoice) => (
+        <Badge variant={STATUS_VARIANT[invoice.status]}>{invoiceStatusLabel(invoice.status)}</Badge>
+      ),
+    },
+    {
+      key: "actions",
+      header: "",
+      className: "w-10 text-right",
+      cell: (invoice) => <InvoiceActionsMenu invoice={invoice} />,
+    },
+  ];
 
   const filtered = filterInvoices(invoices, { status, monthFrom, monthTo });
 

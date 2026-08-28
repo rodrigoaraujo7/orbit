@@ -1,4 +1,5 @@
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
+import { useTranslation } from "react-i18next";
 
 import { ChartCard, NoData, StatRow, StatTile } from "@/components/dashboard/cards";
 import { axisProps, surfaceGap, useChartMotion } from "@/components/dashboard/chart-parts";
@@ -13,8 +14,13 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { DataTable, type Column } from "@/components/ui/table";
-import { BILLING_CYCLE_LABEL, PAYER_LABEL, type Project } from "@/data/projects";
-import { TOOL_CATEGORY_LABEL } from "@/data/tool-catalog";
+import { type Project } from "@/data/projects";
+import {
+  billingCycleLabel,
+  categoryCostLabel,
+  payerLabel,
+  toolCategoryLabel,
+} from "@/i18n/labels";
 import {
   toolCostByCategory,
   toolCostByMonth,
@@ -46,6 +52,7 @@ export function ToolsTab({
   months: string[];
   currency: string;
 }) {
+  useTranslation();
   const motion = useChartMotion();
   const summary = toolsSummary(projects, months, currency);
   const byTool = toolCostByTool(projects, months, currency);
@@ -79,7 +86,7 @@ export function ToolsTab({
       className: "hidden md:table-cell",
       sortValue: (row) => row.category,
       cell: (row) => (
-        <span className="text-muted-foreground">{TOOL_CATEGORY_LABEL[row.category]}</span>
+        <span className="text-muted-foreground">{toolCategoryLabel(row.category)}</span>
       ),
     },
     {
@@ -96,7 +103,7 @@ export function ToolsTab({
       sortValue: (row) => row.amount,
       cell: (row) => (
         <span className="tabular-nums text-muted-foreground">
-          {money(row.amount)} · {BILLING_CYCLE_LABEL[row.cycle].toLowerCase()}
+          {money(row.amount)} · {billingCycleLabel(row.cycle).toLowerCase()}
         </span>
       ),
     },
@@ -114,7 +121,7 @@ export function ToolsTab({
       header: "Quem paga",
       sortValue: (row) => row.payer,
       cell: (row) => (
-        <Badge variant={row.payer === "me" ? "default" : "muted"}>{PAYER_LABEL[row.payer]}</Badge>
+        <Badge variant={row.payer === "me" ? "default" : "muted"}>{payerLabel(row.payer)}</Badge>
       ),
     },
   ];
@@ -245,7 +252,7 @@ export function ToolsTab({
                           className="size-2.5 shrink-0 rounded-sm"
                           style={{ background: `var(--chart-${category.slot})` }}
                         />
-                        <span className="truncate">{category.label}</span>
+                        <span className="truncate">{categoryCostLabel(category.key)}</span>
                       </span>
                       <span className="shrink-0 tabular-nums">{money(category.total)}</span>
                     </div>

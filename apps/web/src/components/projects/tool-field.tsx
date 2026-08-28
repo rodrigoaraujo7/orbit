@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form"
 import { Eye, EyeOff, KeyRound, Plus, Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,19 +9,11 @@ import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
-import { BILLING_CYCLE_LABEL, PAYER_LABEL } from "@/data/projects"
 import { OTHER_TOOL_ID } from "@/data/tool-catalog"
+import { billingCycleOptions, payerOptions } from "@/i18n/labels"
 import { getCurrencyOptions } from "@/lib/currency"
 import { hasPositiveAmount, type ProjectFormValues } from "@/lib/project-schema"
 import { ToolSelect } from "./tool-select"
-
-const cycleOptions = Object.entries(BILLING_CYCLE_LABEL).map(
-  ([value, label]) => ({ value, label })
-)
-const payerOptions = Object.entries(PAYER_LABEL).map(([value, label]) => ({
-  value,
-  label,
-}))
 
 function SecretRow({
   toolIndex,
@@ -101,6 +94,7 @@ export function ToolField({
   index: number
   onRemove: () => void
 }) {
+  useTranslation()
   const {
     control,
     register,
@@ -227,7 +221,7 @@ export function ToolField({
                     {...props}
                     value={field.value}
                     onValueChange={field.onChange}
-                    options={cycleOptions}
+                    options={billingCycleOptions()}
                     disabled={!paid}
                   />
                 )}
@@ -260,7 +254,7 @@ export function ToolField({
                     {...props}
                     value={field.value}
                     onValueChange={field.onChange}
-                    options={payerOptions}
+                    options={payerOptions()}
                     disabled={!paid}
                   />
                 )}

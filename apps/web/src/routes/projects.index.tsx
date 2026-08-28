@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { ExternalLink, Plus } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { PageHeader } from "@/components/layout/page"
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog"
@@ -20,12 +21,8 @@ import { Input } from "@/components/ui/input"
 import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import { DataTable, type Column } from "@/components/ui/table"
 import { toast } from "@/components/ui/toast"
-import {
-  BILLING_CYCLE_LABEL,
-  type Project,
-  type ProjectStatus,
-  type WorkflowStatus,
-} from "@/data/projects"
+import { type Project, type ProjectStatus, type WorkflowStatus } from "@/data/projects"
+import { billingCycleLabel } from "@/i18n/labels"
 import { formatCurrency, formatDeal } from "@/lib/format"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
@@ -66,6 +63,7 @@ function ProjectFilterFields({
 }
 
 function ProjectsPage() {
+  useTranslation()
   const { projects, deleteProject } = useProjects()
   const { findContact } = useRegistry()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -149,7 +147,7 @@ function ProjectsPage() {
               variant={tool.billing ? "default" : "outline"}
               title={
                 tool.billing
-                  ? `Paga · ${formatCurrency(tool.billing.amount, tool.billing.currency)} ${BILLING_CYCLE_LABEL[tool.billing.cycle].toLowerCase()}`
+                  ? `Paga · ${formatCurrency(tool.billing.amount, tool.billing.currency)} ${billingCycleLabel(tool.billing.cycle).toLowerCase()}`
                   : "Plano free"
               }
             >
