@@ -9,6 +9,7 @@ import {
   payerSchema,
   paymentMethodSchema,
   projectStatusSchema,
+  workflowStatusSchema,
 } from "./domain.ts"
 import { AUDIT_ACTIONS, auditModuleSchema } from "./audit.ts"
 
@@ -26,6 +27,7 @@ assert.ok(billingCycleSchema.safeParse("one-off").success, "one-off is a cycle")
 assert.ok(payerSchema.safeParse("me").success, "me is a payer")
 assert.ok(invoiceStatusSchema.safeParse("overdue").success, "overdue is a status")
 assert.ok(paymentMethodSchema.safeParse("pix").success, "pix is a method")
+assert.ok(workflowStatusSchema.safeParse("success").success, "success is a workflow")
 assert.ok(projectStatusSchema.options.length === 5, "five statuses")
 assert.ok(auditModuleSchema.safeParse("settings").success, "settings is a module")
 assert.ok(!auditModuleSchema.safeParse("financial").success, "financial is not a module")

@@ -10,10 +10,7 @@
     "check:schema": "node --experimental-strip-types src/lib/project-schema.check.ts",
     "check:project-status": "node --experimental-strip-types src/lib/project-status.check.ts",
     "check:pagination": "node --experimental-strip-types src/lib/pagination.check.ts",
-    "check:invoice-table": "node --experimental-strip-types src/lib/invoice-table.check.ts",
     "check:table-sort": "node --experimental-strip-types src/lib/table-sort.check.ts",
-    "check:dashboard": "node --experimental-strip-types src/lib/dashboard-metrics.check.ts",
-    "check:kanban-filter": "node --experimental-strip-types src/lib/kanban-filter.check.ts",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -1,14 +1,17 @@
-import { and, eq } from "drizzle-orm"
+import { and, eq, gte, ilike, lte, or } from "drizzle-orm"
 import { z } from "zod"
 import {
   billingCycleSchema,
   dealKindSchema,
   fromCents,
+  lastDayOfMonth,
   payerSchema,
+  projectListFiltersSchema,
   projectStatusSchema,
   toCents,
+  type ProjectListFilters,
 } from "shared"
-import { credential, project, projectTool } from "../db/schema.ts"
+import { contact, credential, project, projectTool } from "../db/schema.ts"
 import type { Tx } from "../db/with-user.ts"
 import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
 import { diffProject, type ProjectDiffInput } from "../audit/diff.ts"
@@ -103,20 +106,45 @@ function rowToProject(
   }
 }
 
-async function loadProjects(tx: Parameters<Parameters<typeof asUser>[1]>[0], userId: string) {
-  const rows = await tx.select().from(project)
+function escapeIlike(value: string) {
+  return value.replaceAll("\\", "\\\\").replaceAll("%", "\\%").replaceAll("_", "\\_")
+}
+
+export async function listProjects(tx: Tx, _userId: string, filters?: ProjectListFilters) {
+  const conditions = []
+  if (filters?.status) conditions.push(eq(project.status, filters.status))
+  if (filters?.workflow) conditions.push(eq(project.repoWorkflow, filters.workflow))
+  if (filters?.clientId) conditions.push(eq(project.contactId, filters.clientId))
+  if (filters?.monthFrom) conditions.push(gte(project.startedAt, `${filters.monthFrom}-01`))
+  if (filters?.monthTo) conditions.push(lte(project.startedAt, lastDayOfMonth(filters.monthTo)))
+  if (filters?.q) {
+    const q = `%${escapeIlike(filters.q)}%`
+    conditions.push(or(ilike(project.name, q), ilike(contact.name, q)))
+  }
+
+  const where = conditions.length ? and(...conditions) : undefined
+  const rows = filters?.q
+    ? (
+        await tx
+          .select({ project })
+          .from(project)
+          .leftJoin(contact, eq(project.contactId, contact.id))
+          .where(where)
+      ).map((row: { project: typeof project.$inferSelect }) => row.project)
+    : await tx.select().from(project).where(where)
+
   const tools = await tx.select().from(projectTool)
   const secrets = await tx.select().from(credential)
-  return rows.map((row) =>
+  return rows.map((row: typeof project.$inferSelect) =>
     rowToProject(
       row,
       tools
-        .filter((tool) => tool.projectId === row.id)
-        .map((tool) => ({
+        .filter((tool: typeof projectTool.$inferSelect) => tool.projectId === row.id)
+        .map((tool: typeof projectTool.$inferSelect) => ({
           ...tool,
           secrets: secrets
-            .filter((s) => s.projectToolId === tool.id)
-            .map((s) => ({ key: s.label, value: "" })),
+            .filter((s: typeof credential.$inferSelect) => s.projectToolId === tool.id)
+            .map((s: typeof credential.$inferSelect) => ({ key: s.label, value: "" })),
         })),
     ),
   )
@@ -240,7 +268,9 @@ async function loadToolsForDiff(tx: Tx, projectId: string) {
 }
 
 export const projectsRouter = router({
-  list: protectedProcedure.query(({ ctx }) => asUser(ctx, (tx) => loadProjects(tx, ctx.userId))),
+  list: protectedProcedure
+    .input(projectListFiltersSchema.optional())
+    .query(({ ctx, input }) => asUser(ctx, (tx) => listProjects(tx, ctx.userId, input))),
 
   create: protectedProcedure.input(projectInput).mutation(async ({ ctx, input }) => {
     const id = input.id ?? crypto.randomUUID()

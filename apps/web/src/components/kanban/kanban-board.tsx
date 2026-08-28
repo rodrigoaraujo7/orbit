@@ -11,7 +11,6 @@ import {
   isProjectStatus,
   placeProjectInColumns,
   projectIdsByStatus,
-  projectsFromColumns,
   type ProjectColumns,
 } from "@/lib/project-status"
 import { KanbanCard } from "./kanban-card"
@@ -31,15 +30,15 @@ type DropNode = {
 }
 
 export function KanbanBoard({
+  projects,
   clientName,
   onOpen,
-  filter,
 }: {
+  projects: Project[]
   clientName: (clientId: string) => string
   onOpen: (id: string) => void
-  filter?: (project: Project) => boolean
 }) {
-  const { projects, replaceProjects } = useProjects()
+  const { moveProject } = useProjects()
   const reducedMotion = useReducedMotion()
   const dragging = useRef(false)
   const snapshot = useRef<ProjectColumns | null>(null)
@@ -62,9 +61,7 @@ export function KanbanBoard({
   function projectsIn(status: ProjectStatus): Project[] {
     return columns[status].flatMap((id) => {
       const project = byId.get(id)
-      if (!project) return []
-      if (filter && !filter(project)) return []
-      return [project]
+      return project ? [project] : []
     })
   }
 
@@ -76,8 +73,6 @@ export function KanbanBoard({
         snapshot.current = columnsRef.current
       }}
       onDragOver={(event) => {
-        // Keep React in charge of parent changes. The optimistic plugin
-        // moves DOM nodes across columns and React 19 throws removeChild.
         event.preventDefault()
         const { source, target } = event.operation
         if (!isSortable(source) || !target) return
@@ -104,7 +99,15 @@ export function KanbanBoard({
           return
         }
 
-        replaceProjects(projectsFromColumns(projects, columnsRef.current))
+        const source = event.operation.source
+        if (source) {
+          const id = String(source.id)
+          const status = columnOfId(columnsRef.current, id)
+          if (status) {
+            const index = columnsRef.current[status].indexOf(id)
+            moveProject(id, status, index)
+          }
+        }
         snapshot.current = null
       }}
     >
