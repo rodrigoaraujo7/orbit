@@ -5,13 +5,68 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
+import { Languages } from "lucide-react"
+
 import Grainient from "@/components/Grainient"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import i18n from "@/i18n"
+import i18n, { getLocale, setLocale, type Locale } from "@/i18n"
 import { authClient } from "@/lib/auth-client"
+import { authErrorMessage } from "@/lib/auth-errors"
 import { cn } from "@/lib/utils"
+
+const LOCALE_ORDER = ["en-US", "pt-BR"] as const
+
+function LocaleToggle() {
+  const { t } = useTranslation()
+  const locale = getLocale()
+  const labels = {
+    "en-US": t("common.english"),
+    "pt-BR": t("common.portuguese"),
+  } as const
+  const [offset, setOffset] = useState(() => LOCALE_ORDER.indexOf(locale))
+
+  function toggle() {
+    const next: Locale = locale === "en-US" ? "pt-BR" : "en-US"
+    setOffset((value) => value + 1)
+    setLocale(next)
+  }
+
+  const reel = Array.from({ length: offset + 2 }, (_, index) => LOCALE_ORDER[index % LOCALE_ORDER.length])
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="xs"
+      aria-label={t("common.language")}
+      onClick={toggle}
+      className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground"
+    >
+      <Languages />
+      <span className="grid justify-items-start">
+        {LOCALE_ORDER.map((code) => (
+          <span key={code} className="invisible col-start-1 row-start-1 font-medium">
+            {labels[code]}
+          </span>
+        ))}
+        <span className="col-start-1 row-start-1 block h-[1.25em] overflow-hidden leading-[1.25em]">
+          <span
+            className="flex flex-col motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.22,1.4,0.36,1)] motion-reduce:transition-none"
+            style={{ transform: `translateY(${-offset * 1.25}em)` }}
+          >
+            {reel.map((code, index) => (
+              <span key={`${code}-${index}`} className="h-[1.25em] font-medium leading-[1.25em]">
+                {labels[code]}
+              </span>
+            ))}
+          </span>
+        </span>
+      </span>
+    </Button>
+  )
+}
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -46,14 +101,6 @@ function authSchema(mode: "signin" | "signup", step: "credentials" | "totp") {
 
 type AuthFormValues = z.infer<ReturnType<typeof authSchema>>
 
-function authErrorMessage(
-  error: { code?: string; message?: string },
-  fallback: string,
-) {
-  if (error.code === "INVALID_EMAIL_OR_PASSWORD") return i18n.t("auth.invalidCredentials")
-  return error.message ?? fallback
-}
-
 function LoginPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -83,7 +130,7 @@ function LoginPage() {
     if (step === "totp") {
       const result = await authClient.twoFactor.verifyTotp({ code: values.totp })
       if (result.error) {
-        setError("totp", { message: result.error.message ?? t("auth.invalidCode") })
+        setError("totp", { message: authErrorMessage(result.error, t("auth.invalidCode")) })
         return
       }
       await navigate({ to: "/" })
@@ -98,7 +145,12 @@ function LoginPage() {
           })
         : await authClient.signIn.email({ email: values.email, password: values.password })
     if (result.error) {
-      setError("password", { message: authErrorMessage(result.error, t("auth.signInFailed")) })
+      setError("password", {
+        message: authErrorMessage(
+          result.error,
+          mode === "signup" ? t("auth.signUpFailed") : t("auth.signInFailed"),
+        ),
+      })
       return
     }
     if (mode === "signin" && result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) {
@@ -142,8 +194,11 @@ function LoginPage() {
         className="relative z-10 flex w-full max-w-sm flex-col gap-4 rounded-xl bg-card/40 p-6 shadow-lg ring-1 ring-white/10 backdrop-blur-xl"
       >
         <div className="flex flex-col items-start gap-2">
-          <div className="grid size-10 place-items-center rounded-lg bg-muted text-base font-bold text-muted-foreground">
-            P
+          <div className="flex w-full items-start justify-between gap-2">
+            <div className="grid size-10 place-items-center rounded-lg bg-muted text-base font-bold text-muted-foreground">
+              P
+            </div>
+            <LocaleToggle />
           </div>
           <h1
             key={`${step}-${mode}`}

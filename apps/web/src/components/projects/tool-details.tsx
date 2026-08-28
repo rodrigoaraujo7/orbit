@@ -28,7 +28,7 @@ function SecretList({ secrets }: { secrets: Secret[] }) {
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <KeyRound className="size-3.5" />
-          {secrets.length} {secrets.length === 1 ? t("common.secret") : t("common.secrets")}
+          {t("common.secretCount", { count: secrets.length })}
         </span>
         <Button
           type="button"
