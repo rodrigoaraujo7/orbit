@@ -1,6 +1,7 @@
 import type { AuditChange, AuditModule } from "shared"
 
 import { PROJECT_STATUS_LABEL, type ProjectStatus } from "../data/projects.ts"
+import { getLocale } from "../i18n/index.ts"
 
 export const AUDIT_MODULE_LABEL: Record<AuditModule, string> = {
   project: "Projetos",
@@ -100,7 +101,7 @@ export function formatAuditChange(
 }
 
 export function formatAuditAt(iso: string) {
-  return new Date(iso).toLocaleString("pt-BR", {
+  return new Date(iso).toLocaleString(getLocale(), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
