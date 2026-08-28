@@ -4,7 +4,6 @@ import {
   createContext,
   useContext,
   useMemo,
-  useRef,
   useState,
   type ComponentProps,
   type ReactNode,
@@ -66,12 +65,12 @@ function ResponsiveDialog({
   const isOpen = open ?? uncontrolledOpen
 
   // Freeze the shell while open so a mid-edit resize does not remount the
-  // tree (Dialog ↔ Drawer) and wipe form state.
-  const isMobileRef = useRef(isMobileNow)
-  if (!isOpen) {
-    isMobileRef.current = isMobileNow
+  // tree (Dialog ↔ Drawer) and wipe form state. Sync only while closed —
+  // the same "adjust state during render" pattern as ConfirmDialog.
+  const [isMobile, setIsMobile] = useState(isMobileNow)
+  if (!isOpen && isMobile !== isMobileNow) {
+    setIsMobile(isMobileNow)
   }
-  const isMobile = isMobileRef.current
 
   const contextValue = useMemo(() => ({ isMobile }), [isMobile])
 
