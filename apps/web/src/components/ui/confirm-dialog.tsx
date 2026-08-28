@@ -21,8 +21,8 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel = "Confirmar",
-  /** present = the user must type this word to enable the confirm button */
-  confirmWord,
+  /** word the user must type to enable the confirm button */
+  confirmWord = "excluir",
   onConfirm,
 }: {
   open: boolean
@@ -44,27 +44,7 @@ export function ConfirmDialog({
   }
 
   const confirmDisabled =
-    confirmWord != null && typed.trim().toLowerCase() !== confirmWord.toLowerCase()
-
-  const confirmField =
-    confirmWord != null ? (
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="confirm-word">
-          Digite{" "}
-          <Emphasis italic={false} className="text-destructive">
-            {confirmWord}
-          </Emphasis>{" "}
-          para confirmar
-        </Label>
-        <Input
-          id="confirm-word"
-          value={typed}
-          onChange={(event) => setTyped(event.target.value)}
-          autoComplete="off"
-          autoFocus
-        />
-      </div>
-    ) : null
+    typed.trim().toLowerCase() !== confirmWord.toLowerCase()
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
@@ -78,9 +58,24 @@ export function ConfirmDialog({
           </div>
           <ResponsiveDialogClose />
         </ResponsiveDialogHeader>
-        {confirmField != null && (
-          <ResponsiveDialogBody>{confirmField}</ResponsiveDialogBody>
-        )}
+        <ResponsiveDialogBody>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="confirm-word">
+              Digite{" "}
+              <Emphasis italic={false} className="text-destructive">
+                {confirmWord}
+              </Emphasis>{" "}
+              para confirmar
+            </Label>
+            <Input
+              id="confirm-word"
+              value={typed}
+              onChange={(event) => setTyped(event.target.value)}
+              autoComplete="off"
+              autoFocus
+            />
+          </div>
+        </ResponsiveDialogBody>
         <ResponsiveDialogFooter>
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             Cancelar

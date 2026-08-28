@@ -107,6 +107,7 @@ export function ContactsPanel() {
           </>
         }
         confirmLabel="Excluir"
+        confirmWord="excluir"
         onConfirm={() => {
           if (!deletingContact) return
           if (projects.some((p) => p.clientId === deletingContact.id)) {
