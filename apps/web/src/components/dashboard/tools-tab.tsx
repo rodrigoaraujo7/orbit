@@ -14,21 +14,19 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { DataTable, type Column } from "@/components/ui/table";
-import { type Project } from "@/data/projects";
 import {
   billingCycleLabel,
   categoryCostLabel,
   payerLabel,
   toolCategoryLabel,
 } from "@/i18n/labels";
-import {
-  toolCostByCategory,
-  toolCostByMonth,
-  toolCostByTool,
-  toolRows,
-  toolsSummary,
-  type ToolRow,
-} from "@/lib/dashboard-metrics";
+import type {
+  CategoryCost,
+  CostMonth,
+  ToolCost,
+  ToolRow,
+  ToolsSummary,
+} from "shared";
 import {
   formatCompactCurrency,
   formatCurrency,
@@ -37,13 +35,21 @@ import {
 } from "@/lib/format";
 
 export function ToolsTab({
-  projects,
+  summary,
+  byTool,
+  byCategory,
+  byMonth,
+  rows,
   months,
   currency,
 }: {
-  projects: Project[];
-  months: string[];
-  currency: string;
+  summary: ToolsSummary
+  byTool: ToolCost[]
+  byCategory: CategoryCost[]
+  byMonth: CostMonth[]
+  rows: ToolRow[]
+  months: string[]
+  currency: string
 }) {
   const { t } = useTranslation();
   // Two payers, two fixed slots. "Eu" keeps the brand hue because it is the
@@ -54,11 +60,6 @@ export function ToolsTab({
   } satisfies ChartConfig;
 
   const motion = useChartMotion();
-  const summary = toolsSummary(projects, months, currency);
-  const byTool = toolCostByTool(projects, months, currency);
-  const byCategory = toolCostByCategory(projects, months, currency);
-  const byMonth = toolCostByMonth(projects, months, currency);
-  const rows = toolRows(projects, currency);
 
   const money = (value: number) => formatCurrency(value, currency);
 

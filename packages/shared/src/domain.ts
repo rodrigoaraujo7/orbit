@@ -23,3 +23,6 @@ export type InvoiceStatus = z.infer<typeof invoiceStatusSchema>
 
 export const paymentMethodSchema = z.enum(["boleto", "pix"])
 export type PaymentMethod = z.infer<typeof paymentMethodSchema>
+
+export const workflowStatusSchema = z.enum(["success", "failure", "running", "none"])
+export type WorkflowStatus = z.infer<typeof workflowStatusSchema>

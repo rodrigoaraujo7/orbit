@@ -1,32 +1,24 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { X } from "lucide-react"
 import { useLayoutEffect, useRef, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog"
 import { Select } from "@/components/ui/select"
 import { toast } from "@/components/ui/toast"
-import { useIsMobile } from "@/hooks/use-mobile"
 import type { CustomTool } from "@/data/custom-tools"
 import { TOOL_CATEGORY_ORDER, type ToolCategory } from "@/data/tool-catalog"
 import i18n from "@/i18n"
@@ -70,8 +62,7 @@ export function CreateCustomToolDialog({
     reset,
     formState: { errors },
   } = useForm<CustomToolFormValues>({
-    resolver: (values, context, options) =>
-      zodResolver(customToolSchema())(values, context, options),
+    resolver: (values, ctx, opts) => zodResolver(customToolSchema())(values, ctx, opts),
     defaultValues: emptyCustomToolForm,
   })
 
@@ -112,8 +103,6 @@ export function CreateCustomToolDialog({
     }
   })
 
-  const isMobile = useIsMobile()
-
   const formFields = (
     <>
       <Field label={t("common.name")} error={errors.name?.message}>
@@ -145,71 +134,36 @@ export function CreateCustomToolDialog({
     </>
   )
 
-  const cancelButton = (
-    <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-      {t("common.cancel")}
-    </Button>
-  )
-  const submitButton = (
-    <Button type="submit">{activeTool ? t("common.save") : t("settings.createTool")}</Button>
-  )
-
-  if (isMobile) {
-    return (
-      <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
-        <DrawerContent>
-          <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-            <DrawerHeader>
-              <DrawerTitle>{activeTool ? t("settings.editTool") : t("settings.newTool")}</DrawerTitle>
-              <DrawerDescription>
-                {activeTool
-                  ? t("settings.editToolDescription")
-                  : t("settings.newToolDescription")}
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
-              {formFields}
-            </div>
-            <DrawerFooter className="flex-row [&>*]:flex-1">
-              {cancelButton}
-              {submitButton}
-            </DrawerFooter>
-          </form>
-        </DrawerContent>
-      </Drawer>
-    )
-  }
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
           <div>
-            <DialogTitle>{activeTool ? t("settings.editTool") : t("settings.newTool")}</DialogTitle>
-            <DialogDescription className="mt-0.5">
+            <ResponsiveDialogTitle>
+              {activeTool ? t("settings.editTool") : t("settings.newTool")}
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               {activeTool
                 ? t("settings.editToolDescription")
                 : t("settings.newToolDescription")}
-            </DialogDescription>
+            </ResponsiveDialogDescription>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => onOpenChange(false)}
-            aria-label={t("common.close")}
-          >
-            <X />
-          </Button>
-        </DialogHeader>
-
-        <form onSubmit={onSubmit} className="flex flex-col gap-4 px-5 py-4">
-          {formFields}
-          <DialogFooter className="mt-2">
-            {cancelButton}
-            {submitButton}
-          </DialogFooter>
+          <ResponsiveDialogClose />
+        </ResponsiveDialogHeader>
+        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+          <ResponsiveDialogBody className="flex flex-col gap-4">
+            {formFields}
+          </ResponsiveDialogBody>
+          <ResponsiveDialogFooter>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit">
+              {activeTool ? t("common.save") : t("settings.createTool")}
+            </Button>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

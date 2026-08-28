@@ -9,7 +9,6 @@ import {
   Share2,
   Wallet,
 } from "lucide-react";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,11 +16,12 @@ import { Button } from "@/components/ui/button";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { DataTable, type Column } from "@/components/ui/table";
+import { FilterPending, TableFilterSkeleton } from "@/components/ui/filter-pending";
 import { type Invoice, type InvoiceStatus, type PaymentMethod } from "@/data/projects";
 import { getLocale } from "@/i18n";
 import { invoiceStatusLabel, paymentMethodLabel } from "@/i18n/labels";
 import { formatCurrency, formatDateTime } from "@/lib/format";
-import { effectiveMonth, filterInvoices } from "@/lib/invoice-table";
+import { effectiveMonth } from "shared";
 import { cn } from "@/lib/utils";
 
 const PAYMENT_METHOD_ICON: Record<PaymentMethod, typeof Barcode> = {
@@ -93,11 +93,28 @@ function StatusDot({ className }: { className?: string }) {
 const STATUS_SORT_WEIGHT: Record<InvoiceStatus, number> = { pending: 0, overdue: 1, paid: 2 };
 const PAYMENT_METHOD_SORT_WEIGHT: Record<PaymentMethod, number> = { boleto: 0, pix: 1 };
 
-export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
+export function InvoicesTable({
+  invoices,
+  status,
+  monthFrom,
+  monthTo,
+  onStatusChange,
+  onMonthFromChange,
+  onMonthToChange,
+  isPending,
+  isFetching,
+}: {
+  invoices: Invoice[]
+  status: InvoiceStatus | "all"
+  monthFrom: string
+  monthTo: string
+  onStatusChange: (status: InvoiceStatus | "all") => void
+  onMonthFromChange: (value: string) => void
+  onMonthToChange: (value: string) => void
+  isPending: boolean
+  isFetching: boolean
+}) {
   const { t } = useTranslation();
-  const [status, setStatus] = useState<InvoiceStatus | "all">("all");
-  const [monthFrom, setMonthFrom] = useState("");
-  const [monthTo, setMonthTo] = useState("");
 
   function formatReference(invoice: Invoice) {
     if (!invoice.referenceMonth) return t("invoice.oneOffPayment");
@@ -166,28 +183,32 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
     },
   ];
 
-  const filtered = filterInvoices(invoices, { status, monthFrom, monthTo });
-
   return (
     <div className="mt-4">
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="w-44">
           <Select
             value={status}
-            onValueChange={(value) => setStatus(value as InvoiceStatus | "all")}
+            onValueChange={(value) => onStatusChange(value as InvoiceStatus | "all")}
             options={STATUS_OPTIONS}
           />
         </div>
-        <MonthPicker aria-label={t("common.from")} placeholder={t("common.from")} value={monthFrom} onChange={setMonthFrom} />
-        <MonthPicker aria-label={t("common.to")} placeholder={t("common.to")} value={monthTo} onChange={setMonthTo} />
+        <MonthPicker aria-label={t("common.from")} placeholder={t("common.from")} value={monthFrom} onChange={onMonthFromChange} />
+        <MonthPicker aria-label={t("common.to")} placeholder={t("common.to")} value={monthTo} onChange={onMonthToChange} />
       </div>
 
-      <DataTable
-        data={filtered}
-        columns={COLUMNS}
-        rowKey={(invoice) => invoice.id}
-        emptyMessage={t("invoice.empty")}
-      />
+      <FilterPending
+        isPending={isPending}
+        isFetching={isFetching}
+        skeleton={<TableFilterSkeleton rows={5} />}
+      >
+        <DataTable
+          data={invoices}
+          columns={COLUMNS}
+          rowKey={(invoice) => invoice.id}
+          emptyMessage={t("invoice.empty")}
+        />
+      </FilterPending>
     </div>
   );
 }

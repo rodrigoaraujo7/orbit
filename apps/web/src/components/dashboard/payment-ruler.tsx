@@ -1,13 +1,11 @@
 import { useTranslation } from "react-i18next";
+import type { RulerLane } from "shared";
 
-import type { Invoice, InvoiceStatus, Project } from "@/data/projects";
+import type { InvoiceStatus } from "@/data/projects";
 import { invoiceStatusLabel } from "@/i18n/labels";
-import { dealCurrency } from "@/lib/dashboard-metrics";
 import { monthOf, todayIso } from "@/lib/dates";
 import { formatCurrency, formatMonth, formatMonthLong } from "@/lib/format";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
-import { effectiveMonth } from "@/lib/invoice-table";
-import { generateInvoices } from "@/lib/invoices";
 import { cn } from "@/lib/utils";
 
 /**
@@ -24,6 +22,7 @@ const TICK_CLASS: Record<InvoiceStatus, string> = {
 };
 
 function Legend() {
+  const { t } = useTranslation();
   return (
     <ul className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
       {(["paid", "pending", "overdue"] as InvoiceStatus[]).map((status) => (
@@ -36,47 +35,18 @@ function Legend() {
   );
 }
 
-type Lane = {
-  project: Project;
-  currency: string;
-  /** One entry per month of the range; several invoices can land on one month. */
-  byMonth: Map<string, Invoice[]>;
-};
-
-/**
- * The signature view: every project's installments laid on one shared month
- * axis. Answers "who owes me what, and when" in a single glance — the question
- * a freelancer running six projects at once actually asks.
- *
- * Built as a CSS grid rather than a chart: the marks are discrete events on a
- * category axis, which is a table with position, not a plot.
- */
 export function PaymentRuler({
-  projects,
+  lanes,
   months,
   currency,
 }: {
-  projects: Project[];
-  months: string[];
-  currency: string;
+  lanes: RulerLane[]
+  months: string[]
+  currency: string
 }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const currentMonth = monthOf(todayIso());
-  const monthSet = new Set(months);
-
-  const lanes: Lane[] = projects
-    .filter((project) => dealCurrency(project) === currency)
-    .map((project) => {
-      const byMonth = new Map<string, Invoice[]>();
-      for (const invoice of generateInvoices(project, "")) {
-        const month = effectiveMonth(invoice);
-        if (!monthSet.has(month)) continue;
-        byMonth.set(month, [...(byMonth.get(month) ?? []), invoice]);
-      }
-      return { project, currency, byMonth };
-    })
-    .filter((lane) => lane.byMonth.size > 0);
 
   if (lanes.length === 0) {
     return (
@@ -86,8 +56,6 @@ export function PaymentRuler({
     );
   }
 
-  // A tick every ~4 months keeps the header readable on 19 months of history
-  // without rotating labels.
   const labelEvery = Math.max(1, Math.ceil(months.length / 6));
   const columns = `repeat(${months.length}, minmax(0, 1fr))`;
 
@@ -116,21 +84,19 @@ export function PaymentRuler({
 
           <ul className="flex flex-col divide-y">
             {lanes.map((lane, laneIndex) => (
-              <li key={lane.project.id} className="flex items-center gap-3 py-2">
-                <span className="w-36 shrink-0 truncate text-sm" title={lane.project.name}>
-                  {lane.project.name}
+              <li key={lane.projectId} className="flex items-center gap-3 py-2">
+                <span className="w-36 shrink-0 truncate text-sm" title={lane.projectName}>
+                  {lane.projectName}
                 </span>
                 <div className="grid flex-1 gap-1" style={{ gridTemplateColumns: columns }}>
                   {months.map((month) => {
-                    const invoices = lane.byMonth.get(month);
+                    const invoices = lane.byMonth[month];
                     if (!invoices) {
                       return (
                         <span
                           key={month}
                           className={cn(
                             "h-6 rounded-sm",
-                            // the current month keeps a faint track so the "you are
-                            // here" line stays visible across every lane
                             month === currentMonth && "bg-muted/60",
                           )}
                         />
@@ -143,7 +109,7 @@ export function PaymentRuler({
                       : invoices.every((invoice) => invoice.status === "paid")
                         ? "paid"
                         : "pending";
-                    const label = `${lane.project.name} · ${formatMonthLong(month)} · ${formatCurrency(total, lane.currency)} · ${invoiceStatusLabel(status)}`;
+                    const label = `${lane.projectName} · ${formatMonthLong(month)} · ${formatCurrency(total, currency)} · ${invoiceStatusLabel(status)}`;
 
                     return (
                       <span

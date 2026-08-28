@@ -83,8 +83,8 @@ export type Project = {
   status: ProjectStatus
   /**
    * Start date, "YYYY-MM-DD". The anchor of the whole timeline: installments
-   * are counted from it (lib/invoices.ts) and a tool only costs money from
-   * this month on (lib/dashboard-metrics.ts).
+   * are counted from it (generateInvoices) and a tool only costs money from
+   * this month on (dashboard metrics).
    */
   startedAt: string
   /**
@@ -116,7 +116,7 @@ export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
 export type InvoiceStatus = "pending" | "paid" | "overdue"
 export type PaymentMethod = "boleto" | "pix"
 
-/** Client invoice — derived from the `deal`, see lib/invoices.ts. */
+/** Client invoice — derived from the `deal` via generateInvoices. */
 export type Invoice = {
   id: string
   /** "YYYY-MM", present only on installment deals (the installment month). */

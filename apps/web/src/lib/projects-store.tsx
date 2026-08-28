@@ -34,6 +34,8 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 
   function invalidate() {
     void queryClient.invalidateQueries({ queryKey: ["projects"] })
+    void queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+    void queryClient.invalidateQueries({ queryKey: ["invoices"] })
     void queryClient.invalidateQueries({ queryKey: ["audit"] })
   }
 
