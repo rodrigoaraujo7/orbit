@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 import { schema } from "./schema.ts"
 import { env } from "../env.ts"
+import { postgresClientOptions } from "./postgres-options.ts"
 
 const schemaSql = readFileSync(
   join(dirname(fileURLToPath(import.meta.url)), "schema.sql"),
@@ -12,7 +13,7 @@ const schemaSql = readFileSync(
 )
 
 export function createDb(url = env("DATABASE_URL")) {
-  const client = postgres(url, { max: 10 })
+  const client = postgres(url, postgresClientOptions(url))
   const db = drizzle({ client, schema })
   return { client, db }
 }
