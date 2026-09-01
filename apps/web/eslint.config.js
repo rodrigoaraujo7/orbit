@@ -23,12 +23,16 @@ export default defineConfig([
     },
   },
   {
-    files: ["**/*.{js,jsx,ts,tsx}"],
+    files: ["**/*.{ts,tsx}"],
     plugins: {
       "@stylistic": stylistic,
     },
     rules: {
-      "@stylistic/quotes": ["error", "double", { avoidEscape: true }],
+      "@stylistic/quotes": [
+        "error",
+        "double",
+        { avoidEscape: true, allowTemplateLiterals: "avoidEscape" },
+      ],
       "@stylistic/jsx-quotes": ["error", "prefer-double"],
     },
   },

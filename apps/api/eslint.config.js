@@ -20,7 +20,11 @@ export default defineConfig([
       "@stylistic": stylistic,
     },
     rules: {
-      "@stylistic/quotes": ["error", "double", { avoidEscape: true }],
+      "@stylistic/quotes": [
+        "error",
+        "double",
+        { avoidEscape: true, allowTemplateLiterals: "avoidEscape" },
+      ],
     },
   },
 ])
