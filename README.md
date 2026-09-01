@@ -1,76 +1,101 @@
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
 # projects-manager
+
+SaaS for freelance developers: clients, projects, kanban, invoices, and paid-tool credentials — isolated per user.
+
+Monorepo: **web** (Vite, `http://localhost:5173`) talks to **api** (Hono, `http://localhost:3100`) through the Vite proxy (`/trpc`, `/api`).
+
+## Prerequisites
+
+- Node.js **22+**
+- [pnpm](https://pnpm.io/installation)
+- PostgreSQL (local install or Docker)
+
+## 1. Install
+
+```bash
+pnpm install
+```
+
+## 2. Create the database
+
+`createdb` connects as your OS username. On Debian/Ubuntu that role usually does not exist yet (`FATAL: role "…" does not exist`). Create it once, then the database:
+
+```bash
+sudo -u postgres createuser -s "$USER"
+sudo -u postgres createdb -O "$USER" projects_manager
+```
+
+If the role already exists:
+
+```bash
+createdb projects_manager
+```
+
+Tables are created automatically when the API starts (`schema.sql`). No migrate command.
+
+Docker instead of a system Postgres:
+
+```bash
+docker run --name projects-manager-pg -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=projects_manager -p 5432:5432 -d postgres:16
+```
+
+## 3. Configure env
+
+Copy the example, then edit `apps/api/.env` (do not commit it):
+
+```bash
+cp apps/api/.env.example apps/api/.env
+openssl rand -hex 32   # MASTER_KEY
+```
+
+Local Postgres: replace the `usuario@localhost` example with a **hostless** URL:
+
+```
+DATABASE_URL=postgres:///projects_manager
+```
+
+The API uses the Unix socket `/var/run/postgresql` (peer auth). `postgres.js` would otherwise connect to TCP `localhost` and fail with `password authentication failed`.
+
+Docker Postgres:
+
+```
+DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
+```
+
+| Variable | Required | What it is |
+|---|---|---|
+| `DATABASE_URL` | yes | Postgres URL. Hostless `postgres:///projects_manager` uses `/var/run/postgresql`. Do not use `usuario@localhost`. |
+| `MASTER_KEY` | for stored secrets | 32 bytes: **64 hex chars** or base64. `openssl rand -hex 32`. Do not rotate without a re-encrypt path. |
+| `BETTER_AUTH_URL` | no | Auth base URL. Default `WEB_ORIGIN`. |
+| `WEB_ORIGIN` | no | Frontend origin (CORS + cookies). Default `http://localhost:5173`. |
+| `PORT` | yes for Vite | Must be **3100** so the web proxy hits the API. Code default is `3000` if unset. |
+| `BETTER_AUTH_API_KEY` | no | Better Auth dashboard only. Empty is fine; the API warns and still starts. |
+| `RESEND_API_KEY` | for email | Resend API key. Leave empty until you send mail. |
+| `EMAIL_FROM` | for email | From header, e.g. `Projects Manager <noreply@example.com>`. |
+| `RESEND_TEMPLATE_CONFIRM` | for email | Resend template id for confirmation mail. |
+| `RESEND_TEMPLATE_LOGIN` | for email | Resend template id for login mail. |
+
+`BETTER_AUTH_SECRET` is not in `.env.example`. In development the API uses a built-in secret; set a 32-byte hex value (`openssl rand -hex 32`) before production.
+
+Web has no `.env`. It proxies to `localhost:3100`.
+
+## 4. Run
+
+```bash
+pnpm dev
+```
+
+- App: [http://localhost:5173](http://localhost:5173)
+- API: [http://localhost:3100](http://localhost:3100)
+
+Sign up with email and password on first visit.
+
+Separate processes: `pnpm dev:web` and `pnpm dev:api`.
+
+## 5. Checks (optional)
+
+```bash
+pnpm --filter api test
+pnpm --filter web test
+pnpm --filter web check:i18n
+```
