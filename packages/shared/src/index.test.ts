@@ -11,6 +11,8 @@ describe("shared barrel", () => {
     expect(typeof shared.compactSearch).toBe("function")
     expect(shared.AUDIT_ACTIONS.length).toBeGreaterThan(0)
     expect(shared.TOOL_CATEGORY_LABEL.deploy).toBeTruthy()
+    expect(shared.toolCategorySchema.safeParse("deploy").success).toBe(true)
+    expect(shared.TOOL_CATEGORIES).toContain("other")
     expect(shared.isDealFree({ kind: "upfront", amount: 0 })).toBe(true)
   })
 })

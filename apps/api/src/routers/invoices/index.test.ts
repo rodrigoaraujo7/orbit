@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { invoice } from "../../db/schema/index.ts"
+import { invoice, project } from "../../db/schema/index.ts"
 import { withUser } from "../../db/with-user/index.ts"
-import { caller, closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
+import {
+  caller,
+  closeTestDb,
+  insertUser,
+  openTestDb,
+  requiredContactFields,
+} from "../../test/harness.ts"
 
 let db: Awaited<ReturnType<typeof openTestDb>>["db"]
 let client: Awaited<ReturnType<typeof openTestDb>>["client"]
@@ -23,25 +29,41 @@ describe("invoices and payments", () => {
       totals: { count: 0, paid: 0, overdue: 0 },
     })
 
+    await withUser(db, "user-a", async (tx) => {
+      await tx.insert(project).values({
+        id: "p-anon",
+        userId: "user-a",
+        name: "Anonymous",
+        status: "paused",
+        position: 0,
+        startedAt: "2026-01-10",
+        dealKind: "installment",
+        dealAmountCents: 300000n,
+        dealCurrency: "BRL",
+        dealInstallments: 3,
+      })
+    })
+    expect((await api.invoices.list({ projectId: "p-anon", status: "all" })).totals.count).toBe(3)
+
+    const contact = await api.contacts.create({ name: "Ada", ...requiredContactFields })
     const created = await api.projects.create({
       name: "Portal",
-      clientId: "",
+      clientId: contact.id,
       status: "paused",
       startedAt: "2026-01-10",
-      deal: { kind: "installment", amount: 3000, installments: 3 },
+      deal: { kind: "installment", amount: 3000, installments: 3, currency: "BRL" },
       tools: [],
       repo: null,
     })
     const listed = await api.invoices.list({ projectId: created.id, status: "all" })
     expect(listed.totals.count).toBe(3)
 
-    const contact = await api.contacts.create({ name: "Ada" })
     const withClient = await api.projects.create({
       name: "Cliented",
       clientId: contact.id,
       status: "in-development",
       startedAt: "2026-01-10",
-      deal: { kind: "upfront", amount: 500 },
+      deal: { kind: "upfront", amount: 500, currency: "BRL" },
       tools: [],
       repo: null,
     })

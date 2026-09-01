@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { caller, closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
+import {
+  caller,
+  closeTestDb,
+  insertUser,
+  openTestDb,
+  requiredContactFields,
+} from "../../test/harness.ts"
 
 let client: Awaited<ReturnType<typeof openTestDb>>["client"]
 
@@ -15,13 +21,13 @@ afterEach(async () => {
 describe("dashboard router", () => {
   it("builds metrics from the caller's projects", async () => {
     const api = caller("user-a")
-    const contact = await api.contacts.create({ name: "Ada" })
+    const contact = await api.contacts.create({ name: "Ada", ...requiredContactFields })
     await api.projects.create({
       name: "Portal",
       clientId: contact.id,
       status: "in-development",
       startedAt: "2026-01-10",
-      deal: { kind: "upfront", amount: 1000 },
+      deal: { kind: "upfront", amount: 1000, currency: "BRL" },
       tools: [],
       repo: null,
     })

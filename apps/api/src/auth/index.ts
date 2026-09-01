@@ -9,8 +9,8 @@ import { getDb } from "../db/client/index.ts"
 import { schema, user } from "../db/schema/index.ts"
 import { withUser } from "../db/with-user/index.ts"
 import { env, optionalEnv } from "../env/index.ts"
-
-const webOrigin = optionalEnv("WEB_ORIGIN") ?? "http://localhost:5173"
+import { validation } from "../input/messages.ts"
+import { trustedWebOrigins, webOrigin } from "../web-origin/index.ts"
 
 async function logSecurity(userId: string, action: string, headers: Headers | null | undefined) {
   try {
@@ -48,6 +48,17 @@ type AuthHookCtx = {
     newSession?: { user: { id: string } } | null
     session?: { user: { id: string } } | null
     returned?: unknown
+  }
+}
+
+export async function beforeAuthHook(ctx: AuthHookCtx) {
+  if (ctx.path !== "/sign-up/email") return
+  const name =
+    ctx.body && typeof ctx.body === "object" && "name" in ctx.body
+      ? (ctx.body as { name?: unknown }).name
+      : undefined
+  if (typeof name !== "string" || name.trim().length < 2) {
+    throw new APIError("BAD_REQUEST", { message: validation.minChars })
   }
 }
 
@@ -96,12 +107,16 @@ export function createAuth() {
   return betterAuth({
     baseURL: optionalEnv("BETTER_AUTH_URL") ?? webOrigin,
     secret,
-    trustedOrigins: [webOrigin, "https://dash.better-auth.com", "https://*.ngrok-free.app"],
+    trustedOrigins: [
+      ...trustedWebOrigins,
+      "https://dash.better-auth.com",
+      "https://*.ngrok-free.app",
+    ],
     database: drizzleAdapter(getDb(), {
       provider: "pg",
       schema,
     }),
-    emailAndPassword: { enabled: true },
+    emailAndPassword: { enabled: true, minPasswordLength: 8 },
     advanced: {
       defaultCookieAttributes: {
         httpOnly: true,
@@ -111,6 +126,7 @@ export function createAuth() {
     },
     plugins: [twoFactor({ issuer: "Projects Manager" }), dash()],
     hooks: {
+      before: createAuthMiddleware(beforeAuthHook),
       after: createAuthMiddleware(afterAuthHook),
     },
   })

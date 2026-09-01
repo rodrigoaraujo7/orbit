@@ -4,7 +4,13 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { contact, credential, project, projectTool, userKey } from "../../db/schema/index.ts"
 import { withUser } from "../../db/with-user/index.ts"
 import { openSecret, parseMasterKey, secretAad, unwrapDek } from "../../crypto/envelope/index.ts"
-import { caller, closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
+import {
+  caller,
+  closeTestDb,
+  insertUser,
+  openTestDb,
+  requiredContactFields,
+} from "../../test/harness.ts"
 import { listProjects, replaceProjectTools } from "./index.ts"
 import { sealNewSecret } from "../credentials/index.ts"
 
@@ -29,7 +35,7 @@ const baseProject = {
   clientId: "c1",
   status: "queued" as const,
   startedAt: "2026-03-10",
-  deal: { kind: "upfront" as const, amount: 0 },
+  deal: { kind: "upfront" as const, amount: 0, currency: "BRL" },
   tools: [] as never[],
   repo: null,
 }
@@ -107,13 +113,11 @@ describe("projects router", () => {
 
   it("creates, updates, moves and deletes a project with tools and secrets", async () => {
     const api = caller("user-a")
-    await api.contacts.create({ name: "Acme Ltda" }).catch(() => undefined)
-    const contactRow = (await api.contacts.create({
+    const contactRow = await api.contacts.create({
       name: "Ada Lovelace",
       email: "ada@test.local",
-    })) as {
-      id: string
-    }
+      ...requiredContactFields,
+    })
 
     const created = await api.projects.create({
       ...baseProject,
@@ -156,12 +160,12 @@ describe("projects router", () => {
     await api.projects.update({
       id: created.id,
       ...baseProject,
-      clientId: "",
+      clientId: contactRow.id,
       name: "Landing 2",
-      status: "in-development",
+      status: "in-development", // pragma: allowlist secret
       endedAt: "2026-04-01",
       description: "updated",
-      comments: [{ id: "c1", body: "hi" }],
+      comments: [{ id: "c1", author: "Ada", createdAt: "2026-04-01T10:00", body: "hi" }],
       tools: [
         {
           id: "aws",
@@ -173,6 +177,7 @@ describe("projects router", () => {
             cycle: "monthly",
             nextInvoice: "2026-05-01",
             payer: "me",
+            currency: "USD",
           },
         },
       ],
@@ -180,7 +185,7 @@ describe("projects router", () => {
     const after = (await api.projects.list())[0]
     expect(after?.name).toBe("Landing 2")
     expect(after?.endedAt).toBeTruthy()
-    expect(after?.clientId).toBe("")
+    expect(after?.clientId).toBe(contactRow.id)
 
     await api.projects.move({ id: created.id, status: "paused", index: 0 })
     await api.projects.move({ id: created.id, status: "paused", index: 1 })
@@ -192,20 +197,38 @@ describe("projects router", () => {
     await api.projects.update({
       id: "missing",
       ...baseProject,
-      clientId: "",
+      clientId: contactRow.id,
     })
     await api.projects.move({ id: "missing", status: "queued", index: 0 })
   })
 
+  it("rejects empty clientId and incomplete comments", async () => {
+    const api = caller("user-a")
+    await expect(api.projects.create({ ...baseProject, clientId: "" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    })
+    const contactRow = await api.contacts.create({ name: "Ada Lovelace", ...requiredContactFields })
+    await expect(
+      api.projects.update({
+        id: "p1",
+        ...baseProject,
+        clientId: contactRow.id,
+        comments: [{ id: "c1", body: "hi" }] as never,
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    await expect(api.projects.delete({ id: "" })).rejects.toMatchObject({ code: "BAD_REQUEST" })
+  })
+
   it("creates with an explicit id and updates omitted optional fields", async () => {
     const api = caller("user-a")
+    const contactRow = await api.contacts.create({ name: "Ada Lovelace", ...requiredContactFields })
     const created = await api.projects.create({
       id: "fixed-id",
       name: "Fixed",
-      clientId: "",
+      clientId: contactRow.id,
       status: "queued",
       startedAt: "2026-01-01",
-      deal: { kind: "upfront", amount: 0 },
+      deal: { kind: "upfront", amount: 0, currency: "BRL" },
       tools: [],
       repo: null,
     })
@@ -214,10 +237,10 @@ describe("projects router", () => {
     await api.projects.update({
       id: "fixed-id",
       name: "Fixed 2",
-      clientId: "",
+      clientId: contactRow.id,
       status: "queued",
       startedAt: "2026-01-01",
-      deal: { kind: "upfront", amount: 0 },
+      deal: { kind: "upfront", amount: 0, currency: "BRL" },
       tools: [],
       repo: null,
     })
@@ -227,24 +250,24 @@ describe("projects router", () => {
     await api.projects.update({
       id: "fixed-id",
       name: "Fixed 3",
-      clientId: "",
+      clientId: contactRow.id,
       status: "queued",
       startedAt: "2026-01-01",
       endedAt: "2026-02-01",
-      deal: { kind: "upfront", amount: 0 },
+      deal: { kind: "upfront", amount: 0, currency: "BRL" },
       tools: [],
       repo: { fullName: "a/b", url: "https://github.com/a/b", workflow: "none" },
     })
     await api.projects.update({
       id: "fixed-id",
       name: "Fixed 4",
-      clientId: "",
+      clientId: contactRow.id,
       status: "queued",
       startedAt: "2026-01-01",
       endedAt: "2026-03-01",
       description: "later",
       comments: [],
-      deal: { kind: "upfront", amount: 0 },
+      deal: { kind: "upfront", amount: 0, currency: "BRL" },
       tools: [{ id: "aws", name: "AWS", category: "deploy", account: "ada", secrets: [] }],
       repo: { fullName: "a/b", url: "https://github.com/a/b", workflow: "none" },
     })
@@ -294,10 +317,10 @@ describe("projects router", () => {
     await api.projects.update({
       id: "p-diff",
       name: "Diffed",
-      clientId: "",
+      clientId: contactRow.id,
       status: "queued",
       startedAt: "2026-01-01",
-      deal: { kind: "upfront", amount: 0 },
+      deal: { kind: "upfront", amount: 0, currency: "BRL" },
       tools: [{ id: "aws", name: "AWS", category: "deploy", secrets: [] }],
       repo: null,
     })
@@ -323,7 +346,7 @@ describe("projects router", () => {
         projectId: "p1",
         catalogId: "aws",
         name: "AWS",
-        category: "infra",
+        category: "deploy",
       })
       return sealNewSecret(tx, "user-a", "t1", "api-key", "sk_live_abc")
     })
@@ -333,7 +356,7 @@ describe("projects router", () => {
         {
           id: "aws",
           name: "AWS",
-          category: "infra",
+          category: "deploy",
           secrets: [{ key: "api-key", value: "" }],
         },
       ]),
@@ -360,7 +383,7 @@ describe("projects router", () => {
 
     await withUser(db, "user-a", (tx) =>
       replaceProjectTools(tx, "user-a", "p1", [
-        { id: "aws", name: "AWS", category: "infra", secrets: [{ key: "other", value: "" }] },
+        { id: "aws", name: "AWS", category: "deploy", secrets: [{ key: "other", value: "" }] },
       ]),
     )
     const leftover = await withUser(db, "user-a", (tx) => tx.select().from(credential))

@@ -48,3 +48,8 @@ export function caller(
 }
 
 export { insertUser }
+
+export const requiredContactFields = {
+  phone: "1199",
+  company: "Acme",
+} as const

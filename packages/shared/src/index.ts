@@ -34,7 +34,12 @@ export {
   nowDateTimeIso,
   todayIso,
 } from "./dates.ts"
-export { TOOL_CATEGORY_LABEL, type ToolCategory } from "./tool-category.ts"
+export {
+  TOOL_CATEGORIES,
+  TOOL_CATEGORY_LABEL,
+  toolCategorySchema,
+  type ToolCategory,
+} from "./tool-category.ts"
 export {
   isDealFree,
   type Deal,

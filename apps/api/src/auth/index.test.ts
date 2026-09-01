@@ -1,7 +1,7 @@
 import { APIError } from "better-auth/api"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { auditLog } from "../db/schema/index.ts"
-import { afterAuthHook, createAuth, getAuth, resetAuth } from "./index.ts"
+import { afterAuthHook, beforeAuthHook, createAuth, getAuth, resetAuth } from "./index.ts"
 import { closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
 import { withUser } from "../db/with-user/index.ts"
 import { dbHolder } from "../test/setup.ts"
@@ -146,6 +146,70 @@ describe("afterAuthHook", () => {
     dbHolder.db = previous
     expect(error).toHaveBeenCalled()
     error.mockRestore()
+    await closeTestDb(client)
+  })
+})
+
+describe("beforeAuthHook", () => {
+  it("rejects signup names shorter than 2 characters", async () => {
+    await expect(
+      beforeAuthHook({ path: "/sign-in/email", body: { name: "A" }, context: {} }),
+    ).resolves.toBeUndefined()
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { name: "Ada" }, context: {} }),
+    ).resolves.toBeUndefined()
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { name: "  Ad  " }, context: {} }),
+    ).resolves.toBeUndefined()
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { name: "A" }, context: {} }),
+    ).rejects.toBeInstanceOf(APIError)
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { name: "  " }, context: {} }),
+    ).rejects.toMatchObject({
+      status: "BAD_REQUEST",
+    })
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { name: 1 }, context: {} }),
+    ).rejects.toBeInstanceOf(APIError)
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: "nope", context: {} }),
+    ).rejects.toBeInstanceOf(APIError)
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { email: "a@test.local" }, context: {} }),
+    ).rejects.toBeInstanceOf(APIError)
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: null, context: {} }),
+    ).rejects.toBeInstanceOf(APIError)
+  })
+})
+
+describe("signup input", () => {
+  afterEach(() => {
+    resetAuth()
+  })
+
+  it("rejects short names and passwords on email signup", async () => {
+    const { client } = await openTestDb()
+    const auth = createAuth()
+
+    await expect(
+      auth.api.signUpEmail({
+        body: { email: "short@test.local", password: "password1234", name: "A" },
+      }),
+    ).rejects.toMatchObject({ status: "BAD_REQUEST" })
+
+    await expect(
+      auth.api.signUpEmail({
+        body: { email: "pw@test.local", password: "1234567", name: "Ada Lovelace" },
+      }),
+    ).rejects.toBeInstanceOf(APIError)
+
+    const signedUp = await auth.api.signUpEmail({
+      body: { email: "ok@test.local", password: "password1234", name: "Ada Lovelace" },
+    })
+    expect(signedUp.user.name).toBe("Ada Lovelace")
+    resetAuth()
     await closeTestDb(client)
   })
 })
