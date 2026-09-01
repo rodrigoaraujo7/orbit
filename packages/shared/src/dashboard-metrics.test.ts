@@ -60,7 +60,14 @@ describe("filter helpers", () => {
   it("fills dashboard filters with defaults", () => {
     expect(toDashboardFilters()).toEqual(emptyFilters)
     expect(toDashboardFilters({ currency: "" }).currency).toBe("BRL")
-    expect(toDashboardFilters({ monthFrom: "2026-01", projectId: "p1", clientId: "c1", currency: "USD" })).toEqual({
+    expect(
+      toDashboardFilters({
+        monthFrom: "2026-01",
+        projectId: "p1",
+        clientId: "c1",
+        currency: "USD",
+      }),
+    ).toEqual({
       monthFrom: "2026-01",
       monthTo: "",
       projectId: "p1",
@@ -71,22 +78,33 @@ describe("filter helpers", () => {
 
   it("resolves deal and tool currencies", () => {
     expect(dealCurrency(project())).toBe("BRL")
-    expect(dealCurrency(project({ deal: { kind: "upfront", amount: 10, currency: "USD" } }))).toBe("USD")
+    expect(dealCurrency(project({ deal: { kind: "upfront", amount: 10, currency: "USD" } }))).toBe(
+      "USD",
+    )
     expect(toolCurrency(tool({}))).toBe("BRL")
     expect(
       toolCurrency(
-        tool({ billing: { amount: 1, cycle: "monthly", nextInvoice: "2026-01-01", payer: "me", currency: "EUR" } }),
+        tool({
+          billing: {
+            amount: 1,
+            cycle: "monthly",
+            nextInvoice: "2026-01-01",
+            payer: "me",
+            currency: "EUR",
+          },
+        }),
       ),
     ).toBe("EUR")
   })
 
   it("filters by project and client", () => {
-    const rows = [
-      project({ id: "a", clientId: "c1" }),
-      project({ id: "b", clientId: "c2" }),
-    ]
-    expect(applyFilters(rows, { ...emptyFilters, projectId: "a" }).map((row) => row.id)).toEqual(["a"])
-    expect(applyFilters(rows, { ...emptyFilters, clientId: "c2" }).map((row) => row.id)).toEqual(["b"])
+    const rows = [project({ id: "a", clientId: "c1" }), project({ id: "b", clientId: "c2" })]
+    expect(applyFilters(rows, { ...emptyFilters, projectId: "a" }).map((row) => row.id)).toEqual([
+      "a",
+    ])
+    expect(applyFilters(rows, { ...emptyFilters, clientId: "c2" }).map((row) => row.id)).toEqual([
+      "b",
+    ])
     expect(applyFilters(rows, emptyFilters)).toHaveLength(2)
   })
 
@@ -95,7 +113,15 @@ describe("filter helpers", () => {
       project({
         deal: { kind: "upfront", amount: 1, currency: "USD" },
         tools: [
-          tool({ billing: { amount: 1, cycle: "monthly", nextInvoice: "2026-01-01", payer: "me", currency: "EUR" } }),
+          tool({
+            billing: {
+              amount: 1,
+              cycle: "monthly",
+              nextInvoice: "2026-01-01",
+              payer: "me",
+              currency: "EUR",
+            },
+          }),
           tool({ id: "free", name: "Free" }),
         ],
       }),
@@ -126,32 +152,45 @@ describe("dataRange / resolveMonths", () => {
     expect(range.to).toBe("2026-10")
 
     vi.setSystemTime(new Date(2026, 5, 15))
-    expect(dataRange([
-      project({ startedAt: "2026-06-01" }),
-      project({ id: "p-earlier", startedAt: "2026-01-01" }),
-    ]).from).toBe("2026-01")
+    expect(
+      dataRange([
+        project({ startedAt: "2026-06-01" }),
+        project({ id: "p-earlier", startedAt: "2026-01-01" }),
+      ]).from,
+    ).toBe("2026-01")
   })
 
   it("respects explicit month filters", () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(2026, 5, 15))
-    expect(resolveMonths([project()], { ...emptyFilters, monthFrom: "2026-03", monthTo: "2026-04" })).toEqual([
-      "2026-03",
-      "2026-04",
-    ])
+    expect(
+      resolveMonths([project()], { ...emptyFilters, monthFrom: "2026-03", monthTo: "2026-04" }),
+    ).toEqual(["2026-03", "2026-04"])
   })
 })
 
 describe("costs and revenue", () => {
   it("normalizes billing cycles", () => {
     expect(
-      monthlyToolCost(tool({ billing: { amount: 100, cycle: "monthly", nextInvoice: "2026-01-05", payer: "me" } })),
+      monthlyToolCost(
+        tool({
+          billing: { amount: 100, cycle: "monthly", nextInvoice: "2026-01-05", payer: "me" },
+        }),
+      ),
     ).toBe(100)
     expect(
-      monthlyToolCost(tool({ billing: { amount: 1200, cycle: "yearly", nextInvoice: "2026-01-05", payer: "me" } })),
+      monthlyToolCost(
+        tool({
+          billing: { amount: 1200, cycle: "yearly", nextInvoice: "2026-01-05", payer: "me" },
+        }),
+      ),
     ).toBeCloseTo(100)
     expect(
-      monthlyToolCost(tool({ billing: { amount: 500, cycle: "one-off", nextInvoice: "2026-01-05", payer: "me" } })),
+      monthlyToolCost(
+        tool({
+          billing: { amount: 500, cycle: "one-off", nextInvoice: "2026-01-05", payer: "me" },
+        }),
+      ),
     ).toBe(0)
     expect(monthlyToolCost(tool({}))).toBe(0)
   })
@@ -176,9 +215,9 @@ describe("costs and revenue", () => {
     })
     expect(toolCostInMonth(monthly, finished, "2026-02")).toBe(80)
     expect(toolCostInMonth(monthly, finished, "2026-03")).toBe(0)
-    expect(toolCostByMonth([finished], monthRange("2026-01", "2026-04"), "BRL").map((month) => month.eu)).toEqual([
-      80, 80, 0, 0,
-    ])
+    expect(
+      toolCostByMonth([finished], monthRange("2026-01", "2026-04"), "BRL").map((month) => month.eu),
+    ).toEqual([80, 80, 0, 0])
   })
 
   it("splits tool cost by payer, skips zero months and other currencies", () => {
@@ -198,7 +237,13 @@ describe("costs and revenue", () => {
         tool({
           id: "usd",
           name: "USD Tool",
-          billing: { amount: 9, cycle: "monthly", nextInvoice: "2026-01-05", payer: "me", currency: "USD" },
+          billing: {
+            amount: 9,
+            cycle: "monthly",
+            nextInvoice: "2026-01-05",
+            payer: "me",
+            currency: "USD",
+          },
         }),
       ],
     })
@@ -330,7 +375,13 @@ describe("costs and revenue", () => {
         project({
           tools: [
             tool({
-              billing: { amount: 9, cycle: "monthly", nextInvoice: "2026-01-05", payer: "me", currency: "USD" },
+              billing: {
+                amount: 9,
+                cycle: "monthly",
+                nextInvoice: "2026-01-05",
+                payer: "me",
+                currency: "USD",
+              },
             }),
           ],
         }),
@@ -370,7 +421,13 @@ describe("profit, clients, revenue", () => {
         tool({
           id: "usd",
           name: "USD",
-          billing: { amount: 9, cycle: "monthly", nextInvoice: "2026-01-05", payer: "me", currency: "USD" },
+          billing: {
+            amount: 9,
+            cycle: "monthly",
+            nextInvoice: "2026-01-05",
+            payer: "me",
+            currency: "USD",
+          },
         }),
       ],
     })
@@ -402,7 +459,9 @@ describe("profit, clients, revenue", () => {
       deal: { kind: "installment", amount: 3000, installments: 3 },
     })
     const revenue = revenueByMonth([installment], monthRange("2026-01", "2026-03"), "BRL")
-    expect(revenue.reduce((sum, month) => sum + month.recebido + month.aReceber + month.atrasado, 0)).toBe(3000)
+    expect(
+      revenue.reduce((sum, month) => sum + month.recebido + month.aReceber + month.atrasado, 0),
+    ).toBe(3000)
     expect(
       revenueByMonth([installment], monthRange("2026-06", "2026-07"), "BRL").every(
         (month) => month.recebido + month.aReceber + month.atrasado === 0,
@@ -453,7 +512,13 @@ describe("summaries, ruler, DTO", () => {
             tool({
               id: "usd",
               name: "USD",
-              billing: { amount: 9, cycle: "monthly", nextInvoice: "2026-01-05", payer: "client", currency: "USD" },
+              billing: {
+                amount: 9,
+                cycle: "monthly",
+                nextInvoice: "2026-01-05",
+                payer: "client",
+                currency: "USD",
+              },
             }),
             tool({ id: "free", name: "Free" }),
           ],
@@ -478,7 +543,11 @@ describe("summaries, ruler, DTO", () => {
   })
 
   it("shifts a month window backward", () => {
-    expect(previousMonths(monthRange("2026-03", "2026-05"))).toEqual(["2025-12", "2026-01", "2026-02"])
+    expect(previousMonths(monthRange("2026-03", "2026-05"))).toEqual([
+      "2025-12",
+      "2026-01",
+      "2026-02",
+    ])
     expect(previousMonths([])).toEqual([])
   })
 
@@ -526,7 +595,9 @@ describe("summaries, ruler, DTO", () => {
         project({
           deal: { kind: "upfront", amount: 1000 },
           tools: [
-            tool({ billing: { amount: 20, cycle: "monthly", nextInvoice: "2026-01-05", payer: "me" } }),
+            tool({
+              billing: { amount: 20, cycle: "monthly", nextInvoice: "2026-01-05", payer: "me" },
+            }),
           ],
         }),
         project({ id: "idle", name: "Idle", deal: { kind: "upfront", amount: 0 } }),

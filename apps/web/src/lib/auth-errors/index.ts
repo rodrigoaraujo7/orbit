@@ -20,10 +20,7 @@ const AUTH_ERROR_KEYS: Record<string, string> = {
   ACCOUNT_TEMPORARILY_LOCKED: "auth.accountLocked",
 }
 
-export function authErrorMessage(
-  error: { code?: string; status?: number },
-  fallback: string,
-) {
+export function authErrorMessage(error: { code?: string; status?: number }, fallback: string) {
   if (error.code && AUTH_ERROR_KEYS[error.code]) {
     return i18n.t(AUTH_ERROR_KEYS[error.code])
   }

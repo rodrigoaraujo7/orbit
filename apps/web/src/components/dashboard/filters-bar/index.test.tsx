@@ -60,11 +60,15 @@ describe("FiltersBar", () => {
         onChange={onChange}
       />,
     )
-    const clientSelect = screen.getAllByRole("combobox").find((el) => el.textContent?.includes("All clients"))
+    const clientSelect = screen
+      .getAllByRole("combobox")
+      .find((el) => el.textContent?.includes("All clients"))
     expect(clientSelect).toBeTruthy()
     await user.click(clientSelect!)
     await user.click(await screen.findByRole("option", { name: "Ada" }))
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ clientId: "c1", projectId: "" }))
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ clientId: "c1", projectId: "" }),
+    )
   })
 
   it("keeps the project when it belongs to the client", async () => {
@@ -77,10 +81,14 @@ describe("FiltersBar", () => {
         onChange={onChange}
       />,
     )
-    const clientSelect = screen.getAllByRole("combobox").find((el) => el.textContent?.includes("All clients"))
+    const clientSelect = screen
+      .getAllByRole("combobox")
+      .find((el) => el.textContent?.includes("All clients"))
     await user.click(clientSelect!)
     await user.click(await screen.findByRole("option", { name: "Ada" }))
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ clientId: "c1", projectId: "p1" }))
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ clientId: "c1", projectId: "p1" }),
+    )
   })
 
   it("updates project and currency and clears from the drawer", async () => {
@@ -106,11 +114,17 @@ describe("FiltersBar", () => {
 
     await user.click(screen.getByRole("button", { name: "Filter" }))
     const drawer = filterDrawer()
-    await user.click(drawer.getAllByRole("combobox").find((el) => el.textContent?.includes("All clients"))!)
+    await user.click(
+      drawer.getAllByRole("combobox").find((el) => el.textContent?.includes("All clients"))!,
+    )
     await user.click(await screen.findByRole("option", { name: "Ada" }))
-    await user.click(drawer.getAllByRole("combobox").find((el) => el.textContent?.includes("All projects"))!)
+    await user.click(
+      drawer.getAllByRole("combobox").find((el) => el.textContent?.includes("All projects"))!,
+    )
     await user.click(await screen.findByRole("option", { name: "Portal" }))
-    await user.click(drawer.getAllByRole("combobox").find((el) => /BRL|USD/.test(el.textContent ?? ""))!)
+    await user.click(
+      drawer.getAllByRole("combobox").find((el) => /BRL|USD/.test(el.textContent ?? ""))!,
+    )
     await user.click(await screen.findByRole("option", { name: "BRL" }))
     await user.click(drawer.getByRole("button", { name: "Clear" }))
     expect(onChange).toHaveBeenCalledWith(emptyFilters)
@@ -119,17 +133,23 @@ describe("FiltersBar", () => {
   it("updates the custom month range", async () => {
     const user = userEvent.setup()
     const onChange = vi.fn()
-    renderWithProviders(
-      <FiltersBar options={options} filters={emptyFilters} onChange={onChange} />,
-    )
+    renderWithProviders(<FiltersBar options={options} filters={emptyFilters} onChange={onChange} />)
     await user.click(screen.getAllByRole("button", { name: "Period start month" })[0]!)
-    const jan = (await screen.findAllByRole("button")).find((button) => /^jan/i.test(button.textContent ?? ""))
+    const jan = (await screen.findAllByRole("button")).find((button) =>
+      /^jan/i.test(button.textContent ?? ""),
+    )
     await user.click(jan!)
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ monthFrom: expect.stringMatching(/^\d{4}-01$/) }))
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ monthFrom: expect.stringMatching(/^\d{4}-01$/) }),
+    )
 
     await user.click(screen.getAllByRole("button", { name: "Period end month" })[0]!)
-    const feb = (await screen.findAllByRole("button")).find((button) => /^feb/i.test(button.textContent ?? ""))
+    const feb = (await screen.findAllByRole("button")).find((button) =>
+      /^feb/i.test(button.textContent ?? ""),
+    )
     await user.click(feb!)
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ monthTo: expect.stringMatching(/^\d{4}-02$/) }))
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ monthTo: expect.stringMatching(/^\d{4}-02$/) }),
+    )
   })
 })

@@ -277,7 +277,11 @@ export type ToolCost = {
   projetos: string[]
 }
 
-export function toolCostByTool(projects: Project[], months: string[], currency: string): ToolCost[] {
+export function toolCostByTool(
+  projects: Project[],
+  months: string[],
+  currency: string,
+): ToolCost[] {
   const byKey = new Map<string, ToolCost>()
 
   for (const project of projects) {
@@ -348,7 +352,11 @@ export function toolCostByCategory(
 
 export type CostMonth = { month: string; eu: number; cliente: number }
 
-export function toolCostByMonth(projects: Project[], months: string[], currency: string): CostMonth[] {
+export function toolCostByMonth(
+  projects: Project[],
+  months: string[],
+  currency: string,
+): CostMonth[] {
   return months.map((month) => {
     const bucket: CostMonth = { month, eu: 0, cliente: 0 }
     for (const project of projects) {
@@ -420,7 +428,11 @@ export type FinanceSummary = {
   foraDaMoeda: number
 }
 
-export function financeSummary(projects: Project[], months: string[], currency: string): FinanceSummary {
+export function financeSummary(
+  projects: Project[],
+  months: string[],
+  currency: string,
+): FinanceSummary {
   const revenue = revenueByMonth(projects, months, currency)
   const recebido = revenue.reduce((total, month) => total + month.recebido, 0)
   const aReceber = revenue.reduce((total, month) => total + month.aReceber, 0)
@@ -428,7 +440,10 @@ export function financeSummary(projects: Project[], months: string[], currency: 
   const faturado = recebido + aReceber + atrasado
 
   const inCurrency = projects.filter((project) => dealCurrency(project) === currency)
-  const custo = inCurrency.reduce((total, project) => total + ownCostOverRange(project, months, currency), 0)
+  const custo = inCurrency.reduce(
+    (total, project) => total + ownCostOverRange(project, months, currency),
+    0,
+  )
   const lucro = faturado - custo
   const lastMonth = months[months.length - 1] ?? ""
   const active = inCurrency.filter((project) => monthOf(project.startedAt) <= lastMonth)
@@ -458,7 +473,11 @@ export type ToolsSummary = {
   foraDaMoeda: number
 }
 
-export function toolsSummary(projects: Project[], months: string[], currency: string): ToolsSummary {
+export function toolsSummary(
+  projects: Project[],
+  months: string[],
+  currency: string,
+): ToolsSummary {
   const costs = toolCostByTool(projects, months, currency)
   const byMonth = toolCostByMonth(projects, months, currency)
   const last = byMonth[byMonth.length - 1]
@@ -508,7 +527,11 @@ export type RulerLane = {
   byMonth: Record<string, RulerInvoice[]>
 }
 
-export function paymentRulerLanes(projects: Project[], months: string[], currency: string): RulerLane[] {
+export function paymentRulerLanes(
+  projects: Project[],
+  months: string[],
+  currency: string,
+): RulerLane[] {
   const monthSet = new Set(months)
   return projects
     .filter((project) => dealCurrency(project) === currency)
@@ -561,10 +584,12 @@ export function dashboardOptions(
 ): DashboardOptions {
   const withProjects = new Set(projects.map((project) => project.clientId).filter(Boolean))
   return {
-    clients: contacts.filter((contact) => withProjects.has(contact.id)).map((contact) => ({
-      id: contact.id,
-      name: contact.name,
-    })),
+    clients: contacts
+      .filter((contact) => withProjects.has(contact.id))
+      .map((contact) => ({
+        id: contact.id,
+        name: contact.name,
+      })),
     projects: projects.map((project) => ({
       id: project.id,
       name: project.name,

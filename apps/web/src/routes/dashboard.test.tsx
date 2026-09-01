@@ -20,7 +20,9 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>()
   return {
     ...actual,
-    Link: ({ children, to }: { children?: ReactNode; to?: string }) => <a href={String(to)}>{children}</a>,
+    Link: ({ children, to }: { children?: ReactNode; to?: string }) => (
+      <a href={String(to)}>{children}</a>
+    ),
   }
 })
 
@@ -167,16 +169,22 @@ describe("dashboard route", () => {
     )
     renderWithProviders(<DashboardPage />)
     await waitFor(() => expect(trpc.dashboard.metrics.query).toHaveBeenCalled())
-    const client = screen.getAllByRole("combobox").find((el) => el.textContent?.includes("All clients"))
+    const client = screen
+      .getAllByRole("combobox")
+      .find((el) => el.textContent?.includes("All clients"))
     await user.click(client!)
     await user.click(await screen.findByRole("option", { name: "Ada" }))
     expect(navigate).toHaveBeenCalled()
 
-    const period = screen.getAllByRole("combobox").find((el) => /6 months|12 months|This year|All time|Period/.test(el.textContent ?? ""))
+    const period = screen
+      .getAllByRole("combobox")
+      .find((el) => /6 months|12 months|This year|All time|Period/.test(el.textContent ?? ""))
     await user.click(period!)
     await user.click(await screen.findByRole("option", { name: "All time" }))
 
-    const currency = screen.getAllByRole("combobox").find((el) => el.textContent?.includes("BRL") || el.textContent?.includes("USD"))
+    const currency = screen
+      .getAllByRole("combobox")
+      .find((el) => el.textContent?.includes("BRL") || el.textContent?.includes("USD"))
     if (currency && !currency.textContent?.includes("BRL")) {
       await user.click(currency)
       await user.click(await screen.findByRole("option", { name: "BRL" }))

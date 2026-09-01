@@ -21,27 +21,19 @@ describe("table-sort", () => {
       { id: "b", name: "Álvaro", amount: 10 },
       { id: "c", name: "beta", amount: 20 },
     ]
-    expect(sortRows(rows, { key: "amount", direction: "asc" }, (r) => r.amount).map((r) => r.id)).toEqual([
-      "b",
-      "c",
-      "a",
-    ])
-    expect(sortRows(rows, { key: "amount", direction: "desc" }, (r) => r.amount).map((r) => r.id)).toEqual([
-      "a",
-      "c",
-      "b",
-    ])
-    expect(sortRows(rows, { key: "name", direction: "asc" }, (r) => r.name, "pt-BR").map((r) => r.id)).toEqual([
-      "b",
-      "c",
-      "a",
-    ])
+    expect(
+      sortRows(rows, { key: "amount", direction: "asc" }, (r) => r.amount).map((r) => r.id),
+    ).toEqual(["b", "c", "a"])
+    expect(
+      sortRows(rows, { key: "amount", direction: "desc" }, (r) => r.amount).map((r) => r.id),
+    ).toEqual(["a", "c", "b"])
+    expect(
+      sortRows(rows, { key: "name", direction: "asc" }, (r) => r.name, "pt-BR").map((r) => r.id),
+    ).toEqual(["b", "c", "a"])
     expect(sortRows(rows, null, (r) => r.amount).map((r) => r.id)).toEqual(["a", "b", "c"])
-    expect(sortRows(rows, { key: "amount", direction: "asc" }, undefined).map((r) => r.id)).toEqual([
-      "a",
-      "b",
-      "c",
-    ])
+    expect(sortRows(rows, { key: "amount", direction: "asc" }, undefined).map((r) => r.id)).toEqual(
+      ["a", "b", "c"],
+    )
     expect(
       sortRows(
         [

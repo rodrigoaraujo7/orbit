@@ -64,14 +64,18 @@ describe("CreateContactDialog", () => {
     renderWithProviders(<CreateContactDialog open onOpenChange={vi.fn()} contact={sampleContact} />)
     expect(await screen.findByText("Edit contact")).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Save" }))
-    await waitFor(() => expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "error" })))
+    await waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "error" })),
+    )
 
     cleanup()
     toastAdd.mockClear()
     updateContact.mockResolvedValue({ ok: true })
     renderWithProviders(<CreateContactDialog open onOpenChange={vi.fn()} contact={sampleContact} />)
     await user.click(await screen.findByRole("button", { name: "Save" }))
-    await waitFor(() => expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "success" })))
+    await waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "success" })),
+    )
   })
 
   it("rejects an invalid email", async () => {

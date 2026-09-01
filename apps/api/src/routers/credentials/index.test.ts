@@ -4,7 +4,12 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { project, projectTool } from "../../db/schema/index.ts"
 import { withUser } from "../../db/with-user/index.ts"
 import { caller, closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
-import { recordRevealAttempt, requireRevealAccess, revealAttemptCount, sealNewSecret } from "./index.ts"
+import {
+  recordRevealAttempt,
+  requireRevealAccess,
+  revealAttemptCount,
+  sealNewSecret,
+} from "./index.ts"
 
 const master = randomBytes(32).toString("hex")
 
@@ -68,10 +73,12 @@ describe("credentials router", () => {
     const revealed = await api.credentials.reveal({ id: created.id })
     expect(revealed.value).toBe("sk_live_abc")
 
-    await expect(api.credentials.reveal({ id: "missing" })).rejects.toMatchObject({ code: "NOT_FOUND" })
-    await expect(caller("user-a", { twoFactorEnabled: false }).credentials.reveal({ id: created.id })).rejects.toMatchObject(
-      { code: "FORBIDDEN" },
-    )
+    await expect(api.credentials.reveal({ id: "missing" })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    })
+    await expect(
+      caller("user-a", { twoFactorEnabled: false }).credentials.reveal({ id: created.id }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" })
 
     await withUser(db, "user-a", async (tx) => {
       for (let i = 0; i < 9; i++) await recordRevealAttempt(tx, "user-a", "cred-1")

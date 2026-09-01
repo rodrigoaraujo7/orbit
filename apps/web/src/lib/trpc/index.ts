@@ -94,11 +94,7 @@ type BrowserRouter = {
       mutate: (input: { name: string; category: string }) => Promise<CustomTool>
     }
     updateCustom: {
-      mutate: (input: {
-        id: string
-        name: string
-        category: string
-      }) => Promise<{ ok: true }>
+      mutate: (input: { id: string; name: string; category: string }) => Promise<{ ok: true }>
     }
     deleteCustom: { mutate: (input: { id: string }) => Promise<{ ok: true }> }
   }

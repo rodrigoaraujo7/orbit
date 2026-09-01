@@ -100,11 +100,7 @@ describe("KanbanBoard", () => {
   it("renders columns and invokes drag handlers", () => {
     const onOpen = vi.fn()
     renderWithProviders(
-      <KanbanBoard
-        projects={[queued, building]}
-        clientName={() => "Ada"}
-        onOpen={onOpen}
-      />,
+      <KanbanBoard projects={[queued, building]} clientName={() => "Ada"} onOpen={onOpen} />,
     )
     expect(screen.getAllByText("Portal").length).toBeGreaterThan(0)
     expect(screen.getByText("Shop")).toBeInTheDocument()

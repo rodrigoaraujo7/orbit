@@ -53,7 +53,13 @@ async function seed(
 describe("audit list", () => {
   it("keyset-paginates, filters and stays append-only", async () => {
     await seed("user-a", [
-      { id: "a1", module: "project", action: "project.create", createdAt: "2026-08-01T10:00:00.000Z", subjectLabel: "Portal" },
+      {
+        id: "a1",
+        module: "project",
+        action: "project.create",
+        createdAt: "2026-08-01T10:00:00.000Z",
+        subjectLabel: "Portal",
+      },
       {
         id: "a2",
         module: "kanban",
@@ -64,9 +70,27 @@ describe("audit list", () => {
         ip: "203.0.113.10",
         userAgent: "Mozilla/5.0",
       },
-      { id: "a3", module: "settings", action: "contact.create", createdAt: "2026-08-03T10:00:00.000Z", subjectLabel: "Ada" },
-      { id: "a4", module: "project", action: "project.update", createdAt: "2026-08-04T10:00:00.000Z", subjectLabel: "Portal", projectId: "p1" },
-      { id: "a5", module: "security", action: "security.login", createdAt: "2026-08-05T10:00:00.000Z" },
+      {
+        id: "a3",
+        module: "settings",
+        action: "contact.create",
+        createdAt: "2026-08-03T10:00:00.000Z",
+        subjectLabel: "Ada",
+      },
+      {
+        id: "a4",
+        module: "project",
+        action: "project.update",
+        createdAt: "2026-08-04T10:00:00.000Z",
+        subjectLabel: "Portal",
+        projectId: "p1",
+      },
+      {
+        id: "a5",
+        module: "security",
+        action: "security.login",
+        createdAt: "2026-08-05T10:00:00.000Z",
+      },
       {
         id: "a6",
         module: "billing",
@@ -76,7 +100,13 @@ describe("audit list", () => {
       },
     ])
     await seed("user-b", [
-      { id: "b1", module: "project", action: "project.create", createdAt: "2026-08-07T10:00:00.000Z", subjectLabel: "Secret" },
+      {
+        id: "b1",
+        module: "project",
+        action: "project.create",
+        createdAt: "2026-08-07T10:00:00.000Z",
+        subjectLabel: "Secret",
+      },
     ])
 
     const api = caller("user-a")
@@ -90,7 +120,12 @@ describe("audit list", () => {
     )
     expect(dateAsc1.items.map((row) => row.id)).toEqual(["a1", "a2"])
     const dateAsc2 = await withUser(db, "user-a", (tx) =>
-      listAuditLogs(tx, { limit: 2, sortBy: "createdAt", sortDir: "asc", cursor: dateAsc1.nextCursor }),
+      listAuditLogs(tx, {
+        limit: 2,
+        sortBy: "createdAt",
+        sortDir: "asc",
+        cursor: dateAsc1.nextCursor,
+      }),
     )
     expect(dateAsc2.items.map((row) => row.id)).toEqual(["a3", "a4"])
 
@@ -132,14 +167,25 @@ describe("audit list", () => {
       )
     }
 
-    expect((await withUser(db, "user-a", (tx) => listAuditLogs(tx, { modules: ["kanban"] }))).items[0]?.id).toBe("a2")
-    expect((await withUser(db, "user-a", (tx) => listAuditLogs(tx, { search: "Ada" }))).items[0]?.id).toBe("a3")
-    expect((await withUser(db, "user-a", (tx) => listAuditLogs(tx, { search: "needle" }))).items[0]?.id).toBe("a6")
-    expect((await withUser(db, "user-a", (tx) => listAuditLogs(tx, { search: "100%_off" }))).items).toEqual([])
     expect(
-      (await withUser(db, "user-a", (tx) => listAuditLogs(tx, { from: "2026-08-02", to: "2026-08-04" }))).items.map(
-        (row) => row.id,
-      ),
+      (await withUser(db, "user-a", (tx) => listAuditLogs(tx, { modules: ["kanban"] }))).items[0]
+        ?.id,
+    ).toBe("a2")
+    expect(
+      (await withUser(db, "user-a", (tx) => listAuditLogs(tx, { search: "Ada" }))).items[0]?.id,
+    ).toBe("a3")
+    expect(
+      (await withUser(db, "user-a", (tx) => listAuditLogs(tx, { search: "needle" }))).items[0]?.id,
+    ).toBe("a6")
+    expect(
+      (await withUser(db, "user-a", (tx) => listAuditLogs(tx, { search: "100%_off" }))).items,
+    ).toEqual([])
+    expect(
+      (
+        await withUser(db, "user-a", (tx) =>
+          listAuditLogs(tx, { from: "2026-08-02", to: "2026-08-04" }),
+        )
+      ).items.map((row) => row.id),
     ).toEqual(["a4", "a3", "a2"])
     expect(
       (
@@ -148,7 +194,9 @@ describe("audit list", () => {
         )
       ).items.length,
     ).toBeGreaterThan(0)
-    expect((await withUser(db, "user-a", (tx) => listAuditLogs(tx, { projectId: "p1" }))).items).toHaveLength(2)
+    expect(
+      (await withUser(db, "user-a", (tx) => listAuditLogs(tx, { projectId: "p1" }))).items,
+    ).toHaveLength(2)
 
     const asB = await caller("user-b").audit.list({})
     expect(asB.items.map((row) => row.id)).toEqual(["b1"])
@@ -170,4 +218,3 @@ describe("audit list", () => {
     expect(Array.isArray(remaining) && remaining.length === 1).toBe(true)
   })
 })
-

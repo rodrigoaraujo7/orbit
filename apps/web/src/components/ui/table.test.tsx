@@ -39,9 +39,7 @@ const columns: Column<Row>[] = [
 
 describe("DataTable", () => {
   it("shows the default empty message", () => {
-    renderWithProviders(
-      <DataTable data={[]} columns={columns} rowKey={(row) => row.id} />,
-    )
+    renderWithProviders(<DataTable data={[]} columns={columns} rowKey={(row) => row.id} />)
     expect(screen.getByText("No results found.")).toBeInTheDocument()
   })
 
@@ -82,9 +80,15 @@ describe("DataTable", () => {
     expect(screen.getByRole("button", { name: "Previous page" })).toBeDisabled()
 
     await user.click(screen.getByRole("columnheader", { name: /Name/ }).querySelector("button")!)
-    expect(screen.getByRole("columnheader", { name: /Name/ })).toHaveAttribute("aria-sort", "ascending")
+    expect(screen.getByRole("columnheader", { name: /Name/ })).toHaveAttribute(
+      "aria-sort",
+      "ascending",
+    )
     await user.click(screen.getByRole("columnheader", { name: /Name/ }).querySelector("button")!)
-    expect(screen.getByRole("columnheader", { name: /Name/ })).toHaveAttribute("aria-sort", "descending")
+    expect(screen.getByRole("columnheader", { name: /Name/ })).toHaveAttribute(
+      "aria-sort",
+      "descending",
+    )
     await user.click(screen.getByRole("columnheader", { name: /Name/ }).querySelector("button")!)
     expect(screen.getByRole("columnheader", { name: /Name/ })).not.toHaveAttribute("aria-sort")
 
@@ -133,7 +137,10 @@ describe("DataTable", () => {
       />,
     )
 
-    expect(screen.getByRole("columnheader", { name: /Name/ })).toHaveAttribute("aria-sort", "descending")
+    expect(screen.getByRole("columnheader", { name: /Name/ })).toHaveAttribute(
+      "aria-sort",
+      "descending",
+    )
     await user.click(screen.getByRole("columnheader", { name: /Name/ }).querySelector("button")!)
     expect(onSortChange).toHaveBeenCalled()
 

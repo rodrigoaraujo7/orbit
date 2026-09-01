@@ -52,7 +52,10 @@ type AuditEntry = {
   userAgent: string | null
 }
 
-const MODULE_BADGE: Record<AuditModule, "default" | "muted" | "outline" | "success" | "warning" | "destructive"> = {
+const MODULE_BADGE: Record<
+  AuditModule,
+  "default" | "muted" | "outline" | "success" | "warning" | "destructive"
+> = {
   project: "default",
   kanban: "outline",
   settings: "muted",
@@ -372,9 +375,7 @@ function AuditPage() {
       >
         <div className="px-4 py-6 sm:px-6 lg:px-8">
           {query.isError ? (
-            <p className="text-sm text-muted-foreground">
-              {t("audit.loadError")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("audit.loadError")}</p>
           ) : (
             <DataTable
               data={items}
@@ -417,9 +418,7 @@ function AuditPage() {
             <>
               <ResponsiveDialogHeader>
                 <div>
-                  <ResponsiveDialogTitle>
-                    {auditActionLabel(selected.action)}
-                  </ResponsiveDialogTitle>
+                  <ResponsiveDialogTitle>{auditActionLabel(selected.action)}</ResponsiveDialogTitle>
                   <ResponsiveDialogDescription className="sr-only">
                     {t("audit.eventDetails")}
                   </ResponsiveDialogDescription>

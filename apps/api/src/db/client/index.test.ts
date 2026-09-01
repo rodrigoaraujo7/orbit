@@ -26,7 +26,10 @@ describe("createDb / applySchema / getDb", () => {
   it("opens postgres with DATABASE_URL and applies schema.sql", async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
     const created = createDb()
-    expect(postgres).toHaveBeenCalledWith("postgres://localhost/test", postgresClientOptions("postgres://localhost/test"))
+    expect(postgres).toHaveBeenCalledWith(
+      "postgres://localhost/test",
+      postgresClientOptions("postgres://localhost/test"),
+    )
     expect(created.client).toBe(fakeSql)
     await applySchema(created.client as never)
     expect(unsafe).toHaveBeenCalled()

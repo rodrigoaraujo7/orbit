@@ -11,7 +11,9 @@ describe("audit-labels", () => {
     expect(formatAuditChange({ field: "comment.deleted", from: "a", to: "" })).toBeTruthy()
     expect(formatAuditChange({ field: "tool.aws.secret.TOKEN", from: "", to: "set" })).toBeTruthy()
     expect(formatAuditChange({ field: "tool.aws.secret.TOKEN", from: "set", to: "" })).toBeTruthy()
-    expect(formatAuditChange({ field: "tool.aws.secret.TOKEN", from: "set", to: "changed" })).toBeTruthy()
+    expect(
+      formatAuditChange({ field: "tool.aws.secret.TOKEN", from: "set", to: "changed" }),
+    ).toBeTruthy()
     expect(formatAuditChange({ field: "tool.aws.account", from: "", to: "me" })).toContain(dash())
     expect(formatAuditChange({ field: "tool.aws.billing", from: "a", to: "b" })).toBeTruthy()
     expect(formatAuditChange({ field: "tool.aws.billing", from: "a", to: "" })).toContain(dash())
@@ -20,13 +22,20 @@ describe("audit-labels", () => {
     expect(formatAuditChange({ field: "tool.aws", from: "AWS", to: "Amazon" })).toBeTruthy()
     expect(formatAuditChange({ field: "tool.aws.account", from: "a", to: "" })).toContain(dash())
     expect(formatAuditChange({ field: "tool.aws.billing", from: "", to: "b" })).toContain(dash())
-    expect(formatAuditChange({ field: "clientId", from: "c1", to: "c2" }, (id) => `name-${id}`)).toContain("name-c1")
     expect(
-      formatAuditChange({ field: "clientId", from: "c1", to: "c2" }, () => undefined as unknown as string),
+      formatAuditChange({ field: "clientId", from: "c1", to: "c2" }, (id) => `name-${id}`),
+    ).toContain("name-c1")
+    expect(
+      formatAuditChange(
+        { field: "clientId", from: "c1", to: "c2" },
+        () => undefined as unknown as string,
+      ),
     ).toContain("c1")
     expect(formatAuditChange({ field: "clientId", from: "", to: "" })).toContain(dash())
     expect(formatAuditChange({ field: "name", from: "A", to: "B" })).toBeTruthy()
-    expect(formatAuditDetails([{ field: "name", from: "A", to: "B" }], "project.update", (id) => id)).toBeTruthy()
+    expect(
+      formatAuditDetails([{ field: "name", from: "A", to: "B" }], "project.update", (id) => id),
+    ).toBeTruthy()
   })
 
   it("formats timestamps and summaries", () => {
@@ -42,6 +51,8 @@ describe("audit-labels", () => {
         "project.update",
       ),
     ).toContain("+1")
-    expect(formatAuditDetails([{ field: "name", from: "A", to: "B" }], "project.update")).not.toContain("+")
+    expect(
+      formatAuditDetails([{ field: "name", from: "A", to: "B" }], "project.update"),
+    ).not.toContain("+")
   })
 })

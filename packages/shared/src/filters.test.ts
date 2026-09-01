@@ -21,7 +21,9 @@ describe("compactSearch", () => {
 
 describe("parseSearch", () => {
   it("strips blanks and keeps known keys", () => {
-    expect(parseSearch(projectsSearchSchema, { q: "  acme  ", status: "queued", noise: 1 })).toEqual({
+    expect(
+      parseSearch(projectsSearchSchema, { q: "  acme  ", status: "queued", noise: 1 }),
+    ).toEqual({
       q: "acme",
       status: "queued",
     })

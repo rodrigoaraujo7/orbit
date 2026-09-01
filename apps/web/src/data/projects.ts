@@ -1,11 +1,6 @@
 import type { ToolCategory } from "./tool-catalog.ts"
 
-export type ProjectStatus =
-  | "queued"
-  | "in-development"
-  | "paused"
-  | "in-validation"
-  | "completed"
+export type ProjectStatus = "queued" | "in-development" | "paused" | "in-validation" | "completed"
 
 export type ProjectComment = {
   id: string
@@ -509,9 +504,7 @@ export const projects: Project[] = [
     description:
       "Help desk interno da Clínica Vitalis. Ainda sem repositório — começa em setembro.",
     deal: { kind: "upfront", amount: 9800 },
-    tools: [
-      { id: "supabase", name: "Supabase", category: "database", secrets: [] },
-    ],
+    tools: [{ id: "supabase", name: "Supabase", category: "database", secrets: [] }],
     repo: null,
   },
   // The only non-BRL deal in the mock — it is what makes the dashboard's

@@ -62,11 +62,7 @@ function SecretRow({
             aria-label={revealed ? t("common.hideValue") : t("common.revealValue")}
             className="absolute top-1/2 right-2 -translate-y-1/2 rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
           >
-            {revealed ? (
-              <EyeOff className="size-3.5" />
-            ) : (
-              <Eye className="size-3.5" />
-            )}
+            {revealed ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
           </button>
         </div>
         <Button
@@ -88,13 +84,7 @@ function SecretRow({
   )
 }
 
-export function ToolField({
-  index,
-  onRemove,
-}: {
-  index: number
-  onRemove: () => void
-}) {
+export function ToolField({ index, onRemove }: { index: number; onRemove: () => void }) {
   const { t } = useTranslation()
   const {
     control,
@@ -131,9 +121,7 @@ export function ToolField({
             )}
           />
           {toolErrors?.toolId && (
-            <p className="mt-1 text-xs text-destructive">
-              {toolErrors.toolId.message}
-            </p>
+            <p className="mt-1 text-xs text-destructive">{toolErrors.toolId.message}</p>
           )}
         </div>
         <Button

@@ -12,11 +12,7 @@ import { env, optionalEnv } from "../env/index.ts"
 
 const webOrigin = optionalEnv("WEB_ORIGIN") ?? "http://localhost:5173"
 
-async function logSecurity(
-  userId: string,
-  action: string,
-  headers: Headers | null | undefined,
-) {
+async function logSecurity(userId: string, action: string, headers: Headers | null | undefined) {
   try {
     await withUser(getDb(), userId, (tx) =>
       recordAudit(
@@ -35,7 +31,11 @@ async function logSecurity(
 }
 
 async function userIdByEmail(email: string) {
-  const [row] = await getDb().select({ id: user.id }).from(user).where(eq(user.email, email)).limit(1)
+  const [row] = await getDb()
+    .select({ id: user.id })
+    .from(user)
+    .where(eq(user.email, email))
+    .limit(1)
   return row?.id
 }
 

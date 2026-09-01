@@ -98,7 +98,8 @@ export function compactSearch<T extends Record<string, unknown>>(search: T): Par
  * and fall back to schema defaults when the URL is garbage.
  */
 export function parseSearch<S extends z.ZodType>(schema: S, search: unknown): z.infer<S> {
-  const raw = typeof search === "object" && search !== null ? { ...(search as Record<string, unknown>) } : {}
+  const raw =
+    typeof search === "object" && search !== null ? { ...(search as Record<string, unknown>) } : {}
   for (const [key, value] of Object.entries(raw)) {
     if (isBlank(value)) delete raw[key]
   }

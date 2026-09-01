@@ -29,25 +29,25 @@ describe("filterInvoices", () => {
   const list = [jan, feb, mar]
 
   it("filters by status and month bounds", () => {
-    expect(filterInvoices(list, { status: "pending", monthFrom: "", monthTo: "" }).map((i) => i.id)).toEqual([
-      "feb",
-    ])
-    expect(filterInvoices(list, { status: "all", monthFrom: "", monthTo: "" }).map((i) => i.id)).toEqual([
-      "jan",
-      "feb",
-      "mar",
-    ])
     expect(
-      filterInvoices(list, { status: "all", monthFrom: "2026-02", monthTo: "2026-03" }).map((i) => i.id),
+      filterInvoices(list, { status: "pending", monthFrom: "", monthTo: "" }).map((i) => i.id),
+    ).toEqual(["feb"])
+    expect(
+      filterInvoices(list, { status: "all", monthFrom: "", monthTo: "" }).map((i) => i.id),
+    ).toEqual(["jan", "feb", "mar"])
+    expect(
+      filterInvoices(list, { status: "all", monthFrom: "2026-02", monthTo: "2026-03" }).map(
+        (i) => i.id,
+      ),
     ).toEqual(["feb", "mar"])
   })
 
   it("applies a lower or upper bound alone", () => {
-    expect(filterInvoices(list, { status: "all", monthFrom: "2026-03", monthTo: "" }).map((i) => i.id)).toEqual([
-      "mar",
-    ])
-    expect(filterInvoices(list, { status: "all", monthFrom: "", monthTo: "2026-01" }).map((i) => i.id)).toEqual([
-      "jan",
-    ])
+    expect(
+      filterInvoices(list, { status: "all", monthFrom: "2026-03", monthTo: "" }).map((i) => i.id),
+    ).toEqual(["mar"])
+    expect(
+      filterInvoices(list, { status: "all", monthFrom: "", monthTo: "2026-01" }).map((i) => i.id),
+    ).toEqual(["jan"])
   })
 })

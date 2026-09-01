@@ -13,11 +13,7 @@ describe("recordAudit", () => {
     const { db, client } = await openTestDb()
     await insertUser(client, "user-a")
     await withUser(db, "user-a", async (tx) => {
-      await recordAudit(
-        tx,
-        { userId: "user-a" },
-        { module: "project", action: "project.create" },
-      )
+      await recordAudit(tx, { userId: "user-a" }, { module: "project", action: "project.create" })
       await recordAudit(
         tx,
         { userId: "user-a", ip: "1.1.1.1", userAgent: "vitest" },

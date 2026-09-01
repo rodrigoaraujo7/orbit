@@ -30,22 +30,14 @@ function SecretList({ secrets }: { secrets: Secret[] }) {
           <KeyRound className="size-3.5" />
           {t("common.secretCount", { count: secrets.length })}
         </span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="xs"
-          onClick={() => setRevealed((v) => !v)}
-        >
+        <Button type="button" variant="ghost" size="xs" onClick={() => setRevealed((v) => !v)}>
           {revealed ? <EyeOff /> : <Eye />}
           {revealed ? t("common.hide") : t("common.reveal")}
         </Button>
       </div>
       <ul className="mt-1.5 flex flex-col gap-1">
         {secrets.map((secret) => (
-          <li
-            key={secret.key}
-            className="flex flex-wrap items-baseline gap-x-2 font-mono text-xs"
-          >
+          <li key={secret.key} className="flex flex-wrap items-baseline gap-x-2 font-mono text-xs">
             <span className="text-muted-foreground">{secret.key}</span>
             <button
               type="button"
@@ -74,8 +66,7 @@ export function ToolDetails({ tool }: { tool: Tool }) {
         </span>
         {billing ? (
           <Badge variant="default">
-            {formatCurrency(billing.amount, billing.currency)} ·{" "}
-            {billingCycleLabel(billing.cycle)}
+            {formatCurrency(billing.amount, billing.currency)} · {billingCycleLabel(billing.cycle)}
           </Badge>
         ) : (
           <Badge variant="outline">{freeLabel()}</Badge>

@@ -84,15 +84,23 @@ describe("InvoicesTable", () => {
 
     const from = screen.getByRole("button", { name: "From" })
     await user.click(from)
-    const jan = (await screen.findAllByRole("button")).find((button) => /^jan/i.test(button.textContent ?? ""))
+    const jan = (await screen.findAllByRole("button")).find((button) =>
+      /^jan/i.test(button.textContent ?? ""),
+    )
     await user.click(jan!)
     expect(onMonthFromChange).toHaveBeenCalled()
     const to = screen.getByRole("button", { name: "To" })
     await user.click(to)
-    await user.click((await screen.findAllByRole("button")).find((button) => /^feb/i.test(button.textContent ?? ""))!)
+    await user.click(
+      (await screen.findAllByRole("button")).find((button) =>
+        /^feb/i.test(button.textContent ?? ""),
+      )!,
+    )
     expect(onMonthToChange).toHaveBeenCalled()
 
-    await user.click(screen.getByRole("columnheader", { name: /Reference/ }).querySelector("button")!)
+    await user.click(
+      screen.getByRole("columnheader", { name: /Reference/ }).querySelector("button")!,
+    )
     await user.click(screen.getByRole("columnheader", { name: /Amount/ }).querySelector("button")!)
     await user.click(screen.getByRole("columnheader", { name: /Method/ }).querySelector("button")!)
     await user.click(screen.getByRole("columnheader", { name: /Status/ }).querySelector("button")!)

@@ -38,10 +38,7 @@ function Field({
       {(error || hint) && (
         <p
           id={messageId}
-          className={cn(
-            "text-xs",
-            error ? "text-destructive" : "text-muted-foreground"
-          )}
+          className={cn("text-xs", error ? "text-destructive" : "text-muted-foreground")}
         >
           {error ?? hint}
         </p>

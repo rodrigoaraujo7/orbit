@@ -5,10 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { sampleContact } from "@/test/fixtures"
 import { renderWithProviders } from "@/test/render"
 
-const contacts = [
-  sampleContact,
-  { id: "c2", name: "Boole", email: "bo@test.local" },
-]
+const contacts = [sampleContact, { id: "c2", name: "Boole", email: "bo@test.local" }]
 
 vi.mock("@/lib/registry-store", () => ({
   useRegistry: () => ({
@@ -43,7 +40,9 @@ describe("ContactSelect", () => {
     )
     expect(screen.getByText("Select a contact")).toBeInTheDocument()
     await user.click(screen.getByRole("combobox"))
-    expect(await screen.findByText("ada@test.local · (11) 98888-0000 · Analytical Engines")).toBeInTheDocument()
+    expect(
+      await screen.findByText("ada@test.local · (11) 98888-0000 · Analytical Engines"),
+    ).toBeInTheDocument()
     await user.click(screen.getByRole("option", { name: /Ada Lovelace/ }))
     expect(onValueChange).toHaveBeenCalledWith("c1")
     rerender(<ContactSelect value="c1" onValueChange={onValueChange} />)

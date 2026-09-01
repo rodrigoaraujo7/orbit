@@ -21,7 +21,7 @@ describe("loadDotEnv", () => {
       [
         "# comment",
         "",
-        "export QUOTED=\"hello world\"",
+        'export QUOTED="hello world"',
         "SINGLE='one'",
         "PLAIN=plain",
         "NOVALUE",

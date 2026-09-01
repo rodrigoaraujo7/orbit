@@ -30,160 +30,160 @@ export function hasPositiveAmount(amount: string) {
  */
 export function projectSchema() {
   return z
-  .object({
-    name: z.string().trim().min(2, i18n.t("validation.minChars")),
-    clientId: z.string(),
-    // when true, clientId is ignored and a Contact is created from the
-    // newContact* fields instead — see the create-project-dialog for the
-    // actual creation (this schema stays free of registry side effects).
-    isNewContact: z.boolean(),
-    newContactName: z.string().trim(),
-    newContactEmail: z.string().trim(),
-    newContactPhone: z.string().trim(),
-    newContactCompany: z.string().trim(),
-    status: projectStatusSchema,
-    dealKind: dealKindSchema,
-    amount: z.string().trim(),
-    currency: z.string().trim().min(1),
-    installments: z.string().trim(),
-    tools: z.array(
-      z.object({
-        toolId: z.string().min(1, i18n.t("validation.selectTool")),
-        customName: z.string().trim(),
-        account: z.string().trim(),
-        amount: z.string().trim(),
-        currency: z.string().trim().min(1),
-        cycle: billingCycleSchema,
-        nextInvoice: z.string().trim(),
-        payer: payerSchema,
-        secrets: z.array(
-          z.object({
-            key: z.string().trim().min(1, i18n.t("validation.enterKey")),
-            value: z.string().trim().min(1, i18n.t("validation.enterValue")),
+    .object({
+      name: z.string().trim().min(2, i18n.t("validation.minChars")),
+      clientId: z.string(),
+      // when true, clientId is ignored and a Contact is created from the
+      // newContact* fields instead — see the create-project-dialog for the
+      // actual creation (this schema stays free of registry side effects).
+      isNewContact: z.boolean(),
+      newContactName: z.string().trim(),
+      newContactEmail: z.string().trim(),
+      newContactPhone: z.string().trim(),
+      newContactCompany: z.string().trim(),
+      status: projectStatusSchema,
+      dealKind: dealKindSchema,
+      amount: z.string().trim(),
+      currency: z.string().trim().min(1),
+      installments: z.string().trim(),
+      tools: z.array(
+        z.object({
+          toolId: z.string().min(1, i18n.t("validation.selectTool")),
+          customName: z.string().trim(),
+          account: z.string().trim(),
+          amount: z.string().trim(),
+          currency: z.string().trim().min(1),
+          cycle: billingCycleSchema,
+          nextInvoice: z.string().trim(),
+          payer: payerSchema,
+          secrets: z.array(
+            z.object({
+              key: z.string().trim().min(1, i18n.t("validation.enterKey")),
+              value: z.string().trim().min(1, i18n.t("validation.enterValue")),
+            }),
+          ),
+        }),
+      ),
+      // just the "owner/repo" — the "https://github.com/" prefix is fixed in the UI
+      repoPath: z.string().trim(),
+    })
+    .superRefine((values, ctx) => {
+      // Contact: either an existing contact is picked, or a new one is filled
+      // in inline — same required fields as CreateContactDialog's contactSchema.
+      if (!values.isNewContact) {
+        if (!values.clientId) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["clientId"],
+            message: i18n.t("validation.selectContact"),
           })
-        ),
-      })
-    ),
-    // just the "owner/repo" — the "https://github.com/" prefix is fixed in the UI
-    repoPath: z.string().trim(),
-  })
-  .superRefine((values, ctx) => {
-    // Contact: either an existing contact is picked, or a new one is filled
-    // in inline — same required fields as CreateContactDialog's contactSchema.
-    if (!values.isNewContact) {
-      if (!values.clientId) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["clientId"],
-          message: i18n.t("validation.selectContact"),
-        })
-      }
-    } else {
-      if (values.newContactName.length < 2) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["newContactName"],
-          message: i18n.t("validation.minChars"),
-        })
-      }
-      if (!values.newContactPhone) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["newContactPhone"],
-          message: i18n.t("validation.enterPhone"),
-        })
-      }
-      if (!values.newContactCompany) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["newContactCompany"],
-          message: i18n.t("validation.enterCompany"),
-        })
-      }
-      if (
-        values.newContactEmail &&
-        !z.string().email().safeParse(values.newContactEmail).success
-      ) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["newContactEmail"],
-          message: i18n.t("validation.emailInvalid"),
-        })
-      }
-    }
-
-    // Zeroed amount = free project, same rule as the tools — only garbage or
-    // negative values are errors.
-    const dealAmount = parseAmount(values.amount)
-    if (values.amount && dealAmount == null) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["amount"],
-        message: i18n.t("validation.invalidAmount"),
-      })
-    } else if (dealAmount != null && dealAmount < 0) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["amount"],
-        message: i18n.t("validation.negativeAmount"),
-      })
-    }
-
-    // Installments only make sense when the project is paid.
-    if (values.dealKind === "installment" && hasPositiveAmount(values.amount)) {
-      const installments = Number(values.installments)
-      if (!Number.isInteger(installments) || installments < 2) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["installments"],
-          message: i18n.t("validation.minInstallments"),
-        })
-      }
-    }
-
-    values.tools.forEach((tool, index) => {
-      if (tool.toolId === OTHER_TOOL_ID && tool.customName.length < 2) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["tools", index, "customName"],
-          message: i18n.t("validation.enterToolName"),
-        })
+        }
+      } else {
+        if (values.newContactName.length < 2) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["newContactName"],
+            message: i18n.t("validation.minChars"),
+          })
+        }
+        if (!values.newContactPhone) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["newContactPhone"],
+            message: i18n.t("validation.enterPhone"),
+          })
+        }
+        if (!values.newContactCompany) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["newContactCompany"],
+            message: i18n.t("validation.enterCompany"),
+          })
+        }
+        if (
+          values.newContactEmail &&
+          !z.string().email().safeParse(values.newContactEmail).success
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["newContactEmail"],
+            message: i18n.t("validation.emailInvalid"),
+          })
+        }
       }
 
-      // Zeroed amount = free tool. Only garbage or negative values are errors.
-      const amount = parseAmount(tool.amount)
-      if (tool.amount && amount == null) {
+      // Zeroed amount = free project, same rule as the tools — only garbage or
+      // negative values are errors.
+      const dealAmount = parseAmount(values.amount)
+      if (values.amount && dealAmount == null) {
         ctx.addIssue({
           code: "custom",
-          path: ["tools", index, "amount"],
+          path: ["amount"],
           message: i18n.t("validation.invalidAmount"),
         })
-      } else if (amount != null && amount < 0) {
+      } else if (dealAmount != null && dealAmount < 0) {
         ctx.addIssue({
           code: "custom",
-          path: ["tools", index, "amount"],
+          path: ["amount"],
           message: i18n.t("validation.negativeAmount"),
         })
       }
 
-      // Billing is only required when the tool has an amount.
-      if (hasPositiveAmount(tool.amount) && !tool.nextInvoice) {
+      // Installments only make sense when the project is paid.
+      if (values.dealKind === "installment" && hasPositiveAmount(values.amount)) {
+        const installments = Number(values.installments)
+        if (!Number.isInteger(installments) || installments < 2) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["installments"],
+            message: i18n.t("validation.minInstallments"),
+          })
+        }
+      }
+
+      values.tools.forEach((tool, index) => {
+        if (tool.toolId === OTHER_TOOL_ID && tool.customName.length < 2) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["tools", index, "customName"],
+            message: i18n.t("validation.enterToolName"),
+          })
+        }
+
+        // Zeroed amount = free tool. Only garbage or negative values are errors.
+        const amount = parseAmount(tool.amount)
+        if (tool.amount && amount == null) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["tools", index, "amount"],
+            message: i18n.t("validation.invalidAmount"),
+          })
+        } else if (amount != null && amount < 0) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["tools", index, "amount"],
+            message: i18n.t("validation.negativeAmount"),
+          })
+        }
+
+        // Billing is only required when the tool has an amount.
+        if (hasPositiveAmount(tool.amount) && !tool.nextInvoice) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["tools", index, "nextInvoice"],
+            message: i18n.t("validation.enterInvoiceDate"),
+          })
+        }
+      })
+
+      if (values.repoPath && parseRepo(values.repoPath) == null) {
         ctx.addIssue({
           code: "custom",
-          path: ["tools", index, "nextInvoice"],
-          message: i18n.t("validation.enterInvoiceDate"),
+          path: ["repoPath"],
+          message: i18n.t("validation.repoFormat"),
         })
       }
     })
-
-    if (values.repoPath && parseRepo(values.repoPath) == null) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["repoPath"],
-        message: i18n.t("validation.repoFormat"),
-      })
-    }
-  })
 }
 
 export type ProjectFormValues = z.infer<ReturnType<typeof projectSchema>>
@@ -294,9 +294,7 @@ export function toProject(values: ProjectFormValues, existing?: Project): Projec
 
   const repo = values.repoPath ? parseRepo(values.repoPath) : null
   const workflow =
-    repo && existing?.repo?.fullName === repo.fullName
-      ? existing.repo.workflow
-      : "none"
+    repo && existing?.repo?.fullName === repo.fullName ? existing.repo.workflow : "none"
 
   return withProjectStatus(
     {
@@ -315,7 +313,7 @@ export function toProject(values: ProjectFormValues, existing?: Project): Projec
       description: existing?.description,
       comments: existing?.comments,
     },
-    values.status
+    values.status,
   )
 }
 

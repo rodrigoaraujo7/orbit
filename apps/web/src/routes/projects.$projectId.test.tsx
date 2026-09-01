@@ -28,7 +28,15 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>()
   return {
     ...actual,
-    Link: ({ children, to, className }: { children?: ReactNode; to?: string; className?: string }) => (
+    Link: ({
+      children,
+      to,
+      className,
+    }: {
+      children?: ReactNode
+      to?: string
+      className?: string
+    }) => (
       <a href={String(to)} className={className}>
         {children}
       </a>
@@ -97,7 +105,9 @@ beforeEach(() => {
 
 describe("project detail route", () => {
   it("parses search params", () => {
-    expect(Route.options.validateSearch?.({ status: "paid", from: "" })).toMatchObject({ status: "paid" })
+    expect(Route.options.validateSearch?.({ status: "paid", from: "" })).toMatchObject({
+      status: "paid",
+    })
   })
   it("shows not found", () => {
     params.projectId = "missing"
@@ -135,14 +145,21 @@ describe("project detail route", () => {
       tools: [
         {
           ...sampleTool,
-          billing: { amount: 20, cycle: "monthly" as const, nextInvoice: "2026-09-01", payer: "me" as const },
+          billing: {
+            amount: 20,
+            cycle: "monthly" as const,
+            nextInvoice: "2026-09-01",
+            payer: "me" as const,
+          },
         },
       ],
     })
     findContact.mockReturnValue({ id: "c1", name: "Ada Lovelace" })
     renderWithProviders(<ProjectDetailPage />)
     expect(await screen.findByRole("heading", { name: "Portal" })).toBeInTheDocument()
-    const tooltipTriggers = screen.getAllByRole("button").filter((el) => el.hasAttribute("data-base-ui-tooltip-trigger"))
+    const tooltipTriggers = screen
+      .getAllByRole("button")
+      .filter((el) => el.hasAttribute("data-base-ui-tooltip-trigger"))
     await user.click(tooltipTriggers[0]!)
     await user.click(tooltipTriggers[1]!)
     await user.click(tooltipTriggers[2]!)
@@ -173,7 +190,9 @@ describe("project detail route", () => {
     expect(routeNavigate).toHaveBeenCalled()
 
     await user.click(screen.getByRole("tab", { name: "Tools" }))
-    const toolTriggers = screen.getAllByRole("button").filter((el) => el.hasAttribute("data-base-ui-tooltip-trigger"))
+    const toolTriggers = screen
+      .getAllByRole("button")
+      .filter((el) => el.hasAttribute("data-base-ui-tooltip-trigger"))
     await user.click(toolTriggers[toolTriggers.length - 2]!)
     await user.click(toolTriggers[toolTriggers.length - 1]!)
     expect(await screen.findByText("Edit tools")).toBeInTheDocument()
@@ -193,7 +212,10 @@ describe("project detail route", () => {
       deal: { kind: "upfront" as const, amount: 0, currency: "BRL" },
     })
     findContact.mockReturnValue(undefined)
-    trpc.invoices.list.query.mockResolvedValue({ items: [], totals: { count: 0, paid: 0, overdue: 0 } })
+    trpc.invoices.list.query.mockResolvedValue({
+      items: [],
+      totals: { count: 0, paid: 0, overdue: 0 },
+    })
     const user = userEvent.setup()
     renderWithProviders(<ProjectDetailPage />)
     expect((await screen.findAllByText("Free")).length).toBeGreaterThan(0)

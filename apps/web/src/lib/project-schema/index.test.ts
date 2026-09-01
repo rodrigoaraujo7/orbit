@@ -61,16 +61,22 @@ describe("projectSchema", () => {
       ),
     ).toEqual(["newContactEmail"])
     expect(errorPaths(form())).toEqual([])
-    expect(errorPaths(form({ dealKind: "installment", amount: "18000", installments: "1" }))).toEqual([
-      "installments",
-    ])
-    expect(errorPaths(form({ dealKind: "installment", amount: "18000", installments: "3" }))).toEqual([])
-    expect(errorPaths(form({ dealKind: "installment", amount: "0", installments: "1" }))).toEqual([])
+    expect(
+      errorPaths(form({ dealKind: "installment", amount: "18000", installments: "1" })),
+    ).toEqual(["installments"])
+    expect(
+      errorPaths(form({ dealKind: "installment", amount: "18000", installments: "3" })),
+    ).toEqual([])
+    expect(errorPaths(form({ dealKind: "installment", amount: "0", installments: "1" }))).toEqual(
+      [],
+    )
     expect(errorPaths(form({ amount: "abc" }))).toEqual(["amount"])
     expect(errorPaths(form({ amount: "-5" }))).toEqual(["amount"])
     expect(errorPaths(form({ tools: [tool({ toolId: "" })] }))).toEqual(["tools.0.toolId"])
     expect(errorPaths(form({ tools: [tool({ toolId: "other" })] }))).toEqual(["tools.0.customName"])
-    expect(errorPaths(form({ tools: [tool({ amount: "340,50" })] }))).toEqual(["tools.0.nextInvoice"])
+    expect(errorPaths(form({ tools: [tool({ amount: "340,50" })] }))).toEqual([
+      "tools.0.nextInvoice",
+    ])
     expect(errorPaths(form({ tools: [tool({ amount: "abc" })] }))).toEqual(["tools.0.amount"])
     expect(errorPaths(form({ tools: [tool({ amount: "-5" })] }))).toEqual(["tools.0.amount"])
     expect(errorPaths(form({ repoPath: "just-a-name" }))).toEqual(["repoPath"])
@@ -93,8 +99,9 @@ describe("projectSchema", () => {
       billing: { amount: 340.5, payer: "client" },
     })
 
-    const other = toProject(form({ tools: [tool({ toolId: "other", customName: "TOTVS Protheus" })] }))
-      .tools[0]
+    const other = toProject(
+      form({ tools: [tool({ toolId: "other", customName: "TOTVS Protheus" })] }),
+    ).tools[0]
     expect(other).toMatchObject({ name: "TOTVS Protheus", category: "other" })
 
     expect(toProject(form({ repoPath: "user/repo/" })).repo).toEqual({
@@ -102,8 +109,12 @@ describe("projectSchema", () => {
       url: "https://github.com/user/repo",
       workflow: "none",
     })
-    expect(toProject(form({ repoPath: "https://github.com/user/repo" })).repo?.fullName).toBe("user/repo")
-    expect(toProject(form({ repoPath: "http://www.github.com/user/repo" })).repo?.fullName).toBe("user/repo")
+    expect(toProject(form({ repoPath: "https://github.com/user/repo" })).repo?.fullName).toBe(
+      "user/repo",
+    )
+    expect(toProject(form({ repoPath: "http://www.github.com/user/repo" })).repo?.fullName).toBe(
+      "user/repo",
+    )
 
     const created = toProject(form({ dealKind: "installment", amount: "100", installments: "3" }))
     expect(created.deal).toMatchObject({ kind: "installment", installments: 3 })
@@ -115,11 +126,13 @@ describe("projectSchema", () => {
     const edited = toProject(fromProject(original), original)
     expect(edited.repo?.workflow).toBe("success")
     expect(edited.description).toBe("Nota")
-    expect(toProject({ ...fromProject(original), repoPath: "another/repo" }, original).repo?.workflow).toBe(
-      "none",
-    )
+    expect(
+      toProject({ ...fromProject(original), repoPath: "another/repo" }, original).repo?.workflow,
+    ).toBe("none")
 
-    const unknown = toProject(form({ tools: [tool({ toolId: "not-in-catalog", customName: "X" })] }))
+    const unknown = toProject(
+      form({ tools: [tool({ toolId: "not-in-catalog", customName: "X" })] }),
+    )
     expect(unknown.tools[0]?.name).toBe("not-in-catalog")
 
     const fromUnknown = fromProject({

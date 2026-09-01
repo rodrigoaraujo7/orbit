@@ -25,7 +25,7 @@ function DialogOverlay({ className, ...props }: DialogPrimitive.Backdrop.Props) 
       data-slot="dialog-overlay"
       className={cn(
         "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-lg",
-        className
+        className,
       )}
       {...props}
     />
@@ -44,18 +44,14 @@ function DialogPopup({ className, ...props }: DialogPrimitive.Popup.Props) {
         "bg-card/40 shadow-lg ring-1 ring-white/10 backdrop-blur-xl",
         // Transitions.
         "transition-all duration-200 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
-        className
+        className,
       )}
       {...props}
     />
   )
 }
 
-function DialogContent({
-  className,
-  children,
-  ...props
-}: DialogPrimitive.Popup.Props) {
+function DialogContent({ className, children, ...props }: DialogPrimitive.Popup.Props) {
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -70,10 +66,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn(
-        "flex items-start justify-between gap-4 border-b px-5 py-4",
-        className
-      )}
+      className={cn("flex items-start justify-between gap-4 border-b px-5 py-4", className)}
       {...props}
     />
   )
@@ -81,11 +74,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
 
 function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div
-      data-slot="dialog-footer"
-      className={cn("flex justify-end gap-2", className)}
-      {...props}
-    />
+    <div data-slot="dialog-footer" className={cn("flex justify-end gap-2", className)} {...props} />
   )
 }
 
@@ -101,10 +90,7 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
 }
 
 /** Default modal/dialog subtitle, directly under DialogTitle. */
-function DialogDescription({
-  className,
-  ...props
-}: DialogPrimitive.Description.Props) {
+function DialogDescription({ className, ...props }: DialogPrimitive.Description.Props) {
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"

@@ -83,7 +83,9 @@ export function createTrpcMock() {
     },
     tools: {
       listCustom: { query: vi.fn().mockResolvedValue([] as CustomTool[]) },
-      createCustom: { mutate: vi.fn().mockResolvedValue({ id: "t1", name: "CI", category: "deploy" }) },
+      createCustom: {
+        mutate: vi.fn().mockResolvedValue({ id: "t1", name: "CI", category: "deploy" }),
+      },
       updateCustom: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
       deleteCustom: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
     },

@@ -5,7 +5,9 @@ import { renderWithProviders } from "@/test/render"
 
 const pathname = vi.hoisted(() => ({ value: "/" }))
 const session = vi.hoisted(() => ({
-  data: { user: { id: "u1", name: "Ada", email: "ada@test.local" } } as { user: { id: string; name: string; email: string } } | null,
+  data: { user: { id: "u1", name: "Ada", email: "ada@test.local" } } as {
+    user: { id: string; name: string; email: string }
+  } | null,
   isPending: false,
 }))
 const workspace = vi.hoisted(() => ({
@@ -17,14 +19,24 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>()
   return {
     ...actual,
-    Link: ({ children, to, className }: { children?: ReactNode; to?: string; className?: string }) => (
+    Link: ({
+      children,
+      to,
+      className,
+    }: {
+      children?: ReactNode
+      to?: string
+      className?: string
+    }) => (
       <a href={String(to)} className={className}>
         {children}
       </a>
     ),
     Navigate: ({ to }: { to: string }) => <div data-testid="navigate">{to}</div>,
     Outlet: () => <div data-testid="outlet">outlet</div>,
-    useRouterState: (opts?: { select?: (state: { location: { pathname: string } }) => unknown }) => {
+    useRouterState: (opts?: {
+      select?: (state: { location: { pathname: string } }) => unknown
+    }) => {
       const state = { location: { pathname: pathname.value } }
       return opts?.select ? opts.select(state) : state
     },

@@ -33,9 +33,7 @@ export function CustomToolsPanel() {
       key: "category",
       header: t("common.category"),
       sortValue: (tool) => toolCategoryLabel(tool.category),
-      cell: (tool) => (
-        <Badge variant="outline">{toolCategoryLabel(tool.category)}</Badge>
-      ),
+      cell: (tool) => <Badge variant="outline">{toolCategoryLabel(tool.category)}</Badge>,
     },
     {
       key: "actions",
@@ -90,9 +88,8 @@ export function CustomToolsPanel() {
         title={t("settings.deleteTool")}
         description={
           <>
-            {t("common.delete")}{" "}
-            <Emphasis className="text-primary">{deletingTool?.name}</Emphasis>
-            ? {t("common.cannotUndo")}
+            {t("common.delete")} <Emphasis className="text-primary">{deletingTool?.name}</Emphasis>?{" "}
+            {t("common.cannotUndo")}
           </>
         }
         confirmLabel={t("common.delete")}

@@ -32,7 +32,9 @@ describe("format", () => {
     expect(formatDateTime("2026-08-10")).toBe("08/10/2026")
     expect(formatCurrency(10)).toContain("10")
     expect(formatDeal({ kind: "upfront", amount: 0 })).toBe(i18n.t("deal.free"))
-    expect(formatDeal({ kind: "upfront", amount: 100 })).toContain(i18n.t("format.upfrontAmount").slice(0, 2) === "" ? "" : "")
+    expect(formatDeal({ kind: "upfront", amount: 100 })).toContain(
+      i18n.t("format.upfrontAmount").slice(0, 2) === "" ? "" : "",
+    )
     expect(formatDeal({ kind: "upfront", amount: 100 }).length).toBeGreaterThan(0)
     expect(formatDeal({ kind: "installment", amount: 18000, installments: 3 })).toContain("3")
     expect(formatDealProgress({ kind: "upfront", amount: 0 }, [])).toBe(i18n.t("deal.free"))
@@ -45,9 +47,23 @@ describe("format", () => {
       ]),
     ).toContain("·")
     expect(
-      formatDealProgress({ kind: "installment", amount: 30, installments: 3 }, { paid: 3, total: 3, overdue: 0 }),
+      formatDealProgress(
+        { kind: "installment", amount: 30, installments: 3 },
+        { paid: 3, total: 3, overdue: 0 },
+      ),
     ).not.toContain("·")
-    expect(formatToolsProgress([{ id: "a", name: "A", category: "other", secrets: [] }, { id: "b", name: "B", category: "other", secrets: [], billing: { amount: 1, cycle: "monthly", nextInvoice: "2026-01-01", payer: "me" } }])).toMatch(/1/)
+    expect(
+      formatToolsProgress([
+        { id: "a", name: "A", category: "other", secrets: [] },
+        {
+          id: "b",
+          name: "B",
+          category: "other",
+          secrets: [],
+          billing: { amount: 1, cycle: "monthly", nextInvoice: "2026-01-01", payer: "me" },
+        },
+      ]),
+    ).toMatch(/1/)
     expect(formatMonth("2026-09")).toMatch(/26/)
     expect(formatMonthLong("2026-09")).toMatch(/2026/)
     expect(formatCompactCurrency(1500)).toBeTruthy()

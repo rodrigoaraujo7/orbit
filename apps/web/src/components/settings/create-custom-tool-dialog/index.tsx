@@ -72,11 +72,7 @@ export function CreateCustomToolDialog({
   useLayoutEffect(() => {
     if (open && !wasOpen.current) {
       setActiveTool(tool)
-      reset(
-        tool
-          ? { name: tool.name, category: tool.category }
-          : emptyCustomToolForm,
-      )
+      reset(tool ? { name: tool.name, category: tool.category } : emptyCustomToolForm)
     }
     wasOpen.current = open
   }, [open, tool, reset])
@@ -143,17 +139,13 @@ export function CreateCustomToolDialog({
               {activeTool ? t("settings.editTool") : t("settings.newTool")}
             </ResponsiveDialogTitle>
             <ResponsiveDialogDescription>
-              {activeTool
-                ? t("settings.editToolDescription")
-                : t("settings.newToolDescription")}
+              {activeTool ? t("settings.editToolDescription") : t("settings.newToolDescription")}
             </ResponsiveDialogDescription>
           </div>
           <ResponsiveDialogClose />
         </ResponsiveDialogHeader>
         <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-          <ResponsiveDialogBody className="flex flex-col gap-4">
-            {formFields}
-          </ResponsiveDialogBody>
+          <ResponsiveDialogBody className="flex flex-col gap-4">{formFields}</ResponsiveDialogBody>
           <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t("common.cancel")}

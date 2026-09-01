@@ -33,7 +33,9 @@ describe("diffProject", () => {
       project({ deal: { kind: "upfront", amount: 10 } }),
       project({ deal: { kind: "installment", amount: 18000, installments: 3, currency: "BRL" } }),
     )
-    expect(byDeal[0]?.changes.some((c) => c.field === "deal.amount" && c.to.includes("18000"))).toBe(true)
+    expect(
+      byDeal[0]?.changes.some((c) => c.field === "deal.amount" && c.to.includes("18000")),
+    ).toBe(true)
     expect(byDeal[0]?.changes.some((c) => c.field === "deal.kind")).toBe(true)
     expect(byDeal[0]?.changes.some((c) => c.field === "deal.installments")).toBe(true)
 
@@ -41,14 +43,16 @@ describe("diffProject", () => {
       project({ deal: { kind: "upfront", amount: 10, currency: "" } }),
       project({ deal: { kind: "upfront", amount: 20, currency: "" } }),
     )
-    expect(noCurrency[0]?.changes.some((c) => c.field === "deal.amount" && String(c.to).includes("BRL"))).toBe(true)
+    expect(
+      noCurrency[0]?.changes.some((c) => c.field === "deal.amount" && String(c.to).includes("BRL")),
+    ).toBe(true)
 
     expect(diffProject(project(), project({ repo: { fullName: "a/b" } }))[0]?.changes).toEqual([
       { field: "repo", from: "", to: "a/b" },
     ])
-    expect(diffProject(project({ endedAt: "  " }), project({ endedAt: "2026-02-01" }))[0]?.changes).toEqual([
-      { field: "endedAt", from: "", to: "2026-02-01" },
-    ])
+    expect(
+      diffProject(project({ endedAt: "  " }), project({ endedAt: "2026-02-01" }))[0]?.changes,
+    ).toEqual([{ field: "endedAt", from: "", to: "2026-02-01" }])
   })
 
   it("classifies kanban moves, description edits and comments", () => {
@@ -56,7 +60,9 @@ describe("diffProject", () => {
       module: "kanban",
       action: "kanban.move",
     })
-    expect(diffProject(project(), project({ description: "ship it" }))[0]?.action).toBe("kanban.update")
+    expect(diffProject(project(), project({ description: "ship it" }))[0]?.action).toBe(
+      "kanban.update",
+    )
 
     const created = diffProject(
       project({ comments: "nope" }),
@@ -71,7 +77,9 @@ describe("diffProject", () => {
       }),
     )
     expect(created[0]?.action).toBe("kanban.comment.create")
-    expect(created[0]?.changes.some((c) => c.field === "comment.created" && c.to === "oi")).toBe(true)
+    expect(created[0]?.changes.some((c) => c.field === "comment.created" && c.to === "oi")).toBe(
+      true,
+    )
     expect(created[0]?.changes.some((c) => c.field === "comment.created" && c.to === "")).toBe(true)
 
     const edited = diffProject(
@@ -103,7 +111,9 @@ describe("diffProject", () => {
       project({ tools: [{ id: "aws", name: "AWS", secrets: [] }] }),
       project({ tools: [{ id: "aws", name: "AWS", secrets: [{ key: "NEW", value: "sk_live" }] }] }),
     )
-    expect(addedSecret[0]?.changes.some((c) => c.field.includes("NEW") && c.to === "set")).toBe(true)
+    expect(addedSecret[0]?.changes.some((c) => c.field.includes("NEW") && c.to === "set")).toBe(
+      true,
+    )
     expect(JSON.stringify(addedSecret)).not.toContain("sk_live")
 
     const added = diffProject(
@@ -133,14 +143,22 @@ describe("diffProject", () => {
             id: "aws",
             name: "AWS",
             account: "acct",
-            billing: { amount: 20, cycle: "yearly", nextInvoice: "2026-02-01", payer: "client", currency: "USD" },
+            billing: {
+              amount: 20,
+              cycle: "yearly",
+              nextInvoice: "2026-02-01",
+              payer: "client",
+              currency: "USD",
+            },
             secrets: [],
           },
         ],
       }),
     )
     expect(billing[0]?.changes.some((c) => c.field === "tool.aws.account")).toBe(true)
-    expect(billing[0]?.changes.some((c) => c.field === "tool.aws.billing" && c.to.includes("USD"))).toBe(true)
+    expect(
+      billing[0]?.changes.some((c) => c.field === "tool.aws.billing" && c.to.includes("USD")),
+    ).toBe(true)
 
     const defaultBillingCurrency = diffProject(
       project({ tools: [{ id: "aws", name: "AWS", secrets: [] }] }),
@@ -149,16 +167,29 @@ describe("diffProject", () => {
           {
             id: "aws",
             name: "AWS",
-            billing: { amount: 5, cycle: "monthly", nextInvoice: "2026-01-01", payer: "me", currency: "" },
-            secrets: [{ key: "EMPTY", value: "" }, { key: "NEW", value: "sk_live" }],
+            billing: {
+              amount: 5,
+              cycle: "monthly",
+              nextInvoice: "2026-01-01",
+              payer: "me",
+              currency: "",
+            },
+            secrets: [
+              { key: "EMPTY", value: "" },
+              { key: "NEW", value: "sk_live" },
+            ],
           },
         ],
       }),
     )
-    expect(defaultBillingCurrency[0]?.changes.some((c) => c.field === "tool.aws.billing" && c.to.includes("BRL"))).toBe(
-      true,
-    )
-    expect(defaultBillingCurrency[0]?.changes.some((c) => c.field.includes("NEW") && c.to === "set")).toBe(true)
+    expect(
+      defaultBillingCurrency[0]?.changes.some(
+        (c) => c.field === "tool.aws.billing" && c.to.includes("BRL"),
+      ),
+    ).toBe(true)
+    expect(
+      defaultBillingCurrency[0]?.changes.some((c) => c.field.includes("NEW") && c.to === "set"),
+    ).toBe(true)
 
     const secretPrev = project({
       tools: [{ id: "aws", name: "AWS", secrets: [{ key: "TOKEN" }] }],
@@ -167,7 +198,9 @@ describe("diffProject", () => {
       secretPrev,
       project({ tools: [{ id: "aws", name: "AWS", secrets: [{ key: "TOKEN", value: SECRET }] }] }),
     )
-    expect(secretDiff[0]?.changes.some((c) => c.field.includes("TOKEN") && c.to === "changed")).toBe(true)
+    expect(
+      secretDiff[0]?.changes.some((c) => c.field.includes("TOKEN") && c.to === "changed"),
+    ).toBe(true)
     expect(JSON.stringify(secretDiff)).not.toContain(SECRET)
 
     expect(
@@ -181,7 +214,9 @@ describe("diffProject", () => {
       secretPrev,
       project({ tools: [{ id: "aws", name: "AWS", secrets: [] }] }),
     )
-    expect(removedSecret[0]?.changes.some((c) => c.field.includes("TOKEN") && c.to === "")).toBe(true)
+    expect(removedSecret[0]?.changes.some((c) => c.field.includes("TOKEN") && c.to === "")).toBe(
+      true,
+    )
 
     const removedTool = diffProject(
       project({ tools: [{ id: "aws", name: "AWS", secrets: [] }] }),

@@ -2,9 +2,9 @@ import { and, eq } from "drizzle-orm"
 import { z } from "zod"
 import {
   filterInvoices,
-  fromCents,
   generateInvoices,
   invoiceListFiltersSchema,
+  type Project,
   invoiceStatusSchema,
   paymentMethodSchema,
   toCents,
@@ -23,11 +23,15 @@ export const invoicesRouter = router({
   list: protectedProcedure.input(invoiceListFiltersSchema).query(async ({ ctx, input }) => {
     return asUser(ctx, async (tx) => {
       const projects = await listProjects(tx, ctx.userId)
-      const found = projects.find((row) => row.id === input.projectId)
+      const found = projects.find((row: Project) => row.id === input.projectId)
       if (!found) return { items: [], totals: { count: 0, paid: 0, overdue: 0 } }
 
       const [client] = found.clientId
-        ? await tx.select({ name: contact.name }).from(contact).where(eq(contact.id, found.clientId)).limit(1)
+        ? await tx
+            .select({ name: contact.name })
+            .from(contact)
+            .where(eq(contact.id, found.clientId))
+            .limit(1)
         : []
       const all = generateInvoices(found, client?.name ?? "")
       const items = filterInvoices(all, {
@@ -127,7 +131,11 @@ export const paymentsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const id = crypto.randomUUID()
       await asUser(ctx, async (tx) => {
-        const [inv] = await tx.select().from(invoice).where(eq(invoice.id, input.invoiceId)).limit(1)
+        const [inv] = await tx
+          .select()
+          .from(invoice)
+          .where(eq(invoice.id, input.invoiceId))
+          .limit(1)
         await tx.insert(payment).values({
           id,
           userId: ctx.userId,

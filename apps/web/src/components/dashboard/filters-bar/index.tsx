@@ -10,12 +10,13 @@ import { addMonths, monthOf, todayIso } from "@/lib/dates"
 
 type PresetMonths = number | "year" | "all"
 
-const PRESETS: { id: "preset6" | "preset12" | "presetYear" | "presetAll"; months: PresetMonths }[] = [
-  { id: "preset6", months: 6 },
-  { id: "preset12", months: 12 },
-  { id: "presetYear", months: "year" },
-  { id: "presetAll", months: "all" },
-]
+const PRESETS: { id: "preset6" | "preset12" | "presetYear" | "presetAll"; months: PresetMonths }[] =
+  [
+    { id: "preset6", months: 6 },
+    { id: "preset12", months: 12 },
+    { id: "presetYear", months: "year" },
+    { id: "presetAll", months: "all" },
+  ]
 
 function presetRange(months: PresetMonths): { monthFrom: string; monthTo: string } {
   const current = monthOf(todayIso())
@@ -96,7 +97,13 @@ function FilterFields({
         />
       </div>
 
-      <div className={stacked ? "flex w-full items-center gap-2 [&>button]:min-w-0 [&>button]:flex-1" : "flex shrink-0 items-center gap-2"}>
+      <div
+        className={
+          stacked
+            ? "flex w-full items-center gap-2 [&>button]:min-w-0 [&>button]:flex-1"
+            : "flex shrink-0 items-center gap-2"
+        }
+      >
         <MonthPicker
           value={filters.monthFrom}
           onChange={(monthFrom) => set({ monthFrom })}
@@ -121,7 +128,8 @@ function FilterFields({
             set({
               clientId,
               projectId:
-                clientId && options.projects.find((p) => p.id === filters.projectId)?.clientId !== clientId
+                clientId &&
+                options.projects.find((p) => p.id === filters.projectId)?.clientId !== clientId
                   ? ""
                   : filters.projectId,
             })
@@ -150,7 +158,12 @@ function FilterFields({
       </div>
 
       {hasActiveFilters(filters) && !stacked && (
-        <Button variant="ghost" size="sm" className="shrink-0" onClick={() => onChange(emptyFilters)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
+          onClick={() => onChange(emptyFilters)}
+        >
           <X data-icon="inline-start" />
           {t("common.clear")}
         </Button>

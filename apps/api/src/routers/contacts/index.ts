@@ -71,19 +71,21 @@ export const contactsRouter = router({
       return { ok: true as const }
     }),
 
-  delete: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
-    await asUser(ctx, async (tx) => {
-      const [prev] = await tx.select().from(contact).where(eq(contact.id, input.id)).limit(1)
-      await tx.delete(contact).where(eq(contact.id, input.id))
-      if (prev) {
-        await recordAudit(tx, auditCtx(ctx), {
-          module: "settings",
-          action: "contact.delete",
-          subjectId: input.id,
-          subjectLabel: prev.name,
-        })
-      }
-    })
-    return { ok: true }
-  }),
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await asUser(ctx, async (tx) => {
+        const [prev] = await tx.select().from(contact).where(eq(contact.id, input.id)).limit(1)
+        await tx.delete(contact).where(eq(contact.id, input.id))
+        if (prev) {
+          await recordAudit(tx, auditCtx(ctx), {
+            module: "settings",
+            action: "contact.delete",
+            subjectId: input.id,
+            subjectLabel: prev.name,
+          })
+        }
+      })
+      return { ok: true }
+    }),
 })

@@ -121,11 +121,7 @@ export function CreateContactDialog({
     <>
       <Field label={t("common.name")} error={errors.name?.message}>
         {(props) => (
-          <Input
-            {...props}
-            {...register("name")}
-            placeholder={t("projects.namePlaceholder")}
-          />
+          <Input {...props} {...register("name")} placeholder={t("projects.namePlaceholder")} />
         )}
       </Field>
 
@@ -185,9 +181,7 @@ export function CreateContactDialog({
           <ResponsiveDialogClose />
         </ResponsiveDialogHeader>
         <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-          <ResponsiveDialogBody className="flex flex-col gap-4">
-            {formFields}
-          </ResponsiveDialogBody>
+          <ResponsiveDialogBody className="flex flex-col gap-4">{formFields}</ResponsiveDialogBody>
           <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t("common.cancel")}
