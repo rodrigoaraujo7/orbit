@@ -3,7 +3,7 @@ import { TOOL_CATEGORIES } from "shared"
 import { validation } from "./messages.ts"
 
 export const customToolInput = z.object({
-  name: z.string().trim().min(2, validation.minChars),
+  name: z.string(validation.minChars).trim().min(2, validation.minChars),
   category: z.enum(TOOL_CATEGORIES, validation.selectCategory),
 })
 

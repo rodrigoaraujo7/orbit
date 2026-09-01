@@ -137,8 +137,8 @@ describe("projectInput", () => {
           ...validProject,
           comments: [{ id: "c1", author: "Ada", createdAt: "2026-01-01T00:00", body: "  " }],
         }),
-      ),
-    ).toContain("comments.0.body:")
+      ).some((message) => message.startsWith("comments.0.body:")),
+    ).toBe(true)
     expect(
       projectInput.safeParse({
         ...validProject,

@@ -152,7 +152,7 @@ describe("projects router", () => {
       ...baseProject,
       clientId: contactRow.id,
       name: "Landing 2",
-      status: "in-[REDACTED]",
+      status: "in-development", // pragma: allowlist secret
       endedAt: "2026-04-01",
       description: "updated",
       comments: [{ id: "c1", author: "Ada", createdAt: "2026-04-01T10:00", body: "hi" }],

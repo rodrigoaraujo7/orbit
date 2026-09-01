@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { invoice } from "../../db/schema/index.ts"
+import { invoice, project } from "../../db/schema/index.ts"
 import { withUser } from "../../db/with-user/index.ts"
 import { caller, closeTestDb, insertUser, openTestDb, requiredContactFields } from "../../test/harness.ts"
 
@@ -22,6 +22,22 @@ describe("invoices and payments", () => {
       items: [],
       totals: { count: 0, paid: 0, overdue: 0 },
     })
+
+    await withUser(db, "user-a", async (tx) => {
+      await tx.insert(project).values({
+        id: "p-anon",
+        userId: "user-a",
+        name: "Anonymous",
+        status: "paused",
+        position: 0,
+        startedAt: "2026-01-10",
+        dealKind: "installment",
+        dealAmountCents: 300000n,
+        dealCurrency: "BRL",
+        dealInstallments: 3,
+      })
+    })
+    expect((await api.invoices.list({ projectId: "p-anon", status: "all" })).totals.count).toBe(3)
 
     const contact = await api.contacts.create({ name: "Ada", ...requiredContactFields })
     const created = await api.projects.create({

@@ -13,7 +13,7 @@ import { validation } from "./messages.ts"
 const repoFullName = /^[\w.-]+\/[\w.-]+$/
 
 const secretInput = z.object({
-  key: z.string().trim().min(1, validation.enterKey),
+  key: z.string(validation.enterKey).trim().min(1, validation.enterKey),
   // Empty is the keep-existing ciphertext sentinel on project update.
   value: z.string(),
 })
@@ -41,8 +41,8 @@ function refineTool(
 
 export const toolInput = z
   .object({
-    id: z.string().trim().min(1, validation.selectTool),
-    name: z.string().trim().min(2, validation.enterToolName),
+    id: z.string(validation.selectTool).trim().min(1, validation.selectTool),
+    name: z.string(validation.enterToolName).trim().min(2, validation.enterToolName),
     category: z.enum(TOOL_CATEGORIES, validation.selectCategory),
     account: z.string().optional(),
     billing: billingInput.optional(),
@@ -83,8 +83,8 @@ function refineProject(
 
 const projectFields = z.object({
   id: z.string().trim().min(1).optional(),
-  name: z.string().trim().min(2, validation.minChars),
-  clientId: z.string().trim().min(1, validation.selectContact),
+  name: z.string(validation.minChars).trim().min(2, validation.minChars),
+  clientId: z.string(validation.selectContact).trim().min(1, validation.selectContact),
   status: projectStatusSchema,
   startedAt: z.string(),
   endedAt: z.string().optional(),

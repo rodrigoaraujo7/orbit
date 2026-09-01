@@ -15,8 +15,8 @@ export const contactsRouter = router({
       userId: ctx.userId,
       name: input.name,
       email: input.email || null,
-      phone: input.phone || null,
-      company: input.company || null,
+      phone: input.phone,
+      company: input.company,
     }
     await asUser(ctx, async (tx) => {
       await tx.insert(contact).values(row)
@@ -38,16 +38,16 @@ export const contactsRouter = router({
         .set({
           name: input.name,
           email: input.email || null,
-          phone: input.phone || null,
-          company: input.company || null,
+          phone: input.phone,
+          company: input.company,
         })
         .where(eq(contact.id, input.id))
       if (!prev) return
       const changes = [
         { field: "name", from: prev.name, to: input.name },
         { field: "email", from: prev.email ?? "", to: input.email || "" },
-        { field: "phone", from: prev.phone ?? "", to: input.phone || "" },
-        { field: "company", from: prev.company ?? "", to: input.company || "" },
+        { field: "phone", from: prev.phone ?? "", to: input.phone },
+        { field: "company", from: prev.company ?? "", to: input.company },
       ].filter((c) => c.from !== c.to)
       if (changes.length) {
         await recordAudit(tx, auditCtx(ctx), {

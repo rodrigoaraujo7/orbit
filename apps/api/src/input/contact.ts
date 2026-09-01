@@ -12,10 +12,10 @@ function refineEmail(values: { email?: string }, ctx: z.RefinementCtx) {
 }
 
 const contactFields = {
-  name: z.string().trim().min(2, validation.minChars),
+  name: z.string(validation.minChars).trim().min(2, validation.minChars),
   email: z.string().trim().optional(),
-  phone: z.string().trim().min(1, validation.enterPhone),
-  company: z.string().trim().min(1, validation.enterCompany),
+  phone: z.string(validation.enterPhone).trim().min(1, validation.enterPhone),
+  company: z.string(validation.enterCompany).trim().min(1, validation.enterCompany),
 }
 
 export const contactInput = z.object(contactFields).superRefine(refineEmail)
