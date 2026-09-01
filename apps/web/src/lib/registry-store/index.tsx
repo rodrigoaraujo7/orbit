@@ -1,12 +1,12 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createContext, useContext, useMemo, type ReactNode } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-import type { Contact } from '@/data/contacts'
-import type { CustomTool } from '@/data/custom-tools'
-import { trpc } from '../trpc/index.ts'
+import type { Contact } from "@/data/contacts"
+import type { CustomTool } from "@/data/custom-tools"
+import { trpc } from "../trpc/index.ts"
 
-type ContactInput = Omit<Contact, 'id'>
-type CustomToolInput = Omit<CustomTool, 'id'>
+type ContactInput = Omit<Contact, "id">
+type CustomToolInput = Omit<CustomTool, "id">
 
 type RegistryContextValue = {
   contacts: Contact[]
@@ -28,11 +28,11 @@ const RegistryContext = createContext<RegistryContextValue | null>(null)
 export function RegistryProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
   const contactsQuery = useQuery({
-    queryKey: ['contacts'],
+    queryKey: ["contacts"],
     queryFn: () => trpc.contacts.list.query(),
   })
   const toolsQuery = useQuery({
-    queryKey: ['custom-tools'],
+    queryKey: ["custom-tools"],
     queryFn: () => trpc.tools.listCustom.query(),
   })
 
@@ -40,13 +40,13 @@ export function RegistryProvider({ children }: { children: ReactNode }) {
   const customTools = useMemo(() => (toolsQuery.data ?? []) as CustomTool[], [toolsQuery.data])
 
   function invalidateContacts() {
-    void queryClient.invalidateQueries({ queryKey: ['contacts'] })
-    void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-    void queryClient.invalidateQueries({ queryKey: ['audit'] })
+    void queryClient.invalidateQueries({ queryKey: ["contacts"] })
+    void queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+    void queryClient.invalidateQueries({ queryKey: ["audit"] })
   }
   function invalidateTools() {
-    void queryClient.invalidateQueries({ queryKey: ['custom-tools'] })
-    void queryClient.invalidateQueries({ queryKey: ['audit'] })
+    void queryClient.invalidateQueries({ queryKey: ["custom-tools"] })
+    void queryClient.invalidateQueries({ queryKey: ["audit"] })
   }
 
   const addContactMut = useMutation({
@@ -136,7 +136,7 @@ export function RegistryProvider({ children }: { children: ReactNode }) {
 export function useRegistry() {
   const context = useContext(RegistryContext)
   if (!context) {
-    throw new Error('useRegistry must be used inside <RegistryProvider>')
+    throw new Error("useRegistry must be used inside <RegistryProvider>")
   }
   return context
 }

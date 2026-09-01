@@ -1,14 +1,14 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus } from 'lucide-react'
-import { useLayoutEffect, useRef, type ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Controller, FormProvider, useFieldArray, useForm, useWatch } from 'react-hook-form'
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Plus } from "lucide-react"
+import { useLayoutEffect, useRef, type ReactNode } from "react"
+import { useTranslation } from "react-i18next"
+import { Controller, FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form"
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Field } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Field } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   ResponsiveDialog,
   ResponsiveDialogBody,
@@ -18,13 +18,13 @@ import {
   ResponsiveDialogFooter,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
-} from '@/components/ui/responsive-dialog'
-import { Select } from '@/components/ui/select'
-import { toast } from '@/components/ui/toast'
-import { type Project } from '@/data/projects'
-import { dealKindOptions, freeLabel } from '@/i18n/labels'
-import { getCurrencyOptions } from '@/lib/currency'
-import { formatCurrency, maskBrPhone } from '@/lib/format'
+} from "@/components/ui/responsive-dialog"
+import { Select } from "@/components/ui/select"
+import { toast } from "@/components/ui/toast"
+import { type Project } from "@/data/projects"
+import { dealKindOptions, freeLabel } from "@/i18n/labels"
+import { getCurrencyOptions } from "@/lib/currency"
+import { formatCurrency, maskBrPhone } from "@/lib/format"
 import {
   GITHUB_PREFIX,
   emptyProjectForm,
@@ -35,22 +35,22 @@ import {
   projectSchema,
   toProject,
   type ProjectFormValues,
-} from '@/lib/project-schema'
-import { useProjects } from '@/lib/projects-store'
-import { useRegistry } from '@/lib/registry-store'
-import { cn } from '@/lib/utils'
-import { ContactSelect } from '../contact-select'
-import { StatusSelect } from '../status-badges'
-import { ToolField } from '../tool-field'
+} from "@/lib/project-schema"
+import { useProjects } from "@/lib/projects-store"
+import { useRegistry } from "@/lib/registry-store"
+import { cn } from "@/lib/utils"
+import { ContactSelect } from "../contact-select"
+import { StatusSelect } from "../status-badges"
+import { ToolField } from "../tool-field"
 
-export type ProjectDialogSection = 'identity' | 'contact' | 'billing' | 'tools' | 'repository'
+export type ProjectDialogSection = "identity" | "contact" | "billing" | "tools" | "repository"
 
 const ALL_SECTIONS: ProjectDialogSection[] = [
-  'identity',
-  'contact',
-  'billing',
-  'tools',
-  'repository',
+  "identity",
+  "contact",
+  "billing",
+  "tools",
+  "repository",
 ]
 
 function Section({
@@ -102,7 +102,7 @@ export function CreateProjectDialog({
   function installmentOptions(amount: number, currency: string) {
     return Array.from({ length: MAX_INSTALLMENTS - 1 }, (_, i) => i + 2).map((n) => ({
       value: String(n),
-      label: t('format.installmentOption', {
+      label: t("format.installmentOption", {
         count: n,
         amount: formatCurrency(amount / n, currency),
       }),
@@ -132,13 +132,13 @@ export function CreateProjectDialog({
     if (open) reset(project ? fromProject(project) : emptyProjectForm)
   }, [open, project, reset])
 
-  const { fields, append, remove } = useFieldArray({ control, name: 'tools' })
+  const { fields, append, remove } = useFieldArray({ control, name: "tools" })
   // useWatch instead of watch(): it is memoizable, watch() makes the React
   // Compiler give up on optimizing the whole component.
-  const dealKind = useWatch({ control, name: 'dealKind' })
-  const amount = useWatch({ control, name: 'amount', defaultValue: '' })
-  const currency = useWatch({ control, name: 'currency' })
-  const isNewContact = useWatch({ control, name: 'isNewContact' })
+  const dealKind = useWatch({ control, name: "dealKind" })
+  const amount = useWatch({ control, name: "amount", defaultValue: "" })
+  const currency = useWatch({ control, name: "currency" })
+  const isNewContact = useWatch({ control, name: "isNewContact" })
   // zeroed amount = free project, same rule as the tools
   const isFree = !hasPositiveAmount(amount)
 
@@ -155,18 +155,18 @@ export function CreateProjectDialog({
       return
     }
     if (forceNewContact) {
-      setValue('isNewContact', true)
-      setValue('clientId', '')
+      setValue("isNewContact", true)
+      setValue("clientId", "")
       wasForceNewContact.current = true
       return
     }
     if (wasForceNewContact.current) {
       wasForceNewContact.current = false
-      setValue('isNewContact', false)
-      setValue('newContactName', '')
-      setValue('newContactEmail', '')
-      setValue('newContactPhone', '')
-      setValue('newContactCompany', '')
+      setValue("isNewContact", false)
+      setValue("newContactName", "")
+      setValue("newContactEmail", "")
+      setValue("newContactPhone", "")
+      setValue("newContactCompany", "")
     }
   }, [open, forceNewContact, setValue])
 
@@ -186,39 +186,39 @@ export function CreateProjectDialog({
 
       if (project) {
         await updateProject(toProject(projectValues, project))
-        toast.add({ title: t('projects.updated'), type: 'success' })
+        toast.add({ title: t("projects.updated"), type: "success" })
       } else {
         await addProject(toProject(projectValues))
-        toast.add({ title: t('projects.created'), type: 'success' })
+        toast.add({ title: t("projects.created"), type: "success" })
       }
       onOpenChange(false)
     } catch {
       toast.add({
-        title: project ? t('projects.updateError') : t('projects.createError'),
-        type: 'error',
+        title: project ? t("projects.updateError") : t("projects.createError"),
+        type: "error",
       })
     }
   })
 
-  const heading = title ?? (project ? t('projects.editTitle') : t('projects.newTitle'))
-  const subheading = description ?? t('projects.createDescription')
+  const heading = title ?? (project ? t("projects.editTitle") : t("projects.newTitle"))
+  const subheading = description ?? t("projects.createDescription")
 
   const formFields = (
     <div className="flex flex-col gap-6">
-      {sections.includes('identity') && (
-        <Section title={t('projects.identity')}>
+      {sections.includes("identity") && (
+        <Section title={t("projects.identity")}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t('projects.projectName')} error={errors.name?.message}>
+            <Field label={t("projects.projectName")} error={errors.name?.message}>
               {(props) => (
                 <Input
                   {...props}
-                  {...register('name')}
-                  placeholder={t('projects.projectNamePlaceholder')}
+                  {...register("name")}
+                  placeholder={t("projects.projectNamePlaceholder")}
                 />
               )}
             </Field>
 
-            <Field label={t('common.status')} error={errors.status?.message}>
+            <Field label={t("common.status")} error={errors.status?.message}>
               {(props) => (
                 <Controller
                   control={control}
@@ -233,30 +233,30 @@ export function CreateProjectDialog({
         </Section>
       )}
 
-      {sections.includes('contact') && (
-        <Section title={t('projects.contact')}>
+      {sections.includes("contact") && (
+        <Section title={t("projects.contact")}>
           {!forceNewContact && (
             <label className="flex items-center gap-2 text-sm text-muted-foreground select-none">
               <input
                 type="checkbox"
                 className="size-4 accent-primary"
-                {...register('isNewContact', {
+                {...register("isNewContact", {
                   onChange: (e) => {
                     // switching sides leaves the other one's state behind
                     // otherwise — a stale clientId or half-filled contact
                     // fields the user can no longer see.
                     if (e.target.checked) {
-                      setValue('clientId', '')
+                      setValue("clientId", "")
                     } else {
-                      setValue('newContactName', '')
-                      setValue('newContactEmail', '')
-                      setValue('newContactPhone', '')
-                      setValue('newContactCompany', '')
+                      setValue("newContactName", "")
+                      setValue("newContactEmail", "")
+                      setValue("newContactPhone", "")
+                      setValue("newContactCompany", "")
                     }
                   },
                 })}
               />
-              {t('projects.createNewContact')}
+              {t("projects.createNewContact")}
             </label>
           )}
 
@@ -265,53 +265,53 @@ export function CreateProjectDialog({
               key="new-contact-fields"
               className="grid animate-in fade-in slide-in-from-top-1 gap-4 duration-200 sm:grid-cols-2"
             >
-              <Field label={t('common.name')} error={errors.newContactName?.message}>
+              <Field label={t("common.name")} error={errors.newContactName?.message}>
                 {(props) => (
                   <Input
                     {...props}
-                    {...register('newContactName')}
-                    placeholder={t('projects.namePlaceholder')}
+                    {...register("newContactName")}
+                    placeholder={t("projects.namePlaceholder")}
                   />
                 )}
               </Field>
 
               <Field
-                label={t('common.email')}
+                label={t("common.email")}
                 error={errors.newContactEmail?.message}
-                hint={t('common.optional')}
+                hint={t("common.optional")}
               >
                 {(props) => (
                   <Input
                     {...props}
-                    {...register('newContactEmail')}
+                    {...register("newContactEmail")}
                     type="email"
-                    placeholder={t('projects.emailPlaceholder')}
+                    placeholder={t("projects.emailPlaceholder")}
                   />
                 )}
               </Field>
 
-              <Field label={t('common.phone')} error={errors.newContactPhone?.message}>
+              <Field label={t("common.phone")} error={errors.newContactPhone?.message}>
                 {(props) => (
                   <Input
                     {...props}
-                    {...register('newContactPhone', {
+                    {...register("newContactPhone", {
                       onChange: (event) => {
                         event.target.value = maskBrPhone(event.target.value)
                       },
                     })}
                     inputMode="tel"
                     autoComplete="tel"
-                    placeholder={t('projects.phonePlaceholder')}
+                    placeholder={t("projects.phonePlaceholder")}
                   />
                 )}
               </Field>
 
-              <Field label={t('common.company')} error={errors.newContactCompany?.message}>
+              <Field label={t("common.company")} error={errors.newContactCompany?.message}>
                 {(props) => (
                   <Input
                     {...props}
-                    {...register('newContactCompany')}
-                    placeholder={t('projects.companyPlaceholder')}
+                    {...register("newContactCompany")}
+                    placeholder={t("projects.companyPlaceholder")}
                   />
                 )}
               </Field>
@@ -319,7 +319,7 @@ export function CreateProjectDialog({
           ) : (
             <Field
               key="contact-select"
-              label={t('projects.mainContact')}
+              label={t("projects.mainContact")}
               error={errors.clientId?.message}
               className="animate-in fade-in slide-in-from-top-1 duration-200"
             >
@@ -337,13 +337,13 @@ export function CreateProjectDialog({
         </Section>
       )}
 
-      {sections.includes('billing') && (
+      {sections.includes("billing") && (
         <Section
-          title={t('projects.billing')}
+          title={t("projects.billing")}
           action={isFree && <Badge variant="outline">{freeLabel()}</Badge>}
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t('common.currency')} error={errors.currency?.message}>
+            <Field label={t("common.currency")} error={errors.currency?.message}>
               {(props) => (
                 <Controller
                   control={control}
@@ -360,11 +360,11 @@ export function CreateProjectDialog({
               )}
             </Field>
 
-            <Field label={t('projects.agreedAmount')} error={errors.amount?.message}>
+            <Field label={t("projects.agreedAmount")} error={errors.amount?.message}>
               {(props) => (
                 <Input
                   {...props}
-                  {...register('amount')}
+                  {...register("amount")}
                   inputMode="decimal"
                   placeholder="0"
                   onFocus={(event) => {
@@ -380,9 +380,9 @@ export function CreateProjectDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
-              label={t('projects.billing')}
+              label={t("projects.billing")}
               error={errors.dealKind?.message}
-              className={dealKind === 'installment' && !isFree ? undefined : 'sm:col-span-2'}
+              className={dealKind === "installment" && !isFree ? undefined : "sm:col-span-2"}
             >
               {(props) => (
                 <Controller
@@ -401,9 +401,9 @@ export function CreateProjectDialog({
               )}
             </Field>
 
-            {dealKind === 'installment' && !isFree && (
+            {dealKind === "installment" && !isFree && (
               <Field
-                label={t('projects.installments')}
+                label={t("projects.installments")}
                 error={errors.installments?.message}
                 className="animate-in fade-in slide-in-from-top-1 duration-200"
               >
@@ -431,11 +431,11 @@ export function CreateProjectDialog({
         </Section>
       )}
 
-      {sections.includes('tools') && (
-        <Section title={t('projects.tools')}>
+      {sections.includes("tools") && (
+        <Section title={t("projects.tools")}>
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <Label>{t('projects.toolsUsed')}</Label>
+              <Label>{t("projects.toolsUsed")}</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -443,13 +443,13 @@ export function CreateProjectDialog({
                 onClick={() => append(emptyToolForm)}
               >
                 <Plus />
-                {t('common.add')}
+                {t("common.add")}
               </Button>
             </div>
 
             {fields.length === 0 ? (
               <p className="rounded-xl border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
-                {t('projects.noTools')}
+                {t("projects.noTools")}
               </p>
             ) : (
               <div className="flex flex-col gap-3">
@@ -462,19 +462,19 @@ export function CreateProjectDialog({
         </Section>
       )}
 
-      {sections.includes('repository') && (
-        <Section title={t('projects.repository')}>
+      {sections.includes("repository") && (
+        <Section title={t("projects.repository")}>
           <Field
-            label={t('projects.githubRepo')}
+            label={t("projects.githubRepo")}
             error={errors.repoPath?.message}
-            hint={t('common.optional')}
+            hint={t("common.optional")}
           >
             {(props) => (
               <div
                 className={cn(
-                  'flex h-10 items-stretch overflow-hidden rounded-xl border border-border bg-background transition-[color,border-color,box-shadow]',
-                  'has-[input:focus]:border-ring has-[input:focus]:ring-3 has-[input:focus]:ring-ring/30',
-                  'has-[input[aria-invalid=true]]:border-destructive has-[input[aria-invalid=true]]:ring-3 has-[input[aria-invalid=true]]:ring-destructive/20',
+                  "flex h-10 items-stretch overflow-hidden rounded-xl border border-border bg-background transition-[color,border-color,box-shadow]",
+                  "has-[input:focus]:border-ring has-[input:focus]:ring-3 has-[input:focus]:ring-ring/30",
+                  "has-[input[aria-invalid=true]]:border-destructive has-[input[aria-invalid=true]]:ring-3 has-[input[aria-invalid=true]]:ring-destructive/20",
                 )}
               >
                 <span className="flex items-center border-r bg-muted/40 px-3.5 text-[15px] text-muted-foreground select-none">
@@ -482,8 +482,8 @@ export function CreateProjectDialog({
                 </span>
                 <input
                   {...props}
-                  {...register('repoPath')}
-                  placeholder={t('projects.repoPlaceholder')}
+                  {...register("repoPath")}
+                  placeholder={t("projects.repoPlaceholder")}
                   className="min-w-0 flex-1 bg-transparent px-3.5 text-[15px] outline-none placeholder:text-muted-foreground"
                 />
               </div>
@@ -509,10 +509,10 @@ export function CreateProjectDialog({
             <ResponsiveDialogBody>{formFields}</ResponsiveDialogBody>
             <ResponsiveDialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-                {t('common.cancel')}
+                {t("common.cancel")}
               </Button>
               <Button type="submit">
-                {project ? t('common.saveChanges') : t('projects.create')}
+                {project ? t("common.saveChanges") : t("projects.create")}
               </Button>
             </ResponsiveDialogFooter>
           </form>

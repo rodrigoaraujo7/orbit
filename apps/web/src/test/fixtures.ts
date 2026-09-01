@@ -1,74 +1,74 @@
-import { vi } from 'vitest'
-import type { Contact } from '@/data/contacts'
-import type { CustomTool } from '@/data/custom-tools'
-import type { Invoice, Project, Tool } from '@/data/projects'
-import type { ReactNode } from 'react'
+import { vi } from "vitest"
+import type { Contact } from "@/data/contacts"
+import type { CustomTool } from "@/data/custom-tools"
+import type { Invoice, Project, Tool } from "@/data/projects"
+import type { ReactNode } from "react"
 
 export const sampleContact: Contact = {
-  id: 'c1',
-  name: 'Ada Lovelace',
-  email: 'ada@test.local',
-  phone: '(11) 98888-0000',
-  company: 'Analytical Engines',
+  id: "c1",
+  name: "Ada Lovelace",
+  email: "ada@test.local",
+  phone: "(11) 98888-0000",
+  company: "Analytical Engines",
 }
 
 export const sampleTool: Tool = {
-  id: 'vercel',
-  name: 'Vercel',
-  category: 'deploy',
-  account: 'ada@test.local',
+  id: "vercel",
+  name: "Vercel",
+  category: "deploy",
+  account: "ada@test.local",
   billing: {
     amount: 20,
-    cycle: 'monthly',
-    nextInvoice: '2026-09-01',
-    payer: 'me',
-    currency: 'BRL',
+    cycle: "monthly",
+    nextInvoice: "2026-09-01",
+    payer: "me",
+    currency: "BRL",
   },
-  secrets: [{ key: 'API_KEY', value: 'secret-value' }],
+  secrets: [{ key: "API_KEY", value: "secret-value" }],
 }
 
 export const sampleProject: Project = {
-  id: 'p1',
-  name: 'Portal',
-  clientId: 'c1',
-  status: 'in-development',
-  startedAt: '2026-01-15',
-  endedAt: '2026-08-01',
-  description: 'Client portal',
-  deal: { kind: 'installment', amount: 3000, installments: 3, currency: 'BRL' },
+  id: "p1",
+  name: "Portal",
+  clientId: "c1",
+  status: "in-development",
+  startedAt: "2026-01-15",
+  endedAt: "2026-08-01",
+  description: "Client portal",
+  deal: { kind: "installment", amount: 3000, installments: 3, currency: "BRL" },
   tools: [sampleTool],
   repo: {
-    fullName: 'ada/portal',
-    url: 'https://github.com/ada/portal',
-    workflow: 'success',
+    fullName: "ada/portal",
+    url: "https://github.com/ada/portal",
+    workflow: "success",
   },
   comments: [
     {
-      id: 'cm1',
-      author: 'Ada Lovelace',
-      createdAt: '2026-02-01T10:00',
-      body: 'Looks good',
+      id: "cm1",
+      author: "Ada Lovelace",
+      createdAt: "2026-02-01T10:00",
+      body: "Looks good",
     },
   ],
 }
 
 export const sampleInvoice: Invoice = {
-  id: 'inv-1',
-  referenceMonth: '2026-02',
+  id: "inv-1",
+  referenceMonth: "2026-02",
   amount: 1000,
-  status: 'paid',
-  paymentMethod: 'pix',
-  generatedAt: '2026-02-01',
-  paidAt: '2026-02-10T12:00',
-  payerName: 'Ada',
+  status: "paid",
+  paymentMethod: "pix",
+  generatedAt: "2026-02-01",
+  paidAt: "2026-02-10T12:00",
+  payerName: "Ada",
   hasAttachment: true,
-  currency: 'BRL',
+  currency: "BRL",
 }
 
 export const sampleCustomTool: CustomTool = {
-  id: 't1',
-  name: 'CI',
-  category: 'deploy',
+  id: "t1",
+  name: "CI",
+  category: "deploy",
 }
 
 export function createProjectsStoreMock(overrides: Record<string, unknown> = {}) {
@@ -76,7 +76,7 @@ export function createProjectsStoreMock(overrides: Record<string, unknown> = {})
     projects: [] as Project[],
     isPending: false,
     isError: false,
-    addProject: vi.fn().mockResolvedValue({ id: 'p1' }),
+    addProject: vi.fn().mockResolvedValue({ id: "p1" }),
     updateProject: vi.fn().mockResolvedValue({ ok: true as const }),
     moveProject: vi.fn(),
     replaceProjects: vi.fn(),

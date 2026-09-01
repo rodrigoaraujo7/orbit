@@ -1,5 +1,5 @@
-import { and, eq } from 'drizzle-orm'
-import { z } from 'zod'
+import { and, eq } from "drizzle-orm"
+import { z } from "zod"
 import {
   filterInvoices,
   generateInvoices,
@@ -8,11 +8,11 @@ import {
   invoiceStatusSchema,
   paymentMethodSchema,
   toCents,
-} from 'shared'
-import { contact, invoice, payment } from '../../db/schema/index.ts'
-import { listProjects } from '../projects/index.ts'
-import { asUser, auditCtx, protectedProcedure, router } from '../../trpc/init/index.ts'
-import { recordAudit } from '../../audit/record/index.ts'
+} from "shared"
+import { contact, invoice, payment } from "../../db/schema/index.ts"
+import { listProjects } from "../projects/index.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
+import { recordAudit } from "../../audit/record/index.ts"
 
 const money = z.object({
   amount: z.number(),
@@ -33,18 +33,18 @@ export const invoicesRouter = router({
             .where(eq(contact.id, found.clientId))
             .limit(1)
         : []
-      const all = generateInvoices(found, client?.name ?? '')
+      const all = generateInvoices(found, client?.name ?? "")
       const items = filterInvoices(all, {
-        status: input.status ?? 'all',
-        monthFrom: input.monthFrom ?? '',
-        monthTo: input.monthTo ?? '',
+        status: input.status ?? "all",
+        monthFrom: input.monthFrom ?? "",
+        monthTo: input.monthTo ?? "",
       })
       return {
         items,
         totals: {
           count: all.length,
-          paid: all.filter((row) => row.status === 'paid').length,
-          overdue: all.filter((row) => row.status === 'overdue').length,
+          paid: all.filter((row) => row.status === "paid").length,
+          overdue: all.filter((row) => row.status === "overdue").length,
         },
       }
     })
@@ -55,7 +55,7 @@ export const invoicesRouter = router({
       money.extend({
         projectId: z.string(),
         dueDate: z.string(),
-        payerName: z.string().default(''),
+        payerName: z.string().default(""),
         referenceMonth: z.string().optional(),
       }),
     )
@@ -66,7 +66,7 @@ export const invoicesRouter = router({
         projectId: input.projectId,
         amountCents: toCents(input.amount),
         currency: input.currency,
-        status: 'pending' as const,
+        status: "pending" as const,
         dueDate: input.dueDate,
         payerName: input.payerName,
         referenceMonth: input.referenceMonth ?? null,
@@ -75,8 +75,8 @@ export const invoicesRouter = router({
       await asUser(ctx, async (tx) => {
         await tx.insert(invoice).values(row)
         await recordAudit(tx, auditCtx(ctx), {
-          module: 'project',
-          action: 'financial.invoice.create',
+          module: "project",
+          action: "financial.invoice.create",
           subjectId: row.id,
           subjectLabel: `${input.amount} ${input.currency}`,
           projectId: input.projectId,
@@ -101,17 +101,17 @@ export const invoicesRouter = router({
           .set({
             status: input.status,
             paymentMethod: input.paymentMethod ?? null,
-            paidAt: input.status === 'paid' ? new Date() : null,
+            paidAt: input.status === "paid" ? new Date() : null,
           })
           .where(eq(invoice.id, input.id))
         if (prev && prev.status !== input.status) {
           await recordAudit(tx, auditCtx(ctx), {
-            module: 'project',
-            action: 'financial.invoice.status',
+            module: "project",
+            action: "financial.invoice.status",
             subjectId: input.id,
             subjectLabel: prev.payerName || prev.id,
             projectId: prev.projectId,
-            changes: [{ field: 'status', from: prev.status, to: input.status }],
+            changes: [{ field: "status", from: prev.status, to: input.status }],
           })
         }
       })
@@ -146,11 +146,11 @@ export const paymentsRouter = router({
         })
         await tx
           .update(invoice)
-          .set({ status: 'paid', paidAt: new Date(), paymentMethod: input.method })
+          .set({ status: "paid", paidAt: new Date(), paymentMethod: input.method })
           .where(and(eq(invoice.id, input.invoiceId)))
         await recordAudit(tx, auditCtx(ctx), {
-          module: 'project',
-          action: 'financial.payment.create',
+          module: "project",
+          action: "financial.payment.create",
           subjectId: id,
           subjectLabel: `${input.amount} ${input.method}`,
           /* v8 ignore next -- payment insert is FK-bound to an existing invoice */

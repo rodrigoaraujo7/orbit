@@ -1,9 +1,9 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createContext, useContext, useMemo, type ReactNode } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-import type { Project, ProjectStatus } from '@/data/projects'
-import { moveProjectInList } from '../project-status/index.ts'
-import { trpc } from '../trpc/index.ts'
+import type { Project, ProjectStatus } from "@/data/projects"
+import { moveProjectInList } from "../project-status/index.ts"
+import { trpc } from "../trpc/index.ts"
 
 type ProjectsContextValue = {
   projects: Project[]
@@ -22,16 +22,16 @@ const ProjectsContext = createContext<ProjectsContextValue | null>(null)
 export function ProjectsProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
   const query = useQuery({
-    queryKey: ['projects'],
+    queryKey: ["projects"],
     queryFn: () => trpc.projects.list.query(),
   })
   const projects = useMemo(() => (query.data ?? []) as Project[], [query.data])
 
   function invalidate() {
-    void queryClient.invalidateQueries({ queryKey: ['projects'] })
-    void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-    void queryClient.invalidateQueries({ queryKey: ['invoices'] })
-    void queryClient.invalidateQueries({ queryKey: ['audit'] })
+    void queryClient.invalidateQueries({ queryKey: ["projects"] })
+    void queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+    void queryClient.invalidateQueries({ queryKey: ["invoices"] })
+    void queryClient.invalidateQueries({ queryKey: ["audit"] })
   }
 
   const create = useMutation({
@@ -67,7 +67,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
         const next = moveProjectInList(projects, id, toStatus, toIndex)
         const moved = next.find((p) => p.id === id)
         if (moved) void move.mutateAsync({ id, status: toStatus, index: toIndex })
-        queryClient.setQueryData(['projects'], next)
+        queryClient.setQueryData(["projects"], next)
       },
       replaceProjects: (next) => {
         void Promise.all(next.map((project) => update.mutateAsync(project)))
@@ -84,7 +84,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
 export function useProjects() {
   const context = useContext(ProjectsContext)
   if (!context) {
-    throw new Error('useProjects must be used inside <ProjectsProvider>')
+    throw new Error("useProjects must be used inside <ProjectsProvider>")
   }
   return context
 }

@@ -1,20 +1,20 @@
-import { cleanup, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { sampleCustomTool } from '@/test/fixtures'
-import { renderWithProviders } from '@/test/render'
+import { cleanup, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import type { ReactNode } from "react"
+import { afterEach, describe, expect, it, vi } from "vitest"
+import { sampleCustomTool } from "@/test/fixtures"
+import { renderWithProviders } from "@/test/render"
 
 const addCustomTool = vi.fn().mockResolvedValue(sampleCustomTool)
 const updateCustomTool = vi.fn().mockResolvedValue({ ok: true })
 const toastAdd = vi.fn()
 
-vi.mock('@/components/ui/toast', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components/ui/toast')>()
+vi.mock("@/components/ui/toast", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/components/ui/toast")>()
   return { ...actual, toast: { add: (...args: unknown[]) => toastAdd(...args) } }
 })
 
-vi.mock('@/lib/registry-store', () => ({
+vi.mock("@/lib/registry-store", () => ({
   useRegistry: () => ({
     contacts: [],
     isPending: false,
@@ -32,7 +32,7 @@ vi.mock('@/lib/registry-store', () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-import { CreateCustomToolDialog } from './index'
+import { CreateCustomToolDialog } from "./index"
 
 afterEach(() => {
   cleanup()
@@ -43,27 +43,27 @@ afterEach(() => {
   updateCustomTool.mockResolvedValue({ ok: true })
 })
 
-describe('CreateCustomToolDialog', () => {
-  it('creates a tool', async () => {
+describe("CreateCustomToolDialog", () => {
+  it("creates a tool", async () => {
     const user = userEvent.setup()
     const onOpenChange = vi.fn()
     renderWithProviders(<CreateCustomToolDialog open onOpenChange={onOpenChange} />)
-    await user.type(await screen.findByPlaceholderText('TOTVS Protheus'), 'CI')
-    await user.click(screen.getByRole('button', { name: 'Create tool' }))
+    await user.type(await screen.findByPlaceholderText("TOTVS Protheus"), "CI")
+    await user.click(screen.getByRole("button", { name: "Create tool" }))
     await waitFor(() => expect(addCustomTool).toHaveBeenCalled())
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
-  it('updates a tool and reports errors', async () => {
+  it("updates a tool and reports errors", async () => {
     const user = userEvent.setup()
-    updateCustomTool.mockRejectedValueOnce(new Error('nope'))
+    updateCustomTool.mockRejectedValueOnce(new Error("nope"))
     renderWithProviders(
       <CreateCustomToolDialog open onOpenChange={vi.fn()} tool={sampleCustomTool} />,
     )
-    expect(await screen.findByText('Edit tool')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Save' }))
+    expect(await screen.findByText("Edit tool")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Save" }))
     await waitFor(() =>
-      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' })),
+      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "error" })),
     )
 
     cleanup()
@@ -72,28 +72,28 @@ describe('CreateCustomToolDialog', () => {
     renderWithProviders(
       <CreateCustomToolDialog open onOpenChange={vi.fn()} tool={sampleCustomTool} />,
     )
-    await user.click(await screen.findByRole('button', { name: 'Save' }))
+    await user.click(await screen.findByRole("button", { name: "Save" }))
     await waitFor(() =>
-      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' })),
+      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "success" })),
     )
   })
 
-  it('cancels without saving', async () => {
+  it("cancels without saving", async () => {
     const user = userEvent.setup()
     const onOpenChange = vi.fn()
     renderWithProviders(<CreateCustomToolDialog open onOpenChange={onOpenChange} />)
-    await user.click(await screen.findByRole('button', { name: 'Cancel' }))
+    await user.click(await screen.findByRole("button", { name: "Cancel" }))
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
-  it('reports a create error', async () => {
+  it("reports a create error", async () => {
     const user = userEvent.setup()
-    addCustomTool.mockRejectedValueOnce(new Error('nope'))
+    addCustomTool.mockRejectedValueOnce(new Error("nope"))
     renderWithProviders(<CreateCustomToolDialog open onOpenChange={vi.fn()} />)
-    await user.type(await screen.findByPlaceholderText('TOTVS Protheus'), 'CI')
-    await user.click(screen.getByRole('button', { name: 'Create tool' }))
+    await user.type(await screen.findByPlaceholderText("TOTVS Protheus"), "CI")
+    await user.click(screen.getByRole("button", { name: "Create tool" }))
     await waitFor(() => {
-      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }))
+      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "error" }))
     })
   })
 })

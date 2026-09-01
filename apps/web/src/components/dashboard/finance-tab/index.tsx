@@ -8,12 +8,12 @@ import {
   ReferenceLine,
   XAxis,
   YAxis,
-} from 'recharts'
-import { useTranslation } from 'react-i18next'
+} from "recharts"
+import { useTranslation } from "react-i18next"
 
-import { ChartCard, NoData, StatRow, StatTile } from '@/components/dashboard/cards'
-import { axisProps, surfaceGap, useChartMotion } from '@/components/dashboard/chart-parts'
-import { PaymentRuler } from '@/components/dashboard/payment-ruler'
+import { ChartCard, NoData, StatRow, StatTile } from "@/components/dashboard/cards"
+import { axisProps, surfaceGap, useChartMotion } from "@/components/dashboard/chart-parts"
+import { PaymentRuler } from "@/components/dashboard/payment-ruler"
 import {
   ChartContainer,
   ChartLegend,
@@ -21,15 +21,15 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from '@/components/ui/chart'
-import type { ClientMonth, FinanceSummary, ProjectProfit, RevenueMonth, RulerLane } from 'shared'
+} from "@/components/ui/chart"
+import type { ClientMonth, FinanceSummary, ProjectProfit, RevenueMonth, RulerLane } from "shared"
 import {
   formatCompactCurrency,
   formatCurrency,
   formatMonth,
   formatMonthLong,
   formatPercent,
-} from '@/lib/format'
+} from "@/lib/format"
 
 export function FinanceTab({
   summary,
@@ -59,20 +59,20 @@ export function FinanceTab({
    * belongs, on the invoice badges; here every series carries its own label.
    */
   const revenueConfig = {
-    recebido: { label: t('dashboard.received'), color: 'var(--chart-1)' },
-    aReceber: { label: t('dashboard.receivable'), color: 'var(--chart-2)' },
-    atrasado: { label: t('dashboard.overdue'), color: 'var(--chart-3)' },
+    recebido: { label: t("dashboard.received"), color: "var(--chart-1)" },
+    aReceber: { label: t("dashboard.receivable"), color: "var(--chart-2)" },
+    atrasado: { label: t("dashboard.overdue"), color: "var(--chart-3)" },
   } satisfies ChartConfig
 
   // Nominal bars ordered by value: one hue, because the bar length already
   // encodes the magnitude — coloring by rank would spend the identity channel
   // re-saying it.
   const profitConfig = {
-    lucro: { label: t('dashboard.profit'), color: 'var(--chart-1)' },
+    lucro: { label: t("dashboard.profit"), color: "var(--chart-1)" },
   } satisfies ChartConfig
 
   const clientsConfig = {
-    clientes: { label: t('dashboard.clients'), color: 'var(--chart-1)' },
+    clientes: { label: t("dashboard.clients"), color: "var(--chart-1)" },
   } satisfies ChartConfig
 
   const motion = useChartMotion()
@@ -84,44 +84,44 @@ export function FinanceTab({
     <div className="flex flex-col gap-4">
       <StatRow>
         <StatTile
-          label={t('dashboard.billedInPeriod')}
+          label={t("dashboard.billedInPeriod")}
           value={summary.faturado}
           format={money}
           delay={0}
         />
         <StatTile
-          label={t('dashboard.received')}
+          label={t("dashboard.received")}
           value={summary.recebido}
           format={money}
           tone="success"
           delay={60}
         />
         <StatTile
-          label={t('dashboard.receivable')}
+          label={t("dashboard.receivable")}
           value={summary.aReceber}
           format={money}
           delay={120}
         />
         <StatTile
-          label={t('dashboard.overdue')}
+          label={t("dashboard.overdue")}
           value={summary.atrasado}
           format={money}
-          tone={summary.atrasado > 0 ? 'destructive' : 'default'}
+          tone={summary.atrasado > 0 ? "destructive" : "default"}
           delay={180}
         />
         <StatTile
-          label={t('dashboard.toolCost')}
+          label={t("dashboard.toolCost")}
           value={summary.custo}
           format={money}
-          hint={t('dashboard.outOfPocket')}
+          hint={t("dashboard.outOfPocket")}
           delay={240}
         />
       </StatRow>
 
       <div className="grid gap-4 xl:grid-cols-3">
         <ChartCard
-          title={t('dashboard.revenueByMonth')}
-          hint={t('dashboard.revenueHint', {
+          title={t("dashboard.revenueByMonth")}
+          hint={t("dashboard.revenueHint", {
             projects: summary.projetos,
             clients: summary.clientes,
             margin: formatPercent(summary.margem),
@@ -157,7 +157,7 @@ export function FinanceTab({
                   }
                 />
                 <ChartLegend content={<ChartLegendContent />} />
-                {(['recebido', 'aReceber', 'atrasado'] as const).map((key, index) => (
+                {(["recebido", "aReceber", "atrasado"] as const).map((key, index) => (
                   <Bar
                     key={key}
                     dataKey={key}
@@ -171,13 +171,13 @@ export function FinanceTab({
               </BarChart>
             </ChartContainer>
           ) : (
-            <NoData>{t('dashboard.noInvoices', { currency })}</NoData>
+            <NoData>{t("dashboard.noInvoices", { currency })}</NoData>
           )}
         </ChartCard>
 
         <ChartCard
-          title={t('dashboard.clientGrowth')}
-          hint={t('dashboard.clientsAccumulated')}
+          title={t("dashboard.clientGrowth")}
+          hint={t("dashboard.clientsAccumulated")}
           delay={360}
         >
           <ChartContainer config={clientsConfig} className="aspect-auto h-[260px] w-full">
@@ -199,12 +199,12 @@ export function FinanceTab({
                     formatter={(value, _name, item) => (
                       <>
                         <span className="text-muted-foreground">
-                          {t('dashboard.client', { count: Number(value) })}
+                          {t("dashboard.client", { count: Number(value) })}
                         </span>
                         <span className="ml-auto font-medium tabular-nums">{Number(value)}</span>
                         {item?.payload.novos > 0 && (
                           <span className="text-muted-foreground">
-                            {t('dashboard.newThisMonth', { count: item.payload.novos })}
+                            {t("dashboard.newThisMonth", { count: item.payload.novos })}
                           </span>
                         )}
                       </>
@@ -228,12 +228,12 @@ export function FinanceTab({
       </div>
 
       <ChartCard
-        title={t('dashboard.profitByProject')}
-        hint={t('dashboard.profitHint')}
+        title={t("dashboard.profitByProject")}
+        hint={t("dashboard.profitHint")}
         delay={420}
       >
         {profits.length === 0 ? (
-          <NoData>{t('dashboard.noProjects', { currency })}</NoData>
+          <NoData>{t("dashboard.noProjects", { currency })}</NoData>
         ) : (
           <ChartContainer
             config={profitConfig}
@@ -253,11 +253,11 @@ export function FinanceTab({
                     formatter={(_value, _name, item) => (
                       <div className="grid gap-0.5 tabular-nums">
                         <span>
-                          {t('dashboard.revenue', { amount: money(item.payload.receita) })}
+                          {t("dashboard.revenue", { amount: money(item.payload.receita) })}
                         </span>
-                        <span>{t('dashboard.cost', { amount: money(item.payload.custo) })}</span>
+                        <span>{t("dashboard.cost", { amount: money(item.payload.custo) })}</span>
                         <span className="font-medium">
-                          {t('dashboard.profitLine', {
+                          {t("dashboard.profitLine", {
                             amount: money(item.payload.lucro),
                             margin: formatPercent(item.payload.margem),
                           })}
@@ -282,8 +282,8 @@ export function FinanceTab({
       </ChartCard>
 
       <ChartCard
-        title={t('dashboard.paymentRuler')}
-        hint={t('dashboard.paymentRulerHint')}
+        title={t("dashboard.paymentRuler")}
+        hint={t("dashboard.paymentRulerHint")}
         delay={480}
       >
         <PaymentRuler lanes={rulerLanes} months={months} currency={currency} />

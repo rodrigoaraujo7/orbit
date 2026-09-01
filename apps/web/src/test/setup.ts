@@ -1,5 +1,5 @@
-import '@testing-library/jest-dom/vitest'
-import { vi } from 'vitest'
+import "@testing-library/jest-dom/vitest"
+import { vi } from "vitest"
 
 class ResizeObserverStub {
   observe() {}
@@ -15,12 +15,12 @@ class IntersectionObserverStub {
     return []
   }
   root = null
-  rootMargin = ''
+  rootMargin = ""
   thresholds = []
 }
 
-if (typeof window !== 'undefined') {
-  Object.defineProperty(window, 'matchMedia', {
+if (typeof window !== "undefined") {
+  Object.defineProperty(window, "matchMedia", {
     writable: true,
     configurable: true,
     value: vi.fn().mockImplementation((query: string) => ({

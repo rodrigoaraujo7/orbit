@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react"
 
-import { useDebouncedValue } from '../use-debounced-value/index.ts'
+import { useDebouncedValue } from "../use-debounced-value/index.ts"
 
 /**
  * Local text while typing; commits to the URL (or other store) after debounce.
@@ -10,11 +10,11 @@ export function useDraftSearch(
   urlValue: string | undefined,
   commit: (value: string | undefined) => void,
 ) {
-  const [draft, setDraft] = useState(urlValue ?? '')
+  const [draft, setDraft] = useState(urlValue ?? "")
   const [prevUrl, setPrevUrl] = useState(urlValue)
   if (urlValue !== prevUrl) {
     setPrevUrl(urlValue)
-    setDraft(urlValue ?? '')
+    setDraft(urlValue ?? "")
   }
   const debounced = useDebouncedValue(draft)
 

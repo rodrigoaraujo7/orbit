@@ -1,5 +1,5 @@
-import { Check, ChevronDown } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { Check, ChevronDown } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import {
   SelectGroup,
@@ -14,15 +14,15 @@ import {
   SelectRoot,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select"
 import {
   OTHER_TOOL_ID,
   TOOL_CATEGORY_ORDER,
   findCatalogTool,
   toolsByCategory,
-} from '@/data/tool-catalog'
-import { toolCategoryLabel } from '@/i18n/labels'
-import { ToolIcon } from '../tool-icons'
+} from "@/data/tool-catalog"
+import { toolCategoryLabel } from "@/i18n/labels"
+import { ToolIcon } from "../tool-icons"
 
 /**
  * Select grouped by category with a per-tool icon — the same styled pieces from
@@ -51,14 +51,14 @@ export function ToolSelect({
         <SelectValue className="min-w-0 flex-1 text-left">
           {(selected: string | null) => {
             if (!selected) {
-              return <span className="text-muted-foreground">{t('projects.selectTool')}</span>
+              return <span className="text-muted-foreground">{t("projects.selectTool")}</span>
             }
             return (
               <span className="flex min-w-0 items-center gap-2 truncate">
                 <ToolIcon id={selected} className="size-4 shrink-0" />
                 <span className="truncate">
                   {selected === OTHER_TOOL_ID
-                    ? t('category.other')
+                    ? t("category.other")
                     : (findCatalogTool(selected)?.name ?? selected)}
                 </span>
               </span>
@@ -84,7 +84,7 @@ export function ToolSelect({
                   <SelectItem key={tool.id} value={tool.id}>
                     <ToolIcon id={tool.id} className="size-4 shrink-0" />
                     <SelectItemText>
-                      {tool.id === OTHER_TOOL_ID ? t('category.other') : tool.name}
+                      {tool.id === OTHER_TOOL_ID ? t("category.other") : tool.name}
                     </SelectItemText>
                     <SelectItemIndicator className="ml-auto">
                       <Check className="size-3.5 text-primary" />

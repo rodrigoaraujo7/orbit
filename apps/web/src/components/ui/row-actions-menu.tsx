@@ -1,16 +1,16 @@
-import { Menu } from '@base-ui/react/menu'
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { Menu } from "@base-ui/react/menu"
+import { MoreVertical, Pencil, Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 export function RowActionsMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
   const { t } = useTranslation()
   return (
     <Menu.Root>
       <Menu.Trigger
-        render={<Button variant="ghost" size="icon-sm" aria-label={t('common.moreActions')} />}
+        render={<Button variant="ghost" size="icon-sm" aria-label={t("common.moreActions")} />}
       >
         <MoreVertical />
       </Menu.Trigger>
@@ -23,17 +23,17 @@ export function RowActionsMenu({ onEdit, onDelete }: { onEdit: () => void; onDel
               className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
             >
               <Pencil className="size-3.5" />
-              {t('common.edit')}
+              {t("common.edit")}
             </Menu.Item>
             <Menu.Item
               onClick={onDelete}
               className={cn(
-                'flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-destructive outline-none select-none',
-                'data-highlighted:bg-destructive/10 data-highlighted:text-destructive',
+                "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-destructive outline-none select-none",
+                "data-highlighted:bg-destructive/10 data-highlighted:text-destructive",
               )}
             >
               <Trash2 className="size-3.5" />
-              {t('common.delete')}
+              {t("common.delete")}
             </Menu.Item>
           </Menu.Popup>
         </Menu.Positioner>

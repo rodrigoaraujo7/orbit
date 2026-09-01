@@ -1,11 +1,11 @@
-import { useDroppable } from '@dnd-kit/react'
-import { useTranslation } from 'react-i18next'
+import { useDroppable } from "@dnd-kit/react"
+import { useTranslation } from "react-i18next"
 
-import { StatusDot } from '@/components/projects/status-badges'
-import { type Project, type ProjectStatus } from '@/data/projects'
-import { statusLabel } from '@/i18n/labels'
-import { cn } from '@/lib/utils'
-import { KanbanCard } from '../kanban-card'
+import { StatusDot } from "@/components/projects/status-badges"
+import { type Project, type ProjectStatus } from "@/data/projects"
+import { statusLabel } from "@/i18n/labels"
+import { cn } from "@/lib/utils"
+import { KanbanCard } from "../kanban-card"
 
 export function KanbanColumn({
   status,
@@ -23,7 +23,7 @@ export function KanbanColumn({
   const { t } = useTranslation()
   const { ref, isDropTarget } = useDroppable({
     id: status,
-    accept: 'project',
+    accept: "project",
     // Cards must win when the pointer is over them; the column is the
     // fallback so empty lists (and the gap after the last card) still work.
     collisionPriority: 0,
@@ -33,8 +33,8 @@ export function KanbanColumn({
     <section
       ref={ref}
       className={cn(
-        'flex h-full min-h-0 w-72 shrink-0 flex-col overflow-hidden rounded-2xl bg-muted/40 ring-1 ring-transparent',
-        isDropTarget && 'bg-muted ring-ring',
+        "flex h-full min-h-0 w-72 shrink-0 flex-col overflow-hidden rounded-2xl bg-muted/40 ring-1 ring-transparent",
+        isDropTarget && "bg-muted ring-ring",
       )}
     >
       <header className="flex shrink-0 items-center gap-2 px-3 py-3">
@@ -46,7 +46,7 @@ export function KanbanColumn({
       <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">
         {projects.length === 0 ? (
           <p className="px-1 py-6 text-center text-sm text-muted-foreground">
-            {t('kanban.emptyColumn')}
+            {t("kanban.emptyColumn")}
           </p>
         ) : (
           projects.map((project, index) => (

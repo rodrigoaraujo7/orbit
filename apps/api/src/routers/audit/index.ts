@@ -1,9 +1,9 @@
-import { and, asc, desc, eq, gt, gte, ilike, inArray, lt, lte, or, sql } from 'drizzle-orm'
-import { z } from 'zod'
-import { auditModuleSchema, type AuditChange, type AuditModule } from 'shared'
-import { auditLog } from '../../db/schema/index.ts'
-import type { Tx } from '../../db/with-user/index.ts'
-import { asUser, protectedProcedure, router } from '../../trpc/init/index.ts'
+import { and, asc, desc, eq, gt, gte, ilike, inArray, lt, lte, or, sql } from "drizzle-orm"
+import { z } from "zod"
+import { auditModuleSchema, type AuditChange, type AuditModule } from "shared"
+import { auditLog } from "../../db/schema/index.ts"
+import type { Tx } from "../../db/with-user/index.ts"
+import { asUser, protectedProcedure, router } from "../../trpc/init/index.ts"
 
 const cursorSchema = z.object({
   createdAt: z.string(),
@@ -19,21 +19,21 @@ export const listInput = z.object({
   to: z.string().optional(),
   cursor: cursorSchema.nullish(),
   limit: z.number().int().min(1).max(50).default(25),
-  sortBy: z.enum(['createdAt', 'module']).default('createdAt'),
-  sortDir: z.enum(['asc', 'desc']).default('desc'),
+  sortBy: z.enum(["createdAt", "module"]).default("createdAt"),
+  sortDir: z.enum(["asc", "desc"]).default("desc"),
 })
 
 export type AuditListInput = z.infer<typeof listInput>
 
-function bound(value: string, edge: 'start' | 'end') {
+function bound(value: string, edge: "start" | "end") {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return new Date(`${value}T${edge === 'start' ? '00:00:00.000Z' : '23:59:59.999Z'}`)
+    return new Date(`${value}T${edge === "start" ? "00:00:00.000Z" : "23:59:59.999Z"}`)
   }
   return new Date(value)
 }
 
 function escapeIlike(value: string) {
-  return value.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')
+  return value.replaceAll("\\", "\\\\").replaceAll("%", "\\%").replaceAll("_", "\\_")
 }
 
 const moduleRank = sql`CASE ${auditLog.module}
@@ -46,16 +46,16 @@ END`
 
 export async function listAuditLogs(tx: Tx, input: AuditListInput) {
   const limit = input.limit ?? 25
-  const sortBy = input.sortBy ?? 'createdAt'
-  const sortDir = input.sortDir ?? 'desc'
+  const sortBy = input.sortBy ?? "createdAt"
+  const sortDir = input.sortDir ?? "desc"
   const conditions = []
 
   if (input.modules && input.modules.length > 0) {
     conditions.push(inArray(auditLog.module, input.modules as AuditModule[]))
   }
   if (input.projectId) conditions.push(eq(auditLog.projectId, input.projectId))
-  if (input.from) conditions.push(gte(auditLog.createdAt, bound(input.from, 'start')))
-  if (input.to) conditions.push(lte(auditLog.createdAt, bound(input.to, 'end')))
+  if (input.from) conditions.push(gte(auditLog.createdAt, bound(input.from, "start")))
+  if (input.to) conditions.push(lte(auditLog.createdAt, bound(input.to, "end")))
   if (input.search) {
     const q = `%${escapeIlike(input.search)}%`
     conditions.push(
@@ -72,21 +72,21 @@ export async function listAuditLogs(tx: Tx, input: AuditListInput) {
       lt(auditLog.createdAt, createdAt),
       and(eq(auditLog.createdAt, createdAt), lt(auditLog.id, input.cursor.id)),
     )
-    if (sortBy === 'module') {
+    if (sortBy === "module") {
       const cursorRank =
-        input.cursor.module === 'settings'
+        input.cursor.module === "settings"
           ? 1
-          : input.cursor.module === 'kanban'
+          : input.cursor.module === "kanban"
             ? 2
-            : input.cursor.module === 'project'
+            : input.cursor.module === "project"
               ? 3
-              : input.cursor.module === 'security'
+              : input.cursor.module === "security"
                 ? 4
                 : 5
       const pastRank =
-        sortDir === 'asc' ? sql`${moduleRank} > ${cursorRank}` : sql`${moduleRank} < ${cursorRank}`
+        sortDir === "asc" ? sql`${moduleRank} > ${cursorRank}` : sql`${moduleRank} < ${cursorRank}`
       conditions.push(or(pastRank, and(sql`${moduleRank} = ${cursorRank}`, afterInDateDesc)))
-    } else if (sortDir === 'asc') {
+    } else if (sortDir === "asc") {
       conditions.push(
         or(
           gt(auditLog.createdAt, createdAt),
@@ -99,13 +99,13 @@ export async function listAuditLogs(tx: Tx, input: AuditListInput) {
   }
 
   const dateOrder =
-    sortDir === 'asc'
+    sortDir === "asc"
       ? [asc(auditLog.createdAt), asc(auditLog.id)]
       : [desc(auditLog.createdAt), desc(auditLog.id)]
   const orderBy =
-    sortBy === 'module'
+    sortBy === "module"
       ? [
-          sortDir === 'asc' ? asc(moduleRank) : desc(moduleRank),
+          sortDir === "asc" ? asc(moduleRank) : desc(moduleRank),
           desc(auditLog.createdAt),
           desc(auditLog.id),
         ]

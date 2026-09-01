@@ -1,4 +1,4 @@
-import type { AuditModule } from 'shared'
+import type { AuditModule } from "shared"
 
 import type {
   BillingCycle,
@@ -8,9 +8,9 @@ import type {
   PaymentMethod,
   ProjectStatus,
   WorkflowStatus,
-} from '../data/projects.ts'
-import { TOOL_CATEGORY_ORDER, type ToolCategory } from '../data/tool-catalog.ts'
-import i18n from './index.ts'
+} from "../data/projects.ts"
+import { TOOL_CATEGORY_ORDER, type ToolCategory } from "../data/tool-catalog.ts"
+import i18n from "./index.ts"
 
 export function statusLabel(status: ProjectStatus | string) {
   return i18n.t(`status.${status}`, { defaultValue: status })
@@ -21,7 +21,7 @@ export function dealKindLabel(kind: DealKind) {
 }
 
 export function freeLabel() {
-  return i18n.t('deal.free')
+  return i18n.t("deal.free")
 }
 
 export function invoiceStatusLabel(status: InvoiceStatus) {
@@ -53,18 +53,18 @@ export function toolCategoryLabel(category: ToolCategory) {
 }
 
 export function categoryCostLabel(key: string) {
-  return key === 'other' ? i18n.t('category.otherBucket') : i18n.t(`category.${key}`)
+  return key === "other" ? i18n.t("category.otherBucket") : i18n.t(`category.${key}`)
 }
 
-export const AUDIT_MODULES: AuditModule[] = ['project', 'kanban', 'settings', 'security']
+export const AUDIT_MODULES: AuditModule[] = ["project", "kanban", "settings", "security"]
 
 export function auditModuleLabel(module: AuditModule) {
   return i18n.t(`audit.modules.${module}`)
 }
 
 const AUDIT_ACTION_OVERRIDE: Record<string, string> = {
-  'security.login.failed': 'audit.loginFailed',
-  'credential.reveal.attempt': 'audit.revealAttempt',
+  "security.login.failed": "audit.loginFailed",
+  "credential.reveal.attempt": "audit.revealAttempt",
 }
 
 export function auditActionLabel(action: string) {
@@ -80,25 +80,25 @@ export function auditFieldLabel(field: string) {
 }
 
 export function dash() {
-  return i18n.t('common.emDash')
+  return i18n.t("common.emDash")
 }
 
 export function dealKindOptions() {
-  return (['upfront', 'installment'] as const).map((value) => ({
+  return (["upfront", "installment"] as const).map((value) => ({
     value,
     label: dealKindLabel(value),
   }))
 }
 
 export function billingCycleOptions() {
-  return (['monthly', 'yearly', 'one-off'] as const).map((value) => ({
+  return (["monthly", "yearly", "one-off"] as const).map((value) => ({
     value,
     label: billingCycleLabel(value),
   }))
 }
 
 export function payerOptions() {
-  return (['me', 'client'] as const).map((value) => ({
+  return (["me", "client"] as const).map((value) => ({
     value,
     label: payerLabel(value),
   }))
@@ -113,7 +113,7 @@ export function toolCategoryOptions() {
 
 export function auditModuleOptions() {
   return [
-    { value: '', label: i18n.t('audit.allModules') },
+    { value: "", label: i18n.t("audit.allModules") },
     ...AUDIT_MODULES.map((value) => ({ value, label: auditModuleLabel(value) })),
   ]
 }

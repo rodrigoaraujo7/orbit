@@ -2,13 +2,13 @@
  * Every number the dashboard shows is computed here. Pure functions, no React,
  * no formatting — the components decide how to draw, this decides what is true.
  */
-import { DEFAULT_CURRENCY } from './currency.ts'
-import { addMonths, monthOf, monthRange, todayIso } from './dates.ts'
-import type { BillingCycle, InvoiceStatus, Payer } from './domain.ts'
-import { effectiveMonth } from './invoice-table.ts'
-import { generateInvoices } from './invoices.ts'
-import type { Project, Tool } from './project.ts'
-import { type ToolCategory } from './tool-category.ts'
+import { DEFAULT_CURRENCY } from "./currency.ts"
+import { addMonths, monthOf, monthRange, todayIso } from "./dates.ts"
+import type { BillingCycle, InvoiceStatus, Payer } from "./domain.ts"
+import { effectiveMonth } from "./invoice-table.ts"
+import { generateInvoices } from "./invoices.ts"
+import type { Project, Tool } from "./project.ts"
+import { type ToolCategory } from "./tool-category.ts"
 
 export type DashboardFilters = {
   /** "YYYY-MM", empty = no lower bound. */
@@ -24,10 +24,10 @@ export type DashboardFilters = {
 }
 
 export const emptyFilters: DashboardFilters = {
-  monthFrom: '',
-  monthTo: '',
-  projectId: '',
-  clientId: '',
+  monthFrom: "",
+  monthTo: "",
+  projectId: "",
+  clientId: "",
   currency: DEFAULT_CURRENCY,
 }
 
@@ -39,10 +39,10 @@ export function toDashboardFilters(input?: {
   currency?: string
 }): DashboardFilters {
   return {
-    monthFrom: input?.monthFrom ?? '',
-    monthTo: input?.monthTo ?? '',
-    projectId: input?.projectId ?? '',
-    clientId: input?.clientId ?? '',
+    monthFrom: input?.monthFrom ?? "",
+    monthTo: input?.monthTo ?? "",
+    projectId: input?.projectId ?? "",
+    clientId: input?.clientId ?? "",
     currency: input?.currency || DEFAULT_CURRENCY,
   }
 }
@@ -80,7 +80,7 @@ export function dataRange(projects: Project[]): { from: string; to: string } {
     const end = lastActiveMonth(project)
     if (end && end > to) to = end
 
-    for (const invoice of generateInvoices(project, '')) {
+    for (const invoice of generateInvoices(project, "")) {
       const month = effectiveMonth(invoice)
       if (month > to) to = month
     }
@@ -143,11 +143,11 @@ export function revenueByMonth(
 
   for (const project of projects) {
     if (dealCurrency(project) !== currency) continue
-    for (const invoice of generateInvoices(project, '')) {
+    for (const invoice of generateInvoices(project, "")) {
       const bucket = buckets.get(effectiveMonth(invoice))
       if (!bucket) continue
-      if (invoice.status === 'paid') bucket.recebido += invoice.amount
-      else if (invoice.status === 'overdue') bucket.atrasado += invoice.amount
+      if (invoice.status === "paid") bucket.recebido += invoice.amount
+      else if (invoice.status === "overdue") bucket.atrasado += invoice.amount
       else bucket.aReceber += invoice.amount
     }
   }
@@ -165,8 +165,8 @@ export function revenueByMonth(
 export function monthlyToolCost(tool: Tool): number {
   const { billing } = tool
   if (!billing) return 0
-  if (billing.cycle === 'monthly') return billing.amount
-  if (billing.cycle === 'yearly') return billing.amount / 12
+  if (billing.cycle === "monthly") return billing.amount
+  if (billing.cycle === "yearly") return billing.amount / 12
   return 0
 }
 
@@ -177,7 +177,7 @@ export function toolCostInMonth(tool: Tool, project: Project, month: string): nu
   if (month < monthOf(project.startedAt)) return 0
   const end = lastActiveMonth(project)
   if (end && month > end) return 0
-  if (billing.cycle === 'one-off') {
+  if (billing.cycle === "one-off") {
     return monthOf(billing.nextInvoice) === month ? billing.amount : 0
   }
   return monthlyToolCost(tool)
@@ -187,7 +187,7 @@ export function toolCostInMonth(tool: Tool, project: Project, month: string): nu
 function ownCostOverRange(project: Project, months: string[], currency: string): number {
   let total = 0
   for (const tool of project.tools) {
-    if (tool.billing?.payer !== 'me') continue
+    if (tool.billing?.payer !== "me") continue
     if (toolCurrency(tool) !== currency) continue
     for (const month of months) total += toolCostInMonth(tool, project, month)
   }
@@ -221,7 +221,7 @@ export function profitByProject(
   return projects
     .filter((project) => dealCurrency(project) === currency)
     .map((project) => {
-      const receita = generateInvoices(project, '')
+      const receita = generateInvoices(project, "")
         .filter((invoice) => monthSet.has(effectiveMonth(invoice)))
         .reduce((total, invoice) => total + invoice.amount, 0)
       const custo = ownCostOverRange(project, months, currency)
@@ -301,7 +301,7 @@ export function toolCostByTool(
         total: 0,
         projetos: [],
       }
-      if (tool.billing.payer === 'me') entry.eu += total
+      if (tool.billing.payer === "me") entry.eu += total
       else entry.cliente += total
       entry.total += total
       if (!entry.projetos.includes(project.name)) entry.projetos.push(project.name)
@@ -341,7 +341,7 @@ export function toolCostByCategory(
   for (const { category, total } of toolCostByTool(projects, months, currency)) {
     const slot = CATEGORY_SLOT[category]
     // everything on slot 6 collapses into a single "other" bucket
-    const key = slot === 6 ? 'other' : category
+    const key = slot === 6 ? "other" : category
     const entry = byKey.get(key) ?? { key, slot, total: 0 }
     entry.total += total
     byKey.set(key, entry)
@@ -364,7 +364,7 @@ export function toolCostByMonth(
         if (!tool.billing) continue
         if (toolCurrency(tool) !== currency) continue
         const cost = toolCostInMonth(tool, project, month)
-        if (tool.billing.payer === 'me') bucket.eu += cost
+        if (tool.billing.payer === "me") bucket.eu += cost
         else bucket.cliente += cost
       }
     }
@@ -401,7 +401,7 @@ export function toolRows(projects: Project[], currency: string): ToolRow[] {
         category: tool.category,
         projectId: project.id,
         projectName: project.name,
-        account: tool.account ?? '—',
+        account: tool.account ?? "—",
         cycle: tool.billing.cycle,
         amount: tool.billing.amount,
         monthly: monthlyToolCost(tool),
@@ -445,7 +445,7 @@ export function financeSummary(
     0,
   )
   const lucro = faturado - custo
-  const lastMonth = months[months.length - 1] ?? ''
+  const lastMonth = months[months.length - 1] ?? ""
   const active = inCurrency.filter((project) => monthOf(project.startedAt) <= lastMonth)
 
   return {
@@ -537,7 +537,7 @@ export function paymentRulerLanes(
     .filter((project) => dealCurrency(project) === currency)
     .map((project) => {
       const byMonth: Record<string, RulerInvoice[]> = {}
-      for (const invoice of generateInvoices(project, '')) {
+      for (const invoice of generateInvoices(project, "")) {
         const month = effectiveMonth(invoice)
         if (!monthSet.has(month)) continue
         byMonth[month] ??= []

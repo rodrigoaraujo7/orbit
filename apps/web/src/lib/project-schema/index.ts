@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from "zod"
 import {
   billingCycleSchema,
   dealKindSchema,
@@ -7,13 +7,13 @@ import {
   parseAmount as parseAmountWithLocale,
   payerSchema,
   projectStatusSchema,
-} from 'shared'
+} from "shared"
 
-import type { Deal, Project, Tool } from '../../data/projects.ts'
-import { OTHER_TOOL_ID, findCatalogTool } from '../../data/tool-catalog.ts'
-import i18n, { getLocale } from '../../i18n/index.ts'
-import { todayIso } from '../dates/index.ts'
-import { withProjectStatus } from '../project-status/index.ts'
+import type { Deal, Project, Tool } from "../../data/projects.ts"
+import { OTHER_TOOL_ID, findCatalogTool } from "../../data/tool-catalog.ts"
+import i18n, { getLocale } from "../../i18n/index.ts"
+import { todayIso } from "../dates/index.ts"
+import { withProjectStatus } from "../project-status/index.ts"
 
 export function parseAmount(raw: string) {
   return parseAmountWithLocale(raw, getLocale())
@@ -31,7 +31,7 @@ export function hasPositiveAmount(amount: string) {
 export function projectSchema() {
   return z
     .object({
-      name: z.string().trim().min(2, i18n.t('validation.minChars')),
+      name: z.string().trim().min(2, i18n.t("validation.minChars")),
       clientId: z.string(),
       // when true, clientId is ignored and a Contact is created from the
       // newContact* fields instead — see the create-project-dialog for the
@@ -48,7 +48,7 @@ export function projectSchema() {
       installments: z.string().trim(),
       tools: z.array(
         z.object({
-          toolId: z.string().min(1, i18n.t('validation.selectTool')),
+          toolId: z.string().min(1, i18n.t("validation.selectTool")),
           customName: z.string().trim(),
           account: z.string().trim(),
           amount: z.string().trim(),
@@ -58,8 +58,8 @@ export function projectSchema() {
           payer: payerSchema,
           secrets: z.array(
             z.object({
-              key: z.string().trim().min(1, i18n.t('validation.enterKey')),
-              value: z.string().trim().min(1, i18n.t('validation.enterValue')),
+              key: z.string().trim().min(1, i18n.t("validation.enterKey")),
+              value: z.string().trim().min(1, i18n.t("validation.enterValue")),
             }),
           ),
         }),
@@ -73,31 +73,31 @@ export function projectSchema() {
       if (!values.isNewContact) {
         if (!values.clientId) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['clientId'],
-            message: i18n.t('validation.selectContact'),
+            code: "custom",
+            path: ["clientId"],
+            message: i18n.t("validation.selectContact"),
           })
         }
       } else {
         if (values.newContactName.length < 2) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['newContactName'],
-            message: i18n.t('validation.minChars'),
+            code: "custom",
+            path: ["newContactName"],
+            message: i18n.t("validation.minChars"),
           })
         }
         if (!values.newContactPhone) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['newContactPhone'],
-            message: i18n.t('validation.enterPhone'),
+            code: "custom",
+            path: ["newContactPhone"],
+            message: i18n.t("validation.enterPhone"),
           })
         }
         if (!values.newContactCompany) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['newContactCompany'],
-            message: i18n.t('validation.enterCompany'),
+            code: "custom",
+            path: ["newContactCompany"],
+            message: i18n.t("validation.enterCompany"),
           })
         }
         if (
@@ -105,9 +105,9 @@ export function projectSchema() {
           !z.string().email().safeParse(values.newContactEmail).success
         ) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['newContactEmail'],
-            message: i18n.t('validation.emailInvalid'),
+            code: "custom",
+            path: ["newContactEmail"],
+            message: i18n.t("validation.emailInvalid"),
           })
         }
       }
@@ -117,26 +117,26 @@ export function projectSchema() {
       const dealAmount = parseAmount(values.amount)
       if (values.amount && dealAmount == null) {
         ctx.addIssue({
-          code: 'custom',
-          path: ['amount'],
-          message: i18n.t('validation.invalidAmount'),
+          code: "custom",
+          path: ["amount"],
+          message: i18n.t("validation.invalidAmount"),
         })
       } else if (dealAmount != null && dealAmount < 0) {
         ctx.addIssue({
-          code: 'custom',
-          path: ['amount'],
-          message: i18n.t('validation.negativeAmount'),
+          code: "custom",
+          path: ["amount"],
+          message: i18n.t("validation.negativeAmount"),
         })
       }
 
       // Installments only make sense when the project is paid.
-      if (values.dealKind === 'installment' && hasPositiveAmount(values.amount)) {
+      if (values.dealKind === "installment" && hasPositiveAmount(values.amount)) {
         const installments = Number(values.installments)
         if (!Number.isInteger(installments) || installments < 2) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['installments'],
-            message: i18n.t('validation.minInstallments'),
+            code: "custom",
+            path: ["installments"],
+            message: i18n.t("validation.minInstallments"),
           })
         }
       }
@@ -144,9 +144,9 @@ export function projectSchema() {
       values.tools.forEach((tool, index) => {
         if (tool.toolId === OTHER_TOOL_ID && tool.customName.length < 2) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['tools', index, 'customName'],
-            message: i18n.t('validation.enterToolName'),
+            code: "custom",
+            path: ["tools", index, "customName"],
+            message: i18n.t("validation.enterToolName"),
           })
         }
 
@@ -154,71 +154,71 @@ export function projectSchema() {
         const amount = parseAmount(tool.amount)
         if (tool.amount && amount == null) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['tools', index, 'amount'],
-            message: i18n.t('validation.invalidAmount'),
+            code: "custom",
+            path: ["tools", index, "amount"],
+            message: i18n.t("validation.invalidAmount"),
           })
         } else if (amount != null && amount < 0) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['tools', index, 'amount'],
-            message: i18n.t('validation.negativeAmount'),
+            code: "custom",
+            path: ["tools", index, "amount"],
+            message: i18n.t("validation.negativeAmount"),
           })
         }
 
         // Billing is only required when the tool has an amount.
         if (hasPositiveAmount(tool.amount) && !tool.nextInvoice) {
           ctx.addIssue({
-            code: 'custom',
-            path: ['tools', index, 'nextInvoice'],
-            message: i18n.t('validation.enterInvoiceDate'),
+            code: "custom",
+            path: ["tools", index, "nextInvoice"],
+            message: i18n.t("validation.enterInvoiceDate"),
           })
         }
       })
 
       if (values.repoPath && parseRepo(values.repoPath) == null) {
         ctx.addIssue({
-          code: 'custom',
-          path: ['repoPath'],
-          message: i18n.t('validation.repoFormat'),
+          code: "custom",
+          path: ["repoPath"],
+          message: i18n.t("validation.repoFormat"),
         })
       }
     })
 }
 
 export type ProjectFormValues = z.infer<ReturnType<typeof projectSchema>>
-export type ToolFormValues = ProjectFormValues['tools'][number]
+export type ToolFormValues = ProjectFormValues["tools"][number]
 
 export const emptyToolForm: ToolFormValues = {
-  toolId: '',
-  customName: '',
-  account: '',
+  toolId: "",
+  customName: "",
+  account: "",
   // starts zeroed: with no amount, the tool is treated as free
-  amount: '0',
+  amount: "0",
   currency: DEFAULT_CURRENCY,
-  cycle: 'monthly',
-  nextInvoice: '',
-  payer: 'me',
+  cycle: "monthly",
+  nextInvoice: "",
+  payer: "me",
   secrets: [],
 }
 
 export const emptyProjectForm: ProjectFormValues = {
-  name: '',
-  clientId: '',
+  name: "",
+  clientId: "",
   isNewContact: false,
-  newContactName: '',
-  newContactEmail: '',
-  newContactPhone: '',
-  newContactCompany: '',
-  status: 'queued',
-  dealKind: 'upfront',
+  newContactName: "",
+  newContactEmail: "",
+  newContactPhone: "",
+  newContactCompany: "",
+  status: "queued",
+  dealKind: "upfront",
   // starts zeroed: with no amount, the project is treated as free (same rule
   // as the tools)
-  amount: '0',
+  amount: "0",
   currency: DEFAULT_CURRENCY,
-  installments: '2',
+  installments: "2",
   tools: [],
-  repoPath: '',
+  repoPath: "",
 }
 
 /**
@@ -234,7 +234,7 @@ function formatAmountInput(value: number): string {
   })
 }
 
-export const GITHUB_PREFIX = 'https://github.com/'
+export const GITHUB_PREFIX = "https://github.com/"
 
 /**
  * Validates "owner/repo". Tolerates pasting the whole URL by mistake (the
@@ -243,8 +243,8 @@ export const GITHUB_PREFIX = 'https://github.com/'
 function parseRepo(raw: string): { fullName: string; url: string } | null {
   const path = raw
     .trim()
-    .replace(/^https?:\/\/(www\.)?github\.com\//i, '')
-    .replace(/\/+$/, '')
+    .replace(/^https?:\/\/(www\.)?github\.com\//i, "")
+    .replace(/\/+$/, "")
   const match = /^([\w.-]+)\/([\w.-]+)$/.exec(path)
   if (!match) return null
   const [, owner, repo] = match
@@ -258,7 +258,7 @@ function toTool(values: ToolFormValues): Tool {
   return {
     id: values.toolId,
     name: isOther ? values.customName : (catalogTool?.name ?? values.toolId),
-    category: catalogTool?.category ?? 'other',
+    category: catalogTool?.category ?? "other",
     account: values.account || undefined,
     // billing present ⟺ amount > 0; there is no separate `paid` field
     billing: hasPositiveAmount(values.amount)
@@ -283,18 +283,18 @@ export function toProject(values: ProjectFormValues, existing?: Project): Projec
   const amount = parseAmount(values.amount) ?? 0
 
   const deal: Deal =
-    values.dealKind === 'installment'
+    values.dealKind === "installment"
       ? {
-          kind: 'installment',
+          kind: "installment",
           amount,
           installments: Number(values.installments),
           currency: values.currency,
         }
-      : { kind: 'upfront', amount, currency: values.currency }
+      : { kind: "upfront", amount, currency: values.currency }
 
   const repo = values.repoPath ? parseRepo(values.repoPath) : null
   const workflow =
-    repo && existing?.repo?.fullName === repo.fullName ? existing.repo.workflow : 'none'
+    repo && existing?.repo?.fullName === repo.fullName ? existing.repo.workflow : "none"
 
   return withProjectStatus(
     {
@@ -322,10 +322,10 @@ export function fromProject(project: Project): ProjectFormValues {
     name: project.name,
     clientId: project.clientId,
     isNewContact: false,
-    newContactName: '',
-    newContactEmail: '',
-    newContactPhone: '',
-    newContactCompany: '',
+    newContactName: "",
+    newContactEmail: "",
+    newContactPhone: "",
+    newContactCompany: "",
     status: project.status,
     dealKind: project.deal.kind,
     amount: formatAmountInput(project.deal.amount),
@@ -333,15 +333,15 @@ export function fromProject(project: Project): ProjectFormValues {
     installments: String(project.deal.installments ?? 2),
     tools: project.tools.map((tool) => ({
       toolId: tool.id,
-      customName: findCatalogTool(tool.id) ? '' : tool.name,
-      account: tool.account ?? '',
-      amount: tool.billing ? formatAmountInput(tool.billing.amount) : '0',
+      customName: findCatalogTool(tool.id) ? "" : tool.name,
+      account: tool.account ?? "",
+      amount: tool.billing ? formatAmountInput(tool.billing.amount) : "0",
       currency: tool.billing?.currency ?? DEFAULT_CURRENCY,
-      cycle: tool.billing?.cycle ?? 'monthly',
-      nextInvoice: tool.billing?.nextInvoice ?? '',
-      payer: tool.billing?.payer ?? 'me',
+      cycle: tool.billing?.cycle ?? "monthly",
+      nextInvoice: tool.billing?.nextInvoice ?? "",
+      payer: tool.billing?.payer ?? "me",
       secrets: tool.secrets,
     })),
-    repoPath: project.repo?.fullName ?? '',
+    repoPath: project.repo?.fullName ?? "",
   }
 }

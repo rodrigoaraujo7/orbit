@@ -1,12 +1,12 @@
-import { defineProject } from 'vitest/config'
+import { defineProject } from "vitest/config"
 
 export default defineProject({
   test: {
-    name: 'api',
-    environment: 'node',
-    include: ['src/**/*.test.ts'],
-    setupFiles: ['./src/test/setup.ts'],
-    pool: 'forks',
+    name: "api",
+    environment: "node",
+    include: ["src/**/*.test.ts"],
+    setupFiles: ["./src/test/setup.ts"],
+    pool: "forks",
     hookTimeout: 30_000,
     testTimeout: 30_000,
   },

@@ -1,11 +1,11 @@
-import { cleanup, screen } from '@testing-library/react'
-import type { ReactNode } from 'react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderWithProviders } from '@/test/render'
+import { cleanup, screen } from "@testing-library/react"
+import type { ReactNode } from "react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { renderWithProviders } from "@/test/render"
 
-const pathname = vi.hoisted(() => ({ value: '/' }))
+const pathname = vi.hoisted(() => ({ value: "/" }))
 const session = vi.hoisted(() => ({
-  data: { user: { id: 'u1', name: 'Ada', email: 'ada@test.local' } } as {
+  data: { user: { id: "u1", name: "Ada", email: "ada@test.local" } } as {
     user: { id: string; name: string; email: string }
   } | null,
   isPending: false,
@@ -15,8 +15,8 @@ const workspace = vi.hoisted(() => ({
   isError: false,
 }))
 
-vi.mock('@tanstack/react-router', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+vi.mock("@tanstack/react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-router")>()
   return {
     ...actual,
     Link: ({
@@ -43,14 +43,14 @@ vi.mock('@tanstack/react-router', async (importOriginal) => {
   }
 })
 
-vi.mock('@/lib/auth-client', () => ({
+vi.mock("@/lib/auth-client", () => ({
   authClient: {
     useSession: () => ({ data: session.data, isPending: session.isPending }),
     signOut: vi.fn(),
   },
 }))
 
-vi.mock('@/lib/projects-store', () => ({
+vi.mock("@/lib/projects-store", () => ({
   useProjects: () => ({
     projects: [],
     isPending: workspace.isPending,
@@ -65,7 +65,7 @@ vi.mock('@/lib/projects-store', () => ({
   ProjectsProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-vi.mock('@/lib/registry-store', () => ({
+vi.mock("@/lib/registry-store", () => ({
   useRegistry: () => ({
     contacts: [],
     isPending: workspace.isPending,
@@ -83,7 +83,7 @@ vi.mock('@/lib/registry-store', () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-import { Route } from './__root'
+import { Route } from "./__root"
 
 const Root = Route.options.component!
 
@@ -92,54 +92,54 @@ afterEach(() => {
 })
 
 beforeEach(() => {
-  pathname.value = '/'
-  session.data = { user: { id: 'u1', name: 'Ada', email: 'ada@test.local' } }
+  pathname.value = "/"
+  session.data = { user: { id: "u1", name: "Ada", email: "ada@test.local" } }
   session.isPending = false
   workspace.isPending = false
   workspace.isError = false
 })
 
-describe('root Gate', () => {
-  it('shows a loading screen while the session is pending', () => {
+describe("root Gate", () => {
+  it("shows a loading screen while the session is pending", () => {
     session.isPending = true
     renderWithProviders(<Root />)
-    expect(screen.getByText('Loading…')).toBeInTheDocument()
+    expect(screen.getByText("Loading…")).toBeInTheDocument()
   })
 
-  it('redirects anonymous users to login', () => {
+  it("redirects anonymous users to login", () => {
     session.data = null
-    pathname.value = '/dashboard'
+    pathname.value = "/dashboard"
     renderWithProviders(<Root />)
-    expect(screen.getByTestId('navigate')).toHaveTextContent('/login')
+    expect(screen.getByTestId("navigate")).toHaveTextContent("/login")
   })
 
-  it('redirects signed-in users away from login', () => {
-    pathname.value = '/login'
+  it("redirects signed-in users away from login", () => {
+    pathname.value = "/login"
     renderWithProviders(<Root />)
-    expect(screen.getByTestId('navigate')).toHaveTextContent('/')
+    expect(screen.getByTestId("navigate")).toHaveTextContent("/")
   })
 
-  it('renders the login outlet without the shell', () => {
+  it("renders the login outlet without the shell", () => {
     session.data = null
-    pathname.value = '/login'
+    pathname.value = "/login"
     renderWithProviders(<Root />)
-    expect(screen.getByTestId('outlet')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Open menu')).not.toBeInTheDocument()
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
   })
 
-  it('wraps authenticated pages in the shell', () => {
+  it("wraps authenticated pages in the shell", () => {
     renderWithProviders(<Root />)
-    expect(screen.getByTestId('outlet')).toBeInTheDocument()
-    expect(screen.getByLabelText('Open menu')).toBeInTheDocument()
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.getByLabelText("Open menu")).toBeInTheDocument()
   })
 
-  it('shows workspace loading and error states', () => {
+  it("shows workspace loading and error states", () => {
     workspace.isPending = true
     const { rerender } = renderWithProviders(<Root />)
-    expect(screen.getByText('Loading…')).toBeInTheDocument()
+    expect(screen.getByText("Loading…")).toBeInTheDocument()
     workspace.isPending = false
     workspace.isError = true
     rerender(<Root />)
-    expect(screen.getByText('Could not load the data.')).toBeInTheDocument()
+    expect(screen.getByText("Could not load the data.")).toBeInTheDocument()
   })
 })

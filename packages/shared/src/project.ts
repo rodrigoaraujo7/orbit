@@ -5,8 +5,8 @@ import type {
   Payer,
   PaymentMethod,
   ProjectStatus,
-} from './domain.ts'
-import type { ToolCategory } from './tool-category.ts'
+} from "./domain.ts"
+import type { ToolCategory } from "./tool-category.ts"
 
 export type Deal = {
   kind: DealKind

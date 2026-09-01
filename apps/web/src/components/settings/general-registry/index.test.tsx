@@ -1,11 +1,11 @@
-import { cleanup, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { sampleContact, sampleCustomTool, sampleProject } from '@/test/fixtures'
-import { renderWithProviders } from '@/test/render'
+import { cleanup, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import type { ReactNode } from "react"
+import { afterEach, describe, expect, it, vi } from "vitest"
+import { sampleContact, sampleCustomTool, sampleProject } from "@/test/fixtures"
+import { renderWithProviders } from "@/test/render"
 
-vi.mock('@/lib/projects-store', () => ({
+vi.mock("@/lib/projects-store", () => ({
   useProjects: () => ({
     projects: [sampleProject],
     isPending: false,
@@ -20,7 +20,7 @@ vi.mock('@/lib/projects-store', () => ({
   ProjectsProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-vi.mock('@/lib/registry-store', () => ({
+vi.mock("@/lib/registry-store", () => ({
   useRegistry: () => ({
     contacts: [sampleContact],
     isPending: false,
@@ -38,18 +38,18 @@ vi.mock('@/lib/registry-store', () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-import { GeneralRegistry } from './index'
+import { GeneralRegistry } from "./index"
 
 afterEach(() => {
   cleanup()
 })
 
-describe('GeneralRegistry', () => {
-  it('switches between contacts and custom tools', async () => {
+describe("GeneralRegistry", () => {
+  it("switches between contacts and custom tools", async () => {
     const user = userEvent.setup()
     renderWithProviders(<GeneralRegistry />)
-    expect(screen.getByText('Ada Lovelace')).toBeInTheDocument()
-    await user.click(screen.getByRole('tab', { name: /Custom tools/ }))
-    expect(await screen.findByText('CI')).toBeInTheDocument()
+    expect(screen.getByText("Ada Lovelace")).toBeInTheDocument()
+    await user.click(screen.getByRole("tab", { name: /Custom tools/ }))
+    expect(await screen.findByText("CI")).toBeInTheDocument()
   })
 })

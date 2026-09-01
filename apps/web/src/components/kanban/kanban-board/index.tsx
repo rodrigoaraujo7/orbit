@@ -1,20 +1,20 @@
-import { PointerActivationConstraints } from '@dnd-kit/dom'
-import { DragDropProvider, DragOverlay, KeyboardSensor, PointerSensor } from '@dnd-kit/react'
-import { isSortable } from '@dnd-kit/react/sortable'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { PointerActivationConstraints } from "@dnd-kit/dom"
+import { DragDropProvider, DragOverlay, KeyboardSensor, PointerSensor } from "@dnd-kit/react"
+import { isSortable } from "@dnd-kit/react/sortable"
+import { useEffect, useMemo, useRef, useState } from "react"
 
-import { PROJECT_STATUS_ORDER, type Project, type ProjectStatus } from '@/data/projects'
-import { useReducedMotion } from '@/hooks/use-reduced-motion'
-import { useProjects } from '@/lib/projects-store'
+import { PROJECT_STATUS_ORDER, type Project, type ProjectStatus } from "@/data/projects"
+import { useReducedMotion } from "@/hooks/use-reduced-motion"
+import { useProjects } from "@/lib/projects-store"
 import {
   columnsEqual,
   isProjectStatus,
   placeProjectInColumns,
   projectIdsByStatus,
   type ProjectColumns,
-} from '@/lib/project-status'
-import { KanbanCard } from '../kanban-card'
-import { KanbanColumn } from '../kanban-column'
+} from "@/lib/project-status"
+import { KanbanCard } from "../kanban-card"
+import { KanbanColumn } from "../kanban-column"
 
 const sensors = [
   PointerSensor.configure({

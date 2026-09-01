@@ -1,5 +1,5 @@
-import type { InvoiceStatus } from './domain.ts'
-import type { Invoice } from './project.ts'
+import type { InvoiceStatus } from "./domain.ts"
+import type { Invoice } from "./project.ts"
 
 /**
  * The invoice's "effective month" for date filtering: `referenceMonth` when it
@@ -11,14 +11,14 @@ export function effectiveMonth(invoice: Invoice): string {
 }
 
 export type InvoiceFilters = {
-  status: InvoiceStatus | 'all'
+  status: InvoiceStatus | "all"
   monthFrom: string
   monthTo: string
 }
 
 export function filterInvoices(invoices: Invoice[], filters: InvoiceFilters): Invoice[] {
   return invoices.filter((invoice) => {
-    if (filters.status !== 'all' && invoice.status !== filters.status) return false
+    if (filters.status !== "all" && invoice.status !== filters.status) return false
     const month = effectiveMonth(invoice)
     if (filters.monthFrom && month < filters.monthFrom) return false
     if (filters.monthTo && month > filters.monthTo) return false

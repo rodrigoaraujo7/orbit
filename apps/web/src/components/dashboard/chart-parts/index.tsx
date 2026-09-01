@@ -1,4 +1,4 @@
-import { useReducedMotion } from '@/hooks/use-reduced-motion'
+import { useReducedMotion } from "@/hooks/use-reduced-motion"
 
 /** Gap between one stacked series starting and the next, in ms. */
 const SERIES_STAGGER = 90
@@ -16,7 +16,7 @@ export function useChartMotion() {
     isAnimationActive: !reduced,
     animationBegin: seriesIndex * SERIES_STAGGER,
     animationDuration: CHART_DURATION,
-    animationEasing: 'ease-out' as const,
+    animationEasing: "ease-out" as const,
   })
 }
 
@@ -29,7 +29,7 @@ export const axisProps = {
   tickLine: false,
   axisLine: false,
   tickMargin: 8,
-  className: 'tabular-nums',
+  className: "tabular-nums",
 } as const
 
 /**
@@ -37,6 +37,6 @@ export const axisProps = {
  * marks instead of one blurred column. Uses the page surface, not a gray.
  */
 export const surfaceGap = {
-  stroke: 'var(--background)',
+  stroke: "var(--background)",
   strokeWidth: 2,
 } as const

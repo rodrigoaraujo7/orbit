@@ -1,16 +1,16 @@
-import { dash } from '@better-auth/infra'
-import { betterAuth } from 'better-auth'
-import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api'
-import { twoFactor } from 'better-auth/plugins'
-import { eq } from 'drizzle-orm'
-import { recordAudit } from '../audit/record/index.ts'
-import { getDb } from '../db/client/index.ts'
-import { schema, user } from '../db/schema/index.ts'
-import { withUser } from '../db/with-user/index.ts'
-import { env, optionalEnv } from '../env/index.ts'
+import { dash } from "@better-auth/infra"
+import { betterAuth } from "better-auth"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api"
+import { twoFactor } from "better-auth/plugins"
+import { eq } from "drizzle-orm"
+import { recordAudit } from "../audit/record/index.ts"
+import { getDb } from "../db/client/index.ts"
+import { schema, user } from "../db/schema/index.ts"
+import { withUser } from "../db/with-user/index.ts"
+import { env, optionalEnv } from "../env/index.ts"
 
-const webOrigin = optionalEnv('WEB_ORIGIN') ?? 'http://localhost:5173'
+const webOrigin = optionalEnv("WEB_ORIGIN") ?? "http://localhost:5173"
 
 async function logSecurity(userId: string, action: string, headers: Headers | null | undefined) {
   try {
@@ -19,14 +19,14 @@ async function logSecurity(userId: string, action: string, headers: Headers | nu
         tx,
         {
           userId,
-          ip: headers?.get('x-forwarded-for') ?? null,
-          userAgent: headers?.get('user-agent') ?? null,
+          ip: headers?.get("x-forwarded-for") ?? null,
+          userAgent: headers?.get("user-agent") ?? null,
         },
-        { module: 'security', action },
+        { module: "security", action },
       ),
     )
   } catch (error) {
-    console.error('failed to record security audit', error)
+    console.error("failed to record security audit", error)
   }
 }
 
@@ -56,60 +56,60 @@ export async function afterAuthHook(ctx: AuthHookCtx) {
   const sessionUserId = ctx.context.newSession?.user.id ?? ctx.context.session?.user.id ?? null
   const failed = isAPIError(ctx.context.returned) || ctx.context.returned instanceof APIError
 
-  if (ctx.path === '/sign-in/email') {
+  if (ctx.path === "/sign-in/email") {
     if (ctx.context.newSession) {
-      await logSecurity(ctx.context.newSession.user.id, 'security.login', headers)
+      await logSecurity(ctx.context.newSession.user.id, "security.login", headers)
       return
     }
     if (failed) {
       const email =
-        ctx.body && typeof ctx.body === 'object' && 'email' in ctx.body
-          ? String((ctx.body as { email?: string }).email ?? '')
-          : ''
+        ctx.body && typeof ctx.body === "object" && "email" in ctx.body
+          ? String((ctx.body as { email?: string }).email ?? "")
+          : ""
       if (!email) return
       const id = await userIdByEmail(email)
-      if (id) await logSecurity(id, 'security.login.failed', headers)
+      if (id) await logSecurity(id, "security.login.failed", headers)
     }
     return
   }
 
   if (!sessionUserId || failed) return
 
-  if (ctx.path === '/sign-out') {
-    await logSecurity(sessionUserId, 'security.logout', headers)
-  } else if (ctx.path === '/change-password') {
-    await logSecurity(sessionUserId, 'security.password.change', headers)
-  } else if (ctx.path === '/two-factor/enable') {
-    await logSecurity(sessionUserId, 'security.2fa.enable', headers)
-  } else if (ctx.path === '/two-factor/disable') {
-    await logSecurity(sessionUserId, 'security.2fa.disable', headers)
+  if (ctx.path === "/sign-out") {
+    await logSecurity(sessionUserId, "security.logout", headers)
+  } else if (ctx.path === "/change-password") {
+    await logSecurity(sessionUserId, "security.password.change", headers)
+  } else if (ctx.path === "/two-factor/enable") {
+    await logSecurity(sessionUserId, "security.2fa.enable", headers)
+  } else if (ctx.path === "/two-factor/disable") {
+    await logSecurity(sessionUserId, "security.2fa.disable", headers)
   }
 }
 
 export function createAuth() {
   const secret =
-    optionalEnv('BETTER_AUTH_SECRET') ??
-    (process.env.NODE_ENV === 'production'
-      ? env('BETTER_AUTH_SECRET')
-      : 'dev-only-better-auth-secret-not-for-production')
+    optionalEnv("BETTER_AUTH_SECRET") ??
+    (process.env.NODE_ENV === "production"
+      ? env("BETTER_AUTH_SECRET")
+      : "dev-only-better-auth-secret-not-for-production")
 
   return betterAuth({
-    baseURL: optionalEnv('BETTER_AUTH_URL') ?? webOrigin,
+    baseURL: optionalEnv("BETTER_AUTH_URL") ?? webOrigin,
     secret,
-    trustedOrigins: [webOrigin, 'https://dash.better-auth.com', 'https://*.ngrok-free.app'],
+    trustedOrigins: [webOrigin, "https://dash.better-auth.com", "https://*.ngrok-free.app"],
     database: drizzleAdapter(getDb(), {
-      provider: 'pg',
+      provider: "pg",
       schema,
     }),
     emailAndPassword: { enabled: true },
     advanced: {
       defaultCookieAttributes: {
         httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
       },
     },
-    plugins: [twoFactor({ issuer: 'Projects Manager' }), dash()],
+    plugins: [twoFactor({ issuer: "Projects Manager" }), dash()],
     hooks: {
       after: createAuthMiddleware(afterAuthHook),
     },

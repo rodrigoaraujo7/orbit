@@ -1,4 +1,4 @@
-import { fromCents, toCents, type AuditChange, type AuditModule } from 'shared'
+import { fromCents, toCents, type AuditChange, type AuditModule } from "shared"
 
 export type ProjectCommentInput = {
   id: string
@@ -53,19 +53,19 @@ function add(changes: AuditChange[], field: string, from: string, to: string) {
 function commentsOf(value: unknown): { id: string; body: string }[] {
   if (!Array.isArray(value)) return []
   return value.flatMap((item) => {
-    if (!item || typeof item !== 'object') return []
+    if (!item || typeof item !== "object") return []
     const rec = item as Record<string, unknown>
-    if (typeof rec.id !== 'string') return []
-    return [{ id: rec.id, body: typeof rec.body === 'string' ? rec.body : '' }]
+    if (typeof rec.id !== "string") return []
+    return [{ id: rec.id, body: typeof rec.body === "string" ? rec.body : "" }]
   })
 }
 
 function text(value: string | null | undefined) {
-  return value?.trim() ?? ''
+  return value?.trim() ?? ""
 }
 
-function dealAmount(deal: ProjectDiffInput['deal']) {
-  const currency = deal.currency || 'BRL'
+function dealAmount(deal: ProjectDiffInput["deal"]) {
+  const currency = deal.currency || "BRL"
   return `${fromCents(toCents(deal.amount))} ${currency}`
 }
 
@@ -77,14 +77,14 @@ function commentChanges(prev: unknown, next: unknown): AuditChange[] {
 
   for (const comment of after) {
     if (!before.has(comment.id)) {
-      changes.push({ field: 'comment.created', from: '', to: comment.body })
+      changes.push({ field: "comment.created", from: "", to: comment.body })
       continue
     }
-    add(changes, 'comment.edited', before.get(comment.id)!, comment.body)
+    add(changes, "comment.edited", before.get(comment.id)!, comment.body)
   }
   for (const [id, body] of before) {
     if (!afterIds.has(id)) {
-      changes.push({ field: 'comment.deleted', from: body, to: '' })
+      changes.push({ field: "comment.deleted", from: body, to: "" })
     }
   }
   return changes
@@ -92,15 +92,15 @@ function commentChanges(prev: unknown, next: unknown): AuditChange[] {
 
 function kanbanAction(changes: AuditChange[]) {
   const fields = new Set(changes.map((c) => c.field))
-  if (fields.size === 1 && fields.has('status')) return 'kanban.move'
-  if (fields.size === 1 && fields.has('description')) return 'kanban.update'
+  if (fields.size === 1 && fields.has("status")) return "kanban.move"
+  if (fields.size === 1 && fields.has("description")) return "kanban.update"
   const commentFields = [...fields]
-  if (commentFields.every((f) => f.startsWith('comment.'))) {
-    if (commentFields.every((f) => f === 'comment.created')) return 'kanban.comment.create'
-    if (commentFields.every((f) => f === 'comment.edited')) return 'kanban.comment.edit'
-    if (commentFields.every((f) => f === 'comment.deleted')) return 'kanban.comment.delete'
+  if (commentFields.every((f) => f.startsWith("comment."))) {
+    if (commentFields.every((f) => f === "comment.created")) return "kanban.comment.create"
+    if (commentFields.every((f) => f === "comment.edited")) return "kanban.comment.edit"
+    if (commentFields.every((f) => f === "comment.deleted")) return "kanban.comment.delete"
   }
-  return 'kanban.update'
+  return "kanban.update"
 }
 
 function toolChanges(prev: ProjectToolInput[], next: ProjectToolInput[]): AuditChange[] {
@@ -111,7 +111,7 @@ function toolChanges(prev: ProjectToolInput[], next: ProjectToolInput[]): AuditC
   for (const tool of next) {
     const prevTool = before.get(tool.id)
     if (!prevTool) {
-      changes.push({ field: `tool.${tool.id}`, from: '', to: tool.name })
+      changes.push({ field: `tool.${tool.id}`, from: "", to: tool.name })
       continue
     }
     add(changes, `tool.${tool.id}.account`, text(prevTool.account), text(tool.account))
@@ -120,15 +120,15 @@ function toolChanges(prev: ProjectToolInput[], next: ProjectToolInput[]): AuditC
   }
   for (const tool of prev) {
     if (!afterIds.has(tool.id)) {
-      changes.push({ field: `tool.${tool.id}`, from: tool.name, to: '' })
+      changes.push({ field: `tool.${tool.id}`, from: tool.name, to: "" })
     }
   }
   return changes
 }
 
 function billingSnapshot(tool: ProjectToolInput) {
-  if (!tool.billing) return ''
-  const currency = tool.billing.currency || 'BRL'
+  if (!tool.billing) return ""
+  const currency = tool.billing.currency || "BRL"
   return `${tool.billing.amount} ${currency} ${tool.billing.cycle}`
 }
 
@@ -144,46 +144,46 @@ function secretChanges(
   for (const secret of next) {
     const field = `tool.${toolId}.secret.${secret.key}`
     if (!before.has(secret.key)) {
-      if (secret.value) changes.push({ field, from: '', to: 'set' })
+      if (secret.value) changes.push({ field, from: "", to: "set" })
       continue
     }
-    if (secret.value) add(changes, field, 'set', 'changed')
+    if (secret.value) add(changes, field, "set", "changed")
   }
   for (const secret of prev) {
     if (!afterKeys.has(secret.key)) {
-      changes.push({ field: `tool.${toolId}.secret.${secret.key}`, from: 'set', to: '' })
+      changes.push({ field: `tool.${toolId}.secret.${secret.key}`, from: "set", to: "" })
     }
   }
 }
 
 export function diffProject(prev: ProjectDiffInput, next: ProjectDiffInput): DiffEntry[] {
   const projectChanges: AuditChange[] = []
-  add(projectChanges, 'name', prev.name, next.name)
-  add(projectChanges, 'clientId', prev.clientId, next.clientId)
-  add(projectChanges, 'startedAt', prev.startedAt, next.startedAt)
-  add(projectChanges, 'endedAt', text(prev.endedAt), text(next.endedAt))
-  add(projectChanges, 'repo', prev.repo?.fullName ?? '', next.repo?.fullName ?? '')
-  add(projectChanges, 'deal.kind', prev.deal.kind, next.deal.kind)
-  add(projectChanges, 'deal.amount', dealAmount(prev.deal), dealAmount(next.deal))
+  add(projectChanges, "name", prev.name, next.name)
+  add(projectChanges, "clientId", prev.clientId, next.clientId)
+  add(projectChanges, "startedAt", prev.startedAt, next.startedAt)
+  add(projectChanges, "endedAt", text(prev.endedAt), text(next.endedAt))
+  add(projectChanges, "repo", prev.repo?.fullName ?? "", next.repo?.fullName ?? "")
+  add(projectChanges, "deal.kind", prev.deal.kind, next.deal.kind)
+  add(projectChanges, "deal.amount", dealAmount(prev.deal), dealAmount(next.deal))
   add(
     projectChanges,
-    'deal.installments',
-    String(prev.deal.installments ?? ''),
-    String(next.deal.installments ?? ''),
+    "deal.installments",
+    String(prev.deal.installments ?? ""),
+    String(next.deal.installments ?? ""),
   )
   projectChanges.push(...toolChanges(prev.tools, next.tools))
 
   const kanbanChanges: AuditChange[] = []
-  add(kanbanChanges, 'status', prev.status, next.status)
-  add(kanbanChanges, 'description', text(prev.description), text(next.description))
+  add(kanbanChanges, "status", prev.status, next.status)
+  add(kanbanChanges, "description", text(prev.description), text(next.description))
   kanbanChanges.push(...commentChanges(prev.comments, next.comments))
 
   const entries: DiffEntry[] = []
   if (projectChanges.length) {
-    entries.push({ module: 'project', action: 'project.update', changes: projectChanges })
+    entries.push({ module: "project", action: "project.update", changes: projectChanges })
   }
   if (kanbanChanges.length) {
-    entries.push({ module: 'kanban', action: kanbanAction(kanbanChanges), changes: kanbanChanges })
+    entries.push({ module: "kanban", action: kanbanAction(kanbanChanges), changes: kanbanChanges })
   }
   return entries
 }

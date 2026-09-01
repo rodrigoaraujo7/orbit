@@ -1,6 +1,6 @@
-import { z } from 'zod'
-import { auditModuleSchema } from './audit.ts'
-import { invoiceStatusSchema, projectStatusSchema, workflowStatusSchema } from './domain.ts'
+import { z } from "zod"
+import { auditModuleSchema } from "./audit.ts"
+import { invoiceStatusSchema, projectStatusSchema, workflowStatusSchema } from "./domain.ts"
 
 const optionalString = z.string().trim().optional()
 
@@ -25,13 +25,13 @@ export type DashboardFilterInput = z.infer<typeof dashboardFiltersSchema>
 
 export const invoiceListFiltersSchema = z.object({
   projectId: z.string().min(1),
-  status: z.union([z.literal('all'), invoiceStatusSchema]).optional(),
+  status: z.union([z.literal("all"), invoiceStatusSchema]).optional(),
   monthFrom: optionalString,
   monthTo: optionalString,
 })
 export type InvoiceListFilters = z.infer<typeof invoiceListFiltersSchema>
 
-export const auditPeriodSchema = z.enum(['today', '7d', '30d', '90d', 'all', 'custom'])
+export const auditPeriodSchema = z.enum(["today", "7d", "30d", "90d", "all", "custom"])
 export type AuditPeriod = z.infer<typeof auditPeriodSchema>
 
 /** URL search for `/projects`. */
@@ -63,7 +63,7 @@ export type DashboardSearch = z.infer<typeof dashboardSearchSchema>
 
 /** URL search for invoice filters on `/projects/$projectId`. */
 export const invoiceSearchSchema = z.object({
-  status: z.union([z.literal('all'), invoiceStatusSchema]).optional(),
+  status: z.union([z.literal("all"), invoiceStatusSchema]).optional(),
   from: optionalString,
   to: optionalString,
 })
@@ -80,7 +80,7 @@ export const auditSearchSchema = z.object({
 export type AuditSearch = z.infer<typeof auditSearchSchema>
 
 function isBlank(value: unknown): boolean {
-  return value === undefined || value === null || value === ''
+  return value === undefined || value === null || value === ""
 }
 
 /** Drop empty strings so filter tweaks do not pollute the URL. */
@@ -99,7 +99,7 @@ export function compactSearch<T extends Record<string, unknown>>(search: T): Par
  */
 export function parseSearch<S extends z.ZodType>(schema: S, search: unknown): z.infer<S> {
   const raw =
-    typeof search === 'object' && search !== null ? { ...(search as Record<string, unknown>) } : {}
+    typeof search === "object" && search !== null ? { ...(search as Record<string, unknown>) } : {}
   for (const [key, value] of Object.entries(raw)) {
     if (isBlank(value)) delete raw[key]
   }

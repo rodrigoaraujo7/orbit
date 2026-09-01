@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Wallet, Wrench } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { createFileRoute } from "@tanstack/react-router"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { Wallet, Wrench } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import {
   compactSearch,
   dashboardOptions,
@@ -10,19 +10,19 @@ import {
   parseSearch,
   toDashboardFilters,
   type DashboardFilters,
-} from 'shared'
+} from "shared"
 
-import { HeroFigure } from '@/components/dashboard/cards'
-import { FiltersBar } from '@/components/dashboard/filters-bar'
-import { FinanceTab } from '@/components/dashboard/finance-tab'
-import { ToolsTab } from '@/components/dashboard/tools-tab'
-import { PageHeader } from '@/components/layout/page'
-import { DashboardFilterSkeleton, FilterPending } from '@/components/ui/filter-pending'
-import { Tabs, TabsDock, TabsDockTab, TabsPanel } from '@/components/ui/tabs'
-import { formatMonthLong, formatPercent } from '@/lib/format'
-import { useProjects } from '@/lib/projects-store'
-import { useRegistry } from '@/lib/registry-store'
-import { trpc } from '@/lib/trpc'
+import { HeroFigure } from "@/components/dashboard/cards"
+import { FiltersBar } from "@/components/dashboard/filters-bar"
+import { FinanceTab } from "@/components/dashboard/finance-tab"
+import { ToolsTab } from "@/components/dashboard/tools-tab"
+import { PageHeader } from "@/components/layout/page"
+import { DashboardFilterSkeleton, FilterPending } from "@/components/ui/filter-pending"
+import { Tabs, TabsDock, TabsDockTab, TabsPanel } from "@/components/ui/tabs"
+import { formatMonthLong, formatPercent } from "@/lib/format"
+import { useProjects } from "@/lib/projects-store"
+import { useRegistry } from "@/lib/registry-store"
+import { trpc } from "@/lib/trpc"
 
 function searchToFilters(search: ReturnType<typeof Route.useSearch>): DashboardFilters {
   return toDashboardFilters({
@@ -43,7 +43,7 @@ function DashboardPage() {
   const filters = searchToFilters(search)
 
   const query = useQuery({
-    queryKey: ['dashboard', filters],
+    queryKey: ["dashboard", filters],
     queryFn: () =>
       trpc.dashboard.metrics.query({
         monthFrom: filters.monthFrom || undefined,
@@ -62,18 +62,18 @@ function DashboardPage() {
   const options = metrics?.options ?? dashboardOptions(projects, contacts)
 
   function profitHint(current: number, previous: number) {
-    if (previous === 0) return current === 0 ? t('dashboard.noMovement') : t('dashboard.noPrevious')
+    if (previous === 0) return current === 0 ? t("dashboard.noMovement") : t("dashboard.noPrevious")
     const change = (current - previous) / Math.abs(previous)
-    return t('dashboard.vsPrevious', {
+    return t("dashboard.vsPrevious", {
       percent: formatPercent(Math.abs(change)),
-      direction: change >= 0 ? t('dashboard.above') : t('dashboard.below'),
+      direction: change >= 0 ? t("dashboard.above") : t("dashboard.below"),
     })
   }
 
   const period =
     months.length === 0
-      ? t('dashboard.noMonths')
-      : `${formatMonthLong(months[0])} ${t('common.emDash')} ${formatMonthLong(months[months.length - 1])}`
+      ? t("dashboard.noMonths")
+      : `${formatMonthLong(months[0])} ${t("common.emDash")} ${formatMonthLong(months[months.length - 1])}`
 
   function setFilters(next: DashboardFilters) {
     void navigate({
@@ -91,7 +91,7 @@ function DashboardPage() {
   return (
     <>
       <PageHeader
-        title={t('dashboard.title')}
+        title={t("dashboard.title")}
         description={period}
         actions={
           summary ? (
@@ -118,7 +118,7 @@ function DashboardPage() {
         <div className="px-4 pt-6 pb-24 sm:px-6 md:pb-6 lg:px-8">
           {summary && summary.foraDaMoeda > 0 && (
             <p className="mb-4 text-xs text-muted-foreground">
-              {t('dashboard.skipped', { count: summary.foraDaMoeda })}
+              {t("dashboard.skipped", { count: summary.foraDaMoeda })}
             </p>
           )}
 
@@ -126,10 +126,10 @@ function DashboardPage() {
             <Tabs defaultValue="finance">
               <TabsDock>
                 <TabsDockTab value="finance" icon={Wallet}>
-                  {t('common.finance')}
+                  {t("common.finance")}
                 </TabsDockTab>
                 <TabsDockTab value="tools" icon={Wrench}>
-                  {t('common.tools')}
+                  {t("common.tools")}
                 </TabsDockTab>
               </TabsDock>
 
@@ -164,7 +164,7 @@ function DashboardPage() {
   )
 }
 
-export const Route = createFileRoute('/dashboard')({
+export const Route = createFileRoute("/dashboard")({
   validateSearch: (search) => parseSearch(dashboardSearchSchema, search),
   component: DashboardPage,
 })

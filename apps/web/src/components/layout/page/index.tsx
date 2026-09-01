@@ -1,6 +1,6 @@
-import { Construction } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Construction } from "lucide-react"
+import type { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 
 export function PageHeader({
   title,
@@ -32,7 +32,7 @@ export function ComingSoon({ section }: { section: string }) {
       <div className="grid size-11 place-items-center rounded-xl bg-muted text-muted-foreground">
         <Construction className="size-5" />
       </div>
-      <p className="text-sm text-muted-foreground">{t('common.comingSoon', { section })}</p>
+      <p className="text-sm text-muted-foreground">{t("common.comingSoon", { section })}</p>
     </div>
   )
 }

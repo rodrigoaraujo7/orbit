@@ -1,6 +1,6 @@
-import type { ComponentProps } from 'react'
+import type { ComponentProps } from "react"
 
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils"
 
 /**
  * Highlights an inline word/name (e.g. the item being deleted, or a section
@@ -14,12 +14,12 @@ export function Emphasis({
   className,
   italic = true,
   ...props
-}: ComponentProps<'span'> & { italic?: boolean }) {
+}: ComponentProps<"span"> & { italic?: boolean }) {
   return (
     <span
       className={cn(
-        'font-bold',
-        italic ? 'font-heading italic tracking-wider text-[1.15em]' : 'font-subtitle',
+        "font-bold",
+        italic ? "font-heading italic tracking-wider text-[1.15em]" : "font-subtitle",
         className,
       )}
       {...props}

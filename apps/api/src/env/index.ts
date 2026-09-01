@@ -1,13 +1,13 @@
-import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readFileSync } from "node:fs"
+import { join } from "node:path"
 
-export function loadDotEnv(file = join(import.meta.dirname, '../../.env')) {
+export function loadDotEnv(file = join(import.meta.dirname, "../../.env")) {
   if (!existsSync(file)) return
-  for (const raw of readFileSync(file, 'utf8').split(/\r?\n/)) {
+  for (const raw of readFileSync(file, "utf8").split(/\r?\n/)) {
     const line = raw.trim()
-    if (!line || line.startsWith('#')) continue
-    const cut = line.startsWith('export ') ? line.slice(7) : line
-    const eq = cut.indexOf('=')
+    if (!line || line.startsWith("#")) continue
+    const cut = line.startsWith("export ") ? line.slice(7) : line
+    const eq = cut.indexOf("=")
     if (eq <= 0) continue
     const key = cut.slice(0, eq).trim()
     let value = cut.slice(eq + 1).trim()

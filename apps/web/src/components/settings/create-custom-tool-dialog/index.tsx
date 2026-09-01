@@ -1,12 +1,12 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useLayoutEffect, useRef, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { z } from 'zod'
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useLayoutEffect, useRef, useState } from "react"
+import { Controller, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { z } from "zod"
 
-import { Button } from '@/components/ui/button'
-import { Field } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
+import { Button } from "@/components/ui/button"
+import { Field } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import {
   ResponsiveDialog,
   ResponsiveDialogBody,
@@ -16,29 +16,29 @@ import {
   ResponsiveDialogFooter,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
-} from '@/components/ui/responsive-dialog'
-import { Select } from '@/components/ui/select'
-import { toast } from '@/components/ui/toast'
-import type { CustomTool } from '@/data/custom-tools'
-import { TOOL_CATEGORY_ORDER, type ToolCategory } from '@/data/tool-catalog'
-import i18n from '@/i18n'
-import { toolCategoryOptions } from '@/i18n/labels'
-import { useRegistry } from '@/lib/registry-store'
+} from "@/components/ui/responsive-dialog"
+import { Select } from "@/components/ui/select"
+import { toast } from "@/components/ui/toast"
+import type { CustomTool } from "@/data/custom-tools"
+import { TOOL_CATEGORY_ORDER, type ToolCategory } from "@/data/tool-catalog"
+import i18n from "@/i18n"
+import { toolCategoryOptions } from "@/i18n/labels"
+import { useRegistry } from "@/lib/registry-store"
 
 function customToolSchema() {
   return z.object({
-    name: z.string().trim().min(2, i18n.t('validation.minChars')),
+    name: z.string().trim().min(2, i18n.t("validation.minChars")),
     // kept as a plain string (not z.enum) so this doesn't have to duplicate
     // ToolCategory's literal union — the Select only ever offers valid
     // categories, so casting on submit is safe.
-    category: z.string().min(1, i18n.t('validation.selectCategory')),
+    category: z.string().min(1, i18n.t("validation.selectCategory")),
   })
 }
 
 type CustomToolFormValues = z.infer<ReturnType<typeof customToolSchema>>
 
 const emptyCustomToolForm: CustomToolFormValues = {
-  name: '',
+  name: "",
   category: TOOL_CATEGORY_ORDER[0],
 }
 
@@ -85,33 +85,33 @@ export function CreateCustomToolDialog({
     try {
       if (activeTool) {
         await updateCustomTool(activeTool.id, payload)
-        toast.add({ title: t('settings.toolUpdated'), type: 'success' })
+        toast.add({ title: t("settings.toolUpdated"), type: "success" })
       } else {
         await addCustomTool(payload)
-        toast.add({ title: t('settings.toolCreated'), type: 'success' })
+        toast.add({ title: t("settings.toolCreated"), type: "success" })
       }
       onOpenChange(false)
     } catch {
       toast.add({
-        title: activeTool ? t('settings.toolUpdateError') : t('settings.toolCreateError'),
-        type: 'error',
+        title: activeTool ? t("settings.toolUpdateError") : t("settings.toolCreateError"),
+        type: "error",
       })
     }
   })
 
   const formFields = (
     <>
-      <Field label={t('common.name')} error={errors.name?.message}>
+      <Field label={t("common.name")} error={errors.name?.message}>
         {(props) => (
           <Input
             {...props}
-            {...register('name')}
-            placeholder={t('settings.customToolPlaceholder')}
+            {...register("name")}
+            placeholder={t("settings.customToolPlaceholder")}
           />
         )}
       </Field>
 
-      <Field label={t('common.category')} error={errors.category?.message}>
+      <Field label={t("common.category")} error={errors.category?.message}>
         {(props) => (
           <Controller
             control={control}
@@ -136,10 +136,10 @@ export function CreateCustomToolDialog({
         <ResponsiveDialogHeader>
           <div>
             <ResponsiveDialogTitle>
-              {activeTool ? t('settings.editTool') : t('settings.newTool')}
+              {activeTool ? t("settings.editTool") : t("settings.newTool")}
             </ResponsiveDialogTitle>
             <ResponsiveDialogDescription>
-              {activeTool ? t('settings.editToolDescription') : t('settings.newToolDescription')}
+              {activeTool ? t("settings.editToolDescription") : t("settings.newToolDescription")}
             </ResponsiveDialogDescription>
           </div>
           <ResponsiveDialogClose />
@@ -148,10 +148,10 @@ export function CreateCustomToolDialog({
           <ResponsiveDialogBody className="flex flex-col gap-4">{formFields}</ResponsiveDialogBody>
           <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              {t('common.cancel')}
+              {t("common.cancel")}
             </Button>
             <Button type="submit">
-              {activeTool ? t('common.save') : t('settings.createTool')}
+              {activeTool ? t("common.save") : t("settings.createTool")}
             </Button>
           </ResponsiveDialogFooter>
         </form>

@@ -1,8 +1,8 @@
-import { eq } from 'drizzle-orm'
-import { z } from 'zod'
-import { customTool } from '../../db/schema/index.ts'
-import { asUser, auditCtx, protectedProcedure, router } from '../../trpc/init/index.ts'
-import { recordAudit } from '../../audit/record/index.ts'
+import { eq } from "drizzle-orm"
+import { z } from "zod"
+import { customTool } from "../../db/schema/index.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
+import { recordAudit } from "../../audit/record/index.ts"
 
 const input = z.object({
   name: z.string().trim().min(2),
@@ -24,8 +24,8 @@ export const toolsRouter = router({
     await asUser(ctx, async (tx) => {
       await tx.insert(customTool).values(row)
       await recordAudit(tx, auditCtx(ctx), {
-        module: 'settings',
-        action: 'tools.custom.create',
+        module: "settings",
+        action: "tools.custom.create",
         subjectId: row.id,
         subjectLabel: row.name,
       })
@@ -44,13 +44,13 @@ export const toolsRouter = router({
           .where(eq(customTool.id, body.id))
         if (!prev) return
         const changes = [
-          { field: 'name', from: prev.name, to: body.name },
-          { field: 'category', from: prev.category, to: body.category },
+          { field: "name", from: prev.name, to: body.name },
+          { field: "category", from: prev.category, to: body.category },
         ].filter((c) => c.from !== c.to)
         if (changes.length) {
           await recordAudit(tx, auditCtx(ctx), {
-            module: 'settings',
-            action: 'tools.custom.update',
+            module: "settings",
+            action: "tools.custom.update",
             subjectId: body.id,
             subjectLabel: body.name,
             changes,
@@ -68,8 +68,8 @@ export const toolsRouter = router({
         await tx.delete(customTool).where(eq(customTool.id, body.id))
         if (prev) {
           await recordAudit(tx, auditCtx(ctx), {
-            module: 'settings',
-            action: 'tools.custom.delete',
+            module: "settings",
+            action: "tools.custom.delete",
             subjectId: body.id,
             subjectLabel: prev.name,
           })

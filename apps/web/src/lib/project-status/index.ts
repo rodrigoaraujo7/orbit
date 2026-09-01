@@ -1,5 +1,5 @@
-import { PROJECT_STATUS_ORDER, type Project, type ProjectStatus } from '../../data/projects.ts'
-import { todayIso } from '../dates/index.ts'
+import { PROJECT_STATUS_ORDER, type Project, type ProjectStatus } from "../../data/projects.ts"
+import { todayIso } from "../dates/index.ts"
 
 export function isProjectStatus(value: string): value is ProjectStatus {
   return (PROJECT_STATUS_ORDER as string[]).includes(value)
@@ -14,7 +14,7 @@ export function withProjectStatus(project: Project, status: ProjectStatus): Proj
   return {
     ...project,
     status,
-    endedAt: status === 'completed' ? (project.endedAt ?? todayIso()) : undefined,
+    endedAt: status === "completed" ? (project.endedAt ?? todayIso()) : undefined,
   }
 }
 

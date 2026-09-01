@@ -1,9 +1,9 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useEffect, useState, type ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 
-import { useReducedMotion } from '@/hooks/use-reduced-motion'
-import { formatCurrency } from '@/lib/format'
-import { cn } from '@/lib/utils'
+import { useReducedMotion } from "@/hooks/use-reduced-motion"
+import { formatCurrency } from "@/lib/format"
+import { cn } from "@/lib/utils"
 
 /** Same 700ms/ease-out feel the charts use, so tiles and bars land together. */
 const COUNT_UP_MS = 700
@@ -36,7 +36,7 @@ function enterProps(delay: number, reduced: boolean) {
     ? {}
     : {
         style: { animationDelay: `${delay}ms` },
-        className: 'animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards duration-500',
+        className: "animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards duration-500",
       }
 }
 
@@ -58,11 +58,11 @@ export function HeroFigure({
   const enter = enterProps(0, reduced)
 
   return (
-    <div {...enter} className={cn('mt-3 sm:mt-0 sm:text-right', enter.className)}>
+    <div {...enter} className={cn("mt-3 sm:mt-0 sm:text-right", enter.className)}>
       <p
         className={cn(
-          'font-heading text-4xl font-normal tracking-normal tabular-nums sm:text-4xl',
-          value < 0 && 'text-destructive',
+          "font-heading text-4xl font-normal tracking-normal tabular-nums sm:text-4xl",
+          value < 0 && "text-destructive",
         )}
       >
         {formatCurrency(animated, currency)}
@@ -72,13 +72,13 @@ export function HeroFigure({
   )
 }
 
-export type StatTone = 'default' | 'success' | 'warning' | 'destructive'
+export type StatTone = "default" | "success" | "warning" | "destructive"
 
 const TONE_CLASS: Record<StatTone, string> = {
-  default: 'text-foreground',
-  success: 'text-success',
-  warning: 'text-warning',
-  destructive: 'text-destructive',
+  default: "text-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  destructive: "text-destructive",
 }
 
 /**
@@ -92,7 +92,7 @@ export function StatTile({
   hint,
   icon,
   iconClassName,
-  tone = 'default',
+  tone = "default",
   delay = 0,
 }: {
   label: string
@@ -109,24 +109,24 @@ export function StatTile({
   const enter = enterProps(delay, reduced)
 
   const valueClass = icon
-    ? 'font-subtitle text-2xl leading-none font-semibold tracking-tight tabular-nums sm:text-3xl'
-    : 'mt-1 font-subtitle text-lg font-semibold tracking-tight tabular-nums sm:text-xl 2xl:text-2xl'
+    ? "font-subtitle text-2xl leading-none font-semibold tracking-tight tabular-nums sm:text-3xl"
+    : "mt-1 font-subtitle text-lg font-semibold tracking-tight tabular-nums sm:text-xl 2xl:text-2xl"
 
   const valueEl = <p className={cn(valueClass, TONE_CLASS[tone])}>{format(animated)}</p>
   const labelEl = (
-    <p className={cn('font-subtitle text-xs text-muted-foreground', icon && 'mt-0.5 leading-none')}>
+    <p className={cn("font-subtitle text-xs text-muted-foreground", icon && "mt-0.5 leading-none")}>
       {label}
     </p>
   )
   const hintEl = hint ? <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p> : null
 
   return (
-    <div {...enter} className={cn('rounded-xl border p-4', enter.className)}>
+    <div {...enter} className={cn("rounded-xl border p-4", enter.className)}>
       {icon ? (
         <div className="flex items-center gap-3">
           <span
             className={cn(
-              'grid size-10 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground [&_svg]:size-5',
+              "grid size-10 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground [&_svg]:size-5",
               iconClassName,
             )}
           >
@@ -185,7 +185,7 @@ export function ChartCard({
   const enter = enterProps(delay, reduced)
 
   return (
-    <section {...enter} className={cn('rounded-xl border p-4', className, enter.className)}>
+    <section {...enter} className={cn("rounded-xl border p-4", className, enter.className)}>
       <header className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h2 className="font-subtitle text-sm font-semibold">{title}</h2>
@@ -203,7 +203,7 @@ export function NoData({ children }: { children?: ReactNode }) {
   const { t } = useTranslation()
   return (
     <p className="grid h-[220px] place-items-center text-center text-sm text-muted-foreground">
-      {children ?? t('dashboard.noData')}
+      {children ?? t("dashboard.noData")}
     </p>
   )
 }

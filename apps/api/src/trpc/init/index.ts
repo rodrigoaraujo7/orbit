@@ -1,8 +1,8 @@
-import { initTRPC, TRPCError } from '@trpc/server'
-import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch'
-import { getAuth } from '../../auth/index.ts'
-import { getDb } from '../../db/client/index.ts'
-import { withUser, type Tx } from '../../db/with-user/index.ts'
+import { initTRPC, TRPCError } from "@trpc/server"
+import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch"
+import { getAuth } from "../../auth/index.ts"
+import { getDb } from "../../db/client/index.ts"
+import { withUser, type Tx } from "../../db/with-user/index.ts"
 
 export async function createContext(opts: FetchCreateContextFnOptions) {
   const session = await getAuth().api.getSession({ headers: opts.req.headers })
@@ -21,7 +21,7 @@ export const router = t.router
 export const publicProcedure = t.procedure
 
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
-  if (!ctx.user) throw new TRPCError({ code: 'UNAUTHORIZED' })
+  if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" })
   return next({
     ctx: {
       ...ctx,
@@ -38,7 +38,7 @@ export function asUser<T>(ctx: { userId: string }, fn: (tx: Tx) => Promise<T>) {
 export function auditCtx(ctx: { userId: string; req: Request }) {
   return {
     userId: ctx.userId,
-    ip: ctx.req.headers.get('x-forwarded-for'),
-    userAgent: ctx.req.headers.get('user-agent'),
+    ip: ctx.req.headers.get("x-forwarded-for"),
+    userAgent: ctx.req.headers.get("user-agent"),
   }
 }

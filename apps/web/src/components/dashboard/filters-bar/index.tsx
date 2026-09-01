@@ -1,27 +1,27 @@
-import { X } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import { emptyFilters, type DashboardFilters, type DashboardOptions } from 'shared'
+import { X } from "lucide-react"
+import { useTranslation } from "react-i18next"
+import { emptyFilters, type DashboardFilters, type DashboardOptions } from "shared"
 
-import { Button } from '@/components/ui/button'
-import { FilterDrawer } from '@/components/ui/filter-drawer'
-import { MonthPicker } from '@/components/ui/month-picker'
-import { Select, type SelectOption } from '@/components/ui/select'
-import { addMonths, monthOf, todayIso } from '@/lib/dates'
+import { Button } from "@/components/ui/button"
+import { FilterDrawer } from "@/components/ui/filter-drawer"
+import { MonthPicker } from "@/components/ui/month-picker"
+import { Select, type SelectOption } from "@/components/ui/select"
+import { addMonths, monthOf, todayIso } from "@/lib/dates"
 
-type PresetMonths = number | 'year' | 'all'
+type PresetMonths = number | "year" | "all"
 
-const PRESETS: { id: 'preset6' | 'preset12' | 'presetYear' | 'presetAll'; months: PresetMonths }[] =
+const PRESETS: { id: "preset6" | "preset12" | "presetYear" | "presetAll"; months: PresetMonths }[] =
   [
-    { id: 'preset6', months: 6 },
-    { id: 'preset12', months: 12 },
-    { id: 'presetYear', months: 'year' },
-    { id: 'presetAll', months: 'all' },
+    { id: "preset6", months: 6 },
+    { id: "preset12", months: 12 },
+    { id: "presetYear", months: "year" },
+    { id: "presetAll", months: "all" },
   ]
 
 function presetRange(months: PresetMonths): { monthFrom: string; monthTo: string } {
   const current = monthOf(todayIso())
-  if (months === 'all') return { monthFrom: '', monthTo: '' }
-  if (months === 'year') {
+  if (months === "all") return { monthFrom: "", monthTo: "" }
+  if (months === "year") {
     return { monthFrom: `${current.slice(0, 4)}-01`, monthTo: `${current.slice(0, 4)}-12` }
   }
   return { monthFrom: addMonths(current, -(months - 1)), monthTo: current }
@@ -34,10 +34,10 @@ function isActivePreset(filters: DashboardFilters, months: PresetMonths) {
 
 function hasActiveFilters(filters: DashboardFilters) {
   return (
-    filters.monthFrom !== '' ||
-    filters.monthTo !== '' ||
-    filters.projectId !== '' ||
-    filters.clientId !== '' ||
+    filters.monthFrom !== "" ||
+    filters.monthTo !== "" ||
+    filters.projectId !== "" ||
+    filters.clientId !== "" ||
     filters.currency !== emptyFilters.currency
   )
 }
@@ -60,12 +60,12 @@ function FilterFields({
   }
 
   const clientOptions: SelectOption[] = [
-    { value: '', label: t('common.allClients') },
+    { value: "", label: t("common.allClients") },
     ...options.clients.map((contact) => ({ value: contact.id, label: contact.name })),
   ]
 
   const projectOptions: SelectOption[] = [
-    { value: '', label: t('common.allProjects') },
+    { value: "", label: t("common.allProjects") },
     ...options.projects
       .filter((project) => !filters.clientId || project.clientId === filters.clientId)
       .map((project) => ({ value: project.id, label: project.name })),
@@ -84,44 +84,44 @@ function FilterFields({
 
   return (
     <>
-      <div className={stacked ? 'w-full' : 'w-40 shrink-0'}>
+      <div className={stacked ? "w-full" : "w-40 shrink-0"}>
         <Select
-          value={activePreset ? String(activePreset.months) : ''}
+          value={activePreset ? String(activePreset.months) : ""}
           onValueChange={(value) => {
             const preset = PRESETS.find((p) => String(p.months) === value)
             /* v8 ignore next -- Select only emits values from PRESETS */
             if (preset) set(presetRange(preset.months))
           }}
           options={periodOptions}
-          placeholder={t('common.period')}
+          placeholder={t("common.period")}
         />
       </div>
 
       <div
         className={
           stacked
-            ? 'flex w-full items-center gap-2 [&>button]:min-w-0 [&>button]:flex-1'
-            : 'flex shrink-0 items-center gap-2'
+            ? "flex w-full items-center gap-2 [&>button]:min-w-0 [&>button]:flex-1"
+            : "flex shrink-0 items-center gap-2"
         }
       >
         <MonthPicker
           value={filters.monthFrom}
           onChange={(monthFrom) => set({ monthFrom })}
-          placeholder={t('common.start')}
-          aria-label={t('common.periodStartMonth')}
+          placeholder={t("common.start")}
+          aria-label={t("common.periodStartMonth")}
         />
         <span className="text-sm text-muted-foreground" aria-hidden="true">
-          {t('common.until')}
+          {t("common.until")}
         </span>
         <MonthPicker
           value={filters.monthTo}
           onChange={(monthTo) => set({ monthTo })}
-          placeholder={t('common.end')}
-          aria-label={t('common.periodEndMonth')}
+          placeholder={t("common.end")}
+          aria-label={t("common.periodEndMonth")}
         />
       </div>
 
-      <div className={stacked ? 'w-full' : 'min-w-0 flex-1'}>
+      <div className={stacked ? "w-full" : "min-w-0 flex-1"}>
         <Select
           value={filters.clientId}
           onValueChange={(clientId) =>
@@ -130,30 +130,30 @@ function FilterFields({
               projectId:
                 clientId &&
                 options.projects.find((p) => p.id === filters.projectId)?.clientId !== clientId
-                  ? ''
+                  ? ""
                   : filters.projectId,
             })
           }
           options={clientOptions}
-          placeholder={t('common.allClients')}
+          placeholder={t("common.allClients")}
         />
       </div>
 
-      <div className={stacked ? 'w-full' : 'min-w-0 flex-1'}>
+      <div className={stacked ? "w-full" : "min-w-0 flex-1"}>
         <Select
           value={filters.projectId}
           onValueChange={(projectId) => set({ projectId })}
           options={projectOptions}
-          placeholder={t('common.allProjects')}
+          placeholder={t("common.allProjects")}
         />
       </div>
 
-      <div className={stacked ? 'w-full' : 'w-28 shrink-0'}>
+      <div className={stacked ? "w-full" : "w-28 shrink-0"}>
         <Select
           value={filters.currency}
           onValueChange={(currency) => set({ currency })}
           options={currencyOptions}
-          placeholder={t('common.currency')}
+          placeholder={t("common.currency")}
         />
       </div>
 
@@ -165,7 +165,7 @@ function FilterFields({
           onClick={() => onChange(emptyFilters)}
         >
           <X data-icon="inline-start" />
-          {t('common.clear')}
+          {t("common.clear")}
         </Button>
       )}
     </>

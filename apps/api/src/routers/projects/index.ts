@@ -1,5 +1,5 @@
-import { and, eq, gte, ilike, lte, or } from 'drizzle-orm'
-import { z } from 'zod'
+import { and, eq, gte, ilike, lte, or } from "drizzle-orm"
+import { z } from "zod"
 import {
   billingCycleSchema,
   dealKindSchema,
@@ -10,13 +10,13 @@ import {
   projectStatusSchema,
   toCents,
   type ProjectListFilters,
-} from 'shared'
-import { contact, credential, project, projectTool } from '../../db/schema/index.ts'
-import type { Tx } from '../../db/with-user/index.ts'
-import { asUser, auditCtx, protectedProcedure, router } from '../../trpc/init/index.ts'
-import { diffProject, type ProjectDiffInput } from '../../audit/diff/index.ts'
-import { recordAudit } from '../../audit/record/index.ts'
-import { sealNewSecret } from '../credentials/index.ts'
+} from "shared"
+import { contact, credential, project, projectTool } from "../../db/schema/index.ts"
+import type { Tx } from "../../db/with-user/index.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
+import { diffProject, type ProjectDiffInput } from "../../audit/diff/index.ts"
+import { recordAudit } from "../../audit/record/index.ts"
+import { sealNewSecret } from "../credentials/index.ts"
 
 const toolInput = z.object({
   id: z.string(),
@@ -67,7 +67,7 @@ function rowToProject(
   return {
     id: row.id,
     name: row.name,
-    clientId: row.contactId ?? '',
+    clientId: row.contactId ?? "",
     status: row.status,
     startedAt: row.startedAt,
     endedAt: row.endedAt ?? undefined,
@@ -97,8 +97,8 @@ function rowToProject(
     repo: row.repoFullName
       ? {
           fullName: row.repoFullName,
-          url: row.repoUrl ?? '',
-          workflow: row.repoWorkflow ?? 'none',
+          url: row.repoUrl ?? "",
+          workflow: row.repoWorkflow ?? "none",
         }
       : null,
     description: row.description ?? undefined,
@@ -107,7 +107,7 @@ function rowToProject(
 }
 
 function escapeIlike(value: string) {
-  return value.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')
+  return value.replaceAll("\\", "\\\\").replaceAll("%", "\\%").replaceAll("_", "\\_")
 }
 
 export async function listProjects(tx: Tx, _userId: string, filters?: ProjectListFilters) {
@@ -144,7 +144,7 @@ export async function listProjects(tx: Tx, _userId: string, filters?: ProjectLis
           ...tool,
           secrets: secrets
             .filter((s: typeof credential.$inferSelect) => s.projectToolId === tool.id)
-            .map((s: typeof credential.$inferSelect) => ({ key: s.label, value: '' })),
+            .map((s: typeof credential.$inferSelect) => ({ key: s.label, value: "" })),
         })),
     ),
   )
@@ -232,7 +232,7 @@ function rowToDiff(
 ): ProjectDiffInput {
   return {
     name: row.name,
-    clientId: row.contactId ?? '',
+    clientId: row.contactId ?? "",
     status: row.status,
     startedAt: String(row.startedAt),
     endedAt: row.endedAt ? String(row.endedAt) : null,
@@ -253,9 +253,9 @@ function rowToDiff(
         tool.amountCents != null
           ? {
               amount: fromCents(tool.amountCents),
-              cycle: tool.cycle ?? '',
-              nextInvoice: tool.nextInvoice ?? '',
-              payer: tool.payer ?? '',
+              cycle: tool.cycle ?? "",
+              nextInvoice: tool.nextInvoice ?? "",
+              payer: tool.payer ?? "",
               currency: tool.currency ?? undefined,
             }
           : null,
@@ -294,7 +294,7 @@ export const projectsRouter = router({
         endedAt: input.endedAt ?? null,
         dealKind: input.deal.kind,
         dealAmountCents: toCents(input.deal.amount),
-        dealCurrency: input.deal.currency ?? 'BRL',
+        dealCurrency: input.deal.currency ?? "BRL",
         dealInstallments: input.deal.installments ?? null,
         repoFullName: input.repo?.fullName ?? null,
         repoUrl: input.repo?.url ?? null,
@@ -325,8 +325,8 @@ export const projectsRouter = router({
         }
       }
       await recordAudit(tx, auditCtx(ctx), {
-        module: 'project',
-        action: 'project.create',
+        module: "project",
+        action: "project.create",
         subjectId: id,
         subjectLabel: input.name,
         projectId: id,
@@ -353,7 +353,7 @@ export const projectsRouter = router({
             endedAt: input.endedAt ?? null,
             dealKind: input.deal.kind,
             dealAmountCents: toCents(input.deal.amount),
-            dealCurrency: input.deal.currency ?? 'BRL',
+            dealCurrency: input.deal.currency ?? "BRL",
             dealInstallments: input.deal.installments ?? null,
             repoFullName: input.repo?.fullName ?? null,
             repoUrl: input.repo?.url ?? null,
@@ -394,12 +394,12 @@ export const projectsRouter = router({
           .where(eq(project.id, input.id))
         if (prev && prev.status !== input.status) {
           await recordAudit(tx, auditCtx(ctx), {
-            module: 'kanban',
-            action: 'kanban.move',
+            module: "kanban",
+            action: "kanban.move",
             subjectId: input.id,
             subjectLabel: prev.name,
             projectId: input.id,
-            changes: [{ field: 'status', from: prev.status, to: input.status }],
+            changes: [{ field: "status", from: prev.status, to: input.status }],
           })
         }
       })
@@ -414,8 +414,8 @@ export const projectsRouter = router({
         await tx.delete(project).where(and(eq(project.id, input.id)))
         if (prev) {
           await recordAudit(tx, auditCtx(ctx), {
-            module: 'project',
-            action: 'project.delete',
+            module: "project",
+            action: "project.delete",
             subjectId: input.id,
             subjectLabel: prev.name,
             projectId: input.id,

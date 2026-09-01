@@ -1,10 +1,10 @@
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts'
-import { useTranslation } from 'react-i18next'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
+import { useTranslation } from "react-i18next"
 
-import { ChartCard, NoData, StatRow, StatTile } from '@/components/dashboard/cards'
-import { axisProps, surfaceGap, useChartMotion } from '@/components/dashboard/chart-parts'
-import { ToolIcon } from '@/components/projects/tool-icons'
-import { Badge } from '@/components/ui/badge'
+import { ChartCard, NoData, StatRow, StatTile } from "@/components/dashboard/cards"
+import { axisProps, surfaceGap, useChartMotion } from "@/components/dashboard/chart-parts"
+import { ToolIcon } from "@/components/projects/tool-icons"
+import { Badge } from "@/components/ui/badge"
 import {
   ChartContainer,
   ChartLegend,
@@ -12,11 +12,11 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from '@/components/ui/chart'
-import { DataTable, type Column } from '@/components/ui/table'
-import { billingCycleLabel, categoryCostLabel, payerLabel, toolCategoryLabel } from '@/i18n/labels'
-import type { CategoryCost, CostMonth, ToolCost, ToolRow, ToolsSummary } from 'shared'
-import { formatCompactCurrency, formatCurrency, formatMonth, formatMonthLong } from '@/lib/format'
+} from "@/components/ui/chart"
+import { DataTable, type Column } from "@/components/ui/table"
+import { billingCycleLabel, categoryCostLabel, payerLabel, toolCategoryLabel } from "@/i18n/labels"
+import type { CategoryCost, CostMonth, ToolCost, ToolRow, ToolsSummary } from "shared"
+import { formatCompactCurrency, formatCurrency, formatMonth, formatMonthLong } from "@/lib/format"
 
 export function ToolsTab({
   summary,
@@ -39,8 +39,8 @@ export function ToolsTab({
   // Two payers, two fixed slots. "Eu" keeps the brand hue because it is the
   // number that actually comes out of the freelancer's pocket.
   const payerConfig = {
-    eu: { label: t('dashboard.iPay'), color: 'var(--chart-1)' },
-    cliente: { label: t('dashboard.clientPays'), color: 'var(--chart-2)' },
+    eu: { label: t("dashboard.iPay"), color: "var(--chart-1)" },
+    cliente: { label: t("dashboard.clientPays"), color: "var(--chart-2)" },
   } satisfies ChartConfig
 
   const motion = useChartMotion()
@@ -49,8 +49,8 @@ export function ToolsTab({
 
   const columns: Column<ToolRow>[] = [
     {
-      key: 'name',
-      header: t('common.tool'),
+      key: "name",
+      header: t("common.tool"),
       sortValue: (row) => row.name,
       cell: (row) => (
         <div className="flex items-center gap-2">
@@ -60,31 +60,31 @@ export function ToolsTab({
       ),
     },
     {
-      key: 'project',
-      header: t('common.project'),
+      key: "project",
+      header: t("common.project"),
       sortValue: (row) => row.projectName,
       cell: (row) => <span className="text-muted-foreground">{row.projectName}</span>,
     },
     {
-      key: 'category',
-      header: t('common.category'),
-      className: 'hidden md:table-cell',
+      key: "category",
+      header: t("common.category"),
+      className: "hidden md:table-cell",
       sortValue: (row) => row.category,
       cell: (row) => (
         <span className="text-muted-foreground">{toolCategoryLabel(row.category)}</span>
       ),
     },
     {
-      key: 'account',
-      header: t('common.account'),
-      className: 'hidden lg:table-cell',
+      key: "account",
+      header: t("common.account"),
+      className: "hidden lg:table-cell",
       sortValue: (row) => row.account,
       cell: (row) => <span className="truncate text-muted-foreground">{row.account}</span>,
     },
     {
-      key: 'amount',
-      header: t('common.value'),
-      className: 'hidden sm:table-cell whitespace-nowrap',
+      key: "amount",
+      header: t("common.value"),
+      className: "hidden sm:table-cell whitespace-nowrap",
       sortValue: (row) => row.amount,
       cell: (row) => (
         <span className="tabular-nums text-muted-foreground">
@@ -93,22 +93,22 @@ export function ToolsTab({
       ),
     },
     {
-      key: 'monthly',
-      header: t('common.perMonthShort'),
-      className: 'whitespace-nowrap',
+      key: "monthly",
+      header: t("common.perMonthShort"),
+      className: "whitespace-nowrap",
       sortValue: (row) => row.monthly,
       cell: (row) => (
         <span className="tabular-nums">
-          {row.monthly > 0 ? money(row.monthly) : t('common.emDash')}
+          {row.monthly > 0 ? money(row.monthly) : t("common.emDash")}
         </span>
       ),
     },
     {
-      key: 'payer',
-      header: t('common.whoPays'),
+      key: "payer",
+      header: t("common.whoPays"),
       sortValue: (row) => row.payer,
       cell: (row) => (
-        <Badge variant={row.payer === 'me' ? 'default' : 'muted'}>{payerLabel(row.payer)}</Badge>
+        <Badge variant={row.payer === "me" ? "default" : "muted"}>{payerLabel(row.payer)}</Badge>
       ),
     },
   ]
@@ -117,43 +117,43 @@ export function ToolsTab({
     <div className="flex flex-col gap-4">
       <StatRow>
         <StatTile
-          label={t('dashboard.costInPeriod')}
+          label={t("dashboard.costInPeriod")}
           value={summary.totalPeriodo}
           format={money}
-          hint={t('dashboard.month', { count: months.length })}
+          hint={t("dashboard.month", { count: months.length })}
           delay={0}
         />
         <StatTile
-          label={t('dashboard.youPay')}
+          label={t("dashboard.youPay")}
           value={summary.eu}
           format={money}
-          tone={summary.eu > 0 ? 'warning' : 'default'}
+          tone={summary.eu > 0 ? "warning" : "default"}
           delay={60}
         />
         <StatTile
-          label={t('dashboard.clientPays')}
+          label={t("dashboard.clientPays")}
           value={summary.cliente}
           format={money}
           delay={120}
         />
         <StatTile
-          label={t('dashboard.currentMonthlyCost')}
+          label={t("dashboard.currentMonthlyCost")}
           value={summary.runRate}
           format={money}
-          hint={t('dashboard.runRateHint')}
+          hint={t("dashboard.runRateHint")}
           delay={180}
         />
         <StatTile
-          label={t('dashboard.paidTools')}
+          label={t("dashboard.paidTools")}
           value={summary.pagas}
           format={(value) => String(Math.round(value))}
           hint={
             summary.maisCara
-              ? t('dashboard.freeCountWithMax', {
+              ? t("dashboard.freeCountWithMax", {
                   count: summary.gratis,
                   name: summary.maisCara.name,
                 })
-              : t('dashboard.freeCount', { count: summary.gratis })
+              : t("dashboard.freeCount", { count: summary.gratis })
           }
           delay={240}
         />
@@ -161,13 +161,13 @@ export function ToolsTab({
 
       <div className="grid gap-4 xl:grid-cols-3">
         <ChartCard
-          title={t('dashboard.costByTool')}
-          hint={t('dashboard.costByToolHint')}
+          title={t("dashboard.costByTool")}
+          hint={t("dashboard.costByToolHint")}
           delay={300}
           className="xl:col-span-2"
         >
           {byTool.length === 0 ? (
-            <NoData>{t('dashboard.noPaidTools', { currency })}</NoData>
+            <NoData>{t("dashboard.noPaidTools", { currency })}</NoData>
           ) : (
             <ChartContainer
               config={payerConfig}
@@ -191,7 +191,7 @@ export function ToolsTab({
                             {money(Number(value))}
                           </span>
                           <span className="basis-full text-muted-foreground">
-                            {item?.payload.projetos.join(', ')}
+                            {item?.payload.projetos.join(", ")}
                           </span>
                         </>
                       )}
@@ -204,7 +204,7 @@ export function ToolsTab({
                     2px — enough to see it exists and, more importantly, enough
                     for the total label to anchor in the right place even when
                     one side of the split is zero. */}
-                {(['eu', 'cliente'] as const).map((key, index) => (
+                {(["eu", "cliente"] as const).map((key, index) => (
                   <Bar
                     key={key}
                     dataKey={key}
@@ -215,7 +215,7 @@ export function ToolsTab({
                     {...surfaceGap}
                     {...motion(index)}
                   >
-                    {key === 'cliente' && (
+                    {key === "cliente" && (
                       <LabelList
                         dataKey="total"
                         position="right"
@@ -232,8 +232,8 @@ export function ToolsTab({
         </ChartCard>
 
         <ChartCard
-          title={t('dashboard.costByCategory')}
-          hint={t('dashboard.costByCategoryHint')}
+          title={t("dashboard.costByCategory")}
+          hint={t("dashboard.costByCategoryHint")}
           delay={360}
         >
           {byCategory.length === 0 ? (
@@ -275,14 +275,14 @@ export function ToolsTab({
       </div>
 
       <ChartCard
-        title={t('dashboard.costOverTime')}
-        hint={t('dashboard.costOverTimeHint')}
+        title={t("dashboard.costOverTime")}
+        hint={t("dashboard.costOverTimeHint")}
         delay={420}
       >
         <ChartContainer config={payerConfig} className="aspect-auto h-[240px] w-full">
           <AreaChart data={byMonth} margin={{ left: 4, right: 4, top: 4 }}>
             <defs>
-              {(['eu', 'cliente'] as const).map((key) => (
+              {(["eu", "cliente"] as const).map((key) => (
                 <linearGradient key={key} id={`cost-${key}`} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={`var(--color-${key})`} stopOpacity={0.35} />
                   <stop offset="100%" stopColor={`var(--color-${key})`} stopOpacity={0.05} />
@@ -314,7 +314,7 @@ export function ToolsTab({
               }
             />
             <ChartLegend content={<ChartLegendContent />} />
-            {(['eu', 'cliente'] as const).map((key, index) => (
+            {(["eu", "cliente"] as const).map((key, index) => (
               <Area
                 key={key}
                 dataKey={key}
@@ -333,16 +333,16 @@ export function ToolsTab({
       </ChartCard>
 
       <ChartCard
-        title={t('dashboard.allPaidTools')}
-        hint={t('dashboard.allPaidToolsHint')}
+        title={t("dashboard.allPaidTools")}
+        hint={t("dashboard.allPaidToolsHint")}
         delay={480}
       >
         <DataTable
           data={rows}
           columns={columns}
           rowKey={(row) => row.id}
-          initialSort={{ key: 'monthly', direction: 'desc' }}
-          emptyMessage={t('dashboard.noPaidToolsFiltered', { currency })}
+          initialSort={{ key: "monthly", direction: "desc" }}
+          emptyMessage={t("dashboard.noPaidToolsFiltered", { currency })}
         />
       </ChartCard>
     </div>

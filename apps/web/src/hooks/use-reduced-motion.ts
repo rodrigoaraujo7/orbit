@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react"
 
-const QUERY = '(prefers-reduced-motion: reduce)'
+const QUERY = "(prefers-reduced-motion: reduce)"
 
 /**
  * True when the system asks for less motion. The dashboard reads it to render
@@ -13,8 +13,8 @@ export function useReducedMotion(): boolean {
   useEffect(() => {
     const media = matchMedia(QUERY)
     const update = () => setReduced(media.matches)
-    media.addEventListener('change', update)
-    return () => media.removeEventListener('change', update)
+    media.addEventListener("change", update)
+    return () => media.removeEventListener("change", update)
   }, [])
 
   return reduced

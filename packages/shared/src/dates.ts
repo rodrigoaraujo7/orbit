@@ -7,7 +7,7 @@
  */
 
 function pad(value: number): string {
-  return String(value).padStart(2, '0')
+  return String(value).padStart(2, "0")
 }
 
 /** Today as "YYYY-MM-DD", in local time. */
@@ -30,7 +30,7 @@ export function monthOf(iso: string): string {
 
 /** "2026-11" + 3 → "2027-02". Negative `count` walks backwards. */
 export function addMonths(month: string, count: number): string {
-  const [year, monthNumber] = month.split('-').map(Number)
+  const [year, monthNumber] = month.split("-").map(Number)
   const shifted = new Date(year, monthNumber - 1 + count, 1)
   return `${shifted.getFullYear()}-${pad(shifted.getMonth() + 1)}`
 }
@@ -41,7 +41,7 @@ export function addMonths(month: string, count: number): string {
  * compares wrong against every other date.
  */
 export function dayOfMonth(month: string, day: number): string {
-  const [year, monthNumber] = month.split('-').map(Number)
+  const [year, monthNumber] = month.split("-").map(Number)
   const lastDay = new Date(year, monthNumber, 0).getDate()
   return `${month}-${pad(Math.min(day, lastDay))}`
 }
@@ -63,7 +63,7 @@ export function monthRange(from: string, to: string): string[] {
 
 /** Distance in whole months. `monthsBetween("2026-07", "2026-09")` is 2. */
 export function monthsBetween(from: string, to: string): number {
-  const [fromYear, fromMonth] = from.split('-').map(Number)
-  const [toYear, toMonth] = to.split('-').map(Number)
+  const [fromYear, fromMonth] = from.split("-").map(Number)
+  const [toYear, toMonth] = to.split("-").map(Number)
   return (toYear - fromYear) * 12 + (toMonth - fromMonth)
 }

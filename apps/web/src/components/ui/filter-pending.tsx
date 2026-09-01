@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from "react"
 
-import { useReducedMotion } from '@/hooks/use-reduced-motion'
-import { cn } from '@/lib/utils'
+import { useReducedMotion } from "@/hooks/use-reduced-motion"
+import { cn } from "@/lib/utils"
 
 /**
  * Loading for a filtered query: skeleton on the first paint, and a muted
@@ -32,7 +32,7 @@ export function FilterPending({
       ) : (
         <div
           aria-busy={refetching || undefined}
-          className={cn(refetching && 'opacity-50 transition-opacity duration-200')}
+          className={cn(refetching && "opacity-50 transition-opacity duration-200")}
         >
           {children}
         </div>

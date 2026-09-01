@@ -1,17 +1,17 @@
-import { Plus } from 'lucide-react'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Plus } from "lucide-react"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
-import { Button } from '@/components/ui/button'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { Emphasis } from '@/components/ui/emphasis'
-import { DataTable, type Column } from '@/components/ui/table'
-import { toast } from '@/components/ui/toast'
-import { RowActionsMenu } from '@/components/ui/row-actions-menu'
-import type { Contact } from '@/data/contacts'
-import { useProjects } from '@/lib/projects-store'
-import { useRegistry } from '@/lib/registry-store'
-import { CreateContactDialog } from '../create-contact-dialog'
+import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Emphasis } from "@/components/ui/emphasis"
+import { DataTable, type Column } from "@/components/ui/table"
+import { toast } from "@/components/ui/toast"
+import { RowActionsMenu } from "@/components/ui/row-actions-menu"
+import type { Contact } from "@/data/contacts"
+import { useProjects } from "@/lib/projects-store"
+import { useRegistry } from "@/lib/registry-store"
+import { CreateContactDialog } from "../create-contact-dialog"
 
 export function ContactsPanel() {
   const { t } = useTranslation()
@@ -24,36 +24,36 @@ export function ContactsPanel() {
 
   const columns: Column<Contact>[] = [
     {
-      key: 'name',
-      header: t('common.name'),
+      key: "name",
+      header: t("common.name"),
       sortValue: (contact) => contact.name,
       cell: (contact) => <span className="font-medium">{contact.name}</span>,
     },
     {
-      key: 'email',
-      header: t('common.email'),
-      className: 'hidden sm:table-cell',
+      key: "email",
+      header: t("common.email"),
+      className: "hidden sm:table-cell",
       cell: (contact) =>
-        contact.email ?? <span className="text-muted-foreground">{t('common.emDash')}</span>,
+        contact.email ?? <span className="text-muted-foreground">{t("common.emDash")}</span>,
     },
     {
-      key: 'phone',
-      header: t('common.phone'),
-      className: 'hidden md:table-cell',
+      key: "phone",
+      header: t("common.phone"),
+      className: "hidden md:table-cell",
       cell: (contact) =>
-        contact.phone ?? <span className="text-muted-foreground">{t('common.emDash')}</span>,
+        contact.phone ?? <span className="text-muted-foreground">{t("common.emDash")}</span>,
     },
     {
-      key: 'company',
-      header: t('common.company'),
-      className: 'hidden lg:table-cell',
+      key: "company",
+      header: t("common.company"),
+      className: "hidden lg:table-cell",
       cell: (contact) =>
-        contact.company ?? <span className="text-muted-foreground">{t('common.emDash')}</span>,
+        contact.company ?? <span className="text-muted-foreground">{t("common.emDash")}</span>,
     },
     {
-      key: 'actions',
-      header: '',
-      className: 'text-right',
+      key: "actions",
+      header: "",
+      className: "text-right",
       cell: (contact) => (
         <RowActionsMenu
           onEdit={() => {
@@ -79,7 +79,7 @@ export function ContactsPanel() {
           }}
         >
           <Plus />
-          {t('settings.newContact')}
+          {t("settings.newContact")}
         </Button>
       </div>
 
@@ -87,8 +87,8 @@ export function ContactsPanel() {
         data={contacts}
         columns={columns}
         rowKey={(contact) => contact.id}
-        initialSort={{ key: 'name', direction: 'asc' }}
-        emptyMessage={t('settings.noContacts')}
+        initialSort={{ key: "name", direction: "asc" }}
+        emptyMessage={t("settings.noContacts")}
       />
 
       <CreateContactDialog
@@ -100,31 +100,31 @@ export function ContactsPanel() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title={t('settings.deleteContact')}
+        title={t("settings.deleteContact")}
         description={
           <>
-            {t('common.delete')}{' '}
-            <Emphasis className="text-primary">{deletingContact?.name}</Emphasis>?{' '}
-            {t('common.cannotUndo')}
+            {t("common.delete")}{" "}
+            <Emphasis className="text-primary">{deletingContact?.name}</Emphasis>?{" "}
+            {t("common.cannotUndo")}
           </>
         }
-        confirmLabel={t('common.delete')}
+        confirmLabel={t("common.delete")}
         onConfirm={() => {
           /* v8 ignore next -- confirm is only enabled after a row is chosen */
           if (!deletingContact) return
           if (projects.some((p) => p.clientId === deletingContact.id)) {
             toast.add({
-              title: t('settings.contactInUse'),
-              description: t('settings.contactInUseDescription'),
-              type: 'error',
+              title: t("settings.contactInUse"),
+              description: t("settings.contactInUseDescription"),
+              type: "error",
             })
             return
           }
           try {
             removeContact(deletingContact.id)
-            toast.add({ title: t('settings.contactDeleted'), type: 'success' })
+            toast.add({ title: t("settings.contactDeleted"), type: "success" })
           } catch {
-            toast.add({ title: t('settings.contactDeleteError'), type: 'error' })
+            toast.add({ title: t("settings.contactDeleteError"), type: "error" })
           }
         }}
       />

@@ -1,12 +1,12 @@
-import { useTranslation } from 'react-i18next'
-import type { RulerLane } from 'shared'
+import { useTranslation } from "react-i18next"
+import type { RulerLane } from "shared"
 
-import type { InvoiceStatus } from '@/data/projects'
-import { invoiceStatusLabel } from '@/i18n/labels'
-import { monthOf, todayIso } from '@/lib/dates'
-import { formatCurrency, formatMonth, formatMonthLong } from '@/lib/format'
-import { useReducedMotion } from '@/hooks/use-reduced-motion'
-import { cn } from '@/lib/utils'
+import type { InvoiceStatus } from "@/data/projects"
+import { invoiceStatusLabel } from "@/i18n/labels"
+import { monthOf, todayIso } from "@/lib/dates"
+import { formatCurrency, formatMonth, formatMonthLong } from "@/lib/format"
+import { useReducedMotion } from "@/hooks/use-reduced-motion"
+import { cn } from "@/lib/utils"
 
 /**
  * Same three slots as the revenue chart, for the same reason: `--destructive`
@@ -15,18 +15,18 @@ import { cn } from '@/lib/utils'
  * both colorblindness and a black-and-white print.
  */
 const TICK_CLASS: Record<InvoiceStatus, string> = {
-  paid: 'bg-chart-1',
-  pending: 'border border-dashed border-chart-2 bg-chart-2/15',
+  paid: "bg-chart-1",
+  pending: "border border-dashed border-chart-2 bg-chart-2/15",
   overdue:
-    'bg-chart-3 [background-image:repeating-linear-gradient(45deg,transparent_0_3px,var(--background)_3px_4px)]',
+    "bg-chart-3 [background-image:repeating-linear-gradient(45deg,transparent_0_3px,var(--background)_3px_4px)]",
 }
 
 function Legend() {
   return (
     <ul className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-      {(['paid', 'pending', 'overdue'] as InvoiceStatus[]).map((status) => (
+      {(["paid", "pending", "overdue"] as InvoiceStatus[]).map((status) => (
         <li key={status} className="flex items-center gap-1.5">
-          <span className={cn('h-3 w-5 rounded-sm', TICK_CLASS[status])} aria-hidden="true" />
+          <span className={cn("h-3 w-5 rounded-sm", TICK_CLASS[status])} aria-hidden="true" />
           {invoiceStatusLabel(status)}
         </li>
       ))}
@@ -50,7 +50,7 @@ export function PaymentRuler({
   if (lanes.length === 0) {
     return (
       <p className="py-10 text-center text-sm text-muted-foreground">
-        {t('dashboard.noInstallments')}
+        {t("dashboard.noInstallments")}
       </p>
     )
   }
@@ -71,11 +71,11 @@ export function PaymentRuler({
                 <span
                   key={month}
                   className={cn(
-                    'truncate text-[10px] text-muted-foreground',
-                    month === currentMonth && 'font-semibold text-foreground',
+                    "truncate text-[10px] text-muted-foreground",
+                    month === currentMonth && "font-semibold text-foreground",
                   )}
                 >
-                  {index % labelEvery === 0 || month === currentMonth ? formatMonth(month) : ''}
+                  {index % labelEvery === 0 || month === currentMonth ? formatMonth(month) : ""}
                 </span>
               ))}
             </div>
@@ -94,17 +94,17 @@ export function PaymentRuler({
                       return (
                         <span
                           key={month}
-                          className={cn('h-6 rounded-sm', month === currentMonth && 'bg-muted/60')}
+                          className={cn("h-6 rounded-sm", month === currentMonth && "bg-muted/60")}
                         />
                       )
                     }
 
                     const total = invoices.reduce((sum, invoice) => sum + invoice.amount, 0)
-                    const status = invoices.some((invoice) => invoice.status === 'overdue')
-                      ? 'overdue'
-                      : invoices.every((invoice) => invoice.status === 'paid')
-                        ? 'paid'
-                        : 'pending'
+                    const status = invoices.some((invoice) => invoice.status === "overdue")
+                      ? "overdue"
+                      : invoices.every((invoice) => invoice.status === "paid")
+                        ? "paid"
+                        : "pending"
                     const label = `${lane.projectName} · ${formatMonthLong(month)} · ${formatCurrency(total, currency)} · ${invoiceStatusLabel(status)}`
 
                     return (
@@ -116,10 +116,10 @@ export function PaymentRuler({
                           reduced ? undefined : { animationDelay: `${laneIndex * 60 + 120}ms` }
                         }
                         className={cn(
-                          'h-6 rounded-sm transition-transform hover:scale-y-125',
+                          "h-6 rounded-sm transition-transform hover:scale-y-125",
                           TICK_CLASS[status],
                           !reduced &&
-                            'animate-in fade-in zoom-in-50 fill-mode-backwards duration-500',
+                            "animate-in fade-in zoom-in-50 fill-mode-backwards duration-500",
                         )}
                       />
                     )

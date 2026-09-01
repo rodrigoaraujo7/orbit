@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
-import { Renderer, Program, Mesh, Triangle } from 'ogl'
-import './Grainient.css'
+import { useEffect, useRef } from "react"
+import { Renderer, Program, Mesh, Triangle } from "ogl"
+import "./Grainient.css"
 
 const hexToRgb = (hex) => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
@@ -127,10 +127,10 @@ const Grainient = ({
   centerX = 0.0,
   centerY = 0.0,
   zoom = 0.9,
-  color1 = '#FF9FFC',
-  color2 = '#5227FF',
-  color3 = '#B497CF',
-  className = '',
+  color1 = "#FF9FFC",
+  color2 = "#5227FF",
+  color3 = "#B497CF",
+  className = "",
 }) => {
   const containerRef = useRef(null)
 
@@ -148,9 +148,9 @@ const Grainient = ({
 
     const gl = renderer.gl
     const canvas = gl.canvas
-    canvas.style.width = '100%'
-    canvas.style.height = '100%'
-    canvas.style.display = 'block'
+    canvas.style.width = "100%"
+    canvas.style.height = "100%"
+    canvas.style.display = "block"
     container.appendChild(canvas)
 
     const geometry = new Triangle(gl)
@@ -236,7 +236,7 @@ const Grainient = ({
       isPageVisible = !document.hidden
       isPageVisible ? tryStart() : tryStop()
     }
-    document.addEventListener('visibilitychange', onVisibility)
+    document.addEventListener("visibilitychange", onVisibility)
 
     tryStart()
 
@@ -244,7 +244,7 @@ const Grainient = ({
       tryStop()
       ro.disconnect()
       io.disconnect()
-      document.removeEventListener('visibilitychange', onVisibility)
+      document.removeEventListener("visibilitychange", onVisibility)
       ctxMap.delete(container)
       try {
         container.removeChild(canvas)

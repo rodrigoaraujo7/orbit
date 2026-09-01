@@ -1,4 +1,4 @@
-const DEFAULT_UNIX_SOCKET_DIR = '/var/run/postgresql'
+const DEFAULT_UNIX_SOCKET_DIR = "/var/run/postgresql"
 
 /** postgres.js treats a missing host as TCP localhost. Map hostless URLs to a unix socket (peer auth). */
 export function postgresClientOptions(
