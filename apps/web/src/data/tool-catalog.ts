@@ -29,7 +29,7 @@ export type CatalogTool = {
 /** Id of the "Outra" option — unlocks the free-text name field. */
 export const OTHER_TOOL_ID = 'other'
 
-// Data only: icons live in components/projects/tool-icons.ts so this module
+// Data only: icons live in components/projects/tool-icons/ so this module
 // stays importable outside the browser (e.g. the schema self-check).
 export const toolCatalog: CatalogTool[] = [
   { id: 'vercel', name: 'Vercel', category: 'deploy' },

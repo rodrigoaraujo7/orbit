@@ -25,7 +25,7 @@ export default defineConfig([
     // shadcn/ui exports variants (cva) next to the component, TanStack Router
     // requires exporting `Route` from the route file, and stores export
     // Provider + hook together. Library patterns, not ours to "fix".
-    files: ['src/components/ui/**/*.tsx', 'src/routes/**/*.tsx', 'src/lib/*-store.tsx'],
+    files: ['src/components/ui/**/*.tsx', 'src/routes/**/*.tsx', 'src/lib/*-store/**/*.tsx'],
     rules: {
       'react-refresh/only-export-components': 'off',
     },

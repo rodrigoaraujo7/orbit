@@ -1,5 +1,5 @@
-import { createTestDb, insertUser } from '../db/test-db.ts'
-import { appRouter } from '../trpc/router.ts'
+import { createTestDb, insertUser } from '../db/test-db/index.ts'
+import { appRouter } from '../trpc/router/index.ts'
 import { dbHolder } from './setup.ts'
 
 export async function openTestDb() {
