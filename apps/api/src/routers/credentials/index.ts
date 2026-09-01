@@ -1,17 +1,9 @@
 import { and, count, eq, gte } from "drizzle-orm"
 import { z } from "zod"
 import { TRPCError } from "@trpc/server"
-import { auditLog, credential, userKey } from "../../db/schema/index.ts"
-import {
-  generateDek,
-  openSecret,
-  parseMasterKey,
-  sealSecret,
-  secretAad,
-  unwrapDek,
-  wrapDek,
-} from "../../crypto/envelope/index.ts"
-import { env } from "../../env/index.ts"
+import { auditLog, credential } from "../../db/schema/index.ts"
+import { dekFor } from "../../crypto/dek/index.ts"
+import { openSecret, sealSecret, secretAad } from "../../crypto/envelope/index.ts"
 import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
 import { recordAudit } from "../../audit/record/index.ts"
 import type { Tx } from "../../db/with-user/index.ts"
@@ -19,32 +11,6 @@ import type { Tx } from "../../db/with-user/index.ts"
 const REVEAL_LIMIT = 10
 const REVEAL_WINDOW_MS = 60 * 60 * 1000
 const REVEAL_ATTEMPT = "credential.reveal.attempt"
-
-function masterKey() {
-  return parseMasterKey(env("MASTER_KEY"))
-}
-
-async function dekFor(tx: Tx, userId: string) {
-  const [existing] = await tx.select().from(userKey).where(eq(userKey.userId, userId)).limit(1)
-  const master = masterKey()
-  if (existing) {
-    return unwrapDek(master, {
-      ciphertext: existing.wrappedDek,
-      iv: existing.iv,
-      tag: existing.tag,
-    })
-  }
-  const dek = generateDek()
-  const wrapped = wrapDek(master, dek)
-  await tx.insert(userKey).values({
-    userId,
-    wrappedDek: wrapped.ciphertext,
-    iv: wrapped.iv,
-    tag: wrapped.tag,
-    masterKeyVersion: 1,
-  })
-  return dek
-}
 
 export async function sealNewSecret(
   tx: Tx,

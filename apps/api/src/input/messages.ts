@@ -13,4 +13,5 @@ export const validation = {
   enterInvoiceDate: "Enter the invoice date",
   repoFormat: "Use the owner/repository format",
   selectCategory: "Select a category",
+  enterGithubToken: "Enter the GitHub token",
 } as const

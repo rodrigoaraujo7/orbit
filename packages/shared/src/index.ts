@@ -48,6 +48,13 @@ export {
   type Tool,
   type ToolBilling,
 } from "./project.ts"
+export {
+  branchWorkflowStatus,
+  isRunActive,
+  mergeRun,
+  runWorkflowStatus,
+  type WorkflowRun,
+} from "./github.ts"
 export { generateInvoices } from "./invoices.ts"
 export { effectiveMonth, filterInvoices, type InvoiceFilters } from "./invoice-table.ts"
 export {
@@ -100,6 +107,7 @@ export {
   invoiceSearchSchema,
   kanbanSearchSchema,
   parseSearch,
+  projectDetailSearchSchema,
   projectListFiltersSchema,
   projectsSearchSchema,
   type AuditPeriod,
@@ -109,6 +117,7 @@ export {
   type InvoiceListFilters,
   type InvoiceSearch,
   type KanbanSearch,
+  type ProjectDetailSearch,
   type ProjectListFilters,
   type ProjectsSearch,
 } from "./filters.ts"
