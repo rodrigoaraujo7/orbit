@@ -1,3 +1,3 @@
-import { start } from "./server.ts"
+import { start } from './server.ts'
 
 await start()

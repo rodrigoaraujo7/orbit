@@ -1,13 +1,10 @@
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
-function Label({ className, ...props }: React.ComponentProps<"label">) {
+function Label({ className, ...props }: React.ComponentProps<'label'>) {
   return (
     <label
       data-slot="label"
-      className={cn(
-        "text-sm font-medium select-none has-disabled:opacity-50",
-        className
-      )}
+      className={cn('text-sm font-medium select-none has-disabled:opacity-50', className)}
       {...props}
     />
   )

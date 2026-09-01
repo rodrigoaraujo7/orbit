@@ -1,19 +1,19 @@
-import path from "node:path"
-import { defineProject } from "vitest/config"
-import react from "@vitejs/plugin-react"
+import path from 'node:path'
+import { defineProject } from 'vitest/config'
+import react from '@vitejs/plugin-react'
 
 export default defineProject({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "./src"),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   test: {
-    name: "web",
-    environment: "jsdom",
-    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
-    setupFiles: ["./src/test/setup.ts"],
+    name: 'web',
+    environment: 'jsdom',
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    setupFiles: ['./src/test/setup.ts'],
     css: false,
   },
 })

@@ -1,9 +1,9 @@
-import { vi } from "vitest"
+import { vi } from 'vitest'
 
 export const dbHolder: { db: unknown } = { db: null }
 
-vi.mock("../db/client.ts", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/client.ts")>()
+vi.mock('../db/client.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../db/client.ts')>()
   return {
     ...actual,
     getDb: () => {

@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest"
-import { paginate } from "./pagination.ts"
+import { describe, expect, it } from 'vitest'
+import { paginate } from './pagination.ts'
 
-describe("paginate", () => {
+describe('paginate', () => {
   const items = Array.from({ length: 25 }, (_, i) => i + 1)
 
-  it("slices pages and clamps out-of-range requests", () => {
+  it('slices pages and clamps out-of-range requests', () => {
     expect(paginate(items, 1, 10)).toEqual({
       pageItems: items.slice(0, 10),
       pageCount: 3,

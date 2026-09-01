@@ -1,22 +1,22 @@
-import type { ReactNode } from "react"
-import { cleanup, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { afterEach, describe, expect, it, vi } from "vitest"
-import { ToolsTab } from "./tools-tab"
-import { emptyMetrics } from "@/test/mocks"
-import { renderWithProviders } from "@/test/render"
+import type { ReactNode } from 'react'
+import { cleanup, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { ToolsTab } from './tools-tab'
+import { emptyMetrics } from '@/test/mocks'
+import { renderWithProviders } from '@/test/render'
 
-vi.mock("@/hooks/use-reduced-motion", () => ({
+vi.mock('@/hooks/use-reduced-motion', () => ({
   useReducedMotion: () => true,
 }))
 
-vi.mock("recharts", async () => {
-  const { rechartsStub } = await import("@/test/chart-mocks")
+vi.mock('recharts', async () => {
+  const { rechartsStub } = await import('@/test/chart-mocks')
   return rechartsStub()
 })
 
-vi.mock("@/components/ui/chart", async () => {
-  const { invokeChartTooltip } = await import("@/test/chart-mocks")
+vi.mock('@/components/ui/chart', async () => {
+  const { invokeChartTooltip } = await import('@/test/chart-mocks')
   return {
     ChartContainer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
     ChartLegend: () => null,
@@ -30,8 +30,8 @@ afterEach(() => {
   cleanup()
 })
 
-describe("ToolsTab", () => {
-  it("shows empty paid-tool states and free-count hint", () => {
+describe('ToolsTab', () => {
+  it('shows empty paid-tool states and free-count hint', () => {
     renderWithProviders(
       <ToolsTab
         summary={emptyMetrics().toolsSummary}
@@ -39,16 +39,16 @@ describe("ToolsTab", () => {
         byCategory={[]}
         byMonth={[]}
         rows={[]}
-        months={["2026-01"]}
+        months={['2026-01']}
         currency="BRL"
       />,
     )
     expect(screen.getByText(/No paid tools in BRL in this period/)).toBeInTheDocument()
     expect(screen.getByText(/No paid tools in BRL in the filtered projects/)).toBeInTheDocument()
-    expect(screen.getByText("0 free")).toBeInTheDocument()
+    expect(screen.getByText('0 free')).toBeInTheDocument()
   })
 
-  it("renders cost charts, category meters and the table", () => {
+  it('renders cost charts, category meters and the table', () => {
     const metrics = emptyMetrics({
       toolsSummary: {
         totalPeriodo: 100,
@@ -58,60 +58,60 @@ describe("ToolsTab", () => {
         pagas: 2,
         gratis: 1,
         maisCara: {
-          key: "vercel",
-          name: "Vercel",
-          category: "deploy",
+          key: 'vercel',
+          name: 'Vercel',
+          category: 'deploy',
           eu: 70,
           cliente: 0,
           total: 70,
-          projetos: ["Portal"],
+          projetos: ['Portal'],
         },
         foraDaMoeda: 0,
       },
       toolCostByTool: [
         {
-          key: "vercel",
-          name: "Vercel",
-          category: "deploy",
+          key: 'vercel',
+          name: 'Vercel',
+          category: 'deploy',
           eu: 70,
           cliente: 0,
           total: 70,
-          projetos: ["Portal"],
+          projetos: ['Portal'],
         },
       ],
-      toolCostByCategory: [{ key: "deploy", slot: 1, total: 70 }],
-      toolCostByMonth: [{ month: "2026-01", eu: 70, cliente: 30 }],
+      toolCostByCategory: [{ key: 'deploy', slot: 1, total: 70 }],
+      toolCostByMonth: [{ month: '2026-01', eu: 70, cliente: 30 }],
       toolRows: [
         {
-          id: "r1",
-          toolId: "vercel",
-          name: "Vercel",
-          category: "deploy",
-          projectId: "p1",
-          projectName: "Portal",
-          account: "ada@test.local",
-          cycle: "monthly",
+          id: 'r1',
+          toolId: 'vercel',
+          name: 'Vercel',
+          category: 'deploy',
+          projectId: 'p1',
+          projectName: 'Portal',
+          account: 'ada@test.local',
+          cycle: 'monthly',
           amount: 20,
           monthly: 20,
-          payer: "me",
-          currency: "BRL",
+          payer: 'me',
+          currency: 'BRL',
         },
         {
-          id: "r2",
-          toolId: "resend",
-          name: "Resend",
-          category: "communication",
-          projectId: "p1",
-          projectName: "Portal",
-          account: "ada@test.local",
-          cycle: "yearly",
+          id: 'r2',
+          toolId: 'resend',
+          name: 'Resend',
+          category: 'communication',
+          projectId: 'p1',
+          projectName: 'Portal',
+          account: 'ada@test.local',
+          cycle: 'yearly',
           amount: 0,
           monthly: 0,
-          payer: "client",
-          currency: "BRL",
+          payer: 'client',
+          currency: 'BRL',
         },
       ],
-      months: ["2026-01"],
+      months: ['2026-01'],
     })
     renderWithProviders(
       <ToolsTab
@@ -124,47 +124,47 @@ describe("ToolsTab", () => {
         currency="BRL"
       />,
     )
-    expect(screen.getAllByText("Vercel").length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Vercel').length).toBeGreaterThan(0)
     expect(screen.getByText(/highest: Vercel/)).toBeInTheDocument()
-    expect(screen.getAllByText("Deploy & Hosting").length).toBeGreaterThan(0)
-    expect(screen.getAllByTestId("chart-tooltip").length).toBeGreaterThan(0)
-    expect(screen.getByTestId("chart-label")).toBeInTheDocument()
+    expect(screen.getAllByText('Deploy & Hosting').length).toBeGreaterThan(0)
+    expect(screen.getAllByTestId('chart-tooltip').length).toBeGreaterThan(0)
+    expect(screen.getByTestId('chart-label')).toBeInTheDocument()
   })
 
-  it("sorts every paid-tool column", async () => {
+  it('sorts every paid-tool column', async () => {
     const user = userEvent.setup()
     const metrics = emptyMetrics({
       toolRows: [
         {
-          id: "r1",
-          toolId: "vercel",
-          name: "Vercel",
-          category: "deploy",
-          projectId: "p1",
-          projectName: "Portal",
-          account: "ada@test.local",
-          cycle: "monthly",
+          id: 'r1',
+          toolId: 'vercel',
+          name: 'Vercel',
+          category: 'deploy',
+          projectId: 'p1',
+          projectName: 'Portal',
+          account: 'ada@test.local',
+          cycle: 'monthly',
           amount: 20,
           monthly: 20,
-          payer: "me",
-          currency: "BRL",
+          payer: 'me',
+          currency: 'BRL',
         },
         {
-          id: "r2",
-          toolId: "resend",
-          name: "Resend",
-          category: "communication",
-          projectId: "p1",
-          projectName: "Shop",
-          account: "bo@test.local",
-          cycle: "yearly",
+          id: 'r2',
+          toolId: 'resend',
+          name: 'Resend',
+          category: 'communication',
+          projectId: 'p1',
+          projectName: 'Shop',
+          account: 'bo@test.local',
+          cycle: 'yearly',
           amount: 10,
           monthly: 0,
-          payer: "client",
-          currency: "BRL",
+          payer: 'client',
+          currency: 'BRL',
         },
       ],
-      months: ["2026-01"],
+      months: ['2026-01'],
     })
     renderWithProviders(
       <ToolsTab
@@ -177,9 +177,17 @@ describe("ToolsTab", () => {
         currency="BRL"
       />,
     )
-    for (const name of [/Tool/, /Project/, /Category/, /Account/, /Amount/, /Per month/, /Who pays/]) {
-      const header = screen.getByRole("columnheader", { name })
-      await user.click(header.querySelector("button")!)
+    for (const name of [
+      /Tool/,
+      /Project/,
+      /Category/,
+      /Account/,
+      /Amount/,
+      /Per month/,
+      /Who pays/,
+    ]) {
+      const header = screen.getByRole('columnheader', { name })
+      await user.click(header.querySelector('button')!)
     }
   })
 })

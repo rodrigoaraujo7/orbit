@@ -1,18 +1,12 @@
-import { useState } from "react"
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react"
-import { useTranslation } from "react-i18next"
+import { useState } from 'react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
-import { Button } from "@/components/ui/button"
-import { Select, type SelectOption } from "@/components/ui/select"
-import { paginate } from "@/lib/pagination"
-import { nextSort, sortRows, type SortState } from "@/lib/table-sort"
-import { cn } from "@/lib/utils"
+import { Button } from '@/components/ui/button'
+import { Select, type SelectOption } from '@/components/ui/select'
+import { paginate } from '@/lib/pagination'
+import { nextSort, sortRows, type SortState } from '@/lib/table-sort'
+import { cn } from '@/lib/utils'
 
 export type { SortState }
 
@@ -84,13 +78,13 @@ export function DataTable<T>({
   const { t } = useTranslation()
   const [sort, setSort] = useState<SortState>(initialSort)
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState("10")
+  const [pageSize, setPageSize] = useState('10')
   const isServer = Boolean(serverPagination)
   const activeSort = serverSort?.sort ?? sort
   const PAGE_SIZE_OPTIONS: SelectOption[] = [
-    { value: "10", label: t("common.pageSize", { count: 10 }) },
-    { value: "25", label: t("common.pageSize", { count: 25 }) },
-    { value: "50", label: t("common.pageSize", { count: 50 }) },
+    { value: '10', label: t('common.pageSize', { count: 10 }) },
+    { value: '25', label: t('common.pageSize', { count: 25 }) },
+    { value: '50', label: t('common.pageSize', { count: 50 }) },
   ]
 
   function toggleSort(key: string) {
@@ -102,11 +96,8 @@ export function DataTable<T>({
     setPage(1)
   }
 
-  const sortColumn = activeSort
-    ? columns.find((c) => c.key === activeSort.key)
-    : undefined
-  const sorted =
-    isServer || serverSort ? data : sortRows(data, sort, sortColumn?.sortValue)
+  const sortColumn = activeSort ? columns.find((c) => c.key === activeSort.key) : undefined
+  const sorted = isServer || serverSort ? data : sortRows(data, sort, sortColumn?.sortValue)
 
   const sliced = paginate(sorted, page, Number(pageSize))
   const rows = isServer ? data : pagination ? sliced.pageItems : sorted
@@ -121,7 +112,7 @@ export function DataTable<T>({
               {columns.map((column) => {
                 const active = activeSort?.key === column.key
                 const Icon = active
-                  ? activeSort.direction === "asc"
+                  ? activeSort.direction === 'asc'
                     ? ArrowUp
                     : ArrowDown
                   : ArrowUpDown
@@ -130,14 +121,14 @@ export function DataTable<T>({
                   <th
                     key={column.key}
                     className={cn(
-                      "px-4 py-2.5 font-medium text-muted-foreground",
-                      column.className
+                      'px-4 py-2.5 font-medium text-muted-foreground',
+                      column.className,
                     )}
                     aria-sort={
                       active
-                        ? activeSort.direction === "asc"
-                          ? "ascending"
-                          : "descending"
+                        ? activeSort.direction === 'asc'
+                          ? 'ascending'
+                          : 'descending'
                         : undefined
                     }
                   >
@@ -148,12 +139,7 @@ export function DataTable<T>({
                         className="inline-flex cursor-pointer items-center gap-1 rounded-sm outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {column.header}
-                        <Icon
-                          className={cn(
-                            "size-3.5",
-                            !active && "text-muted-foreground/50"
-                          )}
-                        />
+                        <Icon className={cn('size-3.5', !active && 'text-muted-foreground/50')} />
                       </button>
                     ) : (
                       column.header
@@ -171,7 +157,7 @@ export function DataTable<T>({
                   colSpan={columns.length}
                   className="px-4 py-8 text-center text-muted-foreground"
                 >
-                  {emptyMessage ?? t("common.noResults")}
+                  {emptyMessage ?? t('common.noResults')}
                 </td>
               </tr>
             ) : (
@@ -183,15 +169,12 @@ export function DataTable<T>({
                   style={{ animationDelay: `${Math.min(i, 9) * 40}ms` }}
                   onClick={onRowClick && (() => onRowClick(row))}
                   className={cn(
-                    "animate-in fade-in slide-in-from-bottom-1 fill-mode-backwards border-b transition-colors duration-500 last:border-0 hover:bg-muted/50",
-                    onRowClick && "cursor-pointer"
+                    'animate-in fade-in slide-in-from-bottom-1 fill-mode-backwards border-b transition-colors duration-500 last:border-0 hover:bg-muted/50',
+                    onRowClick && 'cursor-pointer',
                   )}
                 >
                   {columns.map((column) => (
-                    <td
-                      key={column.key}
-                      className={cn("px-4 py-3", column.className)}
-                    >
+                    <td key={column.key} className={cn('px-4 py-3', column.className)}>
                       {column.cell(row)}
                     </td>
                   ))}
@@ -222,30 +205,24 @@ export function DataTable<T>({
           <div className="flex shrink-0 items-center gap-2">
             <span className="sr-only">
               {isServer
-                ? t("common.pagination")
-                : t("common.pageOf", { page: sliced.page, pageCount: sliced.pageCount })}
+                ? t('common.pagination')
+                : t('common.pageOf', { page: sliced.page, pageCount: sliced.pageCount })}
             </span>
             <Button
               variant="outline"
               size="icon-sm"
               disabled={isServer ? !serverPagination?.hasPrev : sliced.page <= 1}
-              onClick={() =>
-                isServer ? serverPagination?.onPrev() : setPage(sliced.page - 1)
-              }
-              aria-label={t("common.previousPage")}
+              onClick={() => (isServer ? serverPagination?.onPrev() : setPage(sliced.page - 1))}
+              aria-label={t('common.previousPage')}
             >
               <ChevronLeft />
             </Button>
             <Button
               variant="outline"
               size="icon-sm"
-              disabled={
-                isServer ? !serverPagination?.hasNext : sliced.page >= sliced.pageCount
-              }
-              onClick={() =>
-                isServer ? serverPagination?.onNext() : setPage(sliced.page + 1)
-              }
-              aria-label={t("common.nextPage")}
+              disabled={isServer ? !serverPagination?.hasNext : sliced.page >= sliced.pageCount}
+              onClick={() => (isServer ? serverPagination?.onNext() : setPage(sliced.page + 1))}
+              aria-label={t('common.nextPage')}
             >
               <ChevronRight />
             </Button>

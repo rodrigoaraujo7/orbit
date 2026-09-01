@@ -1,8 +1,8 @@
-import { Select as SelectPrimitive } from "@base-ui/react/select"
-import { Check, ChevronDown } from "lucide-react"
-import { useTranslation } from "react-i18next"
+import { Select as SelectPrimitive } from '@base-ui/react/select'
+import { Check, ChevronDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 /**
  * Styled pieces of the Base UI Select, reused as-is by the grouped tool select
@@ -17,12 +17,12 @@ export function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "flex h-9 w-full items-center justify-between gap-2 rounded-xl border border-border bg-background px-3 text-sm transition-[color,border-color,box-shadow] outline-none",
-        "hover:bg-muted/50",
-        "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
-        "aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        className
+        'flex h-9 w-full items-center justify-between gap-2 rounded-xl border border-border bg-background px-3 text-sm transition-[color,border-color,box-shadow] outline-none',
+        'hover:bg-muted/50',
+        'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30',
+        'aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        className,
       )}
       {...props}
     />
@@ -36,9 +36,9 @@ export function SelectPopup({
   return (
     <SelectPrimitive.Popup
       className={cn(
-        "max-h-72 overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150",
-        "data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
-        className
+        'max-h-72 overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150',
+        'data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0',
+        className,
       )}
       {...props}
     />
@@ -52,8 +52,8 @@ export function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        "flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground",
-        className
+        'flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground',
+        className,
       )}
       {...props}
     />
@@ -67,8 +67,8 @@ export function SelectGroupLabel({
   return (
     <SelectPrimitive.GroupLabel
       className={cn(
-        "px-2 py-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase",
-        className
+        'px-2 py-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase',
+        className,
       )}
       {...props}
     />
@@ -101,8 +101,8 @@ export function Select({
   options,
   placeholder,
   disabled,
-  "aria-invalid": ariaInvalid,
-  "aria-describedby": describedBy,
+  'aria-invalid': ariaInvalid,
+  'aria-describedby': describedBy,
 }: {
   id?: string
   value: string
@@ -110,22 +110,18 @@ export function Select({
   options: SelectOption[]
   placeholder?: string
   disabled?: boolean
-  "aria-invalid"?: boolean
-  "aria-describedby"?: string
+  'aria-invalid'?: boolean
+  'aria-describedby'?: string
 }) {
   const { t } = useTranslation()
-  const resolvedPlaceholder = placeholder ?? t("common.select")
+  const resolvedPlaceholder = placeholder ?? t('common.select')
   return (
     <SelectRoot
       value={value || null}
-      onValueChange={(next) => onValueChange(next ?? "")}
+      onValueChange={(next) => onValueChange(next ?? '')}
       disabled={disabled}
     >
-      <SelectTrigger
-        id={id}
-        aria-invalid={ariaInvalid}
-        aria-describedby={describedBy}
-      >
+      <SelectTrigger id={id} aria-invalid={ariaInvalid} aria-describedby={describedBy}>
         <SelectValue className="min-w-0 flex-1 truncate text-left">
           {(selected: string | null) => {
             const option = options.find((o) => o.value === selected)

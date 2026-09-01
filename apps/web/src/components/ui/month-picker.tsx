@@ -1,15 +1,15 @@
-import { Popover } from "@base-ui/react/popover";
-import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Popover } from '@base-ui/react/popover'
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 function monthLabels(locale: string) {
   return Array.from({ length: 12 }, (_, i) =>
-    new Date(2000, i, 1).toLocaleDateString(locale, { month: "short" }).replace(".", ""),
-  );
+    new Date(2000, i, 1).toLocaleDateString(locale, { month: 'short' }).replace('.', ''),
+  )
 }
 
 /**
@@ -22,29 +22,29 @@ export function MonthPicker({
   value,
   onChange,
   placeholder,
-  "aria-label": ariaLabel,
+  'aria-label': ariaLabel,
 }: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  "aria-label"?: string;
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+  'aria-label'?: string
 }) {
-  const [year, selectedMonth] = value ? value.split("-").map(Number) : [undefined, undefined];
-  const [viewYear, setViewYear] = useState(() => year ?? new Date().getFullYear());
-  const { t, i18n } = useTranslation();
-  const months = monthLabels(i18n.language);
+  const [year, selectedMonth] = value ? value.split('-').map(Number) : [undefined, undefined]
+  const [viewYear, setViewYear] = useState(() => year ?? new Date().getFullYear())
+  const { t, i18n } = useTranslation()
+  const months = monthLabels(i18n.language)
 
-  const label = year && selectedMonth ? `${months[selectedMonth - 1]}/${year}` : placeholder;
+  const label = year && selectedMonth ? `${months[selectedMonth - 1]}/${year}` : placeholder
 
   return (
     <Popover.Root>
       <Popover.Trigger
         aria-label={ariaLabel}
         className={cn(
-          "flex h-9 items-center gap-2 rounded-xl border border-border bg-background px-3 text-sm outline-none transition-[color,border-color,box-shadow]",
-          "hover:bg-muted/50",
-          "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
-          !value && "text-muted-foreground",
+          'flex h-9 items-center gap-2 rounded-xl border border-border bg-background px-3 text-sm outline-none transition-[color,border-color,box-shadow]',
+          'hover:bg-muted/50',
+          'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30',
+          !value && 'text-muted-foreground',
         )}
       >
         <Calendar className="size-3.5 shrink-0 text-muted-foreground" />
@@ -59,7 +59,7 @@ export function MonthPicker({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label={t("common.previousYear")}
+                aria-label={t('common.previousYear')}
                 onClick={() => setViewYear((y) => y - 1)}
               >
                 <ChevronLeft className="size-4" />
@@ -69,7 +69,7 @@ export function MonthPicker({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label={t("common.nextYear")}
+                aria-label={t('common.nextYear')}
                 onClick={() => setViewYear((y) => y + 1)}
               >
                 <ChevronRight className="size-4" />
@@ -78,35 +78,36 @@ export function MonthPicker({
 
             <div className="grid grid-cols-3 gap-1">
               {months.map((month, i) => {
-                const isSelected = year === viewYear && selectedMonth === i + 1;
+                const isSelected = year === viewYear && selectedMonth === i + 1
                 return (
                   <Popover.Close
                     key={month}
                     type="button"
-                    onClick={() => onChange(`${viewYear}-${String(i + 1).padStart(2, "0")}`)}
+                    onClick={() => onChange(`${viewYear}-${String(i + 1).padStart(2, '0')}`)}
                     className={cn(
-                      "cursor-default rounded-lg px-2 py-1.5 text-center text-sm capitalize outline-none select-none hover:bg-accent hover:text-accent-foreground",
-                      isSelected && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                      'cursor-default rounded-lg px-2 py-1.5 text-center text-sm capitalize outline-none select-none hover:bg-accent hover:text-accent-foreground',
+                      isSelected &&
+                        'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
                     )}
                   >
                     {month}
                   </Popover.Close>
-                );
+                )
               })}
             </div>
 
             {value && (
               <Popover.Close
                 type="button"
-                onClick={() => onChange("")}
+                onClick={() => onChange('')}
                 className="mt-2 w-full cursor-default rounded-lg px-2 py-1.5 text-center text-sm text-muted-foreground outline-none select-none hover:bg-accent hover:text-accent-foreground"
               >
-                {t("common.clear")}
+                {t('common.clear')}
               </Popover.Close>
             )}
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
     </Popover.Root>
-  );
+  )
 }

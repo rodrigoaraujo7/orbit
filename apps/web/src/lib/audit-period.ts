@@ -1,7 +1,7 @@
-export type PeriodPreset = "today" | "7d" | "30d" | "90d" | "all" | "custom"
+export type PeriodPreset = 'today' | '7d' | '30d' | '90d' | 'all' | 'custom'
 
 function pad(value: number) {
-  return String(value).padStart(2, "0")
+  return String(value).padStart(2, '0')
 }
 
 function isoDate(date: Date) {
@@ -21,14 +21,14 @@ export function periodBounds(
   now = new Date(),
 ): { from?: string; to?: string } {
   const today = isoDate(now)
-  if (preset === "all") return {}
-  if (preset === "custom") {
+  if (preset === 'all') return {}
+  if (preset === 'custom') {
     return {
       from: customFrom || undefined,
       to: customTo || undefined,
     }
   }
-  if (preset === "today") return { from: today, to: today }
-  const daysBack = preset === "7d" ? 6 : preset === "30d" ? 29 : 89
+  if (preset === 'today') return { from: today, to: today }
+  const daysBack = preset === '7d' ? 6 : preset === '30d' ? 29 : 89
   return { from: isoDate(addDays(now, -daysBack)), to: today }
 }

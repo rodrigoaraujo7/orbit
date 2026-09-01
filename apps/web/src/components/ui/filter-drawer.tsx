@@ -1,8 +1,8 @@
-import { Filter, X } from "lucide-react"
-import type { ReactNode } from "react"
-import { useTranslation } from "react-i18next"
+import { Filter, X } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 import {
   Drawer,
   DrawerContent,
@@ -10,7 +10,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
+} from '@/components/ui/drawer'
 
 export function FilterDrawer({
   children,
@@ -27,17 +27,17 @@ export function FilterDrawer({
       <Drawer showSwipeHandle>
         <DrawerTrigger render={<Button variant="outline" />}>
           <Filter data-icon="inline-start" />
-          {t("common.filter")}
+          {t('common.filter')}
         </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle>{t("common.filters")}</DrawerTitle>
+            <DrawerTitle>{t('common.filters')}</DrawerTitle>
           </DrawerHeader>
           <div className="flex flex-col gap-3 overflow-y-auto p-4">{children}</div>
           <DrawerFooter>
             <Button variant="ghost" disabled={!hasActive} onClick={onClear}>
               <X data-icon="inline-start" />
-              {t("common.clear")}
+              {t('common.clear')}
             </Button>
           </DrawerFooter>
         </DrawerContent>

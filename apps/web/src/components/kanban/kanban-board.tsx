@@ -1,20 +1,20 @@
-import { PointerActivationConstraints } from "@dnd-kit/dom"
-import { DragDropProvider, DragOverlay, KeyboardSensor, PointerSensor } from "@dnd-kit/react"
-import { isSortable } from "@dnd-kit/react/sortable"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { PointerActivationConstraints } from '@dnd-kit/dom'
+import { DragDropProvider, DragOverlay, KeyboardSensor, PointerSensor } from '@dnd-kit/react'
+import { isSortable } from '@dnd-kit/react/sortable'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { PROJECT_STATUS_ORDER, type Project, type ProjectStatus } from "@/data/projects"
-import { useReducedMotion } from "@/hooks/use-reduced-motion"
-import { useProjects } from "@/lib/projects-store"
+import { PROJECT_STATUS_ORDER, type Project, type ProjectStatus } from '@/data/projects'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
+import { useProjects } from '@/lib/projects-store'
 import {
   columnsEqual,
   isProjectStatus,
   placeProjectInColumns,
   projectIdsByStatus,
   type ProjectColumns,
-} from "@/lib/project-status"
-import { KanbanCard } from "./kanban-card"
-import { KanbanColumn } from "./kanban-column"
+} from '@/lib/project-status'
+import { KanbanCard } from './kanban-card'
+import { KanbanColumn } from './kanban-column'
 
 const sensors = [
   PointerSensor.configure({
@@ -53,10 +53,7 @@ export function KanbanBoard({
     }
   }, [projects])
 
-  const byId = useMemo(
-    () => new Map(projects.map((project) => [project.id, project])),
-    [projects]
-  )
+  const byId = useMemo(() => new Map(projects.map((project) => [project.id, project])), [projects])
 
   function projectsIn(status: ProjectStatus): Project[] {
     return columns[status].flatMap((id) => {
@@ -80,12 +77,7 @@ export function KanbanBoard({
         setColumns((current) => {
           const drop = resolvePlacement(source, target, current)
           if (!drop) return current
-          const next = placeProjectInColumns(
-            current,
-            String(source.id),
-            drop.status,
-            drop.beforeId
-          )
+          const next = placeProjectInColumns(current, String(source.id), drop.status, drop.beforeId)
           const resolved = columnsEqual(current, next) ? current : next
           columnsRef.current = resolved
           return resolved
@@ -128,13 +120,7 @@ export function KanbanBoard({
         {(source) => {
           const project = byId.get(String(source.id))
           if (!project) return null
-          return (
-            <KanbanCard
-              project={project}
-              clientName={clientName(project.clientId)}
-              overlay
-            />
-          )
+          return <KanbanCard project={project} clientName={clientName(project.clientId)} overlay />
         }}
       </DragOverlay>
     </DragDropProvider>
@@ -151,7 +137,7 @@ function columnOfId(columns: ProjectColumns, id: string): ProjectStatus | null {
 function resolvePlacement(
   source: DropNode,
   target: DropNode,
-  columns: ProjectColumns
+  columns: ProjectColumns,
 ): { status: ProjectStatus; beforeId: string | null } | null {
   const targetId = String(target.id)
   if (isProjectStatus(targetId)) {

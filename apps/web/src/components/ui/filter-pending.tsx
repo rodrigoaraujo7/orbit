@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from 'react'
 
-import { useReducedMotion } from "@/hooks/use-reduced-motion"
-import { cn } from "@/lib/utils"
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
+import { cn } from '@/lib/utils'
 
 /**
  * Loading for a filtered query: skeleton on the first paint, and a muted
@@ -32,7 +32,7 @@ export function FilterPending({
       ) : (
         <div
           aria-busy={refetching || undefined}
-          className={cn(refetching && "opacity-50 transition-opacity duration-200")}
+          className={cn(refetching && 'opacity-50 transition-opacity duration-200')}
         >
           {children}
         </div>
@@ -70,7 +70,10 @@ export function KanbanFilterSkeleton() {
       </div>
       <div className="flex h-[calc(100svh-16rem)] min-h-0 gap-3 overflow-hidden px-4 py-3 md:h-[calc(100svh-19.5rem)] md:py-6 sm:px-6 lg:px-8">
         {Array.from({ length: 5 }, (_, index) => (
-          <div key={index} className="flex h-full w-72 shrink-0 flex-col gap-2 rounded-2xl bg-muted/40 p-3">
+          <div
+            key={index}
+            className="flex h-full w-72 shrink-0 flex-col gap-2 rounded-2xl bg-muted/40 p-3"
+          >
             <div className="h-4 w-24 animate-pulse rounded bg-muted" />
             <div className="h-20 animate-pulse rounded-xl bg-muted/80" />
             <div className="h-20 animate-pulse rounded-xl bg-muted/60" />

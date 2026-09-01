@@ -1,14 +1,14 @@
-import i18n from "i18next"
-import { initReactI18next } from "react-i18next"
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
 
-import enUS from "./en-US.json" with { type: "json" }
-import ptBR from "./pt-BR.json" with { type: "json" }
+import enUS from './en-US.json' with { type: 'json' }
+import ptBR from './pt-BR.json' with { type: 'json' }
 
-export const SUPPORTED_LOCALES = ["en-US", "pt-BR"] as const
+export const SUPPORTED_LOCALES = ['en-US', 'pt-BR'] as const
 export type Locale = (typeof SUPPORTED_LOCALES)[number]
-export const DEFAULT_LOCALE: Locale = "en-US"
+export const DEFAULT_LOCALE: Locale = 'en-US'
 
-const STORAGE_KEY = "locale"
+const STORAGE_KEY = 'locale'
 
 export function isLocale(value: string): value is Locale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(value)
@@ -19,7 +19,7 @@ export function getLocale(): Locale {
 }
 
 function readStoredLocale(): Locale {
-  if (typeof window === "undefined") return DEFAULT_LOCALE
+  if (typeof window === 'undefined') return DEFAULT_LOCALE
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY)
     if (stored && isLocale(stored)) return stored
@@ -30,7 +30,7 @@ function readStoredLocale(): Locale {
 }
 
 function applyHtmlLang(locale: string) {
-  if (typeof document === "undefined") return
+  if (typeof document === 'undefined') return
   document.documentElement.lang = locale
 }
 
@@ -40,8 +40,8 @@ export function setLocale(locale: Locale) {
 
 void i18n.use(initReactI18next).init({
   resources: {
-    "en-US": { translation: enUS },
-    "pt-BR": { translation: ptBR },
+    'en-US': { translation: enUS },
+    'pt-BR': { translation: ptBR },
   },
   lng: readStoredLocale(),
   fallbackLng: DEFAULT_LOCALE,
@@ -52,9 +52,9 @@ void i18n.use(initReactI18next).init({
 
 applyHtmlLang(getLocale())
 
-i18n.on("languageChanged", (lng) => {
+i18n.on('languageChanged', (lng) => {
   applyHtmlLang(lng)
-  if (typeof window === "undefined" || !isLocale(lng)) return
+  if (typeof window === 'undefined' || !isLocale(lng)) return
   try {
     window.localStorage.setItem(STORAGE_KEY, lng)
   } catch {

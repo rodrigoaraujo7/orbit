@@ -1,15 +1,11 @@
-import { useSortable } from "@dnd-kit/react/sortable"
-import { User } from "lucide-react"
-import { useEffect, useRef, type ComponentProps, type KeyboardEvent } from "react"
+import { useSortable } from '@dnd-kit/react/sortable'
+import { User } from 'lucide-react'
+import { useEffect, useRef, type ComponentProps, type KeyboardEvent } from 'react'
 
-import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import type { Project, ProjectStatus } from "@/data/projects"
-import { cn } from "@/lib/utils"
+import { Badge } from '@/components/ui/badge'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+import type { Project, ProjectStatus } from '@/data/projects'
+import { cn } from '@/lib/utils'
 
 function KanbanCardFace({
   project,
@@ -27,8 +23,10 @@ function KanbanCardFace({
     <Card
       size="sm"
       className={cn(
-        "shrink-0 shadow-none ring-border",
-        overlay ? "rotate-1 cursor-grabbing shadow-lg ring-foreground/10" : "cursor-pointer hover:bg-muted/40",
+        'shrink-0 shadow-none ring-border',
+        overlay
+          ? 'rotate-1 cursor-grabbing shadow-lg ring-foreground/10'
+          : 'cursor-pointer hover:bg-muted/40',
         className,
       )}
       {...props}
@@ -95,8 +93,8 @@ function SortableKanbanCard({
   const { ref, isDragging } = useSortable({
     id: project.id,
     index,
-    type: "project",
-    accept: "project",
+    type: 'project',
+    accept: 'project',
     group: status,
     collisionPriority: 3,
     transition: reducedMotion ? null : undefined,
@@ -120,7 +118,7 @@ function SortableKanbanCard({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       event.preventDefault()
       open()
     }
@@ -135,7 +133,7 @@ function SortableKanbanCard({
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className={isDragging ? "opacity-40" : undefined}
+      className={isDragging ? 'opacity-40' : undefined}
     />
   )
 }

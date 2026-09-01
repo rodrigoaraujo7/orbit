@@ -1,4 +1,4 @@
-import type { ToolCategory } from "./tool-catalog"
+import type { ToolCategory } from './tool-catalog'
 
 /**
  * Same shape as `CatalogTool` (tool-catalog.ts), but lives in the registry

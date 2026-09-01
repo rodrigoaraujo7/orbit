@@ -1,9 +1,9 @@
-import { DEFAULT_CURRENCY } from "./currency.ts"
-import { addMonths, dayOfMonth, monthOf, todayIso } from "./dates.ts"
-import type { InvoiceStatus, PaymentMethod } from "./domain.ts"
-import { isDealFree, type Invoice, type Project } from "./project.ts"
+import { DEFAULT_CURRENCY } from './currency.ts'
+import { addMonths, dayOfMonth, monthOf, todayIso } from './dates.ts'
+import type { InvoiceStatus, PaymentMethod } from './domain.ts'
+import { isDealFree, type Invoice, type Project } from './project.ts'
 
-const PAYMENT_METHODS: PaymentMethod[] = ["boleto", "pix"]
+const PAYMENT_METHODS: PaymentMethod[] = ['boleto', 'pix']
 
 /**
  * Mock derived from the `deal` — there's no persisted invoice API yet, so an
@@ -17,7 +17,7 @@ export function generateInvoices(project: Project, payerName: string): Invoice[]
   const { deal } = project
   if (isDealFree(deal)) return []
 
-  const installments = deal.kind === "installment" ? (deal.installments ?? 1) : 1
+  const installments = deal.kind === 'installment' ? (deal.installments ?? 1) : 1
   const amount = deal.amount / installments
   const today = todayIso()
   const startMonth = monthOf(project.startedAt)
@@ -30,15 +30,15 @@ export function generateInvoices(project: Project, payerName: string): Invoice[]
   // the dashboard has something to show in the "atrasado" series. A paused
   // project is the believable candidate — it stopped because nobody paid.
   const lastDueIndex = dueDates.findLastIndex((dueDate) => dueDate < today)
-  const overdueIndex = project.status === "paused" ? lastDueIndex : -1
+  const overdueIndex = project.status === 'paused' ? lastDueIndex : -1
 
   return dueDates.map((dueDate, index) => {
     const isPaid = dueDate < today && index !== overdueIndex
-    const status: InvoiceStatus = isPaid ? "paid" : index === overdueIndex ? "overdue" : "pending"
+    const status: InvoiceStatus = isPaid ? 'paid' : index === overdueIndex ? 'overdue' : 'pending'
 
     return {
       id: `${project.id}-invoice-${index + 1}`,
-      referenceMonth: deal.kind === "installment" ? monthOf(dueDate) : undefined,
+      referenceMonth: deal.kind === 'installment' ? monthOf(dueDate) : undefined,
       amount,
       status,
       paymentMethod: isPaid ? PAYMENT_METHODS[index % 2] : undefined,

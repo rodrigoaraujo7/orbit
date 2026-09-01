@@ -1,7 +1,7 @@
-import { useId, type ReactNode } from "react"
+import { useId, type ReactNode } from 'react'
 
-import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
+import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 
 /**
  * Groups label + control + error message with standardized spacing. Passes the
@@ -20,28 +20,25 @@ function Field({
   className?: string
   children: (props: {
     id: string
-    "aria-invalid": boolean
-    "aria-describedby": string | undefined
+    'aria-invalid': boolean
+    'aria-describedby': string | undefined
   }) => ReactNode
 }) {
   const id = useId()
   const messageId = `${id}-message`
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
+    <div className={cn('flex flex-col gap-1.5', className)}>
       <Label htmlFor={id}>{label}</Label>
       {children({
         id,
-        "aria-invalid": Boolean(error),
-        "aria-describedby": error || hint ? messageId : undefined,
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error || hint ? messageId : undefined,
       })}
       {(error || hint) && (
         <p
           id={messageId}
-          className={cn(
-            "text-xs",
-            error ? "text-destructive" : "text-muted-foreground"
-          )}
+          className={cn('text-xs', error ? 'text-destructive' : 'text-muted-foreground')}
         >
           {error ?? hint}
         </p>

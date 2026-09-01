@@ -1,5 +1,5 @@
-import { and, eq, gte, ilike, lte, or } from "drizzle-orm"
-import { z } from "zod"
+import { and, eq, gte, ilike, lte, or } from 'drizzle-orm'
+import { z } from 'zod'
 import {
   billingCycleSchema,
   dealKindSchema,
@@ -10,13 +10,13 @@ import {
   projectStatusSchema,
   toCents,
   type ProjectListFilters,
-} from "shared"
-import { contact, credential, project, projectTool } from "../db/schema.ts"
-import type { Tx } from "../db/with-user.ts"
-import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
-import { diffProject, type ProjectDiffInput } from "../audit/diff.ts"
-import { recordAudit } from "../audit/record.ts"
-import { sealNewSecret } from "./credentials.ts"
+} from 'shared'
+import { contact, credential, project, projectTool } from '../db/schema.ts'
+import type { Tx } from '../db/with-user.ts'
+import { asUser, auditCtx, protectedProcedure, router } from '../trpc/init.ts'
+import { diffProject, type ProjectDiffInput } from '../audit/diff.ts'
+import { recordAudit } from '../audit/record.ts'
+import { sealNewSecret } from './credentials.ts'
 
 const toolInput = z.object({
   id: z.string(),
@@ -67,7 +67,7 @@ function rowToProject(
   return {
     id: row.id,
     name: row.name,
-    clientId: row.contactId ?? "",
+    clientId: row.contactId ?? '',
     status: row.status,
     startedAt: row.startedAt,
     endedAt: row.endedAt ?? undefined,
@@ -97,8 +97,8 @@ function rowToProject(
     repo: row.repoFullName
       ? {
           fullName: row.repoFullName,
-          url: row.repoUrl ?? "",
-          workflow: row.repoWorkflow ?? "none",
+          url: row.repoUrl ?? '',
+          workflow: row.repoWorkflow ?? 'none',
         }
       : null,
     description: row.description ?? undefined,
@@ -107,7 +107,7 @@ function rowToProject(
 }
 
 function escapeIlike(value: string) {
-  return value.replaceAll("\\", "\\\\").replaceAll("%", "\\%").replaceAll("_", "\\_")
+  return value.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')
 }
 
 export async function listProjects(tx: Tx, _userId: string, filters?: ProjectListFilters) {
@@ -144,7 +144,7 @@ export async function listProjects(tx: Tx, _userId: string, filters?: ProjectLis
           ...tool,
           secrets: secrets
             .filter((s: typeof credential.$inferSelect) => s.projectToolId === tool.id)
-            .map((s: typeof credential.$inferSelect) => ({ key: s.label, value: "" })),
+            .map((s: typeof credential.$inferSelect) => ({ key: s.label, value: '' })),
         })),
     ),
   )
@@ -156,7 +156,10 @@ export async function replaceProjectTools(
   projectId: string,
   tools: z.infer<typeof toolInput>[],
 ) {
-  const existingTools = await tx.select().from(projectTool).where(eq(projectTool.projectId, projectId))
+  const existingTools = await tx
+    .select()
+    .from(projectTool)
+    .where(eq(projectTool.projectId, projectId))
   const existingSecrets = await tx.select().from(credential)
   await tx.delete(projectTool).where(eq(projectTool.projectId, projectId))
   for (const tool of tools) {
@@ -180,9 +183,12 @@ export async function replaceProjectTools(
         await sealNewSecret(tx, userId, toolId, secret.key, secret.value)
         continue
       }
-      const prevTool = existingTools.find((row) => row.catalogId === tool.id)
+      const prevTool = existingTools.find(
+        (row: typeof projectTool.$inferSelect) => row.catalogId === tool.id,
+      )
       const prev = existingSecrets.find(
-        (row) => row.projectToolId === prevTool?.id && row.label === secret.key,
+        (row: typeof credential.$inferSelect) =>
+          row.projectToolId === prevTool?.id && row.label === secret.key,
       )
       if (!prev) continue
       await tx.insert(credential).values({
@@ -226,7 +232,7 @@ function rowToDiff(
 ): ProjectDiffInput {
   return {
     name: row.name,
-    clientId: row.contactId ?? "",
+    clientId: row.contactId ?? '',
     status: row.status,
     startedAt: String(row.startedAt),
     endedAt: row.endedAt ? String(row.endedAt) : null,
@@ -247,9 +253,9 @@ function rowToDiff(
         tool.amountCents != null
           ? {
               amount: fromCents(tool.amountCents),
-              cycle: tool.cycle ?? "",
-              nextInvoice: tool.nextInvoice ?? "",
-              payer: tool.payer ?? "",
+              cycle: tool.cycle ?? '',
+              nextInvoice: tool.nextInvoice ?? '',
+              payer: tool.payer ?? '',
               currency: tool.currency ?? undefined,
             }
           : null,
@@ -261,9 +267,11 @@ function rowToDiff(
 async function loadToolsForDiff(tx: Tx, projectId: string) {
   const tools = await tx.select().from(projectTool).where(eq(projectTool.projectId, projectId))
   const secrets = await tx.select().from(credential)
-  return tools.map((tool) => ({
+  return tools.map((tool: typeof projectTool.$inferSelect) => ({
     ...tool,
-    secrets: secrets.filter((s) => s.projectToolId === tool.id).map((s) => ({ key: s.label })),
+    secrets: secrets
+      .filter((s: typeof credential.$inferSelect) => s.projectToolId === tool.id)
+      .map((s: typeof credential.$inferSelect) => ({ key: s.label })),
   }))
 }
 
@@ -286,7 +294,7 @@ export const projectsRouter = router({
         endedAt: input.endedAt ?? null,
         dealKind: input.deal.kind,
         dealAmountCents: toCents(input.deal.amount),
-        dealCurrency: input.deal.currency ?? "BRL",
+        dealCurrency: input.deal.currency ?? 'BRL',
         dealInstallments: input.deal.installments ?? null,
         repoFullName: input.repo?.fullName ?? null,
         repoUrl: input.repo?.url ?? null,
@@ -317,8 +325,8 @@ export const projectsRouter = router({
         }
       }
       await recordAudit(tx, auditCtx(ctx), {
-        module: "project",
-        action: "project.create",
+        module: 'project',
+        action: 'project.create',
         subjectId: id,
         subjectLabel: input.name,
         projectId: id,
@@ -327,45 +335,47 @@ export const projectsRouter = router({
     return { id }
   }),
 
-  update: protectedProcedure.input(projectInput.required({ id: true })).mutation(async ({ ctx, input }) => {
-    await asUser(ctx, async (tx) => {
-      const [prev] = await tx.select().from(project).where(eq(project.id, input.id)).limit(1)
-      if (!prev) return
-      const prevTools = await loadToolsForDiff(tx, input.id)
+  update: protectedProcedure
+    .input(projectInput.required({ id: true }))
+    .mutation(async ({ ctx, input }) => {
+      await asUser(ctx, async (tx) => {
+        const [prev] = await tx.select().from(project).where(eq(project.id, input.id)).limit(1)
+        if (!prev) return
+        const prevTools = await loadToolsForDiff(tx, input.id)
 
-      await tx
-        .update(project)
-        .set({
-          name: input.name,
-          status: input.status,
-          contactId: input.clientId || null,
-          startedAt: input.startedAt,
-          endedAt: input.endedAt ?? null,
-          dealKind: input.deal.kind,
-          dealAmountCents: toCents(input.deal.amount),
-          dealCurrency: input.deal.currency ?? "BRL",
-          dealInstallments: input.deal.installments ?? null,
-          repoFullName: input.repo?.fullName ?? null,
-          repoUrl: input.repo?.url ?? null,
-          repoWorkflow: input.repo?.workflow ?? null,
-          description: input.description ?? null,
-          comments: input.comments ?? [],
-        })
-        .where(eq(project.id, input.id))
+        await tx
+          .update(project)
+          .set({
+            name: input.name,
+            status: input.status,
+            contactId: input.clientId || null,
+            startedAt: input.startedAt,
+            endedAt: input.endedAt ?? null,
+            dealKind: input.deal.kind,
+            dealAmountCents: toCents(input.deal.amount),
+            dealCurrency: input.deal.currency ?? 'BRL',
+            dealInstallments: input.deal.installments ?? null,
+            repoFullName: input.repo?.fullName ?? null,
+            repoUrl: input.repo?.url ?? null,
+            repoWorkflow: input.repo?.workflow ?? null,
+            description: input.description ?? null,
+            comments: input.comments ?? [],
+          })
+          .where(eq(project.id, input.id))
 
-      await replaceProjectTools(tx, ctx.userId, input.id, input.tools)
+        await replaceProjectTools(tx, ctx.userId, input.id, input.tools)
 
-      for (const entry of diffProject(rowToDiff(prev, prevTools), inputToDiff(input))) {
-        await recordAudit(tx, auditCtx(ctx), {
-          ...entry,
-          subjectId: input.id,
-          subjectLabel: input.name,
-          projectId: input.id,
-        })
-      }
-    })
-    return { ok: true }
-  }),
+        for (const entry of diffProject(rowToDiff(prev, prevTools), inputToDiff(input))) {
+          await recordAudit(tx, auditCtx(ctx), {
+            ...entry,
+            subjectId: input.id,
+            subjectLabel: input.name,
+            projectId: input.id,
+          })
+        }
+      })
+      return { ok: true }
+    }),
 
   move: protectedProcedure
     .input(
@@ -384,32 +394,34 @@ export const projectsRouter = router({
           .where(eq(project.id, input.id))
         if (prev && prev.status !== input.status) {
           await recordAudit(tx, auditCtx(ctx), {
-            module: "kanban",
-            action: "kanban.move",
+            module: 'kanban',
+            action: 'kanban.move',
             subjectId: input.id,
             subjectLabel: prev.name,
             projectId: input.id,
-            changes: [{ field: "status", from: prev.status, to: input.status }],
+            changes: [{ field: 'status', from: prev.status, to: input.status }],
           })
         }
       })
       return { ok: true }
     }),
 
-  delete: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
-    await asUser(ctx, async (tx) => {
-      const [prev] = await tx.select().from(project).where(eq(project.id, input.id)).limit(1)
-      await tx.delete(project).where(and(eq(project.id, input.id)))
-      if (prev) {
-        await recordAudit(tx, auditCtx(ctx), {
-          module: "project",
-          action: "project.delete",
-          subjectId: input.id,
-          subjectLabel: prev.name,
-          projectId: input.id,
-        })
-      }
-    })
-    return { ok: true }
-  }),
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await asUser(ctx, async (tx) => {
+        const [prev] = await tx.select().from(project).where(eq(project.id, input.id)).limit(1)
+        await tx.delete(project).where(and(eq(project.id, input.id)))
+        if (prev) {
+          await recordAudit(tx, auditCtx(ctx), {
+            module: 'project',
+            action: 'project.delete',
+            subjectId: input.id,
+            subjectLabel: prev.name,
+            projectId: input.id,
+          })
+        }
+      })
+      return { ok: true }
+    }),
 })

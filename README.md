@@ -62,18 +62,18 @@ Docker Postgres:
 DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
 ```
 
-| Variable | Required | What it is |
-|---|---|---|
-| `DATABASE_URL` | yes | Postgres URL. Hostless `postgres:///projects_manager` uses `/var/run/postgresql`. Do not use `usuario@localhost`. |
-| `MASTER_KEY` | for stored secrets | 32 bytes: **64 hex chars** or base64. `openssl rand -hex 32`. Do not rotate without a re-encrypt path. |
-| `BETTER_AUTH_URL` | no | Auth base URL. Default `WEB_ORIGIN`. |
-| `WEB_ORIGIN` | no | Frontend origin (CORS + cookies). Default `http://localhost:5173`. |
-| `PORT` | yes for Vite | Must be **3100** so the web proxy hits the API. Code default is `3000` if unset. |
-| `BETTER_AUTH_API_KEY` | no | Better Auth dashboard only. Empty is fine; the API warns and still starts. |
-| `RESEND_API_KEY` | for email | Resend API key. Leave empty until you send mail. |
-| `EMAIL_FROM` | for email | From header, e.g. `Projects Manager <noreply@example.com>`. |
-| `RESEND_TEMPLATE_CONFIRM` | for email | Resend template id for confirmation mail. |
-| `RESEND_TEMPLATE_LOGIN` | for email | Resend template id for login mail. |
+| Variable                  | Required           | What it is                                                                                                        |
+| ------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`            | yes                | Postgres URL. Hostless `postgres:///projects_manager` uses `/var/run/postgresql`. Do not use `usuario@localhost`. |
+| `MASTER_KEY`              | for stored secrets | 32 bytes: **64 hex chars** or base64. `openssl rand -hex 32`. Do not rotate without a re-encrypt path.            |
+| `BETTER_AUTH_URL`         | no                 | Auth base URL. Default `WEB_ORIGIN`.                                                                              |
+| `WEB_ORIGIN`              | no                 | Frontend origin (CORS + cookies). Default `http://localhost:5173`.                                                |
+| `PORT`                    | yes for Vite       | Must be **3100** so the web proxy hits the API. Code default is `3000` if unset.                                  |
+| `BETTER_AUTH_API_KEY`     | no                 | Better Auth dashboard only. Empty is fine; the API warns and still starts.                                        |
+| `RESEND_API_KEY`          | for email          | Resend API key. Leave empty until you send mail.                                                                  |
+| `EMAIL_FROM`              | for email          | From header, e.g. `Projects Manager <noreply@example.com>`.                                                       |
+| `RESEND_TEMPLATE_CONFIRM` | for email          | Resend template id for confirmation mail.                                                                         |
+| `RESEND_TEMPLATE_LOGIN`   | for email          | Resend template id for login mail.                                                                                |
 
 `BETTER_AUTH_SECRET` is not in `.env.example`. In development the API uses a built-in secret; set a 32-byte hex value (`openssl rand -hex 32`) before production.
 

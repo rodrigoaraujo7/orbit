@@ -1,36 +1,36 @@
-import { useCallback, useState } from "react"
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { ExternalLink, Plus } from "lucide-react"
-import { useTranslation } from "react-i18next"
-import { compactSearch, parseSearch, projectsSearchSchema } from "shared"
+import { useCallback, useState } from 'react'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { ExternalLink, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { compactSearch, parseSearch, projectsSearchSchema } from 'shared'
 
-import { PageHeader } from "@/components/layout/page"
-import { CreateProjectDialog } from "@/components/projects/create-project-dialog"
+import { PageHeader } from '@/components/layout/page'
+import { CreateProjectDialog } from '@/components/projects/create-project-dialog'
 import {
   StatusBadge,
   StatusFilterSelect,
   WorkflowBadge,
   WorkflowFilterSelect,
-} from "@/components/projects/status-badges"
-import { ToolIcon } from "@/components/projects/tool-icons"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { Emphasis } from "@/components/ui/emphasis"
-import { FilterDrawer } from "@/components/ui/filter-drawer"
-import { FilterPending, TableFilterSkeleton } from "@/components/ui/filter-pending"
-import { Input } from "@/components/ui/input"
-import { RowActionsMenu } from "@/components/ui/row-actions-menu"
-import { DataTable, type Column } from "@/components/ui/table"
-import { toast } from "@/components/ui/toast"
-import { type Project, type ProjectStatus, type WorkflowStatus } from "@/data/projects"
-import { billingCycleLabel } from "@/i18n/labels"
-import { formatCurrency, formatDeal } from "@/lib/format"
-import { useProjects } from "@/lib/projects-store"
-import { useRegistry } from "@/lib/registry-store"
-import { trpc } from "@/lib/trpc"
-import { useDraftSearch } from "@/lib/use-draft-search"
+} from '@/components/projects/status-badges'
+import { ToolIcon } from '@/components/projects/tool-icons'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Emphasis } from '@/components/ui/emphasis'
+import { FilterDrawer } from '@/components/ui/filter-drawer'
+import { FilterPending, TableFilterSkeleton } from '@/components/ui/filter-pending'
+import { Input } from '@/components/ui/input'
+import { RowActionsMenu } from '@/components/ui/row-actions-menu'
+import { DataTable, type Column } from '@/components/ui/table'
+import { toast } from '@/components/ui/toast'
+import { type Project, type ProjectStatus, type WorkflowStatus } from '@/data/projects'
+import { billingCycleLabel } from '@/i18n/labels'
+import { formatCurrency, formatDeal } from '@/lib/format'
+import { useProjects } from '@/lib/projects-store'
+import { useRegistry } from '@/lib/registry-store'
+import { trpc } from '@/lib/trpc'
+import { useDraftSearch } from '@/lib/use-draft-search'
 
 function ProjectFilterFields({
   stacked = false,
@@ -44,10 +44,10 @@ function ProjectFilterFields({
   stacked?: boolean
   nameFilter: string
   onNameChange: (value: string) => void
-  statusFilter: ProjectStatus | ""
-  onStatusChange: (value: ProjectStatus | "") => void
-  workflowFilter: WorkflowStatus | ""
-  onWorkflowChange: (value: WorkflowStatus | "") => void
+  statusFilter: ProjectStatus | ''
+  onStatusChange: (value: ProjectStatus | '') => void
+  workflowFilter: WorkflowStatus | ''
+  onWorkflowChange: (value: WorkflowStatus | '') => void
 }) {
   const { t } = useTranslation()
   return (
@@ -55,13 +55,13 @@ function ProjectFilterFields({
       <Input
         value={nameFilter}
         onChange={(event) => onNameChange(event.target.value)}
-        placeholder={t("common.searchByName")}
-        className={stacked ? "w-full" : "flex-1"}
+        placeholder={t('common.searchByName')}
+        className={stacked ? 'w-full' : 'flex-1'}
       />
-      <div className={stacked ? "w-full" : "w-44"}>
+      <div className={stacked ? 'w-full' : 'w-44'}>
         <StatusFilterSelect value={statusFilter} onValueChange={onStatusChange} />
       </div>
-      <div className={stacked ? "w-full" : "w-48"}>
+      <div className={stacked ? 'w-full' : 'w-48'}>
         <WorkflowFilterSelect value={workflowFilter} onValueChange={onWorkflowChange} />
       </div>
     </>
@@ -97,7 +97,7 @@ function ProjectsPage() {
     workflow: search.workflow,
   }
   const query = useQuery({
-    queryKey: ["projects", filters],
+    queryKey: ['projects', filters],
     queryFn: () => trpc.projects.list.query(filters),
     placeholderData: keepPreviousData,
   })
@@ -110,8 +110,8 @@ function ProjectsPage() {
 
   const columns: Column<Project>[] = [
     {
-      key: "name",
-      header: t("common.project"),
+      key: 'name',
+      header: t('common.project'),
       sortValue: (project) => project.name,
       cell: (project) => (
         <>
@@ -123,45 +123,43 @@ function ProjectsPage() {
             {project.name}
           </Link>
           <div className="text-xs text-muted-foreground">
-            {findContact(project.clientId)?.name ?? t("common.emDash")}
+            {findContact(project.clientId)?.name ?? t('common.emDash')}
           </div>
         </>
       ),
     },
     {
-      key: "status",
-      header: t("common.status"),
+      key: 'status',
+      header: t('common.status'),
       sortValue: (project) => project.status,
       cell: (project) => <StatusBadge status={project.status} />,
     },
     {
-      key: "amount",
-      header: t("common.value"),
-      className: "hidden sm:table-cell",
+      key: 'amount',
+      header: t('common.value'),
+      className: 'hidden sm:table-cell',
       sortValue: (project) => project.deal.amount,
       cell: (project) => (
-        <span className="whitespace-nowrap text-muted-foreground">
-          {formatDeal(project.deal)}
-        </span>
+        <span className="whitespace-nowrap text-muted-foreground">{formatDeal(project.deal)}</span>
       ),
     },
     {
-      key: "tools",
-      header: t("common.tools"),
-      className: "hidden md:table-cell",
+      key: 'tools',
+      header: t('common.tools'),
+      className: 'hidden md:table-cell',
       cell: (project) => (
         <div className="flex flex-wrap gap-1">
           {project.tools.map((tool) => (
             <Badge
               key={`${tool.id}-${tool.name}`}
-              variant={tool.billing ? "default" : "outline"}
+              variant={tool.billing ? 'default' : 'outline'}
               title={
                 tool.billing
-                  ? t("common.paidDot", {
+                  ? t('common.paidDot', {
                       amount: formatCurrency(tool.billing.amount, tool.billing.currency),
                       cycle: billingCycleLabel(tool.billing.cycle).toLowerCase(),
                     })
-                  : t("common.freePlan")
+                  : t('common.freePlan')
               }
             >
               <ToolIcon id={tool.id} className="size-3" />
@@ -172,9 +170,9 @@ function ProjectsPage() {
       ),
     },
     {
-      key: "github",
-      header: t("common.github"),
-      className: "hidden lg:table-cell",
+      key: 'github',
+      header: t('common.github'),
+      className: 'hidden lg:table-cell',
       cell: (project) =>
         project.repo ? (
           <div className="group flex items-center gap-2">
@@ -191,13 +189,13 @@ function ProjectsPage() {
             <ExternalLink className="size-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100" />
           </div>
         ) : (
-          <span className="text-muted-foreground">{t("common.emDash")}</span>
+          <span className="text-muted-foreground">{t('common.emDash')}</span>
         ),
     },
     {
-      key: "actions",
-      header: "",
-      className: "text-right whitespace-nowrap",
+      key: 'actions',
+      header: '',
+      className: 'text-right whitespace-nowrap',
       cell: (project) => (
         <span onClick={(event) => event.stopPropagation()}>
           <RowActionsMenu
@@ -217,8 +215,8 @@ function ProjectsPage() {
   return (
     <>
       <PageHeader
-        title={t("projects.title")}
-        description={t("projects.count", { count: projects.length })}
+        title={t('projects.title')}
+        description={t('projects.count', { count: projects.length })}
         actions={
           <div className="mt-3 flex w-full gap-2 sm:mt-0 sm:w-auto">
             <Button
@@ -229,7 +227,7 @@ function ProjectsPage() {
               className="flex-1 md:flex-none"
             >
               <Plus />
-              {t("common.newProject")}
+              {t('common.newProject')}
             </Button>
             <FilterDrawer
               hasActive={hasActive}
@@ -239,9 +237,9 @@ function ProjectsPage() {
                 stacked
                 nameFilter={nameFilter}
                 onNameChange={setNameFilter}
-                statusFilter={search.status ?? ""}
+                statusFilter={search.status ?? ''}
                 onStatusChange={(status) => patchSearch({ status: status || undefined })}
-                workflowFilter={search.workflow ?? ""}
+                workflowFilter={search.workflow ?? ''}
                 onWorkflowChange={(workflow) => patchSearch({ workflow: workflow || undefined })}
               />
             </FilterDrawer>
@@ -258,24 +256,24 @@ function ProjectsPage() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title={t("projects.deleteTitle")}
+        title={t('projects.deleteTitle')}
         description={
           <>
-            {t("common.delete")}{" "}
-            <Emphasis className="text-primary">{deletingProject?.name}</Emphasis>
-            ? {t("common.cannotUndo")}
+            {t('common.delete')}{' '}
+            <Emphasis className="text-primary">{deletingProject?.name}</Emphasis>?{' '}
+            {t('common.cannotUndo')}
           </>
         }
-        confirmLabel={t("common.delete")}
-        confirmWord={t("common.deleteWord")}
+        confirmLabel={t('common.delete')}
+        confirmWord={t('common.deleteWord')}
         onConfirm={() => {
           /* v8 ignore next -- confirm is only enabled after a row is chosen */
           if (!deletingProject) return
           try {
             deleteProject(deletingProject.id)
-            toast.add({ title: t("projects.deleted"), type: "success" })
+            toast.add({ title: t('projects.deleted'), type: 'success' })
           } catch {
-            toast.add({ title: t("projects.deleteError"), type: "error" })
+            toast.add({ title: t('projects.deleteError'), type: 'error' })
           }
         }}
       />
@@ -284,9 +282,9 @@ function ProjectsPage() {
         <ProjectFilterFields
           nameFilter={nameFilter}
           onNameChange={setNameFilter}
-          statusFilter={search.status ?? ""}
+          statusFilter={search.status ?? ''}
           onStatusChange={(status) => patchSearch({ status: status || undefined })}
-          workflowFilter={search.workflow ?? ""}
+          workflowFilter={search.workflow ?? ''}
           onWorkflowChange={(workflow) => patchSearch({ workflow: workflow || undefined })}
         />
       </div>
@@ -305,14 +303,14 @@ function ProjectsPage() {
             data={filtered}
             columns={columns}
             rowKey={(project) => project.id}
-            initialSort={{ key: "name", direction: "asc" }}
+            initialSort={{ key: 'name', direction: 'asc' }}
             onRowClick={(project) =>
               navigate({
-                to: "/projects/$projectId",
+                to: '/projects/$projectId',
                 params: { projectId: project.id },
               })
             }
-            emptyMessage={t("projects.empty")}
+            emptyMessage={t('projects.empty')}
           />
         </div>
       </FilterPending>
@@ -320,7 +318,7 @@ function ProjectsPage() {
   )
 }
 
-export const Route = createFileRoute("/projects/")({
+export const Route = createFileRoute('/projects/')({
   validateSearch: (search) => parseSearch(projectsSearchSchema, search),
   component: ProjectsPage,
 })

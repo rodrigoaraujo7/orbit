@@ -1,14 +1,14 @@
-import { vi } from "vitest"
-import type { Project } from "@/data/projects"
-import type { Contact } from "@/data/contacts"
-import type { CustomTool } from "@/data/custom-tools"
-import { emptyFilters, type DashboardMetrics } from "shared"
+import { vi } from 'vitest'
+import type { Project } from '@/data/projects'
+import type { Contact } from '@/data/contacts'
+import type { CustomTool } from '@/data/custom-tools'
+import { emptyFilters, type DashboardMetrics } from 'shared'
 
 export function emptyMetrics(overrides: Partial<DashboardMetrics> = {}): DashboardMetrics {
   return {
-    options: { clients: [], projects: [], currencies: ["BRL"] },
+    options: { clients: [], projects: [], currencies: ['BRL'] },
     months: [],
-    currency: "BRL",
+    currency: 'BRL',
     summary: {
       faturado: 0,
       recebido: 0,
@@ -62,7 +62,7 @@ export function createTrpcMock() {
     },
     contacts: {
       list: { query: vi.fn().mockResolvedValue([] as Contact[]) },
-      create: { mutate: vi.fn().mockResolvedValue({ id: "c1", name: "Ada" }) },
+      create: { mutate: vi.fn().mockResolvedValue({ id: 'c1', name: 'Ada' }) },
       update: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
       delete: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
     },
@@ -71,7 +71,7 @@ export function createTrpcMock() {
     },
     projects: {
       list: { query: vi.fn().mockResolvedValue([] as Project[]) },
-      create: { mutate: vi.fn().mockResolvedValue({ id: "p1" }) },
+      create: { mutate: vi.fn().mockResolvedValue({ id: 'p1' }) },
       update: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
       move: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
       delete: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
@@ -83,7 +83,9 @@ export function createTrpcMock() {
     },
     tools: {
       listCustom: { query: vi.fn().mockResolvedValue([] as CustomTool[]) },
-      createCustom: { mutate: vi.fn().mockResolvedValue({ id: "t1", name: "CI", category: "deploy" }) },
+      createCustom: {
+        mutate: vi.fn().mockResolvedValue({ id: 't1', name: 'CI', category: 'deploy' }),
+      },
       updateCustom: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
       deleteCustom: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
     },

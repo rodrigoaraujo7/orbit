@@ -1,8 +1,8 @@
-import { act, cleanup, fireEvent, screen } from "@testing-library/react"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { sampleProject } from "@/test/fixtures"
-import { renderWithProviders } from "@/test/render"
-import type { ReactNode } from "react"
+import { act, cleanup, fireEvent, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { sampleProject } from '@/test/fixtures'
+import { renderWithProviders } from '@/test/render'
+import type { ReactNode } from 'react'
 
 const moveProject = vi.fn()
 const motion = vi.hoisted(() => ({ reduced: true }))
@@ -13,7 +13,7 @@ const dnd = vi.hoisted(() => ({
   dropAnimation: undefined as unknown,
 }))
 
-vi.mock("@/lib/projects-store", () => ({
+vi.mock('@/lib/projects-store', () => ({
   useProjects: () => ({
     projects: [],
     isPending: false,
@@ -28,7 +28,7 @@ vi.mock("@/lib/projects-store", () => ({
   ProjectsProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-vi.mock("@dnd-kit/dom", () => ({
+vi.mock('@dnd-kit/dom', () => ({
   PointerActivationConstraints: {
     Distance: class Distance {
       constructor(_options: { value: number }) {}
@@ -36,7 +36,7 @@ vi.mock("@dnd-kit/dom", () => ({
   },
 }))
 
-vi.mock("@dnd-kit/react", () => ({
+vi.mock('@dnd-kit/react', () => ({
   DragDropProvider: ({
     children,
     onDragStart,
@@ -63,8 +63,8 @@ vi.mock("@dnd-kit/react", () => ({
     dnd.dropAnimation = dropAnimation
     return (
       <div data-testid="overlay">
-        {children({ id: "p1" })}
-        {children({ id: "missing" })}
+        {children({ id: 'p1' })}
+        {children({ id: 'missing' })}
       </div>
     )
   },
@@ -73,16 +73,16 @@ vi.mock("@dnd-kit/react", () => ({
   useDroppable: () => ({ ref: () => undefined, isDropTarget: false }),
 }))
 
-vi.mock("@dnd-kit/react/sortable", () => ({
+vi.mock('@dnd-kit/react/sortable', () => ({
   isSortable: (source: unknown) => Boolean(source),
   useSortable: () => ({ ref: () => undefined, isDragging: false }),
 }))
 
-vi.mock("@/hooks/use-reduced-motion", () => ({
+vi.mock('@/hooks/use-reduced-motion', () => ({
   useReducedMotion: () => motion.reduced,
 }))
 
-import { KanbanBoard } from "./kanban-board"
+import { KanbanBoard } from './kanban-board'
 
 afterEach(() => {
   cleanup()
@@ -93,104 +93,100 @@ beforeEach(() => {
   motion.reduced = true
 })
 
-const queued = { ...sampleProject, id: "p1", status: "queued" as const, endedAt: undefined }
-const building = { ...sampleProject, id: "p2", name: "Shop", status: "in-development" as const }
+const queued = { ...sampleProject, id: 'p1', status: 'queued' as const, endedAt: undefined }
+const building = { ...sampleProject, id: 'p2', name: 'Shop', status: 'in-development' as const }
 
-describe("KanbanBoard", () => {
-  it("renders columns and invokes drag handlers", () => {
+describe('KanbanBoard', () => {
+  it('renders columns and invokes drag handlers', () => {
     const onOpen = vi.fn()
     renderWithProviders(
-      <KanbanBoard
-        projects={[queued, building]}
-        clientName={() => "Ada"}
-        onOpen={onOpen}
-      />,
+      <KanbanBoard projects={[queued, building]} clientName={() => 'Ada'} onOpen={onOpen} />,
     )
-    expect(screen.getAllByText("Portal").length).toBeGreaterThan(0)
-    expect(screen.getByText("Shop")).toBeInTheDocument()
-    expect(screen.getAllByText("No projects").length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Portal').length).toBeGreaterThan(0)
+    expect(screen.getByText('Shop')).toBeInTheDocument()
+    expect(screen.getAllByText('No projects').length).toBeGreaterThan(0)
 
     act(() => {
       dnd.onDragStart?.({})
       dnd.onDragOver?.({
         preventDefault: vi.fn(),
-        operation: { source: null, target: { id: "queued" } },
+        operation: { source: null, target: { id: 'queued' } },
       })
       dnd.onDragOver?.({
         preventDefault: vi.fn(),
-        operation: { source: { id: "p1" }, target: null },
+        operation: { source: { id: 'p1' }, target: null },
       })
       dnd.onDragOver?.({
         preventDefault: vi.fn(),
-        operation: { source: { id: "p1" }, target: { id: "p1" } },
+        operation: { source: { id: 'p1' }, target: { id: 'p1' } },
       })
       dnd.onDragOver?.({
         preventDefault: vi.fn(),
-        operation: { source: { id: "p1" }, target: { id: "unknown" } },
+        operation: { source: { id: 'p1' }, target: { id: 'unknown' } },
       })
       dnd.onDragOver?.({
         preventDefault: vi.fn(),
-        operation: { source: { id: "p1" }, target: { id: "completed" } },
+        operation: { source: { id: 'p1' }, target: { id: 'completed' } },
       })
       dnd.onDragOver?.({
         preventDefault: vi.fn(),
-        operation: { source: { id: "p1" }, target: { id: "completed" } },
+        operation: { source: { id: 'p1' }, target: { id: 'completed' } },
       })
       dnd.onDragOver?.({
         preventDefault: vi.fn(),
-        operation: { source: { id: "p1" }, target: { id: "p2" } },
+        operation: { source: { id: 'p1' }, target: { id: 'p2' } },
       })
       dnd.onDragOver?.({
         preventDefault: vi.fn(),
-        operation: { source: { id: "p1" }, target: { id: "completed" } },
+        operation: { source: { id: 'p1' }, target: { id: 'completed' } },
       })
 
-      dnd.onDragEnd?.({ canceled: true, operation: { source: { id: "p1" } } })
+      dnd.onDragEnd?.({ canceled: true, operation: { source: { id: 'p1' } } })
       dnd.onDragStart?.({})
       dnd.onDragOver?.({
         preventDefault: vi.fn(),
-        operation: { source: { id: "p1" }, target: { id: "paused" } },
+        operation: { source: { id: 'p1' }, target: { id: 'paused' } },
       })
-      dnd.onDragEnd?.({ canceled: false, operation: { source: { id: "p1" } } })
+      dnd.onDragEnd?.({ canceled: false, operation: { source: { id: 'p1' } } })
     })
     expect(moveProject).toHaveBeenCalled()
 
     act(() => {
       dnd.onDragEnd?.({ canceled: false, operation: { source: null } })
-      dnd.onDragEnd?.({ canceled: false, operation: { source: { id: "ghost" } } })
+      dnd.onDragEnd?.({ canceled: false, operation: { source: { id: 'ghost' } } })
     })
 
-    const card = screen.getByRole("button", { name: /Portal/ })
+    const card = screen.getByRole('button', { name: /Portal/ })
     fireEvent.click(card)
-    fireEvent.keyDown(card, { key: "Enter" })
-    expect(onOpen).toHaveBeenCalledWith("p1")
+    fireEvent.keyDown(card, { key: 'Enter' })
+    expect(onOpen).toHaveBeenCalledWith('p1')
   })
 
-  it("ignores project list updates while dragging and restores a canceled drag", () => {
+  it('ignores project list updates while dragging and restores a canceled drag', () => {
     const { rerender } = renderWithProviders(
-      <KanbanBoard projects={[queued, building]} clientName={() => "Ada"} onOpen={vi.fn()} />,
+      <KanbanBoard projects={[queued, building]} clientName={() => 'Ada'} onOpen={vi.fn()} />,
     )
     act(() => {
       dnd.onDragStart?.({})
     })
     rerender(
       <KanbanBoard
-        projects={[{ ...queued, name: "Portal 2" }]}
-        clientName={() => "Ada"}
+        projects={[{ ...queued, name: 'Portal 2' }]}
+        clientName={() => 'Ada'}
         onOpen={vi.fn()}
       />,
     )
     act(() => {
-      dnd.onDragEnd?.({ canceled: true, operation: { source: { id: "p1" } } })
-      dnd.onDragEnd?.({ canceled: true, operation: { source: { id: "p1" } } })
+      dnd.onDragEnd?.({ canceled: true, operation: { source: { id: 'p1' } } })
+      dnd.onDragEnd?.({ canceled: true, operation: { source: { id: 'p1' } } })
     })
-    expect(screen.getAllByText("Portal 2").length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Portal 2').length).toBeGreaterThan(0)
   })
 
-  it("uses the default drop animation when motion is not reduced", () => {
+  it('uses the default drop animation when motion is not reduced', () => {
     motion.reduced = false
     renderWithProviders(
-      <KanbanBoard projects={[queued]} clientName={() => "Ada"} onOpen={vi.fn()} />,
+      <KanbanBoard projects={[queued]} clientName={() => 'Ada'} onOpen={vi.fn()} />,
     )
     expect(dnd.dropAnimation).toBeUndefined()
   })

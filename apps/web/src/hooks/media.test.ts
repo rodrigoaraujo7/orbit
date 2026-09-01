@@ -1,13 +1,13 @@
-import { act, renderHook } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
-import { useIsMobile } from "./use-mobile.ts"
-import { useReducedMotion } from "./use-reduced-motion.ts"
+import { act, renderHook } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { useIsMobile } from './use-mobile.ts'
+import { useReducedMotion } from './use-reduced-motion.ts'
 
 function mockMatchMedia(matches: boolean) {
   const listeners = new Set<(event: MediaQueryListEvent) => void>()
   const media = {
     matches,
-    media: "",
+    media: '',
     onchange: null,
     addListener: vi.fn(),
     removeListener: vi.fn(),
@@ -23,8 +23,8 @@ function mockMatchMedia(matches: boolean) {
   return { media, listeners }
 }
 
-describe("media hooks", () => {
-  it("tracks mobile breakpoint changes", () => {
+describe('media hooks', () => {
+  it('tracks mobile breakpoint changes', () => {
     const { listeners } = mockMatchMedia(true)
     const { result, unmount } = renderHook(() => useIsMobile())
     expect(result.current).toBe(true)
@@ -34,7 +34,7 @@ describe("media hooks", () => {
     unmount()
   })
 
-  it("tracks reduced motion", () => {
+  it('tracks reduced motion', () => {
     const { media, listeners } = mockMatchMedia(false)
     const { result, unmount } = renderHook(() => useReducedMotion())
     expect(result.current).toBe(false)

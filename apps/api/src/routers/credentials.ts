@@ -1,7 +1,7 @@
-import { and, count, eq, gte } from "drizzle-orm"
-import { z } from "zod"
-import { TRPCError } from "@trpc/server"
-import { auditLog, credential, userKey } from "../db/schema.ts"
+import { and, count, eq, gte } from 'drizzle-orm'
+import { z } from 'zod'
+import { TRPCError } from '@trpc/server'
+import { auditLog, credential, userKey } from '../db/schema.ts'
 import {
   generateDek,
   openSecret,
@@ -10,18 +10,18 @@ import {
   secretAad,
   unwrapDek,
   wrapDek,
-} from "../crypto/envelope.ts"
-import { env } from "../env.ts"
-import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
-import { recordAudit } from "../audit/record.ts"
-import type { Tx } from "../db/with-user.ts"
+} from '../crypto/envelope.ts'
+import { env } from '../env.ts'
+import { asUser, auditCtx, protectedProcedure, router } from '../trpc/init.ts'
+import { recordAudit } from '../audit/record.ts'
+import type { Tx } from '../db/with-user.ts'
 
 const REVEAL_LIMIT = 10
 const REVEAL_WINDOW_MS = 60 * 60 * 1000
-const REVEAL_ATTEMPT = "credential.reveal.attempt"
+const REVEAL_ATTEMPT = 'credential.reveal.attempt'
 
 function masterKey() {
-  return parseMasterKey(env("MASTER_KEY"))
+  return parseMasterKey(env('MASTER_KEY'))
 }
 
 async function dekFor(tx: Tx, userId: string) {
@@ -76,15 +76,15 @@ export function requireRevealAccess(
 ) {
   if (!user.twoFactorEnabled) {
     throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "2FA is required to reveal secrets",
+      code: 'FORBIDDEN',
+      message: '2FA is required to reveal secrets',
     })
   }
   const ageMs = sessionCreatedAt ? now - new Date(sessionCreatedAt).getTime() : Infinity
   if (ageMs > 15 * 60 * 1000) {
     throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "Reauthenticate to reveal secrets",
+      code: 'FORBIDDEN',
+      message: 'Reauthenticate to reveal secrets',
     })
   }
 }
@@ -96,11 +96,15 @@ export async function recordRevealAttempt(
   ip?: string | null,
   userAgent?: string | null,
 ) {
-  await recordAudit(tx, { userId, ip, userAgent }, {
-    module: "security",
-    action: REVEAL_ATTEMPT,
-    subjectId,
-  })
+  await recordAudit(
+    tx,
+    { userId, ip, userAgent },
+    {
+      module: 'security',
+      action: REVEAL_ATTEMPT,
+      subjectId,
+    },
+  )
 }
 
 export async function revealAttemptCount(tx: Tx, userId: string, now = new Date()) {
@@ -109,7 +113,11 @@ export async function revealAttemptCount(tx: Tx, userId: string, now = new Date(
     .select({ n: count() })
     .from(auditLog)
     .where(
-      and(eq(auditLog.userId, userId), eq(auditLog.action, REVEAL_ATTEMPT), gte(auditLog.createdAt, since)),
+      and(
+        eq(auditLog.userId, userId),
+        eq(auditLog.action, REVEAL_ATTEMPT),
+        gte(auditLog.createdAt, since),
+      ),
     )
   /* v8 ignore next -- drizzle `count()` always returns a row */
   return Number(row?.n ?? 0)
@@ -119,15 +127,18 @@ export const credentialsRouter = router({
   list: protectedProcedure
     .input(z.object({ projectToolId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const rows = await asUser(ctx, (tx) =>
-        tx.select().from(credential).where(eq(credential.projectToolId, input.projectToolId)),
-      )
-      return rows.map((row) => ({
-        id: row.id,
-        projectToolId: row.projectToolId,
-        label: row.label,
-        version: row.version,
-      }))
+      return asUser(ctx, async (tx) => {
+        const rows = await tx
+          .select()
+          .from(credential)
+          .where(eq(credential.projectToolId, input.projectToolId))
+        return rows.map((row: typeof credential.$inferSelect) => ({
+          id: row.id,
+          projectToolId: row.projectToolId,
+          label: row.label,
+          version: row.version,
+        }))
+      })
     }),
 
   create: protectedProcedure
@@ -155,15 +166,15 @@ export const credentialsRouter = router({
           tx,
           ctx.userId,
           input.id,
-          ctx.req.headers.get("x-forwarded-for"),
-          ctx.req.headers.get("user-agent"),
+          ctx.req.headers.get('x-forwarded-for'),
+          ctx.req.headers.get('user-agent'),
         )
         if ((await revealAttemptCount(tx, ctx.userId)) > REVEAL_LIMIT) {
-          throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
+          throw new TRPCError({ code: 'TOO_MANY_REQUESTS' })
         }
 
         const [row] = await tx.select().from(credential).where(eq(credential.id, input.id)).limit(1)
-        if (!row) throw new TRPCError({ code: "NOT_FOUND" })
+        if (!row) throw new TRPCError({ code: 'NOT_FOUND' })
         const dek = await dekFor(tx, ctx.userId)
         const value = openSecret(
           dek,
@@ -171,8 +182,8 @@ export const credentialsRouter = router({
           secretAad(ctx.userId, row.id, row.version),
         )
         await recordAudit(tx, auditCtx(ctx), {
-          module: "security",
-          action: "credential.reveal",
+          module: 'security',
+          action: 'credential.reveal',
           subjectId: row.id,
           subjectLabel: row.label,
         })

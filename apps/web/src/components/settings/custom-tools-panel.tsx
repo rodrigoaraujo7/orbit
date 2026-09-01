@@ -1,18 +1,18 @@
-import { Plus } from "lucide-react"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Plus } from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { Emphasis } from "@/components/ui/emphasis"
-import { DataTable, type Column } from "@/components/ui/table"
-import { toast } from "@/components/ui/toast"
-import { RowActionsMenu } from "@/components/ui/row-actions-menu"
-import type { CustomTool } from "@/data/custom-tools"
-import { toolCategoryLabel } from "@/i18n/labels"
-import { useRegistry } from "@/lib/registry-store"
-import { CreateCustomToolDialog } from "./create-custom-tool-dialog"
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Emphasis } from '@/components/ui/emphasis'
+import { DataTable, type Column } from '@/components/ui/table'
+import { toast } from '@/components/ui/toast'
+import { RowActionsMenu } from '@/components/ui/row-actions-menu'
+import type { CustomTool } from '@/data/custom-tools'
+import { toolCategoryLabel } from '@/i18n/labels'
+import { useRegistry } from '@/lib/registry-store'
+import { CreateCustomToolDialog } from './create-custom-tool-dialog'
 
 export function CustomToolsPanel() {
   const { t } = useTranslation()
@@ -24,23 +24,21 @@ export function CustomToolsPanel() {
 
   const columns: Column<CustomTool>[] = [
     {
-      key: "name",
-      header: t("common.name"),
+      key: 'name',
+      header: t('common.name'),
       sortValue: (tool) => tool.name,
       cell: (tool) => <span className="font-medium">{tool.name}</span>,
     },
     {
-      key: "category",
-      header: t("common.category"),
+      key: 'category',
+      header: t('common.category'),
       sortValue: (tool) => toolCategoryLabel(tool.category),
-      cell: (tool) => (
-        <Badge variant="outline">{toolCategoryLabel(tool.category)}</Badge>
-      ),
+      cell: (tool) => <Badge variant="outline">{toolCategoryLabel(tool.category)}</Badge>,
     },
     {
-      key: "actions",
-      header: "",
-      className: "text-right",
+      key: 'actions',
+      header: '',
+      className: 'text-right',
       cell: (tool) => (
         <RowActionsMenu
           onEdit={() => {
@@ -66,7 +64,7 @@ export function CustomToolsPanel() {
           }}
         >
           <Plus />
-          {t("settings.newTool")}
+          {t('settings.newTool')}
         </Button>
       </div>
 
@@ -74,8 +72,8 @@ export function CustomToolsPanel() {
         data={customTools}
         columns={columns}
         rowKey={(tool) => tool.id}
-        initialSort={{ key: "name", direction: "asc" }}
-        emptyMessage={t("settings.noTools")}
+        initialSort={{ key: 'name', direction: 'asc' }}
+        emptyMessage={t('settings.noTools')}
       />
 
       <CreateCustomToolDialog
@@ -87,23 +85,22 @@ export function CustomToolsPanel() {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title={t("settings.deleteTool")}
+        title={t('settings.deleteTool')}
         description={
           <>
-            {t("common.delete")}{" "}
-            <Emphasis className="text-primary">{deletingTool?.name}</Emphasis>
-            ? {t("common.cannotUndo")}
+            {t('common.delete')} <Emphasis className="text-primary">{deletingTool?.name}</Emphasis>?{' '}
+            {t('common.cannotUndo')}
           </>
         }
-        confirmLabel={t("common.delete")}
+        confirmLabel={t('common.delete')}
         onConfirm={() => {
           /* v8 ignore next -- confirm is only enabled after a row is chosen */
           if (!deletingTool) return
           try {
             removeCustomTool(deletingTool.id)
-            toast.add({ title: t("settings.toolDeleted"), type: "success" })
+            toast.add({ title: t('settings.toolDeleted'), type: 'success' })
           } catch {
-            toast.add({ title: t("settings.toolDeleteError"), type: "error" })
+            toast.add({ title: t('settings.toolDeleteError'), type: 'error' })
           }
         }}
       />

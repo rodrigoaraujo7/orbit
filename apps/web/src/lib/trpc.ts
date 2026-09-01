@@ -1,4 +1,4 @@
-import { createTRPCClient, httpBatchLink } from "@trpc/client"
+import { createTRPCClient, httpBatchLink } from '@trpc/client'
 import type {
   AuditChange,
   AuditModule,
@@ -7,11 +7,11 @@ import type {
   Invoice,
   InvoiceListFilters,
   ProjectListFilters,
-} from "shared"
+} from 'shared'
 
-import type { Contact } from "@/data/contacts"
-import type { CustomTool } from "@/data/custom-tools"
-import type { Project, ProjectStatus } from "@/data/projects"
+import type { Contact } from '@/data/contacts'
+import type { CustomTool } from '@/data/custom-tools'
+import type { Project, ProjectStatus } from '@/data/projects'
 
 type AuditListInput = {
   search?: string
@@ -21,8 +21,8 @@ type AuditListInput = {
   to?: string
   cursor?: { createdAt: string; id: string; module?: string } | null
   limit?: number
-  sortBy?: "createdAt" | "module"
-  sortDir?: "asc" | "desc"
+  sortBy?: 'createdAt' | 'module'
+  sortDir?: 'asc' | 'desc'
 }
 
 type AuditListItem = {
@@ -94,11 +94,7 @@ type BrowserRouter = {
       mutate: (input: { name: string; category: string }) => Promise<CustomTool>
     }
     updateCustom: {
-      mutate: (input: {
-        id: string
-        name: string
-        category: string
-      }) => Promise<{ ok: true }>
+      mutate: (input: { id: string; name: string; category: string }) => Promise<{ ok: true }>
     }
     deleteCustom: { mutate: (input: { id: string }) => Promise<{ ok: true }> }
   }
@@ -107,9 +103,9 @@ type BrowserRouter = {
 export const trpc = createTRPCClient({
   links: [
     httpBatchLink({
-      url: "/trpc",
+      url: '/trpc',
       fetch(url, init) {
-        return fetch(url, { ...init, credentials: "include" })
+        return fetch(url, { ...init, credentials: 'include' })
       },
     }),
   ],

@@ -1,6 +1,6 @@
-import { createTestDb, insertUser } from "../db/test-db.ts"
-import { appRouter } from "../trpc/router.ts"
-import { dbHolder } from "./setup.ts"
+import { createTestDb, insertUser } from '../db/test-db.ts'
+import { appRouter } from '../trpc/router.ts'
+import { dbHolder } from './setup.ts'
 
 export async function openTestDb() {
   const { db, client } = await createTestDb()
@@ -14,7 +14,7 @@ export async function closeTestDb(client: { close: () => Promise<void> | void })
 }
 
 export function makeRequest(headers?: Record<string, string>) {
-  return new Request("http://localhost/trpc", { headers })
+  return new Request('http://localhost/trpc', { headers })
 }
 
 export function caller(
@@ -26,8 +26,8 @@ export function caller(
   },
 ) {
   const req = makeRequest({
-    "x-forwarded-for": "203.0.113.9",
-    "user-agent": "vitest",
+    'x-forwarded-for': '203.0.113.9',
+    'user-agent': 'vitest',
     ...options?.headers,
   })
   if (!userId) {

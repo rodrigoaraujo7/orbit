@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest"
-import { appRouter } from "./router.ts"
+import { describe, expect, it } from 'vitest'
+import { appRouter } from './router.ts'
 
-describe("appRouter", () => {
-  it("mounts every domain router", () => {
+describe('appRouter', () => {
+  it('mounts every domain router', () => {
     expect(appRouter.audit).toBeTruthy()
     expect(appRouter.contacts).toBeTruthy()
     expect(appRouter.dashboard).toBeTruthy()

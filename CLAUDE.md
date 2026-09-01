@@ -19,17 +19,20 @@ A freelancer juggling several projects and clients at once loses track of:
 ## Main modules
 
 ### Finance
+
 - Per-client billing and pending-payment tracking.
 - Recorded agreed amount per project (free, installments, upfront).
 - Paid-tool costs per project (who pays, how much, which account).
 - Dashboard with figures, goals, and financial indicators.
 
 ### Projects
+
 - Full record: primary contact, agreed amount, tools in use (paid and free)
   and the account/login used for each.
 - Link to the project's GitHub repository and GitHub Actions tracking.
 
 ### Kanban
+
 - View of what is in development and what is in the queue, across all
   projects.
 

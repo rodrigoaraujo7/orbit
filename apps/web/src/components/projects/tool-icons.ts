@@ -1,4 +1,4 @@
-import { createElement, type ComponentType } from "react"
+import { createElement, type ComponentType } from 'react'
 import {
   SiAnthropic,
   SiBetterstack,
@@ -23,16 +23,8 @@ import {
   SiSupabase,
   SiUmami,
   SiVercel,
-} from "@icons-pack/react-simple-icons"
-import {
-  Cloud,
-  Database,
-  Hash,
-  Mail,
-  MessageSquare,
-  Sparkles,
-  Wrench,
-} from "lucide-react"
+} from '@icons-pack/react-simple-icons'
+import { Cloud, Database, Hash, Mail, MessageSquare, Sparkles, Wrench } from 'lucide-react'
 
 export type ToolIcon = ComponentType<{ className?: string }>
 

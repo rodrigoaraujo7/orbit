@@ -1,10 +1,10 @@
-import { cleanup, screen } from "@testing-library/react"
-import type { ReactNode } from "react"
-import { afterEach, describe, expect, it, vi } from "vitest"
-import { sampleContact, sampleCustomTool, sampleProject } from "@/test/fixtures"
-import { renderWithProviders } from "@/test/render"
+import { cleanup, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { sampleContact, sampleCustomTool, sampleProject } from '@/test/fixtures'
+import { renderWithProviders } from '@/test/render'
 
-vi.mock("@/lib/projects-store", () => ({
+vi.mock('@/lib/projects-store', () => ({
   useProjects: () => ({
     projects: [sampleProject],
     isPending: false,
@@ -19,7 +19,7 @@ vi.mock("@/lib/projects-store", () => ({
   ProjectsProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-vi.mock("@/lib/registry-store", () => ({
+vi.mock('@/lib/registry-store', () => ({
   useRegistry: () => ({
     contacts: [sampleContact],
     isPending: false,
@@ -37,7 +37,7 @@ vi.mock("@/lib/registry-store", () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-import { Route } from "./settings"
+import { Route } from './settings'
 
 const SettingsPage = Route.options.component!
 
@@ -45,10 +45,10 @@ afterEach(() => {
   cleanup()
 })
 
-describe("settings route", () => {
-  it("renders the registry", () => {
+describe('settings route', () => {
+  it('renders the registry', () => {
     renderWithProviders(<SettingsPage />)
-    expect(screen.getByText("Settings")).toBeInTheDocument()
-    expect(screen.getByText("Ada Lovelace")).toBeInTheDocument()
+    expect(screen.getByText('Settings')).toBeInTheDocument()
+    expect(screen.getByText('Ada Lovelace')).toBeInTheDocument()
   })
 })

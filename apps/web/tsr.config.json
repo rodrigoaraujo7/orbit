@@ -1,0 +1,7 @@
+{
+  "target": "react",
+  "autoCodeSplitting": true,
+  "routeFileIgnorePattern": "\\.test\\.(ts|tsx)$",
+  "quoteStyle": "single",
+  "semicolons": false
+}

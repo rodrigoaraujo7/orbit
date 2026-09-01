@@ -1,12 +1,12 @@
-import { Link } from "@tanstack/react-router"
-import { ExternalLink, Pencil, User } from "lucide-react"
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { useTranslation } from "react-i18next"
+import { Link } from '@tanstack/react-router'
+import { ExternalLink, Pencil, User } from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 
-import { StatusLabel, StatusSelect, WorkflowBadge } from "@/components/projects/status-badges"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
+import { StatusLabel, StatusSelect, WorkflowBadge } from '@/components/projects/status-badges'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import {
   ResponsiveDialog,
   ResponsiveDialogBody,
@@ -15,39 +15,35 @@ import {
   ResponsiveDialogDescription,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
-} from "@/components/ui/responsive-dialog"
-import { Textarea } from "@/components/ui/textarea"
-import type { Contact } from "@/data/contacts"
-import {
-  isDealFree,
-  type Project,
-  type ProjectStatus,
-} from "@/data/projects"
-import i18n from "@/i18n"
-import { freeLabel } from "@/i18n/labels"
-import { DEFAULT_CURRENCY } from "@/lib/currency"
-import { nowDateTimeIso } from "@/lib/dates"
+} from '@/components/ui/responsive-dialog'
+import { Textarea } from '@/components/ui/textarea'
+import type { Contact } from '@/data/contacts'
+import { isDealFree, type Project, type ProjectStatus } from '@/data/projects'
+import i18n from '@/i18n'
+import { freeLabel } from '@/i18n/labels'
+import { DEFAULT_CURRENCY } from '@/lib/currency'
+import { nowDateTimeIso } from '@/lib/dates'
 import {
   formatCurrency,
   formatDate,
   formatDateTime,
   formatDealProgress,
   formatToolsProgress,
-} from "@/lib/format"
-import { formatAuditAt, formatAuditDetails } from "@/lib/audit-labels"
-import { withProjectStatus } from "@/lib/project-status"
-import { useProjects } from "@/lib/projects-store"
-import { useRegistry } from "@/lib/registry-store"
-import { trpc } from "@/lib/trpc"
+} from '@/lib/format'
+import { formatAuditAt, formatAuditDetails } from '@/lib/audit-labels'
+import { withProjectStatus } from '@/lib/project-status'
+import { useProjects } from '@/lib/projects-store'
+import { useRegistry } from '@/lib/registry-store'
+import { trpc } from '@/lib/trpc'
 
-const COMMENT_AUTHOR = "Rodrigo Araujo"
+const COMMENT_AUTHOR = 'Rodrigo Araujo'
 
 function initials(name: string) {
   return name
-    .split(" ")
+    .split(' ')
     .map((part) => part[0])
     .slice(0, 2)
-    .join("")
+    .join('')
     .toUpperCase()
 }
 
@@ -62,7 +58,7 @@ function Meta({ label, children }: { label: string; children: ReactNode }) {
 
 function monthlyCostLabel(project: Project) {
   const totals = project.tools
-    .filter((tool) => tool.billing?.cycle === "monthly")
+    .filter((tool) => tool.billing?.cycle === 'monthly')
     .reduce<Record<string, number>>((acc, tool) => {
       const { amount, currency = DEFAULT_CURRENCY } = tool.billing!
       acc[currency] = (acc[currency] ?? 0) + amount
@@ -70,9 +66,9 @@ function monthlyCostLabel(project: Project) {
     }, {})
   const label = Object.entries(totals)
     .map(([currency, total]) =>
-      i18n.t("format.amountPerMonth", { amount: formatCurrency(total, currency) }),
+      i18n.t('format.amountPerMonth', { amount: formatCurrency(total, currency) }),
     )
-    .join(" + ")
+    .join(' + ')
   return label || null
 }
 
@@ -90,14 +86,14 @@ export function ProjectIssueDialog({
   const { t } = useTranslation()
   const { updateProject } = useProjects()
   const { findContact } = useRegistry()
-  const [draft, setDraft] = useState("")
+  const [draft, setDraft] = useState('')
   const { data: audit, isPending: auditPending } = useQuery({
-    queryKey: ["audit", "project", project?.id],
+    queryKey: ['audit', 'project', project?.id],
     queryFn: () => trpc.audit.list.query({ projectId: project!.id, limit: 50 }),
     enabled: open && Boolean(project),
   })
   const invoicesQuery = useQuery({
-    queryKey: ["invoices", project?.id],
+    queryKey: ['invoices', project?.id],
     queryFn: () => trpc.invoices.list.query({ projectId: project!.id }),
     enabled: open && Boolean(project),
   })
@@ -132,14 +128,14 @@ export function ProjectIssueDialog({
         },
       ],
     })
-    setDraft("")
+    setDraft('')
   }
 
   return (
     <ResponsiveDialog
       open={open}
       onOpenChange={(next) => {
-        setDraft("")
+        setDraft('')
         onOpenChange(next)
       }}
     >
@@ -147,19 +143,21 @@ export function ProjectIssueDialog({
         <ResponsiveDialogHeader>
           <div className="min-w-0">
             <StatusLabel status={project.status} className="text-sm" />
-            <ResponsiveDialogTitle className="truncate text-2xl">{project.name}</ResponsiveDialogTitle>
-            <ResponsiveDialogDescription className="sr-only">{t("kanban.issueDetails")}</ResponsiveDialogDescription>
+            <ResponsiveDialogTitle className="truncate text-2xl">
+              {project.name}
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription className="sr-only">
+              {t('kanban.issueDetails')}
+            </ResponsiveDialogDescription>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <Button
               variant="outline"
               size="sm"
-              render={
-                <Link to="/projects/$projectId" params={{ projectId: project.id }} />
-              }
+              render={<Link to="/projects/$projectId" params={{ projectId: project.id }} />}
             >
               <ExternalLink data-icon="inline-start" />
-              {t("kanban.openProject")}
+              {t('kanban.openProject')}
             </Button>
             <ResponsiveDialogClose />
           </div>
@@ -169,18 +167,18 @@ export function ProjectIssueDialog({
           <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-5 py-5">
             <EditableDescription
               key={project.id}
-              value={project.description ?? ""}
+              value={project.description ?? ''}
               onSave={(description) => updateProject({ ...project, description })}
             />
 
             <section className="flex flex-col gap-4">
               <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                {t("kanban.history")}
+                {t('kanban.history')}
               </h3>
               {auditPending ? (
-                <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+                <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
               ) : history.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("kanban.noChanges")}</p>
+                <p className="text-sm text-muted-foreground">{t('kanban.noChanges')}</p>
               ) : (
                 <ul className="flex flex-col gap-3">
                   {history.map((entry) => (
@@ -203,10 +201,10 @@ export function ProjectIssueDialog({
 
             <section className="flex flex-col gap-4">
               <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                {t("kanban.comments")}
+                {t('kanban.comments')}
               </h3>
               {comments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("kanban.noComments")}</p>
+                <p className="text-sm text-muted-foreground">{t('kanban.noComments')}</p>
               ) : (
                 <ul className="flex flex-col gap-4">
                   {comments.map((comment) => (
@@ -229,47 +227,43 @@ export function ProjectIssueDialog({
               )}
 
               <form onSubmit={addComment} className="flex flex-col gap-2">
-                <Label htmlFor="kanban-comment">{t("kanban.newComment")}</Label>
+                <Label htmlFor="kanban-comment">{t('kanban.newComment')}</Label>
                 <Textarea
                   id="kanban-comment"
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
-                  placeholder={t("kanban.commentPlaceholder")}
+                  placeholder={t('kanban.commentPlaceholder')}
                   rows={3}
                 />
                 <Button type="submit" className="self-end" disabled={!draft.trim()}>
-                  {t("kanban.comment")}
+                  {t('kanban.comment')}
                 </Button>
               </form>
             </section>
           </div>
 
           <aside className="flex w-full shrink-0 flex-col gap-5 border-t px-5 py-5 lg:w-80 lg:overflow-y-auto lg:border-t-0 lg:border-l">
-            <Meta label={t("common.status")}>
+            <Meta label={t('common.status')}>
               <StatusSelect value={project.status} onValueChange={setStatus} />
             </Meta>
 
-            <Meta label={t("kanban.client")}>
+            <Meta label={t('kanban.client')}>
               <div className="flex flex-col gap-1">
                 <span className="inline-flex items-center gap-1.5">
                   <User className="size-3.5" />
-                  {contact?.name ?? t("common.emDash")}
+                  {contact?.name ?? t('common.emDash')}
                 </span>
-                {contact?.email && (
-                  <span className="text-muted-foreground">{contact.email}</span>
-                )}
-                {contact?.phone && (
-                  <span className="text-muted-foreground">{contact.phone}</span>
-                )}
+                {contact?.email && <span className="text-muted-foreground">{contact.email}</span>}
+                {contact?.phone && <span className="text-muted-foreground">{contact.phone}</span>}
               </div>
             </Meta>
 
-            <Meta label={t("kanban.dates")}>
-              <p>{t("kanban.started", { date: formatDate(project.startedAt) })}</p>
-              {project.endedAt && <p>{t("kanban.ended", { date: formatDate(project.endedAt) })}</p>}
+            <Meta label={t('kanban.dates')}>
+              <p>{t('kanban.started', { date: formatDate(project.startedAt) })}</p>
+              {project.endedAt && <p>{t('kanban.ended', { date: formatDate(project.endedAt) })}</p>}
             </Meta>
 
-            <Meta label={t("kanban.repository")}>
+            <Meta label={t('kanban.repository')}>
               {project.repo ? (
                 <div className="flex flex-col gap-2">
                   <a
@@ -283,23 +277,21 @@ export function ProjectIssueDialog({
                   <WorkflowBadge status={project.repo.workflow} />
                 </div>
               ) : (
-                <span className="text-muted-foreground">{t("kanban.noRepository")}</span>
+                <span className="text-muted-foreground">{t('kanban.noRepository')}</span>
               )}
             </Meta>
 
-            <Meta label={t("common.finance")}>
+            <Meta label={t('common.finance')}>
               <p className="font-medium">{dealAmount}</p>
-              <p className="text-muted-foreground">
-                {formatDealProgress(project.deal, invoices)}
-              </p>
+              <p className="text-muted-foreground">{formatDealProgress(project.deal, invoices)}</p>
             </Meta>
 
-            <Meta label={t("common.tools")}>
+            <Meta label={t('common.tools')}>
               <p className="font-medium">
                 {costLabel ??
                   (project.tools.some((tool) => tool.billing)
-                    ? t("kanban.noMonthlyBilling")
-                    : t("kanban.noPaidTools"))}
+                    ? t('kanban.noMonthlyBilling')
+                    : t('kanban.noPaidTools'))}
               </p>
               <p className="text-muted-foreground">{formatToolsProgress(project.tools)}</p>
               {project.tools.length > 0 && (
@@ -354,7 +346,7 @@ function EditableDescription({
     <section className="flex flex-col gap-2">
       <div className="flex items-center gap-0.5">
         <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          {t("kanban.description")}
+          {t('kanban.description')}
         </h3>
         {!editing && (
           <Button
@@ -362,8 +354,8 @@ function EditableDescription({
             size="icon-xs"
             className="text-muted-foreground"
             onClick={start}
-            aria-label={t("kanban.editDescription")}
-            title={t("kanban.editDescription")}
+            aria-label={t('kanban.editDescription')}
+            title={t('kanban.editDescription')}
           >
             <Pencil />
           </Button>
@@ -376,30 +368,30 @@ function EditableDescription({
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Escape") {
+              if (event.key === 'Escape') {
                 event.preventDefault()
                 cancel()
               }
-              if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+              if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
                 event.preventDefault()
                 save()
               }
             }}
             rows={4}
-            aria-label={t("kanban.description")}
+            aria-label={t('kanban.description')}
           />
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={cancel}>
-              {t("common.cancel")}
+              {t('common.cancel')}
             </Button>
             <Button type="button" size="sm" onClick={save}>
-              {t("common.save")}
+              {t('common.save')}
             </Button>
           </div>
         </div>
       ) : (
         <p className="text-sm whitespace-pre-wrap">
-          {value || <span className="text-muted-foreground">{t("kanban.noDescription")}</span>}
+          {value || <span className="text-muted-foreground">{t('kanban.noDescription')}</span>}
         </p>
       )}
     </section>

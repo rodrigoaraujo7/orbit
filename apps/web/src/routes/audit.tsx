@@ -1,22 +1,22 @@
-import { useCallback, useState } from "react"
-import { Link, createFileRoute } from "@tanstack/react-router"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { Info } from "lucide-react"
-import { useTranslation } from "react-i18next"
+import { useCallback, useState } from 'react'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   auditSearchSchema,
   compactSearch,
   parseSearch,
   type AuditChange,
   type AuditModule,
-} from "shared"
+} from 'shared'
 
-import { PageHeader } from "@/components/layout/page"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { FilterDrawer } from "@/components/ui/filter-drawer"
-import { FilterPending, TableFilterSkeleton } from "@/components/ui/filter-pending"
-import { Input } from "@/components/ui/input"
+import { PageHeader } from '@/components/layout/page'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { FilterDrawer } from '@/components/ui/filter-drawer'
+import { FilterPending, TableFilterSkeleton } from '@/components/ui/filter-pending'
+import { Input } from '@/components/ui/input'
 import {
   ResponsiveDialog,
   ResponsiveDialogBody,
@@ -25,17 +25,17 @@ import {
   ResponsiveDialogDescription,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
-} from "@/components/ui/responsive-dialog"
-import { Select, type SelectOption } from "@/components/ui/select"
-import { DataTable, type Column, type SortState } from "@/components/ui/table"
-import { Tooltip } from "@/components/ui/tooltip"
-import { auditActionLabel, auditModuleLabel, auditModuleOptions } from "@/i18n/labels"
-import { formatAuditAt, formatAuditChange } from "@/lib/audit-labels"
-import { periodBounds, type PeriodPreset } from "@/lib/audit-period"
-import { useProjects } from "@/lib/projects-store"
-import { useRegistry } from "@/lib/registry-store"
-import { trpc } from "@/lib/trpc"
-import { useDraftSearch } from "@/lib/use-draft-search"
+} from '@/components/ui/responsive-dialog'
+import { Select, type SelectOption } from '@/components/ui/select'
+import { DataTable, type Column, type SortState } from '@/components/ui/table'
+import { Tooltip } from '@/components/ui/tooltip'
+import { auditActionLabel, auditModuleLabel, auditModuleOptions } from '@/i18n/labels'
+import { formatAuditAt, formatAuditChange } from '@/lib/audit-labels'
+import { periodBounds, type PeriodPreset } from '@/lib/audit-period'
+import { useProjects } from '@/lib/projects-store'
+import { useRegistry } from '@/lib/registry-store'
+import { trpc } from '@/lib/trpc'
+import { useDraftSearch } from '@/lib/use-draft-search'
 
 type AuditCursor = { createdAt: string; id: string; module?: string }
 
@@ -52,11 +52,14 @@ type AuditEntry = {
   userAgent: string | null
 }
 
-const MODULE_BADGE: Record<AuditModule, "default" | "muted" | "outline" | "success" | "warning" | "destructive"> = {
-  project: "default",
-  kanban: "outline",
-  settings: "muted",
-  security: "destructive",
+const MODULE_BADGE: Record<
+  AuditModule,
+  'default' | 'muted' | 'outline' | 'success' | 'warning' | 'destructive'
+> = {
+  project: 'default',
+  kanban: 'outline',
+  settings: 'muted',
+  security: 'destructive',
 }
 
 function AuditFilterFields({
@@ -86,51 +89,51 @@ function AuditFilterFields({
 }) {
   const { t } = useTranslation()
   const PERIOD_OPTIONS: SelectOption[] = [
-    { value: "today", label: t("audit.today") },
-    { value: "7d", label: t("audit.days7") },
-    { value: "30d", label: t("audit.days30") },
-    { value: "90d", label: t("audit.days90") },
-    { value: "all", label: t("audit.allTime") },
-    { value: "custom", label: t("audit.custom") },
+    { value: 'today', label: t('audit.today') },
+    { value: '7d', label: t('audit.days7') },
+    { value: '30d', label: t('audit.days30') },
+    { value: '90d', label: t('audit.days90') },
+    { value: 'all', label: t('audit.allTime') },
+    { value: 'custom', label: t('audit.custom') },
   ]
   return (
     <>
       <Input
         value={search}
         onChange={(event) => onSearch(event.target.value)}
-        placeholder={t("audit.search")}
-        className={stacked ? "w-full" : "flex-1"}
+        placeholder={t('audit.search')}
+        className={stacked ? 'w-full' : 'flex-1'}
       />
-      <div className={stacked ? "w-full" : "w-48"}>
+      <div className={stacked ? 'w-full' : 'w-48'}>
         <Select
           value={module}
           onValueChange={onModule}
           options={auditModuleOptions()}
-          placeholder={t("common.module")}
+          placeholder={t('common.module')}
         />
       </div>
-      <div className={stacked ? "w-full" : "w-44"}>
+      <div className={stacked ? 'w-full' : 'w-44'}>
         <Select
           value={period}
           onValueChange={(value) => onPeriod(value as PeriodPreset)}
           options={PERIOD_OPTIONS}
         />
       </div>
-      {period === "custom" && (
+      {period === 'custom' && (
         <>
           <Input
             type="date"
             value={customFrom}
             onChange={(event) => onFrom(event.target.value)}
-            aria-label={t("common.from")}
-            className={stacked ? "w-full" : "w-40"}
+            aria-label={t('common.from')}
+            className={stacked ? 'w-full' : 'w-40'}
           />
           <Input
             type="date"
             value={customTo}
             onChange={(event) => onTo(event.target.value)}
-            aria-label={t("common.to")}
-            className={stacked ? "w-full" : "w-40"}
+            aria-label={t('common.to')}
+            className={stacked ? 'w-full' : 'w-40'}
           />
         </>
       )}
@@ -144,7 +147,7 @@ function AuditPage() {
   const { findContact } = useRegistry()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
-  const [pageSize, setPageSize] = useState("25")
+  const [pageSize, setPageSize] = useState('25')
   const [cursors, setCursors] = useState<(AuditCursor | null)[]>([null])
   const [page, setPage] = useState(0)
   const [sort, setSort] = useState<SortState>(null)
@@ -157,9 +160,9 @@ function AuditPage() {
           const next = { ...prev, ...patch }
           return compactSearch({
             ...next,
-            period: next.period === "30d" ? undefined : next.period,
-            from: next.period === "custom" ? next.from : undefined,
-            to: next.period === "custom" ? next.to : undefined,
+            period: next.period === '30d' ? undefined : next.period,
+            from: next.period === 'custom' ? next.from : undefined,
+            to: next.period === 'custom' ? next.to : undefined,
           })
         },
         replace: true,
@@ -169,7 +172,7 @@ function AuditPage() {
   )
 
   const [searchDraft, setSearchDraft] = useDraftSearch(search.q, (q) => patchSearch({ q }))
-  const period = search.period ?? "30d"
+  const period = search.period ?? '30d'
 
   function onModule(module: string) {
     patchSearch({ module: (module || undefined) as AuditModule | undefined })
@@ -178,19 +181,19 @@ function AuditPage() {
   function onPeriod(nextPeriod: PeriodPreset) {
     patchSearch({
       period: nextPeriod,
-      from: nextPeriod === "custom" ? search.from : undefined,
-      to: nextPeriod === "custom" ? search.to : undefined,
+      from: nextPeriod === 'custom' ? search.from : undefined,
+      to: nextPeriod === 'custom' ? search.to : undefined,
     })
   }
 
   function onFrom(from: string) {
-    patchSearch({ from: from || undefined, period: "custom" })
+    patchSearch({ from: from || undefined, period: 'custom' })
   }
 
   function onTo(to: string) {
-    patchSearch({ to: to || undefined, period: "custom" })
+    patchSearch({ to: to || undefined, period: 'custom' })
   }
-  const range = periodBounds(period, search.from ?? "", search.to ?? "")
+  const range = periodBounds(period, search.from ?? '', search.to ?? '')
   const filterKey = JSON.stringify({
     search: search.q,
     module: search.module,
@@ -212,15 +215,15 @@ function AuditPage() {
   }
 
   const sortParams =
-    sort?.key === "createdAt"
-      ? { sortBy: "createdAt" as const, sortDir: sort.direction }
-      : sort?.key === "module"
-        ? { sortBy: "module" as const, sortDir: sort.direction }
+    sort?.key === 'createdAt'
+      ? { sortBy: 'createdAt' as const, sortDir: sort.direction }
+      : sort?.key === 'module'
+        ? { sortBy: 'module' as const, sortDir: sort.direction }
         : {}
 
   const query = useQuery({
     queryKey: [
-      "audit",
+      'audit',
       {
         search: search.q,
         module: search.module,
@@ -247,20 +250,20 @@ function AuditPage() {
   const items = (query.data?.items ?? []) as AuditEntry[]
   const nextCursor = query.data?.nextCursor ?? null
 
-  const hasActive = Boolean(search.q?.trim()) || Boolean(search.module) || period !== "all"
+  const hasActive = Boolean(search.q?.trim()) || Boolean(search.module) || period !== 'all'
 
   function clearFilters() {
     patchSearch({
       q: undefined,
       module: undefined,
-      period: "all",
+      period: 'all',
       from: undefined,
       to: undefined,
     })
   }
 
   function objectCell(row: AuditEntry) {
-    const label = row.subjectLabel || t("common.emDash")
+    const label = row.subjectLabel || t('common.emDash')
     if (row.projectId && findProject(row.projectId)) {
       return (
         <Link
@@ -277,16 +280,16 @@ function AuditPage() {
 
   const columns: Column<AuditEntry>[] = [
     {
-      key: "createdAt",
-      header: t("common.date"),
-      className: "whitespace-nowrap",
+      key: 'createdAt',
+      header: t('common.date'),
+      className: 'whitespace-nowrap',
       /* v8 ignore next -- serverSort owns ordering; sortValue only marks the header as sortable */
       sortValue: (row) => row.createdAt,
       cell: (row) => formatAuditAt(row.createdAt),
     },
     {
-      key: "module",
-      header: t("common.module"),
+      key: 'module',
+      header: t('common.module'),
       /* v8 ignore next -- serverSort owns ordering; sortValue only marks the header as sortable */
       sortValue: (row) => row.module,
       cell: (row) => (
@@ -294,25 +297,25 @@ function AuditPage() {
       ),
     },
     {
-      key: "action",
-      header: t("common.action"),
+      key: 'action',
+      header: t('common.action'),
       cell: (row) => auditActionLabel(row.action),
     },
     {
-      key: "subject",
-      header: t("common.object"),
+      key: 'subject',
+      header: t('common.object'),
       cell: objectCell,
     },
     {
-      key: "details",
-      header: "",
-      className: "text-right",
+      key: 'details',
+      header: '',
+      className: 'text-right',
       cell: (row) => (
-        <Tooltip label={t("audit.viewDetails")} side="top">
+        <Tooltip label={t('audit.viewDetails')} side="top">
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label={t("audit.viewDetails")}
+            aria-label={t('audit.viewDetails')}
             onClick={() => setSelected(row)}
           >
             <Info />
@@ -325,21 +328,21 @@ function AuditPage() {
   return (
     <>
       <PageHeader
-        title={t("audit.title")}
-        description={t("audit.description")}
+        title={t('audit.title')}
+        description={t('audit.description')}
         actions={
           <FilterDrawer hasActive={hasActive} onClear={clearFilters}>
             <AuditFilterFields
               stacked
               search={searchDraft}
               onSearch={setSearchDraft}
-              module={search.module ?? ""}
+              module={search.module ?? ''}
               onModule={onModule}
               period={period}
               onPeriod={onPeriod}
-              customFrom={search.from ?? ""}
+              customFrom={search.from ?? ''}
               onFrom={onFrom}
-              customTo={search.to ?? ""}
+              customTo={search.to ?? ''}
               onTo={onTo}
             />
           </FilterDrawer>
@@ -350,13 +353,13 @@ function AuditPage() {
         <AuditFilterFields
           search={searchDraft}
           onSearch={setSearchDraft}
-          module={search.module ?? ""}
+          module={search.module ?? ''}
           onModule={onModule}
           period={period}
           onPeriod={onPeriod}
-          customFrom={search.from ?? ""}
+          customFrom={search.from ?? ''}
           onFrom={onFrom}
-          customTo={search.to ?? ""}
+          customTo={search.to ?? ''}
           onTo={onTo}
         />
       </div>
@@ -372,15 +375,13 @@ function AuditPage() {
       >
         <div className="px-4 py-6 sm:px-6 lg:px-8">
           {query.isError ? (
-            <p className="text-sm text-muted-foreground">
-              {t("audit.loadError")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('audit.loadError')}</p>
           ) : (
             <DataTable
               data={items}
               columns={columns}
               rowKey={(row) => row.id}
-              emptyMessage={t("audit.empty")}
+              emptyMessage={t('audit.empty')}
               serverSort={{ sort, onSortChange: setSort }}
               serverPagination={{
                 hasPrev: pageIndex > 0,
@@ -417,11 +418,9 @@ function AuditPage() {
             <>
               <ResponsiveDialogHeader>
                 <div>
-                  <ResponsiveDialogTitle>
-                    {auditActionLabel(selected.action)}
-                  </ResponsiveDialogTitle>
+                  <ResponsiveDialogTitle>{auditActionLabel(selected.action)}</ResponsiveDialogTitle>
                   <ResponsiveDialogDescription className="sr-only">
-                    {t("audit.eventDetails")}
+                    {t('audit.eventDetails')}
                   </ResponsiveDialogDescription>
                 </div>
                 <ResponsiveDialogClose />
@@ -429,13 +428,13 @@ function AuditPage() {
               <ResponsiveDialogBody className="flex flex-col gap-4 text-sm">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {t("common.date")}
+                    {t('common.date')}
                   </span>
                   {formatAuditAt(selected.createdAt)}
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {t("common.module")}
+                    {t('common.module')}
                   </span>
                   <span>
                     <Badge variant={MODULE_BADGE[selected.module]}>
@@ -445,14 +444,14 @@ function AuditPage() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {t("common.object")}
+                    {t('common.object')}
                   </span>
                   {objectCell(selected)}
                 </div>
                 {selected.changes.length > 0 && (
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                      {t("audit.changes")}
+                      {t('audit.changes')}
                     </span>
                     <ul className="list-disc space-y-1 pl-4">
                       {selected.changes.map((change, index) => (
@@ -466,7 +465,7 @@ function AuditPage() {
                 {selected.ip ? (
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                      {t("audit.ip")}
+                      {t('audit.ip')}
                     </span>
                     {selected.ip}
                   </div>
@@ -474,7 +473,7 @@ function AuditPage() {
                 {selected.userAgent ? (
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                      {t("audit.userAgent")}
+                      {t('audit.userAgent')}
                     </span>
                     <span className="break-all">{selected.userAgent}</span>
                   </div>
@@ -488,7 +487,7 @@ function AuditPage() {
   )
 }
 
-export const Route = createFileRoute("/audit")({
+export const Route = createFileRoute('/audit')({
   validateSearch: (search) => parseSearch(auditSearchSchema, search),
   component: AuditPage,
 })

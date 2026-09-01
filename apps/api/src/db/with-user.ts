@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm"
+import { sql } from 'drizzle-orm'
 
 // Drizzle's postgres-js and pglite transaction types don't share a useful
 // union. Isolation tests cover the runtime contract.
