@@ -1,11 +1,5 @@
 import { useState } from "react"
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react"
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
@@ -102,11 +96,8 @@ export function DataTable<T>({
     setPage(1)
   }
 
-  const sortColumn = activeSort
-    ? columns.find((c) => c.key === activeSort.key)
-    : undefined
-  const sorted =
-    isServer || serverSort ? data : sortRows(data, sort, sortColumn?.sortValue)
+  const sortColumn = activeSort ? columns.find((c) => c.key === activeSort.key) : undefined
+  const sorted = isServer || serverSort ? data : sortRows(data, sort, sortColumn?.sortValue)
 
   const sliced = paginate(sorted, page, Number(pageSize))
   const rows = isServer ? data : pagination ? sliced.pageItems : sorted
@@ -131,7 +122,7 @@ export function DataTable<T>({
                     key={column.key}
                     className={cn(
                       "px-4 py-2.5 font-medium text-muted-foreground",
-                      column.className
+                      column.className,
                     )}
                     aria-sort={
                       active
@@ -148,12 +139,7 @@ export function DataTable<T>({
                         className="inline-flex cursor-pointer items-center gap-1 rounded-sm outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {column.header}
-                        <Icon
-                          className={cn(
-                            "size-3.5",
-                            !active && "text-muted-foreground/50"
-                          )}
-                        />
+                        <Icon className={cn("size-3.5", !active && "text-muted-foreground/50")} />
                       </button>
                     ) : (
                       column.header
@@ -184,14 +170,11 @@ export function DataTable<T>({
                   onClick={onRowClick && (() => onRowClick(row))}
                   className={cn(
                     "animate-in fade-in slide-in-from-bottom-1 fill-mode-backwards border-b transition-colors duration-500 last:border-0 hover:bg-muted/50",
-                    onRowClick && "cursor-pointer"
+                    onRowClick && "cursor-pointer",
                   )}
                 >
                   {columns.map((column) => (
-                    <td
-                      key={column.key}
-                      className={cn("px-4 py-3", column.className)}
-                    >
+                    <td key={column.key} className={cn("px-4 py-3", column.className)}>
                       {column.cell(row)}
                     </td>
                   ))}
@@ -229,9 +212,7 @@ export function DataTable<T>({
               variant="outline"
               size="icon-sm"
               disabled={isServer ? !serverPagination?.hasPrev : sliced.page <= 1}
-              onClick={() =>
-                isServer ? serverPagination?.onPrev() : setPage(sliced.page - 1)
-              }
+              onClick={() => (isServer ? serverPagination?.onPrev() : setPage(sliced.page - 1))}
               aria-label={t("common.previousPage")}
             >
               <ChevronLeft />
@@ -239,12 +220,8 @@ export function DataTable<T>({
             <Button
               variant="outline"
               size="icon-sm"
-              disabled={
-                isServer ? !serverPagination?.hasNext : sliced.page >= sliced.pageCount
-              }
-              onClick={() =>
-                isServer ? serverPagination?.onNext() : setPage(sliced.page + 1)
-              }
+              disabled={isServer ? !serverPagination?.hasNext : sliced.page >= sliced.pageCount}
+              onClick={() => (isServer ? serverPagination?.onNext() : setPage(sliced.page + 1))}
               aria-label={t("common.nextPage")}
             >
               <ChevronRight />

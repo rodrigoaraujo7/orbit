@@ -46,19 +46,12 @@ export function ToolSelect({
   const { t } = useTranslation()
 
   return (
-    <SelectRoot
-      value={value || null}
-      onValueChange={(next) => onValueChange(next as string)}
-    >
+    <SelectRoot value={value || null} onValueChange={(next) => onValueChange(next as string)}>
       <SelectTrigger id={id} aria-invalid={invalid} aria-describedby={describedBy}>
         <SelectValue className="min-w-0 flex-1 text-left">
           {(selected: string | null) => {
             if (!selected) {
-              return (
-                <span className="text-muted-foreground">
-                  {t("projects.selectTool")}
-                </span>
-              )
+              return <span className="text-muted-foreground">{t("projects.selectTool")}</span>
             }
             return (
               <span className="flex min-w-0 items-center gap-2 truncate">
@@ -86,9 +79,7 @@ export function ToolSelect({
           <SelectPopup>
             {TOOL_CATEGORY_ORDER.map((category) => (
               <SelectGroup key={category}>
-                <SelectGroupLabel>
-                  {toolCategoryLabel(category)}
-                </SelectGroupLabel>
+                <SelectGroupLabel>{toolCategoryLabel(category)}</SelectGroupLabel>
                 {toolsByCategory(category).map((tool) => (
                   <SelectItem key={tool.id} value={tool.id}>
                     <ToolIcon id={tool.id} className="size-4 shrink-0" />

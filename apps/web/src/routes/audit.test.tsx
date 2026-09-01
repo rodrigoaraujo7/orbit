@@ -23,7 +23,15 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>()
   return {
     ...actual,
-    Link: ({ children, to, className }: { children?: ReactNode; to?: string; className?: string }) => (
+    Link: ({
+      children,
+      to,
+      className,
+    }: {
+      children?: ReactNode
+      to?: string
+      className?: string
+    }) => (
       <a href={String(to)} className={className}>
         {children}
       </a>
@@ -93,12 +101,17 @@ beforeEach(() => {
   search.value = {}
   vi.spyOn(Route, "useSearch").mockImplementation(() => search.value as never)
   vi.spyOn(Route, "useNavigate").mockReturnValue(navigate as never)
-  trpc.audit.list.query.mockResolvedValue({ items: [entry], nextCursor: { createdAt: "x", id: "a2" } })
+  trpc.audit.list.query.mockResolvedValue({
+    items: [entry],
+    nextCursor: { createdAt: "x", id: "a2" },
+  })
 })
 
 describe("audit route", () => {
   it("parses search params", () => {
-    expect(Route.options.validateSearch?.({ q: "", module: "project" })).toMatchObject({ module: "project" })
+    expect(Route.options.validateSearch?.({ q: "", module: "project" })).toMatchObject({
+      module: "project",
+    })
   })
   it("lists events and opens details", async () => {
     const user = userEvent.setup()
@@ -145,7 +158,13 @@ describe("audit route", () => {
 
   it("paginates, sorts and shows custom period fields", async () => {
     const user = userEvent.setup()
-    search.value = { period: "custom", from: "2026-01-01", to: "2026-02-01", module: "project", q: "por" }
+    search.value = {
+      period: "custom",
+      from: "2026-01-01",
+      to: "2026-02-01",
+      module: "project",
+      q: "por",
+    }
     renderWithProviders(<AuditPage />)
     await screen.findByText("Portal")
     await user.click(screen.getByRole("button", { name: "Next page" }))
@@ -157,7 +176,9 @@ describe("audit route", () => {
     await user.click(await screen.findByRole("option", { name: "Custom" }))
     expect(navigate).toHaveBeenCalled()
 
-    const moduleSelect = screen.getAllByRole("combobox").find((el) => el.textContent?.includes("Project"))
+    const moduleSelect = screen
+      .getAllByRole("combobox")
+      .find((el) => el.textContent?.includes("Project"))
     await user.click(moduleSelect!)
     await user.click(await screen.findByRole("option", { name: "Kanban" }))
 
@@ -190,14 +211,18 @@ describe("audit route", () => {
     expect(navigate).toHaveBeenCalled()
 
     await user.click(screen.getByRole("columnheader", { name: /Module/ }).querySelector("button")!)
-    const pageSize = screen.getAllByRole("combobox").find((el) => el.textContent?.includes("25 per page"))
+    const pageSize = screen
+      .getAllByRole("combobox")
+      .find((el) => el.textContent?.includes("25 per page"))
     await user.click(pageSize!)
     await user.click(await screen.findByRole("option", { name: "10 per page" }))
 
     await user.click(screen.getByRole("button", { name: "Next page" }))
     await user.click(screen.getByRole("button", { name: "Previous page" }))
 
-    const moduleSelect = screen.getAllByRole("combobox").find((el) => /Module|Project|All/.test(el.textContent ?? ""))
+    const moduleSelect = screen
+      .getAllByRole("combobox")
+      .find((el) => /Module|Project|All/.test(el.textContent ?? ""))
     await user.click(moduleSelect!)
     const all = await screen.findByRole("option", { name: "All modules" })
     await user.click(all)

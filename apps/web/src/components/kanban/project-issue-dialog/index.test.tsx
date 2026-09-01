@@ -19,7 +19,9 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>()
   return {
     ...actual,
-    Link: ({ children, to }: { children?: ReactNode; to?: string }) => <a href={String(to)}>{children}</a>,
+    Link: ({ children, to }: { children?: ReactNode; to?: string }) => (
+      <a href={String(to)}>{children}</a>
+    ),
   }
 })
 
@@ -73,9 +75,17 @@ describe("ProjectIssueDialog", () => {
 
   it("shows loading history then comments, repo and contact", async () => {
     trpc.audit.list.query.mockReturnValue(new Promise(() => {}))
-    trpc.invoices.list.query.mockResolvedValue({ items: [], totals: { count: 0, paid: 0, overdue: 0 } })
+    trpc.invoices.list.query.mockResolvedValue({
+      items: [],
+      totals: { count: 0, paid: 0, overdue: 0 },
+    })
     renderWithProviders(
-      <ProjectIssueDialog project={sampleProject} contact={sampleContact} open onOpenChange={vi.fn()} />,
+      <ProjectIssueDialog
+        project={sampleProject}
+        contact={sampleContact}
+        open
+        onOpenChange={vi.fn()}
+      />,
     )
     expect(await screen.findByText("Portal")).toBeInTheDocument()
     expect(screen.getByText("Loading…")).toBeInTheDocument()
@@ -103,7 +113,17 @@ describe("ProjectIssueDialog", () => {
       nextCursor: null,
     })
     trpc.invoices.list.query.mockResolvedValue({
-      items: [{ id: "inv-1", status: "paid", amount: 10, currency: "BRL", generatedAt: "2026-01-01", payerName: "Ada", hasAttachment: false }],
+      items: [
+        {
+          id: "inv-1",
+          status: "paid",
+          amount: 10,
+          currency: "BRL",
+          generatedAt: "2026-01-01",
+          payerName: "Ada",
+          hasAttachment: false,
+        },
+      ],
       totals: { count: 1, paid: 1, overdue: 0 },
     })
 
@@ -118,7 +138,12 @@ describe("ProjectIssueDialog", () => {
     }
 
     renderWithProviders(
-      <ProjectIssueDialog project={emptyProject} contact={{ id: "c1", name: "Ada" }} open onOpenChange={onOpenChange} />,
+      <ProjectIssueDialog
+        project={emptyProject}
+        contact={{ id: "c1", name: "Ada" }}
+        open
+        onOpenChange={onOpenChange}
+      />,
     )
 
     expect(await screen.findByText("No description.")).toBeInTheDocument()
@@ -150,7 +175,13 @@ describe("ProjectIssueDialog", () => {
     await user.click(screen.getByRole("button", { name: "Comment" }))
     expect(updateProject).toHaveBeenCalled()
 
-    await user.click(screen.getAllByRole("combobox").find((el) => el.textContent?.includes("In development") || el.textContent?.includes("Queued"))!)
+    await user.click(
+      screen
+        .getAllByRole("combobox")
+        .find(
+          (el) => el.textContent?.includes("In development") || el.textContent?.includes("Queued"),
+        )!,
+    )
     const completed = await screen.findByRole("option", { name: "Completed" })
     await user.click(completed)
     expect(updateProject).toHaveBeenCalledWith(expect.objectContaining({ status: "completed" }))
@@ -158,7 +189,10 @@ describe("ProjectIssueDialog", () => {
 
   it("shows no paid tools and no history", async () => {
     trpc.audit.list.query.mockResolvedValue({ items: [], nextCursor: null })
-    trpc.invoices.list.query.mockResolvedValue({ items: [], totals: { count: 0, paid: 0, overdue: 0 } })
+    trpc.invoices.list.query.mockResolvedValue({
+      items: [],
+      totals: { count: 0, paid: 0, overdue: 0 },
+    })
     renderWithProviders(
       <ProjectIssueDialog
         project={{ ...sampleProject, tools: [], comments: [] }}
@@ -176,7 +210,12 @@ describe("ProjectIssueDialog", () => {
     const onOpenChange = vi.fn()
     trpc.audit.list.query.mockResolvedValue({ items: [], nextCursor: null })
     renderWithProviders(
-      <ProjectIssueDialog project={sampleProject} contact={sampleContact} open onOpenChange={onOpenChange} />,
+      <ProjectIssueDialog
+        project={sampleProject}
+        contact={sampleContact}
+        open
+        onOpenChange={onOpenChange}
+      />,
     )
     const dialog = await screen.findByRole("dialog")
     await user.type(within(dialog).getByPlaceholderText("Write a comment…"), "draft")
@@ -188,7 +227,12 @@ describe("ProjectIssueDialog", () => {
     const user = userEvent.setup()
     trpc.audit.list.query.mockResolvedValue({ items: [], nextCursor: null })
     renderWithProviders(
-      <ProjectIssueDialog project={sampleProject} contact={sampleContact} open onOpenChange={vi.fn()} />,
+      <ProjectIssueDialog
+        project={sampleProject}
+        contact={sampleContact}
+        open
+        onOpenChange={vi.fn()}
+      />,
     )
     await user.click(await screen.findByRole("button", { name: "Edit description" }))
     await user.click(screen.getByRole("button", { name: "Save" }))
@@ -203,7 +247,12 @@ describe("ProjectIssueDialog", () => {
   it("falls back when the contact is missing", async () => {
     trpc.audit.list.query.mockResolvedValue({ items: [], nextCursor: null })
     renderWithProviders(
-      <ProjectIssueDialog project={sampleProject} contact={undefined} open onOpenChange={vi.fn()} />,
+      <ProjectIssueDialog
+        project={sampleProject}
+        contact={undefined}
+        open
+        onOpenChange={vi.fn()}
+      />,
     )
     expect(await screen.findByText("—")).toBeInTheDocument()
   })

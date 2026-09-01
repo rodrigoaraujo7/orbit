@@ -1,17 +1,17 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { ChevronLeft, Menu, PanelLeftOpen } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useEffect, useState, type ReactNode } from "react"
+import { ChevronLeft, Menu, PanelLeftOpen } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
-import { Button } from "@/components/ui/button";
-import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { cn } from "@/lib/utils";
-import { SidebarNav } from "../sidebar-nav";
-import { UserMenu } from "../user-menu";
+import { Button } from "@/components/ui/button"
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import { cn } from "@/lib/utils"
+import { SidebarNav } from "../sidebar-nav"
+import { UserMenu } from "../user-menu"
 
-const COLLAPSED_KEY = "pm-sidebar-collapsed";
+const COLLAPSED_KEY = "pm-sidebar-collapsed"
 
 function Logo({ collapsed = false }: { collapsed?: boolean }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <div className="flex h-14 items-center gap-2.5 px-4">
       <div className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
@@ -21,17 +21,17 @@ function Logo({ collapsed = false }: { collapsed?: boolean }) {
         {t("layout.brand")}
       </span>
     </div>
-  );
+  )
 }
 
 function CollapseButton({ onClick }: { onClick: () => void }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   // waits for the sidebar to finish expanding (the <aside> duration-400) before showing up
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(false)
   useEffect(() => {
-    const id = setTimeout(() => setVisible(true), 350);
-    return () => clearTimeout(id);
-  }, []);
+    const id = setTimeout(() => setVisible(true), 350)
+    return () => clearTimeout(id)
+  }, [])
 
   return (
     <Button
@@ -48,17 +48,17 @@ function CollapseButton({ onClick }: { onClick: () => void }) {
     >
       <ChevronLeft className="pointer-events-none absolute top-1/2 right-full mr-1.5 size-5 translate-x-3 -translate-y-1/2 text-muted-foreground opacity-0 transition-all duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100 group-hover:delay-[250ms]" />
     </Button>
-  );
+  )
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === "1");
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { t } = useTranslation()
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === "1")
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem(COLLAPSED_KEY, collapsed ? "1" : "0");
-  }, [collapsed]);
+    localStorage.setItem(COLLAPSED_KEY, collapsed ? "1" : "0")
+  }, [collapsed])
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">
@@ -94,7 +94,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Mobile topbar + nav drawer */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} swipeDirection="left">
         <header className="sticky top-0 z-30 flex h-14 items-center border-b bg-background/80 px-3 backdrop-blur-sm md:hidden">
-          <DrawerTrigger render={<Button variant="ghost" size="icon-sm" aria-label={t("layout.openMenu")} />}>
+          <DrawerTrigger
+            render={<Button variant="ghost" size="icon-sm" aria-label={t("layout.openMenu")} />}
+          >
             <Menu />
           </DrawerTrigger>
         </header>
@@ -111,5 +113,5 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="flex-1 overflow-x-hidden">{children}</main>
     </div>
-  );
+  )
 }

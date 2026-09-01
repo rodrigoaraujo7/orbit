@@ -177,7 +177,15 @@ describe("ToolsTab", () => {
         currency="BRL"
       />,
     )
-    for (const name of [/Tool/, /Project/, /Category/, /Account/, /Amount/, /Per month/, /Who pays/]) {
+    for (const name of [
+      /Tool/,
+      /Project/,
+      /Category/,
+      /Account/,
+      /Amount/,
+      /Per month/,
+      /Who pays/,
+    ]) {
       const header = screen.getByRole("columnheader", { name })
       await user.click(header.querySelector("button")!)
     }

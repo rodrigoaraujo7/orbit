@@ -96,11 +96,15 @@ export async function recordRevealAttempt(
   ip?: string | null,
   userAgent?: string | null,
 ) {
-  await recordAudit(tx, { userId, ip, userAgent }, {
-    module: "security",
-    action: REVEAL_ATTEMPT,
-    subjectId,
-  })
+  await recordAudit(
+    tx,
+    { userId, ip, userAgent },
+    {
+      module: "security",
+      action: REVEAL_ATTEMPT,
+      subjectId,
+    },
+  )
 }
 
 export async function revealAttemptCount(tx: Tx, userId: string, now = new Date()) {
@@ -109,7 +113,11 @@ export async function revealAttemptCount(tx: Tx, userId: string, now = new Date(
     .select({ n: count() })
     .from(auditLog)
     .where(
-      and(eq(auditLog.userId, userId), eq(auditLog.action, REVEAL_ATTEMPT), gte(auditLog.createdAt, since)),
+      and(
+        eq(auditLog.userId, userId),
+        eq(auditLog.action, REVEAL_ATTEMPT),
+        gte(auditLog.createdAt, since),
+      ),
     )
   /* v8 ignore next -- drizzle `count()` always returns a row */
   return Number(row?.n ?? 0)
@@ -119,15 +127,18 @@ export const credentialsRouter = router({
   list: protectedProcedure
     .input(z.object({ projectToolId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const rows = await asUser(ctx, (tx) =>
-        tx.select().from(credential).where(eq(credential.projectToolId, input.projectToolId)),
-      )
-      return rows.map((row) => ({
-        id: row.id,
-        projectToolId: row.projectToolId,
-        label: row.label,
-        version: row.version,
-      }))
+      return asUser(ctx, async (tx) => {
+        const rows = await tx
+          .select()
+          .from(credential)
+          .where(eq(credential.projectToolId, input.projectToolId))
+        return rows.map((row: typeof credential.$inferSelect) => ({
+          id: row.id,
+          projectToolId: row.projectToolId,
+          label: row.label,
+          version: row.version,
+        }))
+      })
     }),
 
   create: protectedProcedure

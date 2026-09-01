@@ -1,6 +1,6 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps } from "react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 /**
  * Highlights an inline word/name (e.g. the item being deleted, or a section
@@ -10,11 +10,19 @@ import { cn } from "@/lib/utils";
  * Serif still slants at the normal weight, so turning italics off switches to
  * Instrument Sans instead of only dropping the class.
  */
-export function Emphasis({ className, italic = true, ...props }: ComponentProps<"span"> & { italic?: boolean }) {
+export function Emphasis({
+  className,
+  italic = true,
+  ...props
+}: ComponentProps<"span"> & { italic?: boolean }) {
   return (
     <span
-      className={cn("font-bold", italic ? "font-heading italic tracking-wider text-[1.15em]" : "font-subtitle", className)}
+      className={cn(
+        "font-bold",
+        italic ? "font-heading italic tracking-wider text-[1.15em]" : "font-subtitle",
+        className,
+      )}
       {...props}
     />
-  );
+  )
 }

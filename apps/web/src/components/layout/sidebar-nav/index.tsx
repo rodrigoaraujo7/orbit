@@ -36,7 +36,7 @@ export function SidebarNav({
                 "hover:bg-sidebar-accent hover:text-sidebar-foreground",
                 "focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                 "data-[status=active]:bg-sidebar-accent data-[status=active]:text-sidebar-foreground",
-                collapsed && "justify-center px-0"
+                collapsed && "justify-center px-0",
               )}
             >
               {/* active item marker */}

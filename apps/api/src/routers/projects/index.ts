@@ -117,7 +117,10 @@ export async function replaceProjectTools(
   projectId: string,
   tools: ToolInput[],
 ) {
-  const existingTools = await tx.select().from(projectTool).where(eq(projectTool.projectId, projectId))
+  const existingTools = await tx
+    .select()
+    .from(projectTool)
+    .where(eq(projectTool.projectId, projectId))
   const existingSecrets = await tx.select().from(credential)
   await tx.delete(projectTool).where(eq(projectTool.projectId, projectId))
   for (const tool of tools) {
@@ -141,9 +144,12 @@ export async function replaceProjectTools(
         await sealNewSecret(tx, userId, toolId, secret.key, secret.value)
         continue
       }
-      const prevTool = existingTools.find((row) => row.catalogId === tool.id)
+      const prevTool = existingTools.find(
+        (row: typeof projectTool.$inferSelect) => row.catalogId === tool.id,
+      )
       const prev = existingSecrets.find(
-        (row) => row.projectToolId === prevTool?.id && row.label === secret.key,
+        (row: typeof credential.$inferSelect) =>
+          row.projectToolId === prevTool?.id && row.label === secret.key,
       )
       if (!prev) continue
       await tx.insert(credential).values({
@@ -222,9 +228,11 @@ function rowToDiff(
 async function loadToolsForDiff(tx: Tx, projectId: string) {
   const tools = await tx.select().from(projectTool).where(eq(projectTool.projectId, projectId))
   const secrets = await tx.select().from(credential)
-  return tools.map((tool) => ({
+  return tools.map((tool: typeof projectTool.$inferSelect) => ({
     ...tool,
-    secrets: secrets.filter((s) => s.projectToolId === tool.id).map((s) => ({ key: s.label })),
+    secrets: secrets
+      .filter((s: typeof credential.$inferSelect) => s.projectToolId === tool.id)
+      .map((s: typeof credential.$inferSelect) => ({ key: s.label })),
   }))
 }
 
@@ -242,12 +250,12 @@ export const projectsRouter = router({
         name: input.name,
         status: input.status,
         position: 0,
-        contactId: input.clientId,
+        contactId: input.clientId || null,
         startedAt: input.startedAt,
         endedAt: input.endedAt ?? null,
         dealKind: input.deal.kind,
         dealAmountCents: toCents(input.deal.amount),
-        dealCurrency: input.deal.currency,
+        dealCurrency: input.deal.currency ?? "BRL",
         dealInstallments: input.deal.installments ?? null,
         repoFullName: input.repo?.fullName ?? null,
         repoUrl: input.repo?.url ?? null,
@@ -299,12 +307,12 @@ export const projectsRouter = router({
         .set({
           name: input.name,
           status: input.status,
-          contactId: input.clientId,
+          contactId: input.clientId || null,
           startedAt: input.startedAt,
           endedAt: input.endedAt ?? null,
           dealKind: input.deal.kind,
           dealAmountCents: toCents(input.deal.amount),
-          dealCurrency: input.deal.currency,
+          dealCurrency: input.deal.currency ?? "BRL",
           dealInstallments: input.deal.installments ?? null,
           repoFullName: input.repo?.fullName ?? null,
           repoUrl: input.repo?.url ?? null,
@@ -314,19 +322,19 @@ export const projectsRouter = router({
         })
         .where(eq(project.id, input.id))
 
-      await replaceProjectTools(tx, ctx.userId, input.id, input.tools)
+        await replaceProjectTools(tx, ctx.userId, input.id, input.tools)
 
-      for (const entry of diffProject(rowToDiff(prev, prevTools), inputToDiff(input))) {
-        await recordAudit(tx, auditCtx(ctx), {
-          ...entry,
-          subjectId: input.id,
-          subjectLabel: input.name,
-          projectId: input.id,
-        })
-      }
-    })
-    return { ok: true }
-  }),
+        for (const entry of diffProject(rowToDiff(prev, prevTools), inputToDiff(input))) {
+          await recordAudit(tx, auditCtx(ctx), {
+            ...entry,
+            subjectId: input.id,
+            subjectLabel: input.name,
+            projectId: input.id,
+          })
+        }
+      })
+      return { ok: true }
+    }),
 
   move: protectedProcedure.input(projectMoveInput).mutation(async ({ ctx, input }) => {
       await asUser(ctx, async (tx) => {

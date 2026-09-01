@@ -1,10 +1,10 @@
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
-import { useTranslation } from "react-i18next";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
+import { useTranslation } from "react-i18next"
 
-import { ChartCard, NoData, StatRow, StatTile } from "@/components/dashboard/cards";
-import { axisProps, surfaceGap, useChartMotion } from "@/components/dashboard/chart-parts";
-import { ToolIcon } from "@/components/projects/tool-icons";
-import { Badge } from "@/components/ui/badge";
+import { ChartCard, NoData, StatRow, StatTile } from "@/components/dashboard/cards"
+import { axisProps, surfaceGap, useChartMotion } from "@/components/dashboard/chart-parts"
+import { ToolIcon } from "@/components/projects/tool-icons"
+import { Badge } from "@/components/ui/badge"
 import {
   ChartContainer,
   ChartLegend,
@@ -12,27 +12,11 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart";
-import { DataTable, type Column } from "@/components/ui/table";
-import {
-  billingCycleLabel,
-  categoryCostLabel,
-  payerLabel,
-  toolCategoryLabel,
-} from "@/i18n/labels";
-import type {
-  CategoryCost,
-  CostMonth,
-  ToolCost,
-  ToolRow,
-  ToolsSummary,
-} from "shared";
-import {
-  formatCompactCurrency,
-  formatCurrency,
-  formatMonth,
-  formatMonthLong,
-} from "@/lib/format";
+} from "@/components/ui/chart"
+import { DataTable, type Column } from "@/components/ui/table"
+import { billingCycleLabel, categoryCostLabel, payerLabel, toolCategoryLabel } from "@/i18n/labels"
+import type { CategoryCost, CostMonth, ToolCost, ToolRow, ToolsSummary } from "shared"
+import { formatCompactCurrency, formatCurrency, formatMonth, formatMonthLong } from "@/lib/format"
 
 export function ToolsTab({
   summary,
@@ -51,17 +35,17 @@ export function ToolsTab({
   months: string[]
   currency: string
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   // Two payers, two fixed slots. "Eu" keeps the brand hue because it is the
   // number that actually comes out of the freelancer's pocket.
   const payerConfig = {
     eu: { label: t("dashboard.iPay"), color: "var(--chart-1)" },
     cliente: { label: t("dashboard.clientPays"), color: "var(--chart-2)" },
-  } satisfies ChartConfig;
+  } satisfies ChartConfig
 
-  const motion = useChartMotion();
+  const motion = useChartMotion()
 
-  const money = (value: number) => formatCurrency(value, currency);
+  const money = (value: number) => formatCurrency(value, currency)
 
   const columns: Column<ToolRow>[] = [
     {
@@ -114,7 +98,9 @@ export function ToolsTab({
       className: "whitespace-nowrap",
       sortValue: (row) => row.monthly,
       cell: (row) => (
-        <span className="tabular-nums">{row.monthly > 0 ? money(row.monthly) : t("common.emDash")}</span>
+        <span className="tabular-nums">
+          {row.monthly > 0 ? money(row.monthly) : t("common.emDash")}
+        </span>
       ),
     },
     {
@@ -125,7 +111,7 @@ export function ToolsTab({
         <Badge variant={row.payer === "me" ? "default" : "muted"}>{payerLabel(row.payer)}</Badge>
       ),
     },
-  ];
+  ]
 
   return (
     <div className="flex flex-col gap-4">
@@ -144,7 +130,12 @@ export function ToolsTab({
           tone={summary.eu > 0 ? "warning" : "default"}
           delay={60}
         />
-        <StatTile label={t("dashboard.clientPays")} value={summary.cliente} format={money} delay={120} />
+        <StatTile
+          label={t("dashboard.clientPays")}
+          value={summary.cliente}
+          format={money}
+          delay={120}
+        />
         <StatTile
           label={t("dashboard.currentMonthlyCost")}
           value={summary.runRate}
@@ -158,7 +149,10 @@ export function ToolsTab({
           format={(value) => String(Math.round(value))}
           hint={
             summary.maisCara
-              ? t("dashboard.freeCountWithMax", { count: summary.gratis, name: summary.maisCara.name })
+              ? t("dashboard.freeCountWithMax", {
+                  count: summary.gratis,
+                  name: summary.maisCara.name,
+                })
               : t("dashboard.freeCount", { count: summary.gratis })
           }
           delay={240}
@@ -237,13 +231,17 @@ export function ToolsTab({
           )}
         </ChartCard>
 
-        <ChartCard title={t("dashboard.costByCategory")} hint={t("dashboard.costByCategoryHint")} delay={360}>
+        <ChartCard
+          title={t("dashboard.costByCategory")}
+          hint={t("dashboard.costByCategoryHint")}
+          delay={360}
+        >
           {byCategory.length === 0 ? (
             <NoData />
           ) : (
             <ul className="flex flex-col gap-3">
               {byCategory.map((category, index) => {
-                const share = category.total / summary.totalPeriodo;
+                const share = category.total / summary.totalPeriodo
                 return (
                   <li key={category.key}>
                     <div className="flex items-baseline justify-between gap-2 text-sm">
@@ -269,7 +267,7 @@ export function ToolsTab({
                       />
                     </div>
                   </li>
-                );
+                )
               })}
             </ul>
           )}
@@ -348,5 +346,5 @@ export function ToolsTab({
         />
       </ChartCard>
     </div>
-  );
+  )
 }

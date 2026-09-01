@@ -101,7 +101,9 @@ describe("ContactsPanel", () => {
     const user = userEvent.setup()
     renderWithProviders(<ContactsPanel />)
     await user.click(screen.getByRole("button", { name: /New contact/ }))
-    expect(await screen.findByText("Register a contact to reuse across projects.")).toBeInTheDocument()
+    expect(
+      await screen.findByText("Register a contact to reuse across projects."),
+    ).toBeInTheDocument()
     await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Cancel" }))
     await user.click(screen.getAllByRole("button", { name: "More actions" })[0]!)
     await user.click(await screen.findByRole("menuitem", { name: "Edit" }))
@@ -133,7 +135,9 @@ describe("ContactsPanel", () => {
     await user.click(screen.getAllByRole("button", { name: "More actions" })[1]!)
     await user.click(await screen.findByRole("menuitem", { name: "Delete" }))
     await confirm(user)
-    expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ title: "Could not delete contact" }))
+    expect(toastAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Could not delete contact" }),
+    )
   })
 
   it("shows the empty table", () => {

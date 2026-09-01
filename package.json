@@ -8,12 +8,17 @@
     "dev:api": "pnpm --filter api dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "4.1.11",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.6",
     "vitest": "4.1.11"
   }
 }

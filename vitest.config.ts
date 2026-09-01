@@ -23,6 +23,7 @@ export default defineConfig({
         "**/*.check.ts",
         "**/*.config.*",
         "**/db/test-db.ts",
+        "**/db/test-db/**",
         "apps/api/src/index.ts",
         "apps/web/src/main.tsx",
         "apps/web/src/routeTree.gen.ts",

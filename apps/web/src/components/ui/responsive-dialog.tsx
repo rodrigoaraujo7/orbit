@@ -37,8 +37,7 @@ type ResponsiveDialogContextValue = {
   isMobile: boolean
 }
 
-const ResponsiveDialogContext =
-  createContext<ResponsiveDialogContextValue | null>(null)
+const ResponsiveDialogContext = createContext<ResponsiveDialogContextValue | null>(null)
 
 function useResponsiveDialog() {
   const context = useContext(ResponsiveDialogContext)
@@ -83,12 +82,7 @@ function ResponsiveDialog({
   return (
     <ResponsiveDialogContext.Provider value={contextValue}>
       {isMobile ? (
-        <Drawer
-          open={isOpen}
-          onOpenChange={handleOpenChange}
-          showSwipeHandle
-          swipeDirection="down"
-        >
+        <Drawer open={isOpen} onOpenChange={handleOpenChange} showSwipeHandle swipeDirection="down">
           {children}
         </Drawer>
       ) : (
@@ -129,11 +123,7 @@ function ResponsiveDialogContent({
     return (
       <DrawerContent
         data-slot="responsive-dialog-content"
-        className={cn(
-          "data-[swipe-axis=y]:max-h-[90dvh]",
-          className,
-          drawerClassName
-        )}
+        className={cn("data-[swipe-axis=y]:max-h-[90dvh]", className, drawerClassName)}
       >
         {children}
       </DrawerContent>
@@ -143,30 +133,20 @@ function ResponsiveDialogContent({
   return (
     <DialogContent
       data-slot="responsive-dialog-content"
-      className={cn(
-        "flex max-h-[90svh] flex-col overflow-hidden",
-        className,
-        dialogClassName
-      )}
+      className={cn("flex max-h-[90svh] flex-col overflow-hidden", className, dialogClassName)}
     >
       {children}
     </DialogContent>
   )
 }
 
-function ResponsiveDialogHeader({
-  className,
-  ...props
-}: ComponentProps<"div">) {
+function ResponsiveDialogHeader({ className, ...props }: ComponentProps<"div">) {
   const { isMobile } = useResponsiveDialog()
   const Header = isMobile ? DrawerHeader : DialogHeader
   return <Header data-slot="responsive-dialog-header" className={className} {...props} />
 }
 
-function ResponsiveDialogFooter({
-  className,
-  ...props
-}: ComponentProps<"div">) {
+function ResponsiveDialogFooter({ className, ...props }: ComponentProps<"div">) {
   const { isMobile } = useResponsiveDialog()
 
   if (isMobile) {
@@ -188,54 +168,31 @@ function ResponsiveDialogFooter({
   )
 }
 
-function ResponsiveDialogTitle({
-  className,
-  ...props
-}: DialogPrimitive.Title.Props) {
+function ResponsiveDialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   const { isMobile } = useResponsiveDialog()
   const Title = isMobile ? DrawerTitle : DialogTitle
   return <Title data-slot="responsive-dialog-title" className={className} {...props} />
 }
 
-function ResponsiveDialogDescription({
-  className,
-  ...props
-}: DialogPrimitive.Description.Props) {
+function ResponsiveDialogDescription({ className, ...props }: DialogPrimitive.Description.Props) {
   const { isMobile } = useResponsiveDialog()
   const Description = isMobile ? DrawerDescription : DialogDescription
-  return (
-    <Description
-      data-slot="responsive-dialog-description"
-      className={className}
-      {...props}
-    />
-  )
+  return <Description data-slot="responsive-dialog-description" className={className} {...props} />
 }
 
-function ResponsiveDialogBody({
-  className,
-  ...props
-}: ComponentProps<"div">) {
+function ResponsiveDialogBody({ className, ...props }: ComponentProps<"div">) {
   const { isMobile } = useResponsiveDialog()
 
   return (
     <div
       data-slot="responsive-dialog-body"
-      className={cn(
-        "min-h-0 flex-1 overflow-y-auto",
-        isMobile ? "p-4" : "px-5 py-4",
-        className
-      )}
+      className={cn("min-h-0 flex-1 overflow-y-auto", isMobile ? "p-4" : "px-5 py-4", className)}
       {...props}
     />
   )
 }
 
-function ResponsiveDialogClose({
-  className,
-  children,
-  ...props
-}: ComponentProps<typeof Button>) {
+function ResponsiveDialogClose({ className, children, ...props }: ComponentProps<typeof Button>) {
   const { isMobile } = useResponsiveDialog()
   const { t } = useTranslation()
   if (isMobile) return null

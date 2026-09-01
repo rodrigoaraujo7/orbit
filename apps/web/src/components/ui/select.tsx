@@ -22,7 +22,7 @@ export function SelectTrigger({
         "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
         "aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        className
+        className,
       )}
       {...props}
     />
@@ -38,7 +38,7 @@ export function SelectPopup({
       className={cn(
         "max-h-72 overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150",
         "data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
-        className
+        className,
       )}
       {...props}
     />
@@ -53,7 +53,7 @@ export function SelectItem({
     <SelectPrimitive.Item
       className={cn(
         "flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground",
-        className
+        className,
       )}
       {...props}
     />
@@ -68,7 +68,7 @@ export function SelectGroupLabel({
     <SelectPrimitive.GroupLabel
       className={cn(
         "px-2 py-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase",
-        className
+        className,
       )}
       {...props}
     />
@@ -121,11 +121,7 @@ export function Select({
       onValueChange={(next) => onValueChange(next ?? "")}
       disabled={disabled}
     >
-      <SelectTrigger
-        id={id}
-        aria-invalid={ariaInvalid}
-        aria-describedby={describedBy}
-      >
+      <SelectTrigger id={id} aria-invalid={ariaInvalid} aria-describedby={describedBy}>
         <SelectValue className="min-w-0 flex-1 truncate text-left">
           {(selected: string | null) => {
             const option = options.find((o) => o.value === selected)

@@ -1,8 +1,4 @@
-import {
-  PROJECT_STATUS_ORDER,
-  type Project,
-  type ProjectStatus,
-} from "../../data/projects.ts"
+import { PROJECT_STATUS_ORDER, type Project, type ProjectStatus } from "../../data/projects.ts"
 import { todayIso } from "../dates/index.ts"
 
 export function isProjectStatus(value: string): value is ProjectStatus {
@@ -14,23 +10,17 @@ export function isProjectStatus(value: string): value is ProjectStatus {
  * Completing a project stamps `endedAt` (tools drop off the dashboard meter);
  * leaving completed clears it so the meter starts again.
  */
-export function withProjectStatus(
-  project: Project,
-  status: ProjectStatus
-): Project {
+export function withProjectStatus(project: Project, status: ProjectStatus): Project {
   return {
     ...project,
     status,
-    endedAt:
-      status === "completed" ? (project.endedAt ?? todayIso()) : undefined,
+    endedAt: status === "completed" ? (project.endedAt ?? todayIso()) : undefined,
   }
 }
 
-export function groupProjectsByStatus(
-  projects: Project[]
-): Record<ProjectStatus, Project[]> {
+export function groupProjectsByStatus(projects: Project[]): Record<ProjectStatus, Project[]> {
   const groups = Object.fromEntries(
-    PROJECT_STATUS_ORDER.map((status) => [status, [] as Project[]])
+    PROJECT_STATUS_ORDER.map((status) => [status, [] as Project[]]),
   ) as Record<ProjectStatus, Project[]>
 
   for (const project of projects) {
@@ -50,7 +40,7 @@ export function moveProjectInList(
   projects: Project[],
   projectId: string,
   toStatus: ProjectStatus,
-  toIndex: number
+  toIndex: number,
 ): Project[] {
   const project = projects.find((item) => item.id === projectId)
   if (!project) return projects
@@ -63,9 +53,7 @@ export function moveProjectInList(
   if (column.length === 0) return [...without, moved]
 
   if (index >= column.length) {
-    const lastIdx = without.findIndex(
-      (item) => item.id === column[column.length - 1].id
-    )
+    const lastIdx = without.findIndex((item) => item.id === column[column.length - 1].id)
     return [...without.slice(0, lastIdx + 1), moved, ...without.slice(lastIdx + 1)]
   }
 
@@ -78,10 +66,7 @@ export type ProjectColumns = Record<ProjectStatus, string[]>
 export function projectIdsByStatus(projects: Project[]): ProjectColumns {
   const grouped = groupProjectsByStatus(projects)
   return Object.fromEntries(
-    PROJECT_STATUS_ORDER.map((status) => [
-      status,
-      grouped[status].map((item) => item.id),
-    ])
+    PROJECT_STATUS_ORDER.map((status) => [status, grouped[status].map((item) => item.id)]),
   ) as ProjectColumns
 }
 
@@ -90,13 +75,13 @@ export function placeProjectInColumns(
   columns: ProjectColumns,
   projectId: string,
   toStatus: ProjectStatus,
-  beforeId: string | null
+  beforeId: string | null,
 ): ProjectColumns {
   const next = Object.fromEntries(
     PROJECT_STATUS_ORDER.map((status) => [
       status,
       columns[status].filter((id) => id !== projectId),
-    ])
+    ]),
   ) as ProjectColumns
 
   const column = next[toStatus]
@@ -114,14 +99,11 @@ export function columnsEqual(a: ProjectColumns, b: ProjectColumns): boolean {
   return PROJECT_STATUS_ORDER.every(
     (status) =>
       a[status].length === b[status].length &&
-      a[status].every((id, index) => id === b[status][index])
+      a[status].every((id, index) => id === b[status][index]),
   )
 }
 
-export function projectsFromColumns(
-  projects: Project[],
-  columns: ProjectColumns
-): Project[] {
+export function projectsFromColumns(projects: Project[], columns: ProjectColumns): Project[] {
   const byId = new Map(projects.map((item) => [item.id, item]))
   const result: Project[] = []
   for (const status of PROJECT_STATUS_ORDER) {

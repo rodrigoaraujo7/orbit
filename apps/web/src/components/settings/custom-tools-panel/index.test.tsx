@@ -74,7 +74,9 @@ describe("CustomToolsPanel", () => {
     await user.click(screen.getByRole("button", { name: "More actions" }))
     await user.click(await screen.findByRole("menuitem", { name: "Delete" }))
     await confirm(user)
-    expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ title: "Could not delete tool" }))
+    expect(toastAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Could not delete tool" }),
+    )
   })
 
   it("shows the empty table", () => {
@@ -91,6 +93,8 @@ describe("CustomToolsPanel", () => {
     ]
     renderWithProviders(<CustomToolsPanel />)
     await user.click(screen.getByRole("columnheader", { name: /Name/ }).querySelector("button")!)
-    await user.click(screen.getByRole("columnheader", { name: /Category/ }).querySelector("button")!)
+    await user.click(
+      screen.getByRole("columnheader", { name: /Category/ }).querySelector("button")!,
+    )
   })
 })

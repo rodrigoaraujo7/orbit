@@ -24,7 +24,9 @@ describe("i18n catalogs", () => {
     await i18n.changeLanguage("en-US")
     expect(getLocale()).toBe("en-US")
     expect(i18n.t("nav.projects")).toBe("Projects")
-    expect(authErrorMessage({ code: "USER_ALREADY_EXISTS" }, "fallback")).toBe("This email is already in use")
+    expect(authErrorMessage({ code: "USER_ALREADY_EXISTS" }, "fallback")).toBe(
+      "This email is already in use",
+    )
     expect(authErrorMessage({}, "fallback")).toBe("fallback")
     expect(i18n.t("common.secretCount", { count: 1 })).toBe("1 secret")
     expect(i18n.t("common.secretCount", { count: 2 })).toBe("2 secrets")

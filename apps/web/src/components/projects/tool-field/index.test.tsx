@@ -132,9 +132,13 @@ describe("ToolField", () => {
     expect(screen.getByText("Enter the value")).toBeInTheDocument()
     const amount = screen.getByPlaceholderText("0")
     await user.click(amount)
-    await user.click(screen.getAllByRole("combobox").find((el) => el.textContent?.includes("Monthly"))!)
+    await user.click(
+      screen.getAllByRole("combobox").find((el) => el.textContent?.includes("Monthly"))!,
+    )
     await user.click(await screen.findByRole("option", { name: "Yearly" }))
-    await user.click(screen.getAllByRole("combobox").find((el) => /I pay|Me/.test(el.textContent ?? ""))!)
+    await user.click(
+      screen.getAllByRole("combobox").find((el) => /I pay|Me/.test(el.textContent ?? ""))!,
+    )
     await user.click(await screen.findByRole("option", { name: /Client/ }))
   })
 

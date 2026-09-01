@@ -1,4 +1,11 @@
-import type { BillingCycle, DealKind, InvoiceStatus, Payer, PaymentMethod, ProjectStatus } from "./domain.ts"
+import type {
+  BillingCycle,
+  DealKind,
+  InvoiceStatus,
+  Payer,
+  PaymentMethod,
+  ProjectStatus,
+} from "./domain.ts"
 import type { ToolCategory } from "./tool-category.ts"
 
 export type Deal = {

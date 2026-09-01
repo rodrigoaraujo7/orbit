@@ -10,7 +10,11 @@ afterEach(() => {
 describe("page layout", () => {
   it("renders a header with actions", () => {
     renderWithProviders(
-      <PageHeader title="Dashboard" description="Overview" actions={<button type="button">Go</button>} />,
+      <PageHeader
+        title="Dashboard"
+        description="Overview"
+        actions={<button type="button">Go</button>}
+      />,
     )
     expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument()
     expect(screen.getByText("Overview")).toBeInTheDocument()

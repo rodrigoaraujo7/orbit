@@ -24,7 +24,7 @@ export function Tooltip({
             className={cn(
               "z-[70] rounded-lg bg-popover px-2.5 py-1.5 text-xs font-medium text-popover-foreground shadow-lg",
               "origin-[var(--transform-origin)] transition-[transform,opacity] duration-150",
-              "data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0"
+              "data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
             )}
           >
             {label}

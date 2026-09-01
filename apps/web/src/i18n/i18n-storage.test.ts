@@ -17,13 +17,19 @@ describe("i18n storage", () => {
   })
 
   it("reads a stored locale", async () => {
-    vi.stubGlobal("localStorage", storage(() => "pt-BR"))
+    vi.stubGlobal(
+      "localStorage",
+      storage(() => "pt-BR"),
+    )
     const { getLocale } = await import("./index.ts")
     expect(getLocale()).toBe("pt-BR")
   })
 
   it("ignores an unsupported stored locale", async () => {
-    vi.stubGlobal("localStorage", storage(() => "fr-FR"))
+    vi.stubGlobal(
+      "localStorage",
+      storage(() => "fr-FR"),
+    )
     const { DEFAULT_LOCALE, getLocale } = await import("./index.ts")
     expect(getLocale()).toBe(DEFAULT_LOCALE)
   })

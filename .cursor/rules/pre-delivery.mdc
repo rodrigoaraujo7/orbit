@@ -1,0 +1,27 @@
+---
+description: Do not finish until typecheck, lint, format:check, and tests pass.
+alwaysApply: true
+---
+
+# Pre-delivery quality gates
+
+Do not declare work done or return a completion answer until all four gates pass locally — the same gates CI runs:
+
+1. `pnpm typecheck`
+2. `pnpm lint`
+3. `pnpm format:check`
+4. `pnpm test` (or `pnpm coverage` when the change can affect coverage thresholds)
+
+```
+# ❌ BAD
+pnpm test && echo "CI will catch lint"
+# or: skip format:check; “we can format later”
+
+# ✅ GOOD
+pnpm typecheck && pnpm lint && pnpm format:check && pnpm test
+# fix failures, re-run the gates, then answer
+```
+
+If any command fails: fix, re-run the failing gate (and the others if the fix could affect them), then answer. Do not finish with “CI will catch it”, “format later”, or “tests later”.
+
+**Out of scope for the gate** (no need to run the four commands): questions, plan-only discussion, and changes that cannot affect TS/lint/format/tests (copy-only catalog edits still run `check:i18n` per the i18n rule). This rule does not replace `.cursor/rules/test-coverage.mdc`.

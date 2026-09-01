@@ -2,13 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
 import { useLayoutEffect, useRef, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  Controller,
-  FormProvider,
-  useFieldArray,
-  useForm,
-  useWatch,
-} from "react-hook-form"
+import { Controller, FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -49,12 +43,7 @@ import { ContactSelect } from "../contact-select"
 import { StatusSelect } from "../status-badges"
 import { ToolField } from "../tool-field"
 
-export type ProjectDialogSection =
-  | "identity"
-  | "contact"
-  | "billing"
-  | "tools"
-  | "repository"
+export type ProjectDialogSection = "identity" | "contact" | "billing" | "tools" | "repository"
 
 const ALL_SECTIONS: ProjectDialogSection[] = [
   "identity",
@@ -156,8 +145,7 @@ export function CreateProjectDialog({
   // Creating a project with no contacts yet: skip the picker and go straight
   // to the inline form. Wait until the contacts query has settled so an empty
   // cache during load does not flash this path and then snap back to the select.
-  const forceNewContact =
-    !project && !isContactsPending && contacts.length === 0
+  const forceNewContact = !project && !isContactsPending && contacts.length === 0
   const showNewContactFields = forceNewContact || isNewContact
 
   const wasForceNewContact = useRef(false)
@@ -213,8 +201,7 @@ export function CreateProjectDialog({
   })
 
   const heading = title ?? (project ? t("projects.editTitle") : t("projects.newTitle"))
-  const subheading =
-    description ?? t("projects.createDescription")
+  const subheading = description ?? t("projects.createDescription")
 
   const formFields = (
     <div className="flex flex-col gap-6">
@@ -237,11 +224,7 @@ export function CreateProjectDialog({
                   control={control}
                   name="status"
                   render={({ field }) => (
-                    <StatusSelect
-                      {...props}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    />
+                    <StatusSelect {...props} value={field.value} onValueChange={field.onChange} />
                   )}
                 />
               )}
@@ -345,11 +328,7 @@ export function CreateProjectDialog({
                   control={control}
                   name="clientId"
                   render={({ field }) => (
-                    <ContactSelect
-                      {...props}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    />
+                    <ContactSelect {...props} value={field.value} onValueChange={field.onChange} />
                   )}
                 />
               )}
@@ -403,9 +382,7 @@ export function CreateProjectDialog({
             <Field
               label={t("projects.billing")}
               error={errors.dealKind?.message}
-              className={
-                dealKind === "installment" && !isFree ? undefined : "sm:col-span-2"
-              }
+              className={dealKind === "installment" && !isFree ? undefined : "sm:col-span-2"}
             >
               {(props) => (
                 <Controller
@@ -442,7 +419,7 @@ export function CreateProjectDialog({
                         options={installmentOptions(
                           /* v8 ignore next -- installments only render after hasPositiveAmount */
                           parseAmount(amount) ?? 0,
-                          currency
+                          currency,
                         )}
                       />
                     )}
@@ -477,11 +454,7 @@ export function CreateProjectDialog({
             ) : (
               <div className="flex flex-col gap-3">
                 {fields.map((field, index) => (
-                  <ToolField
-                    key={field.id}
-                    index={index}
-                    onRemove={() => remove(index)}
-                  />
+                  <ToolField key={field.id} index={index} onRemove={() => remove(index)} />
                 ))}
               </div>
             )}
@@ -501,7 +474,7 @@ export function CreateProjectDialog({
                 className={cn(
                   "flex h-10 items-stretch overflow-hidden rounded-xl border border-border bg-background transition-[color,border-color,box-shadow]",
                   "has-[input:focus]:border-ring has-[input:focus]:ring-3 has-[input:focus]:ring-ring/30",
-                  "has-[input[aria-invalid=true]]:border-destructive has-[input[aria-invalid=true]]:ring-3 has-[input[aria-invalid=true]]:ring-destructive/20"
+                  "has-[input[aria-invalid=true]]:border-destructive has-[input[aria-invalid=true]]:ring-3 has-[input[aria-invalid=true]]:ring-destructive/20",
                 )}
               >
                 <span className="flex items-center border-r bg-muted/40 px-3.5 text-[15px] text-muted-foreground select-none">

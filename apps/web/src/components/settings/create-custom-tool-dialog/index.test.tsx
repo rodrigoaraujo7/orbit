@@ -57,17 +57,25 @@ describe("CreateCustomToolDialog", () => {
   it("updates a tool and reports errors", async () => {
     const user = userEvent.setup()
     updateCustomTool.mockRejectedValueOnce(new Error("nope"))
-    renderWithProviders(<CreateCustomToolDialog open onOpenChange={vi.fn()} tool={sampleCustomTool} />)
+    renderWithProviders(
+      <CreateCustomToolDialog open onOpenChange={vi.fn()} tool={sampleCustomTool} />,
+    )
     expect(await screen.findByText("Edit tool")).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Save" }))
-    await waitFor(() => expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "error" })))
+    await waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "error" })),
+    )
 
     cleanup()
     toastAdd.mockClear()
     updateCustomTool.mockResolvedValue({ ok: true })
-    renderWithProviders(<CreateCustomToolDialog open onOpenChange={vi.fn()} tool={sampleCustomTool} />)
+    renderWithProviders(
+      <CreateCustomToolDialog open onOpenChange={vi.fn()} tool={sampleCustomTool} />,
+    )
     await user.click(await screen.findByRole("button", { name: "Save" }))
-    await waitFor(() => expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "success" })))
+    await waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "success" })),
+    )
   })
 
   it("cancels without saving", async () => {

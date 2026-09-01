@@ -39,7 +39,10 @@ describe("start", () => {
     expect(createDb).toHaveBeenCalled()
     expect(applySchema).toHaveBeenCalled()
     expect(mountApi).toHaveBeenCalled()
-    expect(serve).toHaveBeenCalledWith(expect.objectContaining({ port: 3000 }), expect.any(Function))
+    expect(serve).toHaveBeenCalledWith(
+      expect.objectContaining({ port: 3000 }),
+      expect.any(Function),
+    )
     expect(log).toHaveBeenCalledWith("api listening on 3000")
     warn.mockRestore()
     log.mockRestore()
@@ -50,6 +53,9 @@ describe("start", () => {
     vi.stubEnv("BETTER_AUTH_API_KEY", "key")
     vi.spyOn(console, "log").mockImplementation(() => {})
     await start({ port: 3100 })
-    expect(serve).toHaveBeenCalledWith(expect.objectContaining({ port: 3100 }), expect.any(Function))
+    expect(serve).toHaveBeenCalledWith(
+      expect.objectContaining({ port: 3100 }),
+      expect.any(Function),
+    )
   })
 })

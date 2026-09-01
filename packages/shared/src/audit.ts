@@ -1,11 +1,6 @@
 import { z } from "zod"
 
-export const auditModuleSchema = z.enum([
-  "project",
-  "kanban",
-  "settings",
-  "security",
-])
+export const auditModuleSchema = z.enum(["project", "kanban", "settings", "security"])
 export type AuditModule = z.infer<typeof auditModuleSchema>
 
 export const auditChangeSchema = z.object({

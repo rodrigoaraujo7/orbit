@@ -15,11 +15,7 @@ export async function createTestDb() {
   return { client, db }
 }
 
-export async function insertUser(
-  client: PGlite,
-  id: string,
-  email = `${id}@test.local`,
-) {
+export async function insertUser(client: PGlite, id: string, email = `${id}@test.local`) {
   await client.query(
     `insert into "user" (id, name, email, email_verified) values ($1, $2, $3, true)`,
     [id, id, email],

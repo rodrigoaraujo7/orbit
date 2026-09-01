@@ -11,11 +11,12 @@ export function useDraftSearch(
   commit: (value: string | undefined) => void,
 ) {
   const [draft, setDraft] = useState(urlValue ?? "")
-  const debounced = useDebouncedValue(draft)
-
-  useEffect(() => {
+  const [prevUrl, setPrevUrl] = useState(urlValue)
+  if (urlValue !== prevUrl) {
+    setPrevUrl(urlValue)
     setDraft(urlValue ?? "")
-  }, [urlValue])
+  }
+  const debounced = useDebouncedValue(draft)
 
   useEffect(() => {
     const next = debounced.trim() || undefined

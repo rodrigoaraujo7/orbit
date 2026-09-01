@@ -44,7 +44,9 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>()
   return {
     ...actual,
-    Link: ({ children, to }: { children?: ReactNode; to?: string }) => <a href={String(to)}>{children}</a>,
+    Link: ({ children, to }: { children?: ReactNode; to?: string }) => (
+      <a href={String(to)}>{children}</a>
+    ),
   }
 })
 
@@ -100,7 +102,10 @@ beforeEach(() => {
   vi.spyOn(Route, "useNavigate").mockReturnValue(navigate as never)
   trpc.projects.list.query.mockResolvedValue([sampleProject])
   trpc.audit.list.query.mockResolvedValue({ items: [], nextCursor: null })
-  trpc.invoices.list.query.mockResolvedValue({ items: [], totals: { count: 0, paid: 0, overdue: 0 } })
+  trpc.invoices.list.query.mockResolvedValue({
+    items: [],
+    totals: { count: 0, paid: 0, overdue: 0 },
+  })
 })
 
 describe("kanban route", () => {
@@ -124,18 +129,26 @@ describe("kanban route", () => {
     await user.click(screen.getAllByRole("button", { name: "Clear" })[0]!)
     expect(navigate).toHaveBeenCalled()
 
-    const client = screen.getAllByRole("combobox").find((el) => el.textContent?.includes("Ada") || el.textContent?.includes("All clients"))
+    const client = screen
+      .getAllByRole("combobox")
+      .find((el) => el.textContent?.includes("Ada") || el.textContent?.includes("All clients"))
     await user.click(client!)
-    const option = await screen.findByRole("option", { name: "Ada Lovelace" }).catch(() => screen.queryByRole("option", { name: "Ada" }))
+    const option = await screen
+      .findByRole("option", { name: "Ada Lovelace" })
+      .catch(() => screen.queryByRole("option", { name: "Ada" }))
     if (option) await user.click(option)
 
     await user.click(screen.getByRole("button", { name: "Filter" }))
     const drawer = filterDrawer()
     await user.click(drawer.getByRole("button", { name: "Start month" }))
-    const jan = (await screen.findAllByRole("button")).find((button) => /^jan/i.test(button.textContent ?? ""))
+    const jan = (await screen.findAllByRole("button")).find((button) =>
+      /^jan/i.test(button.textContent ?? ""),
+    )
     if (jan) await user.click(jan)
     await user.click(drawer.getByRole("button", { name: "End month" }))
-    const feb = (await screen.findAllByRole("button")).find((button) => /^feb/i.test(button.textContent ?? ""))
+    const feb = (await screen.findAllByRole("button")).find((button) =>
+      /^feb/i.test(button.textContent ?? ""),
+    )
     if (feb) await user.click(feb)
     await user.click(drawer.getByRole("combobox"))
     await user.click(await screen.findByRole("option", { name: "All clients" }))
@@ -153,17 +166,23 @@ describe("kanban route", () => {
     search.value = { client: "c1" }
     renderWithProviders(<KanbanPage />)
     await screen.findByText("Portal")
-    const client = screen.getAllByRole("combobox").find((el) => el.textContent?.includes("Ada") || el.textContent?.includes("All clients"))
+    const client = screen
+      .getAllByRole("combobox")
+      .find((el) => el.textContent?.includes("Ada") || el.textContent?.includes("All clients"))
     await user.click(client!)
     await user.click(await screen.findByRole("option", { name: "All clients" }))
 
     const start = screen.getByRole("button", { name: "Start month" })
     await user.click(start)
-    const jan = (await screen.findAllByRole("button")).find((button) => /^jan/i.test(button.textContent ?? ""))
+    const jan = (await screen.findAllByRole("button")).find((button) =>
+      /^jan/i.test(button.textContent ?? ""),
+    )
     if (jan) await user.click(jan)
     const end = screen.getByRole("button", { name: "End month" })
     await user.click(end)
-    const feb = (await screen.findAllByRole("button")).find((button) => /^feb/i.test(button.textContent ?? ""))
+    const feb = (await screen.findAllByRole("button")).find((button) =>
+      /^feb/i.test(button.textContent ?? ""),
+    )
     if (feb) await user.click(feb)
 
     search.value = { from: "2026-01", to: "2026-02" }

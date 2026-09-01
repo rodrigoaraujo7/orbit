@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useMemo,
-  type ReactNode,
-} from "react"
+import { createContext, useContext, useMemo, type ReactNode } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import type { Contact } from "@/data/contacts"
@@ -42,10 +37,7 @@ export function RegistryProvider({ children }: { children: ReactNode }) {
   })
 
   const contacts = useMemo(() => (contactsQuery.data ?? []) as Contact[], [contactsQuery.data])
-  const customTools = useMemo(
-    () => (toolsQuery.data ?? []) as CustomTool[],
-    [toolsQuery.data],
-  )
+  const customTools = useMemo(() => (toolsQuery.data ?? []) as CustomTool[], [toolsQuery.data])
 
   function invalidateContacts() {
     void queryClient.invalidateQueries({ queryKey: ["contacts"] })
@@ -114,17 +106,28 @@ export function RegistryProvider({ children }: { children: ReactNode }) {
       isContactsPending: contactsQuery.isPending,
       isError: contactsQuery.isError || toolsQuery.isError,
       addContact: (contact) => addContactMut.mutateAsync(contact),
-      updateContact: (id, contact) =>
-        updateContactMut.mutateAsync({ id, contact }),
+      updateContact: (id, contact) => updateContactMut.mutateAsync({ id, contact }),
       removeContact: (id) => removeContactMut.mutateAsync(id),
       findContact: (id) => contacts.find((c) => c.id === id),
       customTools,
       addCustomTool: (tool) => addToolMut.mutateAsync(tool),
-      updateCustomTool: (id, tool) =>
-        updateToolMut.mutateAsync({ id, tool }),
+      updateCustomTool: (id, tool) => updateToolMut.mutateAsync({ id, tool }),
       removeCustomTool: (id) => removeToolMut.mutateAsync(id),
     }),
-    [contacts, customTools, contactsQuery.isPending, contactsQuery.isError, toolsQuery.isPending, toolsQuery.isError, addContactMut, updateContactMut, removeContactMut, addToolMut, updateToolMut, removeToolMut],
+    [
+      contacts,
+      customTools,
+      contactsQuery.isPending,
+      contactsQuery.isError,
+      toolsQuery.isPending,
+      toolsQuery.isError,
+      addContactMut,
+      updateContactMut,
+      removeContactMut,
+      addToolMut,
+      updateToolMut,
+      removeToolMut,
+    ],
   )
 
   return <RegistryContext value={value}>{children}</RegistryContext>

@@ -8,12 +8,12 @@ import {
   ReferenceLine,
   XAxis,
   YAxis,
-} from "recharts";
-import { useTranslation } from "react-i18next";
+} from "recharts"
+import { useTranslation } from "react-i18next"
 
-import { ChartCard, NoData, StatRow, StatTile } from "@/components/dashboard/cards";
-import { axisProps, surfaceGap, useChartMotion } from "@/components/dashboard/chart-parts";
-import { PaymentRuler } from "@/components/dashboard/payment-ruler";
+import { ChartCard, NoData, StatRow, StatTile } from "@/components/dashboard/cards"
+import { axisProps, surfaceGap, useChartMotion } from "@/components/dashboard/chart-parts"
+import { PaymentRuler } from "@/components/dashboard/payment-ruler"
 import {
   ChartContainer,
   ChartLegend,
@@ -21,21 +21,15 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart";
-import type {
-  ClientMonth,
-  FinanceSummary,
-  ProjectProfit,
-  RevenueMonth,
-  RulerLane,
-} from "shared";
+} from "@/components/ui/chart"
+import type { ClientMonth, FinanceSummary, ProjectProfit, RevenueMonth, RulerLane } from "shared"
 import {
   formatCompactCurrency,
   formatCurrency,
   formatMonth,
   formatMonthLong,
   formatPercent,
-} from "@/lib/format";
+} from "@/lib/format"
 
 export function FinanceTab({
   summary,
@@ -54,7 +48,7 @@ export function FinanceTab({
   months: string[]
   currency: string
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   /**
    * Three states of the same money, so the three chart slots are picked as a set
    * rather than borrowed from the status tokens: `--destructive` sits at the same
@@ -68,28 +62,33 @@ export function FinanceTab({
     recebido: { label: t("dashboard.received"), color: "var(--chart-1)" },
     aReceber: { label: t("dashboard.receivable"), color: "var(--chart-2)" },
     atrasado: { label: t("dashboard.overdue"), color: "var(--chart-3)" },
-  } satisfies ChartConfig;
+  } satisfies ChartConfig
 
   // Nominal bars ordered by value: one hue, because the bar length already
   // encodes the magnitude — coloring by rank would spend the identity channel
   // re-saying it.
   const profitConfig = {
     lucro: { label: t("dashboard.profit"), color: "var(--chart-1)" },
-  } satisfies ChartConfig;
+  } satisfies ChartConfig
 
   const clientsConfig = {
     clientes: { label: t("dashboard.clients"), color: "var(--chart-1)" },
-  } satisfies ChartConfig;
+  } satisfies ChartConfig
 
-  const motion = useChartMotion();
+  const motion = useChartMotion()
 
-  const money = (value: number) => formatCurrency(value, currency);
-  const hasRevenue = revenue.some((month) => month.recebido + month.aReceber + month.atrasado > 0);
+  const money = (value: number) => formatCurrency(value, currency)
+  const hasRevenue = revenue.some((month) => month.recebido + month.aReceber + month.atrasado > 0)
 
   return (
     <div className="flex flex-col gap-4">
       <StatRow>
-        <StatTile label={t("dashboard.billedInPeriod")} value={summary.faturado} format={money} delay={0} />
+        <StatTile
+          label={t("dashboard.billedInPeriod")}
+          value={summary.faturado}
+          format={money}
+          delay={0}
+        />
         <StatTile
           label={t("dashboard.received")}
           value={summary.recebido}
@@ -97,7 +96,12 @@ export function FinanceTab({
           tone="success"
           delay={60}
         />
-        <StatTile label={t("dashboard.receivable")} value={summary.aReceber} format={money} delay={120} />
+        <StatTile
+          label={t("dashboard.receivable")}
+          value={summary.aReceber}
+          format={money}
+          delay={120}
+        />
         <StatTile
           label={t("dashboard.overdue")}
           value={summary.atrasado}
@@ -171,7 +175,11 @@ export function FinanceTab({
           )}
         </ChartCard>
 
-        <ChartCard title={t("dashboard.clientGrowth")} hint={t("dashboard.clientsAccumulated")} delay={360}>
+        <ChartCard
+          title={t("dashboard.clientGrowth")}
+          hint={t("dashboard.clientsAccumulated")}
+          delay={360}
+        >
           <ChartContainer config={clientsConfig} className="aspect-auto h-[260px] w-full">
             <AreaChart data={growth} margin={{ left: 4, right: 4, top: 4 }}>
               <defs>
@@ -244,7 +252,9 @@ export function FinanceTab({
                     labelFormatter={(_, payload) => payload?.[0]?.payload.name}
                     formatter={(_value, _name, item) => (
                       <div className="grid gap-0.5 tabular-nums">
-                        <span>{t("dashboard.revenue", { amount: money(item.payload.receita) })}</span>
+                        <span>
+                          {t("dashboard.revenue", { amount: money(item.payload.receita) })}
+                        </span>
                         <span>{t("dashboard.cost", { amount: money(item.payload.custo) })}</span>
                         <span className="font-medium">
                           {t("dashboard.profitLine", {
@@ -279,5 +289,5 @@ export function FinanceTab({
         <PaymentRuler lanes={rulerLanes} months={months} currency={currency} />
       </ChartCard>
     </div>
-  );
+  )
 }

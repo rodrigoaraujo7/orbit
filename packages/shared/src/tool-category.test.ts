@@ -4,7 +4,16 @@ import { TOOL_CATEGORIES, TOOL_CATEGORY_LABEL, toolCategorySchema } from "./tool
 describe("tool categories", () => {
   it("labels every category slug", () => {
     expect(Object.keys(TOOL_CATEGORY_LABEL).sort()).toEqual(
-      ["ai", "analytics", "communication", "database", "deploy", "observability", "other", "payments"].sort(),
+      [
+        "ai",
+        "analytics",
+        "communication",
+        "database",
+        "deploy",
+        "observability",
+        "other",
+        "payments",
+      ].sort(),
     )
     expect(TOOL_CATEGORY_LABEL.deploy).toBe("Deploy & Hosting")
     expect(TOOL_CATEGORY_LABEL.other).toBe("Outra")

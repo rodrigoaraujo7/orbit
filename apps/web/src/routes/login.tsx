@@ -33,7 +33,10 @@ function LocaleToggle() {
     setLocale(next)
   }
 
-  const reel = Array.from({ length: offset + 2 }, (_, index) => LOCALE_ORDER[index % LOCALE_ORDER.length])
+  const reel = Array.from(
+    { length: offset + 2 },
+    (_, index) => LOCALE_ORDER[index % LOCALE_ORDER.length],
+  )
 
   return (
     <Button
@@ -84,7 +87,10 @@ function authSchema(mode: "signin" | "signup", step: "credentials" | "totp") {
             .string()
             .trim()
             .min(1, i18n.t("auth.emailRequired"))
-            .refine((value) => z.string().email().safeParse(value).success, i18n.t("auth.emailInvalid"))
+            .refine(
+              (value) => z.string().email().safeParse(value).success,
+              i18n.t("auth.emailInvalid"),
+            )
         : z.string(),
     password:
       step === "credentials"
@@ -94,7 +100,10 @@ function authSchema(mode: "signin" | "signup", step: "credentials" | "totp") {
         : z.string(),
     totp:
       step === "totp"
-        ? z.string().trim().regex(/^\d{6}$/, i18n.t("auth.totpRequired"))
+        ? z
+            .string()
+            .trim()
+            .regex(/^\d{6}$/, i18n.t("auth.totpRequired"))
         : z.string(),
   })
 }
@@ -153,7 +162,12 @@ function LoginPage() {
       })
       return
     }
-    if (mode === "signin" && result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) {
+    if (
+      mode === "signin" &&
+      result.data &&
+      "twoFactorRedirect" in result.data &&
+      result.data.twoFactorRedirect
+    ) {
       setStep("totp")
       return
     }
@@ -276,7 +290,12 @@ function LoginPage() {
         {step === "totp" && (
           <Field label={t("auth.totp")} error={errors.totp?.message}>
             {(props) => (
-              <Input {...props} {...register("totp")} inputMode="numeric" autoComplete="one-time-code" />
+              <Input
+                {...props}
+                {...register("totp")}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+              />
             )}
           </Field>
         )}
@@ -285,7 +304,13 @@ function LoginPage() {
           className="shadow-[0_0_16px_rgba(192,58,74,0.45)] transition-shadow duration-[350ms] hover:bg-primary hover:shadow-[0_0_28px_rgba(192,58,74,0.7)] active:translate-y-0"
           disabled={isSubmitting}
         >
-          {isSubmitting ? t("common.wait") : step === "totp" ? t("auth.verify") : mode === "signin" ? t("auth.signIn") : t("auth.signUp")}
+          {isSubmitting
+            ? t("common.wait")
+            : step === "totp"
+              ? t("auth.verify")
+              : mode === "signin"
+                ? t("auth.signIn")
+                : t("auth.signUp")}
         </Button>
       </form>
     </main>

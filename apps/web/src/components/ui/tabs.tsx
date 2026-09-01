@@ -1,15 +1,15 @@
-import type { LucideIcon } from "lucide-react";
-import { useRef } from "react";
-import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
+import type { LucideIcon } from "lucide-react"
+import { useRef } from "react"
+import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 export function Tabs({
   onValueChange,
   className,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Root>) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null)
 
   return (
     <div ref={ref} className="max-md:scroll-mt-14">
@@ -17,21 +17,26 @@ export function Tabs({
         {...props}
         className={className}
         onValueChange={(value, eventDetails) => {
-          onValueChange?.(value, eventDetails);
+          onValueChange?.(value, eventDetails)
           ref.current?.scrollIntoView({
-            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+              ? "auto"
+              : "smooth",
             block: "start",
-          });
+          })
         }}
       />
     </div>
-  );
+  )
 }
 
 export function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
   return (
-    <TabsPrimitive.List className={cn("inline-flex items-center gap-6 border-b border-border", className)} {...props} />
-  );
+    <TabsPrimitive.List
+      className={cn("inline-flex items-center gap-6 border-b border-border", className)}
+      {...props}
+    />
+  )
 }
 
 export function TabsTab({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Tab>) {
@@ -46,7 +51,7 @@ export function TabsTab({ className, ...props }: React.ComponentProps<typeof Tab
       )}
       {...props}
     />
-  );
+  )
 }
 
 /** Line tabs on desktop, floating icon dock on mobile — one tab set, two skins. */
@@ -60,7 +65,7 @@ export function TabsDock({ className, ...props }: React.ComponentProps<typeof Ta
       )}
       {...props}
     />
-  );
+  )
 }
 
 export function TabsDockTab({
@@ -85,9 +90,12 @@ export function TabsDockTab({
       <Icon />
       <span className="max-md:sr-only">{children}</span>
     </TabsPrimitive.Tab>
-  );
+  )
 }
 
-export function TabsPanel({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Panel>) {
-  return <TabsPrimitive.Panel className={cn("outline-none", className)} {...props} />;
+export function TabsPanel({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.Panel>) {
+  return <TabsPrimitive.Panel className={cn("outline-none", className)} {...props} />
 }

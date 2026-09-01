@@ -46,8 +46,7 @@ export function ConfirmDialog({
     if (open) setTyped("")
   }
 
-  const confirmDisabled =
-    typed.trim().toLowerCase() !== resolvedConfirmWord.toLowerCase()
+  const confirmDisabled = typed.trim().toLowerCase() !== resolvedConfirmWord.toLowerCase()
 
   const confirmPrompt = t("common.typeToConfirm", { word: resolvedConfirmWord }).split(
     resolvedConfirmWord,

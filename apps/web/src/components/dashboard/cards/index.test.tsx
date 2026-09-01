@@ -18,7 +18,9 @@ describe("dashboard cards", () => {
   it("renders a hero figure with hint and negative tone", () => {
     renderWithProviders(<HeroFigure value={-10} currency="BRL" hint="vs last month" />)
     expect(screen.getByText("vs last month")).toBeInTheDocument()
-    expect(screen.getByText((content, element) => element?.tagName === "P" && content.includes("R$"))).toBeTruthy()
+    expect(
+      screen.getByText((content, element) => element?.tagName === "P" && content.includes("R$")),
+    ).toBeTruthy()
   })
 
   it("renders tiles with and without icons", () => {
@@ -44,7 +46,13 @@ describe("dashboard cards", () => {
 
   it("wraps a chart and shows empty copy", () => {
     renderWithProviders(
-      <ChartCard title="Revenue" hint="monthly" aside={<span>aside</span>} delay={20} className="wide">
+      <ChartCard
+        title="Revenue"
+        hint="monthly"
+        aside={<span>aside</span>}
+        delay={20}
+        className="wide"
+      >
         <NoData />
       </ChartCard>,
     )

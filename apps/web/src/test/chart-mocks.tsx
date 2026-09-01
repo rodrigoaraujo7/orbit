@@ -38,10 +38,12 @@ const emptyNovosPayload = [
 
 export function invokeChartTooltip(content: ReactNode) {
   if (!isValidElement(content)) return null
-  const props = (content as ReactElement<{
-    labelFormatter?: (label: unknown, payload: unknown[]) => unknown
-    formatter?: (value: unknown, name: unknown, item: unknown) => unknown
-  }>).props
+  const props = (
+    content as ReactElement<{
+      labelFormatter?: (label: unknown, payload: unknown[]) => unknown
+      formatter?: (value: unknown, name: unknown, item: unknown) => unknown
+    }>
+  ).props
   props.labelFormatter?.("", samplePayload)
   props.formatter?.(10, "recebido", samplePayload[0])
   props.formatter?.(10, "eu", samplePayload[0])

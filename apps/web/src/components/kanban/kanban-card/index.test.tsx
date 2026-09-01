@@ -22,12 +22,7 @@ describe("KanbanCard", () => {
     const user = userEvent.setup()
     const onOpen = vi.fn()
     renderWithProviders(
-      <KanbanCard
-        project={sampleProject}
-        clientName="Ada"
-        status="queued"
-        onOpen={onOpen}
-      />,
+      <KanbanCard project={sampleProject} clientName="Ada" status="queued" onOpen={onOpen} />,
     )
     await user.click(screen.getByRole("button", { name: /Portal/ }))
     expect(onOpen).toHaveBeenCalledWith("p1")

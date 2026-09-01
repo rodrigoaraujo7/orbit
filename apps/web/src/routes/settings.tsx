@@ -8,10 +8,7 @@ function SettingsPage() {
   const { t } = useTranslation()
   return (
     <>
-      <PageHeader
-        title={t("settings.title")}
-        description={t("settings.description")}
-      />
+      <PageHeader title={t("settings.title")} description={t("settings.description")} />
 
       <div className="px-4 py-6 sm:px-6 lg:px-8">
         <GeneralRegistry />

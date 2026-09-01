@@ -104,8 +104,8 @@ export function ContactsPanel() {
         description={
           <>
             {t("common.delete")}{" "}
-            <Emphasis className="text-primary">{deletingContact?.name}</Emphasis>
-            ? {t("common.cannotUndo")}
+            <Emphasis className="text-primary">{deletingContact?.name}</Emphasis>?{" "}
+            {t("common.cannotUndo")}
           </>
         }
         confirmLabel={t("common.delete")}

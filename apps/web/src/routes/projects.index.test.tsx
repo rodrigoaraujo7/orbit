@@ -40,7 +40,15 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>()
   return {
     ...actual,
-    Link: ({ children, to, className }: { children?: ReactNode; to?: string; className?: string }) => (
+    Link: ({
+      children,
+      to,
+      className,
+    }: {
+      children?: ReactNode
+      to?: string
+      className?: string
+    }) => (
       <a href={String(to)} className={className}>
         {children}
       </a>
@@ -102,16 +110,16 @@ beforeEach(() => {
 
 describe("projects index route", () => {
   it("parses search params", () => {
-    expect(Route.options.validateSearch?.({ q: "", status: "queued" })).toMatchObject({ status: "queued" })
+    expect(Route.options.validateSearch?.({ q: "", status: "queued" })).toMatchObject({
+      status: "queued",
+    })
   })
   it("lists projects and navigates on row click", async () => {
     const user = userEvent.setup()
     renderWithProviders(<ProjectsPage />)
     expect(await screen.findByText("Portal")).toBeInTheDocument()
     await user.click(screen.getByText("Portal"))
-    expect(navigate).toHaveBeenCalledWith(
-      expect.objectContaining({ to: "/projects/$projectId" }),
-    )
+    expect(navigate).toHaveBeenCalledWith(expect.objectContaining({ to: "/projects/$projectId" }))
   })
 
   it("opens create, edit and delete flows", async () => {
@@ -177,14 +185,20 @@ describe("projects index route", () => {
     const user = userEvent.setup()
     renderWithProviders(<ProjectsPage />)
     await screen.findByText("Portal")
-    const status = screen.getAllByRole("combobox").find((el) => el.textContent?.includes("Status") || el.textContent?.includes("In development"))
+    const status = screen
+      .getAllByRole("combobox")
+      .find(
+        (el) => el.textContent?.includes("Status") || el.textContent?.includes("In development"),
+      )
     await user.click(status!)
     await user.click(await screen.findByRole("option", { name: "Queued" }))
     expect(navigate).toHaveBeenCalled()
     await user.click(status!)
     await user.click(await screen.findByRole("option", { name: "All" }))
 
-    const workflow = screen.getAllByRole("combobox").find((el) => /GitHub|Passed|Actions/.test(el.textContent ?? ""))
+    const workflow = screen
+      .getAllByRole("combobox")
+      .find((el) => /GitHub|Passed|Actions/.test(el.textContent ?? ""))
     await user.click(workflow!)
     await user.click(await screen.findByRole("option", { name: "Passed" }))
     await user.click(workflow!)

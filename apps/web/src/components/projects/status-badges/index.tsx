@@ -1,8 +1,8 @@
-import { Check, ChevronDown, Circle, CircleCheck, CircleX, LoaderCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { Check, ChevronDown, Circle, CircleCheck, CircleX, LoaderCircle } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
-import { Badge } from "@/components/ui/badge";
-import { Tooltip } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge"
+import { Tooltip } from "@/components/ui/tooltip"
 import {
   SelectIcon,
   SelectItem,
@@ -14,16 +14,12 @@ import {
   SelectRoot,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  PROJECT_STATUS_ORDER,
-  type ProjectStatus,
-  type WorkflowStatus,
-} from "@/data/projects";
-import { statusLabel, workflowStatusLabel, workflowStatusTooltip } from "@/i18n/labels";
-import { cn } from "@/lib/utils";
+} from "@/components/ui/select"
+import { PROJECT_STATUS_ORDER, type ProjectStatus, type WorkflowStatus } from "@/data/projects"
+import { statusLabel, workflowStatusLabel, workflowStatusTooltip } from "@/i18n/labels"
+import { cn } from "@/lib/utils"
 
-type BadgeVariant = React.ComponentProps<typeof Badge>["variant"];
+type BadgeVariant = React.ComponentProps<typeof Badge>["variant"]
 
 const STATUS_VARIANT: Record<ProjectStatus, BadgeVariant> = {
   queued: "muted",
@@ -31,7 +27,7 @@ const STATUS_VARIANT: Record<ProjectStatus, BadgeVariant> = {
   paused: "warning",
   "in-validation": "outline",
   completed: "success",
-};
+}
 
 // same color as the badge dot, but in bg-* so it becomes a dot — both readings
 // (badge and select) share this source so a status never drifts in color
@@ -42,10 +38,10 @@ const STATUS_DOT_CLASS: Record<ProjectStatus, string> = {
   paused: "bg-warning",
   "in-validation": "bg-foreground/50",
   completed: "bg-success",
-};
+}
 
 export function StatusDot({ status }: { status: ProjectStatus }) {
-  return <span className={cn("size-2 shrink-0 rounded-full", STATUS_DOT_CLASS[status])} />;
+  return <span className={cn("size-2 shrink-0 rounded-full", STATUS_DOT_CLASS[status])} />
 }
 
 // same color as the dot (`STATUS_DOT_CLASS`), in text-* for plain-text labels.
@@ -55,16 +51,18 @@ const STATUS_TEXT_CLASS: Record<ProjectStatus, string> = {
   paused: "text-warning",
   "in-validation": "text-foreground/70",
   completed: "text-success",
-};
+}
 
 /** Status as plain text (no badge) — used above the project title. */
 export function StatusLabel({ status, className }: { status: ProjectStatus; className?: string }) {
-  useTranslation();
+  useTranslation()
   return (
-    <span className={cn("font-heading italic tracking-wider", STATUS_TEXT_CLASS[status], className)}>
+    <span
+      className={cn("font-heading italic tracking-wider", STATUS_TEXT_CLASS[status], className)}
+    >
       {statusLabel(status)}
     </span>
-  );
+  )
 }
 
 const WORKFLOW_VARIANT: Record<WorkflowStatus, BadgeVariant> = {
@@ -72,14 +70,14 @@ const WORKFLOW_VARIANT: Record<WorkflowStatus, BadgeVariant> = {
   failure: "destructive",
   running: "warning",
   none: "muted",
-};
+}
 
 const WORKFLOW_ICON: Record<WorkflowStatus, typeof Circle> = {
   success: CircleCheck,
   failure: CircleX,
   running: LoaderCircle,
   none: Circle,
-};
+}
 
 // same color as the badge (`WORKFLOW_VARIANT`), in text-* for the select icon.
 const WORKFLOW_ICON_COLOR_CLASS: Record<WorkflowStatus, string> = {
@@ -87,15 +85,15 @@ const WORKFLOW_ICON_COLOR_CLASS: Record<WorkflowStatus, string> = {
   failure: "text-destructive",
   running: "text-warning",
   none: "text-muted-foreground",
-};
+}
 
 export function StatusBadge({ status, className }: { status: ProjectStatus; className?: string }) {
-  useTranslation();
+  useTranslation()
   return (
     <Badge variant={STATUS_VARIANT[status]} className={className}>
       {statusLabel(status)}
     </Badge>
-  );
+  )
 }
 
 export function WorkflowBadge({
@@ -103,25 +101,25 @@ export function WorkflowBadge({
   iconOnly = false,
   tooltip = false,
 }: {
-  status: WorkflowStatus;
-  iconOnly?: boolean;
-  tooltip?: boolean;
+  status: WorkflowStatus
+  iconOnly?: boolean
+  tooltip?: boolean
 }) {
-  useTranslation();
-  const Icon = WORKFLOW_ICON[status];
+  useTranslation()
+  const Icon = WORKFLOW_ICON[status]
   const badge = (
     <Badge variant={WORKFLOW_VARIANT[status]} className={iconOnly ? "p-1" : undefined}>
       <Icon className={status === "running" ? "animate-spin" : undefined} />
       {!iconOnly && workflowStatusLabel(status)}
     </Badge>
-  );
+  )
   return iconOnly && tooltip ? (
     <Tooltip label={workflowStatusTooltip(status)} side="right">
       {badge}
     </Tooltip>
   ) : (
     badge
-  );
+  )
 }
 
 /**
@@ -136,13 +134,13 @@ export function StatusSelect({
   "aria-invalid": ariaInvalid,
   "aria-describedby": describedBy,
 }: {
-  id?: string;
-  value: ProjectStatus;
-  onValueChange: (value: ProjectStatus) => void;
-  "aria-invalid"?: boolean;
-  "aria-describedby"?: string;
+  id?: string
+  value: ProjectStatus
+  onValueChange: (value: ProjectStatus) => void
+  "aria-invalid"?: boolean
+  "aria-describedby"?: string
 }) {
-  useTranslation();
+  useTranslation()
   return (
     <SelectRoot value={value} onValueChange={(next) => onValueChange(next as ProjectStatus)}>
       <SelectTrigger id={id} aria-invalid={ariaInvalid} aria-describedby={describedBy}>
@@ -162,7 +160,11 @@ export function StatusSelect({
       </SelectTrigger>
 
       <SelectPortal>
-        <SelectPositioner sideOffset={4} alignItemWithTrigger={false} className="z-[60] w-[var(--anchor-width)]">
+        <SelectPositioner
+          sideOffset={4}
+          alignItemWithTrigger={false}
+          className="z-[60] w-[var(--anchor-width)]"
+        >
           <SelectPopup>
             {PROJECT_STATUS_ORDER.map((status) => (
               <SelectItem key={status} value={status}>
@@ -177,7 +179,7 @@ export function StatusSelect({
         </SelectPositioner>
       </SelectPortal>
     </SelectRoot>
-  );
+  )
 }
 
 /**
@@ -188,10 +190,10 @@ export function StatusFilterSelect({
   value,
   onValueChange,
 }: {
-  value: ProjectStatus | "";
-  onValueChange: (value: ProjectStatus | "") => void;
+  value: ProjectStatus | ""
+  onValueChange: (value: ProjectStatus | "") => void
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <SelectRoot
       value={value || "all"}
@@ -216,7 +218,11 @@ export function StatusFilterSelect({
       </SelectTrigger>
 
       <SelectPortal>
-        <SelectPositioner sideOffset={4} alignItemWithTrigger={false} className="z-[60] w-[var(--anchor-width)]">
+        <SelectPositioner
+          sideOffset={4}
+          alignItemWithTrigger={false}
+          className="z-[60] w-[var(--anchor-width)]"
+        >
           <SelectPopup>
             <SelectItem value="all">
               <SelectItemText>{t("common.all")}</SelectItemText>
@@ -237,20 +243,20 @@ export function StatusFilterSelect({
         </SelectPositioner>
       </SelectPortal>
     </SelectRoot>
-  );
+  )
 }
 
-const WORKFLOW_STATUS_ORDER: WorkflowStatus[] = ["success", "failure", "running", "none"];
+const WORKFLOW_STATUS_ORDER: WorkflowStatus[] = ["success", "failure", "running", "none"]
 
 /** GitHub Actions status filter select, with the same icon as the badge. */
 export function WorkflowFilterSelect({
   value,
   onValueChange,
 }: {
-  value: WorkflowStatus | "";
-  onValueChange: (value: WorkflowStatus | "") => void;
+  value: WorkflowStatus | ""
+  onValueChange: (value: WorkflowStatus | "") => void
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <SelectRoot
       value={value || "all"}
@@ -259,9 +265,9 @@ export function WorkflowFilterSelect({
       <SelectTrigger>
         <SelectValue className="min-w-0 flex-1 text-left">
           {(selected: string | null) => {
-            if (!selected || selected === "all") return t("workflow.filterLabel");
-            const status = selected as WorkflowStatus;
-            const Icon = WORKFLOW_ICON[status];
+            if (!selected || selected === "all") return t("workflow.filterLabel")
+            const status = selected as WorkflowStatus
+            const Icon = WORKFLOW_ICON[status]
             return (
               <span className="flex min-w-0 items-center gap-2 truncate">
                 <Icon
@@ -273,7 +279,7 @@ export function WorkflowFilterSelect({
                 />
                 <span className="truncate">{workflowStatusLabel(status)}</span>
               </span>
-            );
+            )
           }}
         </SelectValue>
         <SelectIcon>
@@ -282,7 +288,11 @@ export function WorkflowFilterSelect({
       </SelectTrigger>
 
       <SelectPortal>
-        <SelectPositioner sideOffset={4} alignItemWithTrigger={false} className="z-[60] w-[var(--anchor-width)]">
+        <SelectPositioner
+          sideOffset={4}
+          alignItemWithTrigger={false}
+          className="z-[60] w-[var(--anchor-width)]"
+        >
           <SelectPopup>
             <SelectItem value="all">
               <SelectItemText>{t("common.all")}</SelectItemText>
@@ -291,7 +301,7 @@ export function WorkflowFilterSelect({
               </SelectItemIndicator>
             </SelectItem>
             {WORKFLOW_STATUS_ORDER.map((status) => {
-              const Icon = WORKFLOW_ICON[status];
+              const Icon = WORKFLOW_ICON[status]
               return (
                 <SelectItem key={status} value={status}>
                   <Icon
@@ -306,11 +316,11 @@ export function WorkflowFilterSelect({
                     <Check className="size-3.5 text-primary" />
                   </SelectItemIndicator>
                 </SelectItem>
-              );
+              )
             })}
           </SelectPopup>
         </SelectPositioner>
       </SelectPortal>
     </SelectRoot>
-  );
+  )
 }

@@ -3,11 +3,7 @@ import { User } from "lucide-react"
 import { useEffect, useRef, type ComponentProps, type KeyboardEvent } from "react"
 
 import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Project, ProjectStatus } from "@/data/projects"
 import { cn } from "@/lib/utils"
 
@@ -28,7 +24,9 @@ function KanbanCardFace({
       size="sm"
       className={cn(
         "shrink-0 shadow-none ring-border",
-        overlay ? "rotate-1 cursor-grabbing shadow-lg ring-foreground/10" : "cursor-pointer hover:bg-muted/40",
+        overlay
+          ? "rotate-1 cursor-grabbing shadow-lg ring-foreground/10"
+          : "cursor-pointer hover:bg-muted/40",
         className,
       )}
       {...props}

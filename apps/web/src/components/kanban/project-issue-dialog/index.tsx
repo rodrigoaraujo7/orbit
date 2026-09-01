@@ -18,11 +18,7 @@ import {
 } from "@/components/ui/responsive-dialog"
 import { Textarea } from "@/components/ui/textarea"
 import type { Contact } from "@/data/contacts"
-import {
-  isDealFree,
-  type Project,
-  type ProjectStatus,
-} from "@/data/projects"
+import { isDealFree, type Project, type ProjectStatus } from "@/data/projects"
 import i18n from "@/i18n"
 import { freeLabel } from "@/i18n/labels"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
@@ -147,16 +143,18 @@ export function ProjectIssueDialog({
         <ResponsiveDialogHeader>
           <div className="min-w-0">
             <StatusLabel status={project.status} className="text-sm" />
-            <ResponsiveDialogTitle className="truncate text-2xl">{project.name}</ResponsiveDialogTitle>
-            <ResponsiveDialogDescription className="sr-only">{t("kanban.issueDetails")}</ResponsiveDialogDescription>
+            <ResponsiveDialogTitle className="truncate text-2xl">
+              {project.name}
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription className="sr-only">
+              {t("kanban.issueDetails")}
+            </ResponsiveDialogDescription>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <Button
               variant="outline"
               size="sm"
-              render={
-                <Link to="/projects/$projectId" params={{ projectId: project.id }} />
-              }
+              render={<Link to="/projects/$projectId" params={{ projectId: project.id }} />}
             >
               <ExternalLink data-icon="inline-start" />
               {t("kanban.openProject")}
@@ -255,12 +253,8 @@ export function ProjectIssueDialog({
                   <User className="size-3.5" />
                   {contact?.name ?? t("common.emDash")}
                 </span>
-                {contact?.email && (
-                  <span className="text-muted-foreground">{contact.email}</span>
-                )}
-                {contact?.phone && (
-                  <span className="text-muted-foreground">{contact.phone}</span>
-                )}
+                {contact?.email && <span className="text-muted-foreground">{contact.email}</span>}
+                {contact?.phone && <span className="text-muted-foreground">{contact.phone}</span>}
               </div>
             </Meta>
 
@@ -289,9 +283,7 @@ export function ProjectIssueDialog({
 
             <Meta label={t("common.finance")}>
               <p className="font-medium">{dealAmount}</p>
-              <p className="text-muted-foreground">
-                {formatDealProgress(project.deal, invoices)}
-              </p>
+              <p className="text-muted-foreground">{formatDealProgress(project.deal, invoices)}</p>
             </Meta>
 
             <Meta label={t("common.tools")}>

@@ -74,14 +74,17 @@ export async function listAuditLogs(tx: Tx, input: AuditListInput) {
     )
     if (sortBy === "module") {
       const cursorRank =
-        input.cursor.module === "settings" ? 1
-        : input.cursor.module === "kanban" ? 2
-        : input.cursor.module === "project" ? 3
-        : input.cursor.module === "security" ? 4
-        : 5
-      const pastRank = sortDir === "asc"
-        ? sql`${moduleRank} > ${cursorRank}`
-        : sql`${moduleRank} < ${cursorRank}`
+        input.cursor.module === "settings"
+          ? 1
+          : input.cursor.module === "kanban"
+            ? 2
+            : input.cursor.module === "project"
+              ? 3
+              : input.cursor.module === "security"
+                ? 4
+                : 5
+      const pastRank =
+        sortDir === "asc" ? sql`${moduleRank} > ${cursorRank}` : sql`${moduleRank} < ${cursorRank}`
       conditions.push(or(pastRank, and(sql`${moduleRank} = ${cursorRank}`, afterInDateDesc)))
     } else if (sortDir === "asc") {
       conditions.push(
@@ -95,16 +98,18 @@ export async function listAuditLogs(tx: Tx, input: AuditListInput) {
     }
   }
 
-  const dateOrder = sortDir === "asc"
-    ? [asc(auditLog.createdAt), asc(auditLog.id)]
-    : [desc(auditLog.createdAt), desc(auditLog.id)]
-  const orderBy = sortBy === "module"
-    ? [
-        sortDir === "asc" ? asc(moduleRank) : desc(moduleRank),
-        desc(auditLog.createdAt),
-        desc(auditLog.id),
-      ]
-    : dateOrder
+  const dateOrder =
+    sortDir === "asc"
+      ? [asc(auditLog.createdAt), asc(auditLog.id)]
+      : [desc(auditLog.createdAt), desc(auditLog.id)]
+  const orderBy =
+    sortBy === "module"
+      ? [
+          sortDir === "asc" ? asc(moduleRank) : desc(moduleRank),
+          desc(auditLog.createdAt),
+          desc(auditLog.id),
+        ]
+      : dateOrder
 
   const rows = await tx
     .select()
@@ -117,7 +122,7 @@ export async function listAuditLogs(tx: Tx, input: AuditListInput) {
   const page = extra ? rows.slice(0, limit) : rows
   const last = page[page.length - 1]
   return {
-    items: page.map((row) => ({
+    items: page.map((row: typeof auditLog.$inferSelect) => ({
       id: row.id,
       module: row.module,
       action: row.action,
@@ -137,7 +142,7 @@ export async function listAuditLogs(tx: Tx, input: AuditListInput) {
 }
 
 export const auditRouter = router({
-  list: protectedProcedure.input(listInput).query(({ ctx, input }) =>
-    asUser(ctx, (tx) => listAuditLogs(tx, input)),
-  ),
+  list: protectedProcedure
+    .input(listInput)
+    .query(({ ctx, input }) => asUser(ctx, (tx) => listAuditLogs(tx, input))),
 })

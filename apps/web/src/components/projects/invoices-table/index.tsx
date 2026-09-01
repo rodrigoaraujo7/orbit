@@ -1,4 +1,4 @@
-import { Menu } from "@base-ui/react/menu";
+import { Menu } from "@base-ui/react/menu"
 import {
   Barcode,
   CreditCard,
@@ -8,44 +8,46 @@ import {
   RefreshCw,
   Share2,
   Wallet,
-} from "lucide-react";
-import { useTranslation } from "react-i18next";
+} from "lucide-react"
+import { useTranslation } from "react-i18next"
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { MonthPicker } from "@/components/ui/month-picker";
-import { Select, type SelectOption } from "@/components/ui/select";
-import { DataTable, type Column } from "@/components/ui/table";
-import { FilterPending, TableFilterSkeleton } from "@/components/ui/filter-pending";
-import { type Invoice, type InvoiceStatus, type PaymentMethod } from "@/data/projects";
-import { getLocale } from "@/i18n";
-import { invoiceStatusLabel, paymentMethodLabel } from "@/i18n/labels";
-import { formatCurrency, formatDateTime } from "@/lib/format";
-import { effectiveMonth } from "shared";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { MonthPicker } from "@/components/ui/month-picker"
+import { Select, type SelectOption } from "@/components/ui/select"
+import { DataTable, type Column } from "@/components/ui/table"
+import { FilterPending, TableFilterSkeleton } from "@/components/ui/filter-pending"
+import { type Invoice, type InvoiceStatus, type PaymentMethod } from "@/data/projects"
+import { getLocale } from "@/i18n"
+import { invoiceStatusLabel, paymentMethodLabel } from "@/i18n/labels"
+import { formatCurrency, formatDateTime } from "@/lib/format"
+import { effectiveMonth } from "shared"
+import { cn } from "@/lib/utils"
 
 const PAYMENT_METHOD_ICON: Record<PaymentMethod, typeof Barcode> = {
   boleto: Barcode,
   pix: QrCode,
-};
+}
 
 const STATUS_VARIANT: Record<InvoiceStatus, React.ComponentProps<typeof Badge>["variant"]> = {
   pending: "warning",
   paid: "success",
   overdue: "destructive",
-};
+}
 
 const menuItemClass =
-  "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground";
+  "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
 
 // Share/generate boleto/pix/change status/attach do nothing yet — with no
 // invoice API for now, the items are UI only (same state as before, in
 // invoice-card.tsx).
 function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <Menu.Root>
-      <Menu.Trigger render={<Button variant="ghost" size="icon-sm" aria-label={t("common.moreActions")} />}>
+      <Menu.Trigger
+        render={<Button variant="ghost" size="icon-sm" aria-label={t("common.moreActions")} />}
+      >
         <MoreVertical />
       </Menu.Trigger>
 
@@ -76,22 +78,22 @@ function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
         </Menu.Positioner>
       </Menu.Portal>
     </Menu.Root>
-  );
+  )
 }
 
 const STATUS_DOT: Record<InvoiceStatus, string> = {
   pending: "bg-warning",
   paid: "bg-success",
   overdue: "bg-destructive",
-};
+}
 
 function StatusDot({ className }: { className?: string }) {
-  return <span className={cn("size-2 shrink-0 rounded-full", className)} />;
+  return <span className={cn("size-2 shrink-0 rounded-full", className)} />
 }
 
 // Urgency order, not alphabetical: whatever needs action comes first.
-const STATUS_SORT_WEIGHT: Record<InvoiceStatus, number> = { pending: 0, overdue: 1, paid: 2 };
-const PAYMENT_METHOD_SORT_WEIGHT: Record<PaymentMethod, number> = { boleto: 0, pix: 1 };
+const STATUS_SORT_WEIGHT: Record<InvoiceStatus, number> = { pending: 0, overdue: 1, paid: 2 }
+const PAYMENT_METHOD_SORT_WEIGHT: Record<PaymentMethod, number> = { boleto: 0, pix: 1 }
 
 export function InvoicesTable({
   invoices,
@@ -114,24 +116,40 @@ export function InvoicesTable({
   isPending: boolean
   isFetching: boolean
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   function formatReference(invoice: Invoice) {
-    if (!invoice.referenceMonth) return t("invoice.oneOffPayment");
-    const [year, month] = invoice.referenceMonth.split("-");
+    if (!invoice.referenceMonth) return t("invoice.oneOffPayment")
+    const [year, month] = invoice.referenceMonth.split("-")
     const label = new Date(Number(year), Number(month) - 1).toLocaleDateString(getLocale(), {
       month: "long",
       year: "numeric",
-    });
-    return label.charAt(0).toUpperCase() + label.slice(1);
+    })
+    return label.charAt(0).toUpperCase() + label.slice(1)
   }
 
   const STATUS_OPTIONS: SelectOption[] = [
-    { value: "all", label: t("invoice.allStatuses"), icon: <StatusDot className="bg-muted-foreground/40" /> },
-    { value: "pending", label: invoiceStatusLabel("pending"), icon: <StatusDot className={STATUS_DOT.pending} /> },
-    { value: "paid", label: invoiceStatusLabel("paid"), icon: <StatusDot className={STATUS_DOT.paid} /> },
-    { value: "overdue", label: invoiceStatusLabel("overdue"), icon: <StatusDot className={STATUS_DOT.overdue} /> },
-  ];
+    {
+      value: "all",
+      label: t("invoice.allStatuses"),
+      icon: <StatusDot className="bg-muted-foreground/40" />,
+    },
+    {
+      value: "pending",
+      label: invoiceStatusLabel("pending"),
+      icon: <StatusDot className={STATUS_DOT.pending} />,
+    },
+    {
+      value: "paid",
+      label: invoiceStatusLabel("paid"),
+      icon: <StatusDot className={STATUS_DOT.paid} />,
+    },
+    {
+      value: "overdue",
+      label: invoiceStatusLabel("overdue"),
+      icon: <StatusDot className={STATUS_DOT.overdue} />,
+    },
+  ]
 
   const COLUMNS: Column<Invoice>[] = [
     {
@@ -157,14 +175,18 @@ export function InvoicesTable({
       sortValue: (invoice) =>
         invoice.paymentMethod ? PAYMENT_METHOD_SORT_WEIGHT[invoice.paymentMethod] : -1,
       cell: (invoice) => {
-        const MethodIcon = invoice.paymentMethod ? PAYMENT_METHOD_ICON[invoice.paymentMethod] : CreditCard;
+        const MethodIcon = invoice.paymentMethod
+          ? PAYMENT_METHOD_ICON[invoice.paymentMethod]
+          : CreditCard
         return (
           <span className="inline-flex items-center gap-1.5 text-muted-foreground">
             <MethodIcon className="size-3.5 shrink-0" />
-            {invoice.paymentMethod ? paymentMethodLabel(invoice.paymentMethod) : t("invoice.undefinedMethod")}
+            {invoice.paymentMethod
+              ? paymentMethodLabel(invoice.paymentMethod)
+              : t("invoice.undefinedMethod")}
             {invoice.paidAt && ` (${formatDateTime(invoice.paidAt)})`}
           </span>
-        );
+        )
       },
     },
     {
@@ -181,7 +203,7 @@ export function InvoicesTable({
       className: "w-10 text-right",
       cell: (invoice) => <InvoiceActionsMenu invoice={invoice} />,
     },
-  ];
+  ]
 
   return (
     <div className="mt-4">
@@ -193,8 +215,18 @@ export function InvoicesTable({
             options={STATUS_OPTIONS}
           />
         </div>
-        <MonthPicker aria-label={t("common.from")} placeholder={t("common.from")} value={monthFrom} onChange={onMonthFromChange} />
-        <MonthPicker aria-label={t("common.to")} placeholder={t("common.to")} value={monthTo} onChange={onMonthToChange} />
+        <MonthPicker
+          aria-label={t("common.from")}
+          placeholder={t("common.from")}
+          value={monthFrom}
+          onChange={onMonthFromChange}
+        />
+        <MonthPicker
+          aria-label={t("common.to")}
+          placeholder={t("common.to")}
+          value={monthTo}
+          onChange={onMonthToChange}
+        />
       </div>
 
       <FilterPending
@@ -210,5 +242,5 @@ export function InvoicesTable({
         />
       </FilterPending>
     </div>
-  );
+  )
 }

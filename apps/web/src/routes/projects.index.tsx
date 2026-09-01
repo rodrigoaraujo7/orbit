@@ -140,9 +140,7 @@ function ProjectsPage() {
       className: "hidden sm:table-cell",
       sortValue: (project) => project.deal.amount,
       cell: (project) => (
-        <span className="whitespace-nowrap text-muted-foreground">
-          {formatDeal(project.deal)}
-        </span>
+        <span className="whitespace-nowrap text-muted-foreground">{formatDeal(project.deal)}</span>
       ),
     },
     {
@@ -262,8 +260,8 @@ function ProjectsPage() {
         description={
           <>
             {t("common.delete")}{" "}
-            <Emphasis className="text-primary">{deletingProject?.name}</Emphasis>
-            ? {t("common.cannotUndo")}
+            <Emphasis className="text-primary">{deletingProject?.name}</Emphasis>?{" "}
+            {t("common.cannotUndo")}
           </>
         }
         confirmLabel={t("common.delete")}

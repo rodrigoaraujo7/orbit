@@ -10,7 +10,9 @@ const updateProject = vi.fn().mockResolvedValue({ ok: true })
 const addContact = vi.fn().mockResolvedValue({ id: "c1", name: "Ada" })
 const toastAdd = vi.fn()
 const registry = vi.hoisted(() => ({
-  contacts: [{ id: "c1", name: "Ada Lovelace", email: "ada@test.local", phone: "11", company: "Acme" }],
+  contacts: [
+    { id: "c1", name: "Ada Lovelace", email: "ada@test.local", phone: "11", company: "Acme" },
+  ],
   isContactsPending: false,
 }))
 
@@ -60,7 +62,9 @@ afterEach(() => {
   updateProject.mockClear()
   addContact.mockClear()
   toastAdd.mockClear()
-  registry.contacts = [{ id: "c1", name: "Ada Lovelace", email: "ada@test.local", phone: "11", company: "Acme" }]
+  registry.contacts = [
+    { id: "c1", name: "Ada Lovelace", email: "ada@test.local", phone: "11", company: "Acme" },
+  ]
   registry.isContactsPending = false
   addProject.mockResolvedValue({ id: "p1" })
   updateProject.mockResolvedValue({ ok: true })
@@ -104,9 +108,7 @@ describe("CreateProjectDialog", () => {
 
   it("edits a project, adds a tool and shows installments", async () => {
     const user = userEvent.setup()
-    renderWithProviders(
-      <CreateProjectDialog open onOpenChange={vi.fn()} project={sampleProject} />,
-    )
+    renderWithProviders(<CreateProjectDialog open onOpenChange={vi.fn()} project={sampleProject} />)
     expect(await screen.findByText("Edit project")).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Save changes" }))
     await waitFor(() => expect(updateProject).toHaveBeenCalled())
@@ -137,7 +139,9 @@ describe("CreateProjectDialog", () => {
   it("toggles the new-contact form, billing installments and closed reset", async () => {
     const user = userEvent.setup()
     const onOpenChange = vi.fn()
-    const { rerender } = renderWithProviders(<CreateProjectDialog open onOpenChange={onOpenChange} />)
+    const { rerender } = renderWithProviders(
+      <CreateProjectDialog open onOpenChange={onOpenChange} />,
+    )
     await user.click(await screen.findByText("Create a new contact"))
     expect(screen.getByPlaceholderText("Marcelo Tavares")).toBeInTheDocument()
     await user.click(screen.getByText("Create a new contact"))
@@ -153,7 +157,9 @@ describe("CreateProjectDialog", () => {
     amount.blur()
     fireEvent.focus(amount)
     await user.click(amount)
-    const billing = screen.getAllByRole("combobox").find((el) => el.textContent?.includes("Upfront"))
+    const billing = screen
+      .getAllByRole("combobox")
+      .find((el) => el.textContent?.includes("Upfront"))
     await user.click(billing!)
     await user.click(await screen.findByRole("option", { name: "Installments" }))
     expect(screen.getAllByText("Installments").length).toBeGreaterThan(0)
@@ -165,7 +171,9 @@ describe("CreateProjectDialog", () => {
     registry.contacts = []
     const { rerender } = renderWithProviders(<CreateProjectDialog open onOpenChange={vi.fn()} />)
     expect(await screen.findByPlaceholderText("Marcelo Tavares")).toBeInTheDocument()
-    registry.contacts = [{ id: "c1", name: "Ada Lovelace", email: "ada@test.local", phone: "11", company: "Acme" }]
+    registry.contacts = [
+      { id: "c1", name: "Ada Lovelace", email: "ada@test.local", phone: "11", company: "Acme" },
+    ]
     rerender(<CreateProjectDialog open onOpenChange={vi.fn()} />)
 
     cleanup()
@@ -173,6 +181,8 @@ describe("CreateProjectDialog", () => {
     const user = userEvent.setup()
     renderWithProviders(<CreateProjectDialog open onOpenChange={vi.fn()} project={sampleProject} />)
     await user.click(await screen.findByRole("button", { name: "Save changes" }))
-    await waitFor(() => expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "error" })))
+    await waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "error" })),
+    )
   })
 })

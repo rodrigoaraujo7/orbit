@@ -94,11 +94,13 @@ describe("projects router", () => {
     expect((await api.projects.list()).map((row) => row.id).sort()).toEqual(["p1", "p2"])
     expect((await api.projects.list({ q: "acme" }))[0]?.name).toBe("Landing")
     expect((await api.projects.list({ q: "portal" }))[0]?.name).toBe("Portal")
-    expect((await api.projects.list({ q: "100\\%_off" }))).toEqual([])
+    expect(await api.projects.list({ q: "100\\%_off" })).toEqual([])
     expect((await api.projects.list({ status: "queued" }))[0]?.id).toBe("p2")
     expect((await api.projects.list({ workflow: "success" }))[0]?.id).toBe("p1")
     expect((await api.projects.list({ clientId: "c1" }))[0]?.id).toBe("p1")
-    expect((await api.projects.list({ monthFrom: "2026-03", monthTo: "2026-03" }))[0]?.id).toBe("p1")
+    expect((await api.projects.list({ monthFrom: "2026-03", monthTo: "2026-03" }))[0]?.id).toBe(
+      "p1",
+    )
     expect(await api.projects.list({ q: "secret" })).toEqual([])
     await expect(caller(null).projects.list()).rejects.toMatchObject({ code: "UNAUTHORIZED" })
   })
@@ -145,7 +147,9 @@ describe("projects router", () => {
     expect(row?.repo?.fullName).toBe("org/app")
     expect(row?.deal.currency).toBe("USD")
     expect(row?.tools.some((tool) => tool.billing?.amount === 20)).toBe(true)
-    expect(row?.tools.find((tool) => tool.id === "aws")?.secrets).toEqual([{ key: "TOKEN", value: "" }])
+    expect(row?.tools.find((tool) => tool.id === "aws")?.secrets).toEqual([
+      { key: "TOKEN", value: "" },
+    ])
 
     await api.projects.update({
       id: created.id,

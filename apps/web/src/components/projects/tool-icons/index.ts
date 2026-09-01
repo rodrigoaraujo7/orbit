@@ -24,15 +24,7 @@ import {
   SiUmami,
   SiVercel,
 } from "@icons-pack/react-simple-icons"
-import {
-  Cloud,
-  Database,
-  Hash,
-  Mail,
-  MessageSquare,
-  Sparkles,
-  Wrench,
-} from "lucide-react"
+import { Cloud, Database, Hash, Mail, MessageSquare, Sparkles, Wrench } from "lucide-react"
 
 export type ToolIcon = ComponentType<{ className?: string }>
 

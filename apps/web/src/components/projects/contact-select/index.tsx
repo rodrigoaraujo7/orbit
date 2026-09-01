@@ -86,9 +86,7 @@ export function ContactSelect({
                       <Check className="size-3.5 text-primary" />
                     </SelectItemIndicator>
                   </span>
-                  {subtitle && (
-                    <span className="text-xs text-muted-foreground">{subtitle}</span>
-                  )}
+                  {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
                 </SelectItem>
               )
             })}
