@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { caller, closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
+import { caller, closeTestDb, insertUser, openTestDb, requiredContactFields } from "../../test/harness.ts"
 
 let client: Awaited<ReturnType<typeof openTestDb>>["client"]
 
@@ -18,8 +18,7 @@ describe("contacts router", () => {
     const created = await api.contacts.create({
       name: "Ada",
       email: "ada@test.local",
-      phone: "1199",
-      company: "Acme",
+      ...requiredContactFields,
     })
     expect(created.name).toBe("Ada")
     expect((await api.contacts.list())[0]?.id).toBe(created.id)
@@ -28,8 +27,8 @@ describe("contacts router", () => {
       id: created.id,
       name: "Ada Lovelace",
       email: "",
-      phone: "",
-      company: "",
+      phone: "1199",
+      company: "Acme",
     })
     expect((await api.contacts.list())[0]).toMatchObject({ name: "Ada Lovelace", email: null })
 
@@ -37,13 +36,27 @@ describe("contacts router", () => {
       id: created.id,
       name: "Ada Lovelace",
       email: "",
+      phone: "1199",
+      company: "Acme",
     })
     await api.contacts.update({
       id: "missing",
       name: "Ghost",
+      ...requiredContactFields,
     })
     await api.contacts.delete({ id: created.id })
     expect(await api.contacts.list()).toEqual([])
     await api.contacts.delete({ id: created.id })
+  })
+
+  it("rejects incomplete create payloads", async () => {
+    const api = caller("user-a")
+    await expect(api.contacts.create({ name: "Ada" } as never)).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    })
+    await expect(
+      api.contacts.create({ name: "Ada", phone: "", company: "Acme" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    await expect(api.contacts.delete({ id: "" })).rejects.toMatchObject({ code: "BAD_REQUEST" })
   })
 })

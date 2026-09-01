@@ -1,64 +1,25 @@
 import { and, eq, gte, ilike, lte, or } from "drizzle-orm"
-import { z } from "zod"
 import {
-  billingCycleSchema,
-  dealKindSchema,
   fromCents,
   lastDayOfMonth,
-  payerSchema,
   projectListFiltersSchema,
-  projectStatusSchema,
   toCents,
   type ProjectListFilters,
 } from "shared"
 import { contact, credential, project, projectTool } from "../../db/schema/index.ts"
 import type { Tx } from "../../db/with-user/index.ts"
+import {
+  projectIdInput,
+  projectInput,
+  projectMoveInput,
+  projectUpdateInput,
+  type ProjectInput,
+  type ToolInput,
+} from "../../input/project.ts"
 import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
 import { diffProject, type ProjectDiffInput } from "../../audit/diff/index.ts"
 import { recordAudit } from "../../audit/record/index.ts"
 import { sealNewSecret } from "../credentials/index.ts"
-
-const toolInput = z.object({
-  id: z.string(),
-  name: z.string(),
-  category: z.string(),
-  account: z.string().optional(),
-  billing: z
-    .object({
-      amount: z.number(),
-      cycle: billingCycleSchema,
-      nextInvoice: z.string(),
-      payer: payerSchema,
-      currency: z.string().optional(),
-    })
-    .optional(),
-  secrets: z.array(z.object({ key: z.string(), value: z.string() })),
-})
-
-const projectInput = z.object({
-  id: z.string().optional(),
-  name: z.string().min(2),
-  clientId: z.string(),
-  status: projectStatusSchema,
-  startedAt: z.string(),
-  endedAt: z.string().optional(),
-  deal: z.object({
-    kind: dealKindSchema,
-    amount: z.number(),
-    installments: z.number().optional(),
-    currency: z.string().optional(),
-  }),
-  tools: z.array(toolInput),
-  repo: z
-    .object({
-      fullName: z.string(),
-      url: z.string(),
-      workflow: z.string(),
-    })
-    .nullable(),
-  description: z.string().optional(),
-  comments: z.array(z.unknown()).optional(),
-})
 
 function rowToProject(
   row: typeof project.$inferSelect,
@@ -154,7 +115,7 @@ export async function replaceProjectTools(
   tx: Tx,
   userId: string,
   projectId: string,
-  tools: z.infer<typeof toolInput>[],
+  tools: ToolInput[],
 ) {
   const existingTools = await tx.select().from(projectTool).where(eq(projectTool.projectId, projectId))
   const existingSecrets = await tx.select().from(credential)
@@ -199,7 +160,7 @@ export async function replaceProjectTools(
   }
 }
 
-function inputToDiff(input: z.infer<typeof projectInput>): ProjectDiffInput {
+function inputToDiff(input: ProjectInput): ProjectDiffInput {
   return {
     name: input.name,
     clientId: input.clientId,
@@ -327,7 +288,7 @@ export const projectsRouter = router({
     return { id }
   }),
 
-  update: protectedProcedure.input(projectInput.required({ id: true })).mutation(async ({ ctx, input }) => {
+  update: protectedProcedure.input(projectUpdateInput).mutation(async ({ ctx, input }) => {
     await asUser(ctx, async (tx) => {
       const [prev] = await tx.select().from(project).where(eq(project.id, input.id)).limit(1)
       if (!prev) return
@@ -367,15 +328,7 @@ export const projectsRouter = router({
     return { ok: true }
   }),
 
-  move: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        status: projectStatusSchema,
-        index: z.number().int().nonnegative(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
+  move: protectedProcedure.input(projectMoveInput).mutation(async ({ ctx, input }) => {
       await asUser(ctx, async (tx) => {
         const [prev] = await tx.select().from(project).where(eq(project.id, input.id)).limit(1)
         await tx
@@ -396,7 +349,7 @@ export const projectsRouter = router({
       return { ok: true }
     }),
 
-  delete: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+  delete: protectedProcedure.input(projectIdInput).mutation(async ({ ctx, input }) => {
     await asUser(ctx, async (tx) => {
       const [prev] = await tx.select().from(project).where(eq(project.id, input.id)).limit(1)
       await tx.delete(project).where(and(eq(project.id, input.id)))

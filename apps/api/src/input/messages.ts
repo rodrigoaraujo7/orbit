@@ -1,0 +1,16 @@
+/** English copies of apps/web `validation.*` (and auth.minChars). API-only — do not import i18n. */
+export const validation = {
+  minChars: "Enter at least 2 characters",
+  selectTool: "Select a tool",
+  enterKey: "Enter the key",
+  selectContact: "Select a contact",
+  enterPhone: "Enter the phone number",
+  enterCompany: "Enter the company",
+  emailInvalid: "Invalid email",
+  negativeAmount: "Amount cannot be negative",
+  minInstallments: "Minimum of 2 installments",
+  enterToolName: "Enter the tool name",
+  enterInvoiceDate: "Enter the invoice date",
+  repoFormat: "Use the owner/repository format",
+  selectCategory: "Select a category",
+} as const
