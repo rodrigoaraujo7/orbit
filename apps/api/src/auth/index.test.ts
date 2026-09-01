@@ -152,23 +152,35 @@ describe("afterAuthHook", () => {
 
 describe("beforeAuthHook", () => {
   it("rejects signup names shorter than 2 characters", async () => {
-    await expect(beforeAuthHook({ path: "/sign-in/email", body: { name: "A" }, context: {} })).resolves.toBeUndefined()
-    await expect(beforeAuthHook({ path: "/sign-up/email", body: { name: "Ada" }, context: {} })).resolves.toBeUndefined()
-    await expect(beforeAuthHook({ path: "/sign-up/email", body: { name: "  Ad  " }, context: {} })).resolves.toBeUndefined()
-    await expect(beforeAuthHook({ path: "/sign-up/email", body: { name: "A" }, context: {} })).rejects.toBeInstanceOf(
-      APIError,
-    )
-    await expect(beforeAuthHook({ path: "/sign-up/email", body: { name: "  " }, context: {} })).rejects.toMatchObject({
+    await expect(
+      beforeAuthHook({ path: "/sign-in/email", body: { name: "A" }, context: {} }),
+    ).resolves.toBeUndefined()
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { name: "Ada" }, context: {} }),
+    ).resolves.toBeUndefined()
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { name: "  Ad  " }, context: {} }),
+    ).resolves.toBeUndefined()
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { name: "A" }, context: {} }),
+    ).rejects.toBeInstanceOf(APIError)
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { name: "  " }, context: {} }),
+    ).rejects.toMatchObject({
       status: "BAD_REQUEST",
     })
-    await expect(beforeAuthHook({ path: "/sign-up/email", body: { name: 1 }, context: {} })).rejects.toBeInstanceOf(
-      APIError,
-    )
-    await expect(beforeAuthHook({ path: "/sign-up/email", body: "nope", context: {} })).rejects.toBeInstanceOf(APIError)
-    await expect(beforeAuthHook({ path: "/sign-up/email", body: { email: "a@test.local" }, context: {} })).rejects.toBeInstanceOf(
-      APIError,
-    )
-    await expect(beforeAuthHook({ path: "/sign-up/email", body: null, context: {} })).rejects.toBeInstanceOf(APIError)
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { name: 1 }, context: {} }),
+    ).rejects.toBeInstanceOf(APIError)
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: "nope", context: {} }),
+    ).rejects.toBeInstanceOf(APIError)
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: { email: "a@test.local" }, context: {} }),
+    ).rejects.toBeInstanceOf(APIError)
+    await expect(
+      beforeAuthHook({ path: "/sign-up/email", body: null, context: {} }),
+    ).rejects.toBeInstanceOf(APIError)
   })
 })
 
@@ -182,11 +194,15 @@ describe("signup input", () => {
     const auth = createAuth()
 
     await expect(
-      auth.api.signUpEmail({ body: { email: "short@test.local", password: "password1234", name: "A" } }),
+      auth.api.signUpEmail({
+        body: { email: "short@test.local", password: "password1234", name: "A" },
+      }),
     ).rejects.toMatchObject({ status: "BAD_REQUEST" })
 
     await expect(
-      auth.api.signUpEmail({ body: { email: "pw@test.local", password: "1234567", name: "Ada Lovelace" } }),
+      auth.api.signUpEmail({
+        body: { email: "pw@test.local", password: "1234567", name: "Ada Lovelace" },
+      }),
     ).rejects.toBeInstanceOf(APIError)
 
     const signedUp = await auth.api.signUpEmail({

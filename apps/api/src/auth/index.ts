@@ -107,7 +107,11 @@ export function createAuth() {
   return betterAuth({
     baseURL: optionalEnv("BETTER_AUTH_URL") ?? webOrigin,
     secret,
-    trustedOrigins: [...trustedWebOrigins, "https://dash.better-auth.com", "https://*.ngrok-free.app"],
+    trustedOrigins: [
+      ...trustedWebOrigins,
+      "https://dash.better-auth.com",
+      "https://*.ngrok-free.app",
+    ],
     database: drizzleAdapter(getDb(), {
       provider: "pg",
       schema,

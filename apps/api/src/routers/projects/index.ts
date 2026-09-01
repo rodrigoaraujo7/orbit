@@ -322,40 +322,40 @@ export const projectsRouter = router({
         })
         .where(eq(project.id, input.id))
 
-        await replaceProjectTools(tx, ctx.userId, input.id, input.tools)
+      await replaceProjectTools(tx, ctx.userId, input.id, input.tools)
 
-        for (const entry of diffProject(rowToDiff(prev, prevTools), inputToDiff(input))) {
-          await recordAudit(tx, auditCtx(ctx), {
-            ...entry,
-            subjectId: input.id,
-            subjectLabel: input.name,
-            projectId: input.id,
-          })
-        }
-      })
-      return { ok: true }
-    }),
+      for (const entry of diffProject(rowToDiff(prev, prevTools), inputToDiff(input))) {
+        await recordAudit(tx, auditCtx(ctx), {
+          ...entry,
+          subjectId: input.id,
+          subjectLabel: input.name,
+          projectId: input.id,
+        })
+      }
+    })
+    return { ok: true }
+  }),
 
   move: protectedProcedure.input(projectMoveInput).mutation(async ({ ctx, input }) => {
-      await asUser(ctx, async (tx) => {
-        const [prev] = await tx.select().from(project).where(eq(project.id, input.id)).limit(1)
-        await tx
-          .update(project)
-          .set({ status: input.status, position: input.index })
-          .where(eq(project.id, input.id))
-        if (prev && prev.status !== input.status) {
-          await recordAudit(tx, auditCtx(ctx), {
-            module: "kanban",
-            action: "kanban.move",
-            subjectId: input.id,
-            subjectLabel: prev.name,
-            projectId: input.id,
-            changes: [{ field: "status", from: prev.status, to: input.status }],
-          })
-        }
-      })
-      return { ok: true }
-    }),
+    await asUser(ctx, async (tx) => {
+      const [prev] = await tx.select().from(project).where(eq(project.id, input.id)).limit(1)
+      await tx
+        .update(project)
+        .set({ status: input.status, position: input.index })
+        .where(eq(project.id, input.id))
+      if (prev && prev.status !== input.status) {
+        await recordAudit(tx, auditCtx(ctx), {
+          module: "kanban",
+          action: "kanban.move",
+          subjectId: input.id,
+          subjectLabel: prev.name,
+          projectId: input.id,
+          changes: [{ field: "status", from: prev.status, to: input.status }],
+        })
+      }
+    })
+    return { ok: true }
+  }),
 
   delete: protectedProcedure.input(projectIdInput).mutation(async ({ ctx, input }) => {
     await asUser(ctx, async (tx) => {

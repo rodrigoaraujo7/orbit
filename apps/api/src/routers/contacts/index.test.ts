@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { contact } from "../../db/schema/index.ts"
 import { withUser } from "../../db/with-user/index.ts"
-import { caller, closeTestDb, insertUser, openTestDb, requiredContactFields } from "../../test/harness.ts"
+import {
+  caller,
+  closeTestDb,
+  insertUser,
+  openTestDb,
+  requiredContactFields,
+} from "../../test/harness.ts"
 
 let db: Awaited<ReturnType<typeof openTestDb>>["db"]
 let client: Awaited<ReturnType<typeof openTestDb>>["client"]

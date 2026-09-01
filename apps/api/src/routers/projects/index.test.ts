@@ -4,7 +4,13 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { contact, credential, project, projectTool, userKey } from "../../db/schema/index.ts"
 import { withUser } from "../../db/with-user/index.ts"
 import { openSecret, parseMasterKey, secretAad, unwrapDek } from "../../crypto/envelope/index.ts"
-import { caller, closeTestDb, insertUser, openTestDb, requiredContactFields } from "../../test/harness.ts"
+import {
+  caller,
+  closeTestDb,
+  insertUser,
+  openTestDb,
+  requiredContactFields,
+} from "../../test/harness.ts"
 import { listProjects, replaceProjectTools } from "./index.ts"
 import { sealNewSecret } from "../credentials/index.ts"
 
@@ -387,4 +393,3 @@ describe("projects router", () => {
     expect(mapped[0]?.tools[0]).toMatchObject({ id: "aws", secrets: [] })
   })
 })
-

@@ -8,7 +8,10 @@ import {
 } from "./project.ts"
 import { validation } from "./messages.ts"
 
-function messages(result: { success: boolean; error?: { issues: { path: PropertyKey[]; message: string }[] } }) {
+function messages(result: {
+  success: boolean
+  error?: { issues: { path: PropertyKey[]; message: string }[] }
+}) {
   if (result.success || !result.error) return []
   return result.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`)
 }
@@ -26,7 +29,7 @@ const validProject = {
   status: "queued" as const,
   startedAt: "2026-03-10",
   deal: { kind: "upfront" as const, amount: 0, currency: "BRL" },
-  tools: [] as typeof validTool[],
+  tools: [] as (typeof validTool)[],
   repo: null,
 }
 
@@ -74,7 +77,12 @@ describe("projectInput", () => {
       `clientId: ${validation.selectContact}`,
     )
     expect(
-      messages(projectInput.safeParse({ ...validProject, deal: { kind: "upfront", amount: -1, currency: "BRL" } })),
+      messages(
+        projectInput.safeParse({
+          ...validProject,
+          deal: { kind: "upfront", amount: -1, currency: "BRL" },
+        }),
+      ),
     ).toContain(`deal.amount: ${validation.negativeAmount}`)
     expect(
       projectInput.safeParse({ ...validProject, deal: { kind: "upfront", amount: 10 } }).success,
@@ -113,7 +121,11 @@ describe("projectInput", () => {
       messages(
         projectInput.safeParse({
           ...validProject,
-          repo: { fullName: "just-a-name", url: "https://github.com/just-a-name", workflow: "none" },
+          repo: {
+            fullName: "just-a-name",
+            url: "https://github.com/just-a-name",
+            workflow: "none",
+          },
         }),
       ),
     ).toContain(`repo.fullName: ${validation.repoFormat}`)
@@ -121,7 +133,11 @@ describe("projectInput", () => {
       messages(
         projectInput.safeParse({
           ...validProject,
-          repo: { fullName: "https://github.com/org/app", url: "https://github.com/org/app", workflow: "none" },
+          repo: {
+            fullName: "https://github.com/org/app",
+            url: "https://github.com/org/app",
+            workflow: "none",
+          },
         }),
       ),
     ).toContain(`repo.fullName: ${validation.repoFormat}`)
@@ -150,17 +166,21 @@ describe("projectInput", () => {
 
 describe("toolInput", () => {
   it("requires a tool id, name, category and invoice date when billed", () => {
-    expect(toolInput.safeParse({ ...validTool, secrets: [{ key: "TOKEN", value: "" }] }).success).toBe(true)
-    expect(messages(toolInput.safeParse({ ...validTool, id: "" }))).toContain(`id: ${validation.selectTool}`)
+    expect(
+      toolInput.safeParse({ ...validTool, secrets: [{ key: "TOKEN", value: "" }] }).success,
+    ).toBe(true)
+    expect(messages(toolInput.safeParse({ ...validTool, id: "" }))).toContain(
+      `id: ${validation.selectTool}`,
+    )
     expect(messages(toolInput.safeParse({ ...validTool, name: "A" }))).toContain(
       `name: ${validation.enterToolName}`,
     )
     expect(messages(toolInput.safeParse({ ...validTool, category: "infra" }))).toContain(
       `category: ${validation.selectCategory}`,
     )
-    expect(messages(toolInput.safeParse({ ...validTool, secrets: [{ key: "", value: "x" }] }))).toContain(
-      `secrets.0.key: ${validation.enterKey}`,
-    )
+    expect(
+      messages(toolInput.safeParse({ ...validTool, secrets: [{ key: "", value: "x" }] })),
+    ).toContain(`secrets.0.key: ${validation.enterKey}`)
     expect(
       messages(
         toolInput.safeParse({
@@ -173,7 +193,13 @@ describe("toolInput", () => {
       messages(
         toolInput.safeParse({
           ...validTool,
-          billing: { amount: -5, cycle: "monthly", nextInvoice: "2026-04-01", payer: "me", currency: "BRL" },
+          billing: {
+            amount: -5,
+            cycle: "monthly",
+            nextInvoice: "2026-04-01",
+            payer: "me",
+            currency: "BRL",
+          },
         }),
       ),
     ).toContain(`billing.amount: ${validation.negativeAmount}`)

@@ -29,7 +29,9 @@ describe("tools router", () => {
 
   it("rejects unknown categories and empty ids", async () => {
     const api = caller("user-a")
-    await expect(api.tools.createCustom({ name: "Acme CI", category: "infra" as never })).rejects.toMatchObject({
+    await expect(
+      api.tools.createCustom({ name: "Acme CI", category: "infra" as never }),
+    ).rejects.toMatchObject({
       code: "BAD_REQUEST",
     })
     await expect(api.tools.deleteCustom({ id: "" })).rejects.toMatchObject({ code: "BAD_REQUEST" })
