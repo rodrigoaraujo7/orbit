@@ -9,7 +9,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "lint": "pnpm test",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
     "build": "pnpm test"
   },
   "dependencies": {
@@ -29,9 +30,15 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.6",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.13.3",
     "@vitest/coverage-v8": "4.1.11",
     "drizzle-kit": "^0.31.10",
+    "eslint": "^10.8.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.9.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.66.0",
     "vitest": "4.1.11"
   }
 }
