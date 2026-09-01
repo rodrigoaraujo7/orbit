@@ -5,7 +5,7 @@ import { StatusDot } from "@/components/projects/status-badges"
 import { type Project, type ProjectStatus } from "@/data/projects"
 import { statusLabel } from "@/i18n/labels"
 import { cn } from "@/lib/utils"
-import { KanbanCard } from "./kanban-card"
+import { KanbanCard } from "../kanban-card"
 
 export function KanbanColumn({
   status,

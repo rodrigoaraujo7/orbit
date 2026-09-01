@@ -9,10 +9,10 @@ import {
   paymentMethodSchema,
   toCents,
 } from "shared"
-import { contact, invoice, payment } from "../db/schema.ts"
-import { listProjects } from "./projects.ts"
-import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
-import { recordAudit } from "../audit/record.ts"
+import { contact, invoice, payment } from "../../db/schema/index.ts"
+import { listProjects } from "../projects/index.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
+import { recordAudit } from "../../audit/record/index.ts"
 
 const money = z.object({
   amount: z.number(),

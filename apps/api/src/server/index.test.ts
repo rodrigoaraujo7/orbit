@@ -11,10 +11,10 @@ const { serve, mountApi, applySchema, createDb } = vi.hoisted(() => ({
 }))
 
 vi.mock("@hono/node-server", () => ({ serve }))
-vi.mock("./mount.ts", () => ({ mountApi }))
-vi.mock("./db/client.ts", () => ({ createDb, applySchema, getDb: vi.fn() }))
+vi.mock("../mount/index.ts", () => ({ mountApi }))
+vi.mock("../db/client/index.ts", () => ({ createDb, applySchema, getDb: vi.fn() }))
 
-import { start } from "./server.ts"
+import { start } from "./index.ts"
 
 describe("start", () => {
   afterEach(() => {

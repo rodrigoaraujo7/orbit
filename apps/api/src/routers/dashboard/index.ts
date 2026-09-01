@@ -1,7 +1,7 @@
 import { buildDashboardMetrics, dashboardFiltersSchema, toDashboardFilters } from "shared"
-import { contact } from "../db/schema.ts"
-import { asUser, protectedProcedure, router } from "../trpc/init.ts"
-import { listProjects } from "./projects.ts"
+import { contact } from "../../db/schema/index.ts"
+import { asUser, protectedProcedure, router } from "../../trpc/init/index.ts"
+import { listProjects } from "../projects/index.ts"
 
 export const dashboardRouter = router({
   metrics: protectedProcedure

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { authClient } from "./auth-client.ts"
+import { authClient } from "./index"
 
 describe("authClient", () => {
   it("exposes session and credential helpers", () => {

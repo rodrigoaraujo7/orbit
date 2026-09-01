@@ -32,7 +32,7 @@ vi.mock("@/lib/registry-store", () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-import { CreateContactDialog } from "./create-contact-dialog"
+import { CreateContactDialog } from "./index"
 
 afterEach(() => {
   cleanup()

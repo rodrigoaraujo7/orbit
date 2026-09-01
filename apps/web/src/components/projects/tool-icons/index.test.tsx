@@ -1,6 +1,6 @@
 import { cleanup, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it } from "vitest"
-import { ToolIcon } from "./tool-icons"
+import { ToolIcon } from "./index"
 import { renderWithProviders } from "@/test/render"
 
 afterEach(() => {

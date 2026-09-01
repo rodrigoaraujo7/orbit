@@ -5,8 +5,8 @@ import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { afterEach, describe, expect, it } from "vitest"
-import { schema } from "./schema.ts"
-import { closeTestDb, openTestDb } from "../test/harness.ts"
+import { schema } from "./index.ts"
+import { closeTestDb, openTestDb } from "../../test/harness.ts"
 
 const schemaSql = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "schema.sql"), "utf8")
 

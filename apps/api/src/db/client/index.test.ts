@@ -14,8 +14,8 @@ const { unsafe, fakeSql, postgres, drizzle } = vi.hoisted(() => {
 vi.mock("postgres", () => ({ default: postgres }))
 vi.mock("drizzle-orm/postgres-js", () => ({ drizzle }))
 
-import { applySchema, createDb, getDb, resetDb } from "./client.ts"
-import { postgresClientOptions } from "./postgres-options.ts"
+import { applySchema, createDb, getDb, resetDb } from "./index.ts"
+import { postgresClientOptions } from "../postgres-options.ts"
 
 afterEach(() => {
   resetDb()

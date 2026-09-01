@@ -2,7 +2,7 @@ import { cleanup, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { OTHER_TOOL_ID } from "@/data/tool-catalog"
-import { ToolSelect } from "./tool-select"
+import { ToolSelect } from "./index"
 import { renderWithProviders } from "@/test/render"
 
 afterEach(() => {

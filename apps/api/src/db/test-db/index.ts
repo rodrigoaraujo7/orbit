@@ -3,9 +3,9 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { PGlite } from "@electric-sql/pglite"
 import { drizzle } from "drizzle-orm/pglite"
-import { schema } from "./schema.ts"
+import { schema } from "../schema/index.ts"
 
-const sqlPath = join(dirname(fileURLToPath(import.meta.url)), "schema.sql")
+const sqlPath = join(dirname(fileURLToPath(import.meta.url)), "../schema/schema.sql")
 const schemaSql = readFileSync(sqlPath, "utf8")
 
 export async function createTestDb() {

@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import type { Contact } from "@/data/contacts"
 import type { CustomTool } from "@/data/custom-tools"
-import { trpc } from "./trpc"
+import { trpc } from "../trpc/index.ts"
 
 type ContactInput = Omit<Contact, "id">
 type CustomToolInput = Omit<CustomTool, "id">

@@ -65,7 +65,7 @@ vi.mock("@/lib/registry-store", () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-import { ContactsPanel } from "./contacts-panel"
+import { ContactsPanel } from "./index"
 
 afterEach(() => {
   cleanup()

@@ -1,12 +1,12 @@
 import { randomBytes } from "node:crypto"
 import { eq } from "drizzle-orm"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { contact, credential, project, projectTool, userKey } from "../db/schema.ts"
-import { withUser } from "../db/with-user.ts"
-import { openSecret, parseMasterKey, secretAad, unwrapDek } from "../crypto/envelope.ts"
-import { caller, closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
-import { listProjects, replaceProjectTools } from "./projects.ts"
-import { sealNewSecret } from "./credentials.ts"
+import { contact, credential, project, projectTool, userKey } from "../../db/schema/index.ts"
+import { withUser } from "../../db/with-user/index.ts"
+import { openSecret, parseMasterKey, secretAad, unwrapDek } from "../../crypto/envelope/index.ts"
+import { caller, closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
+import { listProjects, replaceProjectTools } from "./index.ts"
+import { sealNewSecret } from "../credentials/index.ts"
 
 const master = randomBytes(32).toString("hex")
 

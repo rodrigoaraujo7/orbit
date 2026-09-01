@@ -2,7 +2,7 @@ import { cleanup, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { sampleTool } from "@/test/fixtures"
-import { ToolDetails } from "./tool-details"
+import { ToolDetails } from "./index"
 import { renderWithProviders } from "@/test/render"
 
 const toastAdd = vi.fn()

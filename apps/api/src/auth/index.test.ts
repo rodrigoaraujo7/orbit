@@ -1,10 +1,10 @@
 import { APIError } from "better-auth/api"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { auditLog } from "./db/schema.ts"
-import { afterAuthHook, createAuth, getAuth, resetAuth } from "./auth.ts"
-import { closeTestDb, insertUser, openTestDb } from "./test/harness.ts"
-import { withUser } from "./db/with-user.ts"
-import { dbHolder } from "./test/setup.ts"
+import { auditLog } from "../db/schema/index.ts"
+import { afterAuthHook, createAuth, getAuth, resetAuth } from "./index.ts"
+import { closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
+import { withUser } from "../db/with-user/index.ts"
+import { dbHolder } from "../test/setup.ts"
 
 describe("createAuth", () => {
   afterEach(() => {

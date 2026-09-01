@@ -26,7 +26,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   }
 })
 
-import { SidebarNav } from "./sidebar-nav"
+import { SidebarNav } from "./index"
 
 afterEach(() => {
   cleanup()

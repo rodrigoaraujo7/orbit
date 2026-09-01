@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { authErrorMessage } from "./auth-errors.ts"
+import { authErrorMessage } from "./index"
 
 describe("authErrorMessage", () => {
   it("maps known codes, 429 and fallbacks", () => {

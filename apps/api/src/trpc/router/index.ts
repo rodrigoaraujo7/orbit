@@ -1,11 +1,11 @@
-import { auditRouter } from "../routers/audit.ts"
-import { contactsRouter } from "../routers/contacts.ts"
-import { credentialsRouter } from "../routers/credentials.ts"
-import { dashboardRouter } from "../routers/dashboard.ts"
-import { invoicesRouter, paymentsRouter } from "../routers/invoices.ts"
-import { projectsRouter } from "../routers/projects.ts"
-import { toolsRouter } from "../routers/tools.ts"
-import { router } from "./init.ts"
+import { auditRouter } from "../../routers/audit/index.ts"
+import { contactsRouter } from "../../routers/contacts/index.ts"
+import { credentialsRouter } from "../../routers/credentials/index.ts"
+import { dashboardRouter } from "../../routers/dashboard/index.ts"
+import { invoicesRouter, paymentsRouter } from "../../routers/invoices/index.ts"
+import { projectsRouter } from "../../routers/projects/index.ts"
+import { toolsRouter } from "../../routers/tools/index.ts"
+import { router } from "../init/index.ts"
 
 export const appRouter = router({
   audit: auditRouter,

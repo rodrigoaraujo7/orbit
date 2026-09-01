@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm"
 import { z } from "zod"
-import { customTool } from "../db/schema.ts"
-import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
-import { recordAudit } from "../audit/record.ts"
+import { customTool } from "../../db/schema/index.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
+import { recordAudit } from "../../audit/record/index.ts"
 
 const input = z.object({
   name: z.string().trim().min(2),

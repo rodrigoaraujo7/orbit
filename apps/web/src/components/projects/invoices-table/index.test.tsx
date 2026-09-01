@@ -2,7 +2,7 @@ import { cleanup, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { Invoice } from "@/data/projects"
-import { InvoicesTable } from "./invoices-table"
+import { InvoicesTable } from "./index"
 import { renderWithProviders } from "@/test/render"
 
 afterEach(() => {

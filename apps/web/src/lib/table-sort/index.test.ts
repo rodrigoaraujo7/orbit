@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { nextSort, sortRows } from "./table-sort.ts"
+import { nextSort, sortRows } from "./index"
 
 describe("table-sort", () => {
   it("cycles sort state", () => {

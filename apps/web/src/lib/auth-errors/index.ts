@@ -1,4 +1,4 @@
-import i18n from "../i18n/index.ts"
+import i18n from "../../i18n/index.ts"
 
 const AUTH_ERROR_KEYS: Record<string, string> = {
   INVALID_EMAIL_OR_PASSWORD: "auth.invalidCredentials",

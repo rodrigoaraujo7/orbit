@@ -2,7 +2,7 @@ import { cleanup, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { emptyFilters, type DashboardFilters, type DashboardOptions } from "shared"
-import { FiltersBar } from "./filters-bar"
+import { FiltersBar } from "./index"
 import { filterDrawer, renderWithProviders } from "@/test/render"
 
 afterEach(() => {

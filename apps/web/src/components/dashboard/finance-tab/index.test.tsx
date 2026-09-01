@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { cleanup, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { FinanceTab } from "./finance-tab"
+import { FinanceTab } from "./index"
 import { emptyMetrics } from "@/test/mocks"
 import { renderWithProviders } from "@/test/render"
 

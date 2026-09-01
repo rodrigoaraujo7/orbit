@@ -1,9 +1,9 @@
 import { eq, sql } from "drizzle-orm"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { auditLog } from "../db/schema.ts"
-import { withUser } from "../db/with-user.ts"
-import { caller, closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
-import { listAuditLogs } from "./audit.ts"
+import { auditLog } from "../../db/schema/index.ts"
+import { withUser } from "../../db/with-user/index.ts"
+import { caller, closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
+import { listAuditLogs } from "./index.ts"
 
 let db: Awaited<ReturnType<typeof openTestDb>>["db"]
 let client: Awaited<ReturnType<typeof openTestDb>>["client"]

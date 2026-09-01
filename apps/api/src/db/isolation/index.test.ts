@@ -1,8 +1,8 @@
 import { eq, sql } from "drizzle-orm"
 import { afterEach, describe, expect, it } from "vitest"
-import { contact, customTool, invoice, project, projectTool } from "./schema.ts"
-import { closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
-import { withUser } from "./with-user.ts"
+import { contact, customTool, invoice, project, projectTool } from "../schema/index.ts"
+import { closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
+import { withUser } from "../with-user/index.ts"
 
 let client: Awaited<ReturnType<typeof openTestDb>>["client"]
 let db: Awaited<ReturnType<typeof openTestDb>>["db"]

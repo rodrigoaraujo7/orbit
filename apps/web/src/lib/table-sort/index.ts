@@ -1,4 +1,4 @@
-import { getLocale } from "../i18n/index.ts"
+import { getLocale } from "../../i18n/index.ts"
 
 export type SortState = { key: string; direction: "asc" | "desc" } | null
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { appRouter } from "./router.ts"
+import { appRouter } from "./index.ts"
 
 describe("appRouter", () => {
   it("mounts every domain router", () => {

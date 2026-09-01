@@ -13,7 +13,7 @@ import { OTHER_TOOL_ID } from "@/data/tool-catalog"
 import { billingCycleOptions, freeLabel, payerOptions } from "@/i18n/labels"
 import { getCurrencyOptions } from "@/lib/currency"
 import { hasPositiveAmount, type ProjectFormValues } from "@/lib/project-schema"
-import { ToolSelect } from "./tool-select"
+import { ToolSelect } from "../tool-select"
 
 function SecretRow({
   toolIndex,

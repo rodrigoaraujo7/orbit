@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { diffProject, type ProjectDiffInput } from "./diff.ts"
+import { diffProject, type ProjectDiffInput } from "./index.ts"
 
 const SECRET = "super-secret-value-must-never-leak"
 

@@ -1,11 +1,11 @@
 import { sql } from "drizzle-orm"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
-import { asUser, auditCtx, createContext, publicProcedure, router } from "./init.ts"
+import { closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
+import { asUser, auditCtx, createContext, publicProcedure, router } from "./index.ts"
 
 const getSession = vi.fn()
 
-vi.mock("../auth.ts", () => ({
+vi.mock("../../auth/index.ts", () => ({
   getAuth: () => ({ api: { getSession } }),
 }))
 

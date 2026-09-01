@@ -1,6 +1,6 @@
 import { cleanup, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { axisProps, surfaceGap, useChartMotion } from "./chart-parts"
+import { axisProps, surfaceGap, useChartMotion } from "./index"
 import { renderWithProviders } from "@/test/render"
 
 const reduced = vi.hoisted(() => ({ value: false }))

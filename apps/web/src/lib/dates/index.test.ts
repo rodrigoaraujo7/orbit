@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { monthOf, todayIso } from "./dates.ts"
+import { monthOf, todayIso } from "./index"
 
 describe("web date re-exports", () => {
   it("forwards shared date helpers", () => {

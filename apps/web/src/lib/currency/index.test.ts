@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { CURRENCIES, DEFAULT_CURRENCY, getCurrencyOptions } from "./currency.ts"
-import * as dates from "./dates.ts"
+import { CURRENCIES, DEFAULT_CURRENCY, getCurrencyOptions } from "./index"
+import * as dates from "../dates/index.ts"
 
 describe("currency", () => {
   it("lists locale-aware options", () => {

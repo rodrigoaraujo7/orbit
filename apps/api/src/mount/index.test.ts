@@ -3,11 +3,11 @@ import { describe, expect, it, vi } from "vitest"
 
 const handler = vi.fn(async () => new Response("auth-ok"))
 
-vi.mock("./auth.ts", () => ({
+vi.mock("../auth/index.ts", () => ({
   getAuth: () => ({ handler }),
 }))
 
-import { mountApi } from "./mount.ts"
+import { mountApi } from "./index.ts"
 
 describe("mountApi", () => {
   it("forwards Better Auth and tRPC routes", async () => {

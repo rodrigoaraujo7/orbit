@@ -1,8 +1,8 @@
 import { initTRPC, TRPCError } from "@trpc/server"
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch"
-import { getAuth } from "../auth.ts"
-import { getDb } from "../db/client.ts"
-import { withUser, type Tx } from "../db/with-user.ts"
+import { getAuth } from "../../auth/index.ts"
+import { getDb } from "../../db/client/index.ts"
+import { withUser, type Tx } from "../../db/with-user/index.ts"
 
 export async function createContext(opts: FetchCreateContextFnOptions) {
   const session = await getAuth().api.getSession({ headers: opts.req.headers })

@@ -14,7 +14,7 @@ vi.mock("@dnd-kit/react/sortable", () => ({
   useSortable: () => ({ ref: () => undefined, isDragging: false }),
 }))
 
-import { KanbanColumn } from "./kanban-column"
+import { KanbanColumn } from "./index"
 
 afterEach(() => {
   cleanup()

@@ -9,11 +9,11 @@ import {
   projectStatusSchema,
 } from "shared"
 
-import type { Deal, Project, Tool } from "../data/projects.ts"
-import { OTHER_TOOL_ID, findCatalogTool } from "../data/tool-catalog.ts"
-import i18n, { getLocale } from "../i18n/index.ts"
-import { todayIso } from "./dates.ts"
-import { withProjectStatus } from "./project-status.ts"
+import type { Deal, Project, Tool } from "../../data/projects.ts"
+import { OTHER_TOOL_ID, findCatalogTool } from "../../data/tool-catalog.ts"
+import i18n, { getLocale } from "../../i18n/index.ts"
+import { todayIso } from "../dates/index.ts"
+import { withProjectStatus } from "../project-status/index.ts"
 
 export function parseAmount(raw: string) {
   return parseAmountWithLocale(raw, getLocale())

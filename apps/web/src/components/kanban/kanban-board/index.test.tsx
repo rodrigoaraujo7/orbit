@@ -82,7 +82,7 @@ vi.mock("@/hooks/use-reduced-motion", () => ({
   useReducedMotion: () => motion.reduced,
 }))
 
-import { KanbanBoard } from "./kanban-board"
+import { KanbanBoard } from "./index"
 
 afterEach(() => {
   cleanup()

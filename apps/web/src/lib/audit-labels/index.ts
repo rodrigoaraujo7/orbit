@@ -1,7 +1,7 @@
 import type { AuditChange } from "shared"
 
-import i18n, { getLocale } from "../i18n/index.ts"
-import { auditActionLabel, auditFieldLabel, dash, statusLabel } from "../i18n/labels.ts"
+import i18n, { getLocale } from "../../i18n/index.ts"
+import { auditActionLabel, auditFieldLabel, dash, statusLabel } from "../../i18n/labels.ts"
 
 export function formatAuditChange(
   change: AuditChange,

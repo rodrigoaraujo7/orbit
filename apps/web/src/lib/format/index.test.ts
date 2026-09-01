@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import i18n from "../i18n/index.ts"
+import i18n from "../../i18n/index.ts"
 import {
   formatCompactCurrency,
   formatCurrency,
@@ -12,7 +12,7 @@ import {
   formatPercent,
   formatToolsProgress,
   maskBrPhone,
-} from "./format.ts"
+} from "./index"
 
 describe("format", () => {
   it("masks Brazilian phones", () => {

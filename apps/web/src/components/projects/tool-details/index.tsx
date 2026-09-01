@@ -8,7 +8,7 @@ import { toast } from "@/components/ui/toast"
 import { type Secret, type Tool } from "@/data/projects"
 import { billingCycleLabel, freeLabel, payerLabel } from "@/i18n/labels"
 import { formatCurrency, formatDate } from "@/lib/format"
-import { ToolIcon } from "./tool-icons"
+import { ToolIcon } from "../tool-icons"
 
 function SecretList({ secrets }: { secrets: Secret[] }) {
   const { t } = useTranslation()

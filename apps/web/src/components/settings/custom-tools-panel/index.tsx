@@ -12,7 +12,7 @@ import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import type { CustomTool } from "@/data/custom-tools"
 import { toolCategoryLabel } from "@/i18n/labels"
 import { useRegistry } from "@/lib/registry-store"
-import { CreateCustomToolDialog } from "./create-custom-tool-dialog"
+import { CreateCustomToolDialog } from "../create-custom-tool-dialog"
 
 export function CustomToolsPanel() {
   const { t } = useTranslation()

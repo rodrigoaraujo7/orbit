@@ -1,6 +1,6 @@
 import { getTableConfig } from "drizzle-orm/pg-core"
 import { describe, expect, it } from "vitest"
-import { schema, user, project, auditLog } from "./schema.ts"
+import { schema, user, project, auditLog } from "./index.ts"
 
 describe("drizzle schema", () => {
   it("exports every table on the schema object", () => {

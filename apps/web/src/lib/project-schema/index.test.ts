@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest"
-import i18n from "../i18n/index.ts"
+import i18n from "../../i18n/index.ts"
 import {
   emptyProjectForm,
   emptyToolForm,
@@ -10,7 +10,7 @@ import {
   toProject,
   type ProjectFormValues,
   type ToolFormValues,
-} from "./project-schema.ts"
+} from "./index"
 
 beforeAll(async () => {
   await i18n.changeLanguage("pt-BR")

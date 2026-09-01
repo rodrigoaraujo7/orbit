@@ -8,7 +8,7 @@ import {
   secretAad,
   unwrapDek,
   wrapDek,
-} from "./envelope.ts"
+} from "./index.ts"
 
 describe("envelope encryption", () => {
   it("wraps a DEK and seals a secret bound to AAD", () => {

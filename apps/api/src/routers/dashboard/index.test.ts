@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { caller, closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
+import { caller, closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
 
 let client: Awaited<ReturnType<typeof openTestDb>>["client"]
 

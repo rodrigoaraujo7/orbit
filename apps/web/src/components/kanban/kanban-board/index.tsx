@@ -13,8 +13,8 @@ import {
   projectIdsByStatus,
   type ProjectColumns,
 } from "@/lib/project-status"
-import { KanbanCard } from "./kanban-card"
-import { KanbanColumn } from "./kanban-column"
+import { KanbanCard } from "../kanban-card"
+import { KanbanColumn } from "../kanban-column"
 
 const sensors = [
   PointerSensor.configure({

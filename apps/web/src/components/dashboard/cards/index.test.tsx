@@ -1,6 +1,6 @@
 import { cleanup, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { ChartCard, HeroFigure, NoData, StatRow, StatTile } from "./cards"
+import { ChartCard, HeroFigure, NoData, StatRow, StatTile } from "./index"
 import { renderWithProviders } from "@/test/render"
 
 const reduced = vi.hoisted(() => ({ value: true }))

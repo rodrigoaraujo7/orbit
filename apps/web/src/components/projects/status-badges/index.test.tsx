@@ -10,7 +10,7 @@ import {
   StatusSelect,
   WorkflowBadge,
   WorkflowFilterSelect,
-} from "./status-badges"
+} from "./index"
 import { renderWithProviders } from "@/test/render"
 
 afterEach(() => {

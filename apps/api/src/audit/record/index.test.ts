@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest"
-import { auditLog } from "../db/schema.ts"
-import { recordAudit } from "./record.ts"
-import { closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
-import { withUser } from "../db/with-user.ts"
+import { auditLog } from "../../db/schema/index.ts"
+import { recordAudit } from "./index.ts"
+import { closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
+import { withUser } from "../../db/with-user/index.ts"
 
 describe("recordAudit", () => {
   afterEach(async () => {

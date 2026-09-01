@@ -11,7 +11,7 @@ import { RowActionsMenu } from "@/components/ui/row-actions-menu"
 import type { Contact } from "@/data/contacts"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
-import { CreateContactDialog } from "./create-contact-dialog"
+import { CreateContactDialog } from "../create-contact-dialog"
 
 export function ContactsPanel() {
   const { t } = useTranslation()

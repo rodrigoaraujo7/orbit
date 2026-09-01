@@ -38,7 +38,7 @@ vi.mock("@/lib/registry-store", () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-import { GeneralRegistry } from "./general-registry"
+import { GeneralRegistry } from "./index"
 
 afterEach(() => {
   cleanup()

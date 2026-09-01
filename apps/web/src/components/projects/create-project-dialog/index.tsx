@@ -45,9 +45,9 @@ import {
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
 import { cn } from "@/lib/utils"
-import { ContactSelect } from "./contact-select"
-import { StatusSelect } from "./status-badges"
-import { ToolField } from "./tool-field"
+import { ContactSelect } from "../contact-select"
+import { StatusSelect } from "../status-badges"
+import { ToolField } from "../tool-field"
 
 export type ProjectDialogSection =
   | "identity"

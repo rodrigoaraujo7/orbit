@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { env, loadDotEnv, optionalEnv } from "./env.ts"
+import { env, loadDotEnv, optionalEnv } from "./index.ts"
 
 afterEach(() => {
   vi.unstubAllEnvs()

@@ -1,7 +1,7 @@
 import { and, count, eq, gte } from "drizzle-orm"
 import { z } from "zod"
 import { TRPCError } from "@trpc/server"
-import { auditLog, credential, userKey } from "../db/schema.ts"
+import { auditLog, credential, userKey } from "../../db/schema/index.ts"
 import {
   generateDek,
   openSecret,
@@ -10,11 +10,11 @@ import {
   secretAad,
   unwrapDek,
   wrapDek,
-} from "../crypto/envelope.ts"
-import { env } from "../env.ts"
-import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
-import { recordAudit } from "../audit/record.ts"
-import type { Tx } from "../db/with-user.ts"
+} from "../../crypto/envelope/index.ts"
+import { env } from "../../env/index.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
+import { recordAudit } from "../../audit/record/index.ts"
+import type { Tx } from "../../db/with-user/index.ts"
 
 const REVEAL_LIMIT = 10
 const REVEAL_WINDOW_MS = 60 * 60 * 1000

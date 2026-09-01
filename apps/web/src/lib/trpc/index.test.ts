@@ -13,7 +13,7 @@ describe("trpc client", () => {
       }),
     )
     vi.stubGlobal("fetch", fetchMock)
-    const { trpc } = await import("./trpc.ts")
+    const { trpc } = await import("./index")
     await trpc.projects.list.query().catch(() => undefined)
     expect(fetchMock).toHaveBeenCalled()
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ credentials: "include" })

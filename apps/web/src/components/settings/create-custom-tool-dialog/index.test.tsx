@@ -32,7 +32,7 @@ vi.mock("@/lib/registry-store", () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-import { CreateCustomToolDialog } from "./create-custom-tool-dialog"
+import { CreateCustomToolDialog } from "./index"
 
 afterEach(() => {
   cleanup()

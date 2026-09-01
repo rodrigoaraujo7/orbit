@@ -2,8 +2,8 @@ import {
   PROJECT_STATUS_ORDER,
   type Project,
   type ProjectStatus,
-} from "../data/projects.ts"
-import { todayIso } from "./dates.ts"
+} from "../../data/projects.ts"
+import { todayIso } from "../dates/index.ts"
 
 export function isProjectStatus(value: string): value is ProjectStatus {
   return (PROJECT_STATUS_ORDER as string[]).includes(value)

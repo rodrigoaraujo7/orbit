@@ -10,7 +10,7 @@ vi.mock("@dnd-kit/react/sortable", () => ({
   useSortable: () => ({ ref: () => undefined, isDragging: sortable.isDragging }),
 }))
 
-import { KanbanCard } from "./kanban-card"
+import { KanbanCard } from "./index"
 
 afterEach(() => {
   cleanup()

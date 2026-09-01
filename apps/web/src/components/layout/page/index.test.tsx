@@ -1,6 +1,6 @@
 import { cleanup, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it } from "vitest"
-import { ComingSoon, PageHeader } from "./page"
+import { ComingSoon, PageHeader } from "./index"
 import { renderWithProviders } from "@/test/render"
 
 afterEach(() => {

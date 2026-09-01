@@ -3,12 +3,12 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
-import { schema } from "./schema.ts"
-import { env } from "../env.ts"
-import { postgresClientOptions } from "./postgres-options.ts"
+import { schema } from "../schema/index.ts"
+import { env } from "../../env/index.ts"
+import { postgresClientOptions } from "../postgres-options.ts"
 
 const schemaSql = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), "schema.sql"),
+  join(dirname(fileURLToPath(import.meta.url)), "../schema/schema.sql"),
   "utf8",
 )
 

@@ -1,9 +1,9 @@
 import { and, asc, desc, eq, gt, gte, ilike, inArray, lt, lte, or, sql } from "drizzle-orm"
 import { z } from "zod"
 import { auditModuleSchema, type AuditChange, type AuditModule } from "shared"
-import { auditLog } from "../db/schema.ts"
-import type { Tx } from "../db/with-user.ts"
-import { asUser, protectedProcedure, router } from "../trpc/init.ts"
+import { auditLog } from "../../db/schema/index.ts"
+import type { Tx } from "../../db/with-user/index.ts"
+import { asUser, protectedProcedure, router } from "../../trpc/init/index.ts"
 
 const cursorSchema = z.object({
   createdAt: z.string(),

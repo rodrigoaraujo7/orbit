@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
-import { authErrorMessage } from "../lib/auth-errors.ts"
-import { formatCurrency, formatDate } from "../lib/format.ts"
+import { authErrorMessage } from "../lib/auth-errors/index.ts"
+import { formatCurrency, formatDate } from "../lib/format/index.ts"
 import i18n, { DEFAULT_LOCALE, getLocale, isLocale, setLocale } from "./index.ts"
 import enUS from "./en-US.json" with { type: "json" }
 import ptBR from "./pt-BR.json" with { type: "json" }

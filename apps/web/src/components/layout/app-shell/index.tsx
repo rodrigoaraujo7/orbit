@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
-import { SidebarNav } from "./sidebar-nav";
-import { UserMenu } from "./user-menu";
+import { SidebarNav } from "../sidebar-nav";
+import { UserMenu } from "../user-menu";
 
 const COLLAPSED_KEY = "pm-sidebar-collapsed";
 

@@ -11,12 +11,12 @@ import {
   toCents,
   type ProjectListFilters,
 } from "shared"
-import { contact, credential, project, projectTool } from "../db/schema.ts"
-import type { Tx } from "../db/with-user.ts"
-import { asUser, auditCtx, protectedProcedure, router } from "../trpc/init.ts"
-import { diffProject, type ProjectDiffInput } from "../audit/diff.ts"
-import { recordAudit } from "../audit/record.ts"
-import { sealNewSecret } from "./credentials.ts"
+import { contact, credential, project, projectTool } from "../../db/schema/index.ts"
+import type { Tx } from "../../db/with-user/index.ts"
+import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
+import { diffProject, type ProjectDiffInput } from "../../audit/diff/index.ts"
+import { recordAudit } from "../../audit/record/index.ts"
+import { sealNewSecret } from "../credentials/index.ts"
 
 const toolInput = z.object({
   id: z.string(),

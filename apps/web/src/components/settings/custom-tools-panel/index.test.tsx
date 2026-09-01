@@ -31,7 +31,7 @@ vi.mock("@/lib/registry-store", () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-import { CustomToolsPanel } from "./custom-tools-panel"
+import { CustomToolsPanel } from "./index"
 
 afterEach(() => {
   cleanup()

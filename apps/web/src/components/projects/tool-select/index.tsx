@@ -22,7 +22,7 @@ import {
   toolsByCategory,
 } from "@/data/tool-catalog"
 import { toolCategoryLabel } from "@/i18n/labels"
-import { ToolIcon } from "./tool-icons"
+import { ToolIcon } from "../tool-icons"
 
 /**
  * Select grouped by category with a per-tool icon — the same styled pieces from

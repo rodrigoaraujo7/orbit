@@ -1,8 +1,8 @@
 import { serve } from "@hono/node-server"
-import { app } from "./app.ts"
-import { applySchema, createDb } from "./db/client.ts"
-import { optionalEnv } from "./env.ts"
-import { mountApi } from "./mount.ts"
+import { app } from "../app/index.ts"
+import { applySchema, createDb } from "../db/client/index.ts"
+import { optionalEnv } from "../env/index.ts"
+import { mountApi } from "../mount/index.ts"
 
 export async function start(options?: { port?: number }) {
   if (!optionalEnv("DATABASE_URL")) {

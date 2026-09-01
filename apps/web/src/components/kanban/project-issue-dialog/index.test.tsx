@@ -56,7 +56,7 @@ vi.mock("@/lib/registry-store", () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-import { ProjectIssueDialog } from "./project-issue-dialog"
+import { ProjectIssueDialog } from "./index"
 
 afterEach(() => {
   cleanup()

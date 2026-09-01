@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import type { Project } from "../data/projects.ts"
-import { todayIso } from "./dates.ts"
+import type { Project } from "../../data/projects.ts"
+import { todayIso } from "../dates/index.ts"
 import {
   columnsEqual,
   groupProjectsByStatus,
@@ -10,7 +10,7 @@ import {
   projectIdsByStatus,
   projectsFromColumns,
   withProjectStatus,
-} from "./project-status.ts"
+} from "./index"
 
 function project(overrides: Partial<Project> = {}): Project {
   return {

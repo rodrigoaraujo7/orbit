@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { periodBounds } from "./audit-period.ts"
+import { periodBounds } from "./index"
 
 afterEach(() => {
   vi.useRealTimers()

@@ -7,8 +7,8 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import type { Project, ProjectStatus } from "@/data/projects"
-import { moveProjectInList } from "./project-status"
-import { trpc } from "./trpc"
+import { moveProjectInList } from "../project-status/index.ts"
+import { trpc } from "../trpc/index.ts"
 
 type ProjectsContextValue = {
   projects: Project[]

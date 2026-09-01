@@ -1,6 +1,6 @@
-import { isDealFree, type Deal, type Invoice, type Tool } from "../data/projects.ts"
-import i18n, { getLocale } from "../i18n/index.ts"
-import { DEFAULT_CURRENCY } from "./currency.ts"
+import { isDealFree, type Deal, type Invoice, type Tool } from "../../data/projects.ts"
+import i18n, { getLocale } from "../../i18n/index.ts"
+import { DEFAULT_CURRENCY } from "../currency/index.ts"
 
 // one Intl.NumberFormat per locale+currency, created on demand and reused
 const formatters = new Map<string, Intl.NumberFormat>()

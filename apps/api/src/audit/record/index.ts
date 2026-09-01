@@ -1,6 +1,6 @@
 import type { AuditChange, AuditModule } from "shared"
-import { auditLog } from "../db/schema.ts"
-import type { Tx } from "../db/with-user.ts"
+import { auditLog } from "../../db/schema/index.ts"
+import type { Tx } from "../../db/with-user/index.ts"
 
 export type AuditCtx = {
   userId: string

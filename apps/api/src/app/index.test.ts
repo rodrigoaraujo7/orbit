@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { app } from "./app.ts"
+import { app } from "./index.ts"
 
 describe("app", () => {
   it("serves /health with secure headers", async () => {

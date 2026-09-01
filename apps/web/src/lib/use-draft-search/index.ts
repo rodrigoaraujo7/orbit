@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-import { useDebouncedValue } from "./use-debounced-value"
+import { useDebouncedValue } from "../use-debounced-value/index.ts"
 
 /**
  * Local text while typing; commits to the URL (or other store) after debounce.

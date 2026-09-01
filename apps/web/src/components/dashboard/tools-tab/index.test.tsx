@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import { cleanup, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { ToolsTab } from "./tools-tab"
+import { ToolsTab } from "./index"
 import { emptyMetrics } from "@/test/mocks"
 import { renderWithProviders } from "@/test/render"
 

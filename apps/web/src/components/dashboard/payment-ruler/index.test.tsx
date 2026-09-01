@@ -1,7 +1,7 @@
 import { cleanup, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { monthOf, todayIso } from "shared"
-import { PaymentRuler } from "./payment-ruler"
+import { PaymentRuler } from "./index"
 import { renderWithProviders } from "@/test/render"
 
 const reduced = vi.hoisted(() => ({ value: false }))

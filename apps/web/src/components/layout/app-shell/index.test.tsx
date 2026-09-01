@@ -36,7 +36,7 @@ vi.mock("@/lib/auth-client", () => ({
   },
 }))
 
-import { AppShell } from "./app-shell"
+import { AppShell } from "./index"
 
 afterEach(() => {
   cleanup()

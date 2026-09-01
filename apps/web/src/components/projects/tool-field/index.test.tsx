@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { OTHER_TOOL_ID } from "@/data/tool-catalog"
 import { emptyProjectForm, emptyToolForm, type ProjectFormValues } from "@/lib/project-schema"
-import { ToolField } from "./tool-field"
+import { ToolField } from "./index"
 import { renderWithProviders } from "@/test/render"
 
 afterEach(() => {

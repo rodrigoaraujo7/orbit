@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { formatAuditAt, formatAuditChange, formatAuditDetails } from "./audit-labels.ts"
-import { dash } from "../i18n/labels.ts"
+import { formatAuditAt, formatAuditChange, formatAuditDetails } from "./index"
+import { dash } from "../../i18n/labels.ts"
 
 describe("audit-labels", () => {
   it("describes every change kind", () => {

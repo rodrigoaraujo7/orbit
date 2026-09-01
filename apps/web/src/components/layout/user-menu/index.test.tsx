@@ -19,7 +19,7 @@ vi.mock("@/lib/auth-client", () => ({
   },
 }))
 
-import { UserMenu } from "./user-menu"
+import { UserMenu } from "./index"
 
 afterEach(async () => {
   cleanup()
