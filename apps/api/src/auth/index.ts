@@ -10,8 +10,7 @@ import { schema, user } from "../db/schema/index.ts"
 import { withUser } from "../db/with-user/index.ts"
 import { env, optionalEnv } from "../env/index.ts"
 import { validation } from "../input/messages.ts"
-
-const webOrigin = optionalEnv("WEB_ORIGIN") ?? "http://localhost:5173"
+import { trustedWebOrigins, webOrigin } from "../web-origin/index.ts"
 
 async function logSecurity(
   userId: string,
@@ -108,7 +107,7 @@ export function createAuth() {
   return betterAuth({
     baseURL: optionalEnv("BETTER_AUTH_URL") ?? webOrigin,
     secret,
-    trustedOrigins: [webOrigin, "https://dash.better-auth.com", "https://*.ngrok-free.app"],
+    trustedOrigins: [...trustedWebOrigins, "https://dash.better-auth.com", "https://*.ngrok-free.app"],
     database: drizzleAdapter(getDb(), {
       provider: "pg",
       schema,

@@ -2,10 +2,9 @@ import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { secureHeaders } from "hono/secure-headers"
 import { bodyLimit } from "hono/body-limit"
-import { optionalEnv } from "../env/index.ts"
+import { trustedWebOrigins } from "../web-origin/index.ts"
 
-const webOrigin = optionalEnv("WEB_ORIGIN") ?? "http://localhost:5173"
-const corsOrigins = [webOrigin, "https://dash.better-auth.com"]
+const corsOrigins = [...trustedWebOrigins, "https://dash.better-auth.com"]
 
 export const app = new Hono()
 

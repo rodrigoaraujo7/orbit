@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { trustedWebOrigins } from "../web-origin/index.ts"
 import { app } from "./index.ts"
 
 describe("app", () => {
@@ -16,15 +17,17 @@ describe("app", () => {
     expect(await missing.json()).toEqual({ error: "not_found" })
   })
 
-  it("answers CORS preflight from the web origin", async () => {
-    const response = await app.request("/health", {
-      method: "OPTIONS",
-      headers: {
-        Origin: "http://localhost:5173",
-        "Access-Control-Request-Method": "GET",
-      },
-    })
-    expect(response.status).toBeLessThan(500)
-    expect(response.headers.get("access-control-allow-origin")).toBe("http://localhost:5173")
+  it("answers CORS preflight from trusted web origins", async () => {
+    for (const origin of trustedWebOrigins) {
+      const response = await app.request("/health", {
+        method: "OPTIONS",
+        headers: {
+          Origin: origin,
+          "Access-Control-Request-Method": "GET",
+        },
+      })
+      expect(response.status).toBeLessThan(500)
+      expect(response.headers.get("access-control-allow-origin")).toBe(origin)
+    }
   })
 })
