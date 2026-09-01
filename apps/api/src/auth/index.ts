@@ -9,6 +9,7 @@ import { getDb } from "../db/client/index.ts"
 import { schema, user } from "../db/schema/index.ts"
 import { withUser } from "../db/with-user/index.ts"
 import { env, optionalEnv } from "../env/index.ts"
+import { validation } from "../input/messages.ts"
 
 const webOrigin = optionalEnv("WEB_ORIGIN") ?? "http://localhost:5173"
 
@@ -48,6 +49,17 @@ type AuthHookCtx = {
     newSession?: { user: { id: string } } | null
     session?: { user: { id: string } } | null
     returned?: unknown
+  }
+}
+
+export async function beforeAuthHook(ctx: AuthHookCtx) {
+  if (ctx.path !== "/sign-up/email") return
+  const name =
+    ctx.body && typeof ctx.body === "object" && "name" in ctx.body
+      ? (ctx.body as { name?: unknown }).name
+      : undefined
+  if (typeof name !== "string" || name.trim().length < 2) {
+    throw new APIError("BAD_REQUEST", { message: validation.minChars })
   }
 }
 
@@ -101,7 +113,7 @@ export function createAuth() {
       provider: "pg",
       schema,
     }),
-    emailAndPassword: { enabled: true },
+    emailAndPassword: { enabled: true, minPasswordLength: 8 },
     advanced: {
       defaultCookieAttributes: {
         httpOnly: true,
@@ -111,6 +123,7 @@ export function createAuth() {
     },
     plugins: [twoFactor({ issuer: "Projects Manager" }), dash()],
     hooks: {
+      before: createAuthMiddleware(beforeAuthHook),
       after: createAuthMiddleware(afterAuthHook),
     },
   })

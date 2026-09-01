@@ -1,0 +1,13 @@
+---
+description: API Zod is the trusted layer; UI validators are UX only.
+alwaysApply: true
+---
+
+# API validators
+
+- UI Zod + RHF is UX only. Never trust it. Mutations (and any query with arguments) must have `.input(zod)` with English messages matching `validation.*` in `apps/web/src/i18n/en-US.json`.
+- Do **not** share form schemas with the API. Form values are strings/locale/`isNewContact`; API payloads are numbers/`clientId`. Duplicate the semantic rules on the payload the API already receives.
+- When a form field rule is added or changed, the same change must add or update the matching API input schema.
+- Empty-input queries (`contacts.list`, `tools.listCustom`) need no schema.
+- Project secret `value` may be empty on update — list returns `value: ""` and `replaceProjectTools` treats empty as “keep existing ciphertext”.
+- Auth rules live on Better Auth (`minPasswordLength`, signup `before` hook), not only the login form.
