@@ -50,4 +50,13 @@ describe('useDraftSearch', () => {
     expect(commit).toHaveBeenCalledWith(undefined)
     vi.useRealTimers()
   })
+
+  it('clears the draft when the URL value is removed', () => {
+    const commit = vi.fn()
+    const { result, rerender } = renderHook(({ url }) => useDraftSearch(url, commit), {
+      initialProps: { url: 'acme' as string | undefined },
+    })
+    rerender({ url: undefined })
+    expect(result.current[0]).toBe('')
+  })
 })
