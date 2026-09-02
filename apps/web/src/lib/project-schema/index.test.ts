@@ -80,6 +80,17 @@ describe("projectSchema", () => {
     expect(errorPaths(form({ tools: [tool({ amount: "abc" })] }))).toEqual(["tools.0.amount"])
     expect(errorPaths(form({ tools: [tool({ amount: "-5" })] }))).toEqual(["tools.0.amount"])
     expect(errorPaths(form({ repoPath: "just-a-name" }))).toEqual(["repoPath"])
+    expect(
+      errorPaths(
+        form({ tools: [tool({ secrets: [{ key: "TOKEN", value: "", stored: false }] })] }),
+      ),
+    ).toEqual(["tools.0.secrets.0.value"])
+    expect(
+      errorPaths(form({ tools: [tool({ secrets: [{ key: "TOKEN", value: "", stored: true }] })] })),
+    ).toEqual([])
+    expect(
+      errorPaths(form({ tools: [tool({ secrets: [{ key: "", value: "x", stored: false }] })] })),
+    ).toEqual(["tools.0.secrets.0.key"])
   })
 
   it("maps forms to projects and back", async () => {
@@ -144,6 +155,20 @@ describe("projectSchema", () => {
     expect(fromUnknown.currency).toBe("BRL")
     expect(fromUnknown.installments).toBe("2")
     expect(toProject(form({ tools: [tool({ account: "" })] })).tools[0]?.account).toBeUndefined()
+
+    const withSecret = fromProject({
+      ...created,
+      tools: [
+        {
+          id: "aws",
+          name: "AWS",
+          category: "deploy",
+          secrets: [{ id: "sec-1", key: "TOKEN", value: "plaintext" }],
+        },
+      ],
+    })
+    expect(withSecret.tools[0]?.secrets).toEqual([{ key: "TOKEN", value: "", stored: true }])
+    expect(toProject(withSecret).tools[0]?.secrets).toEqual([{ key: "TOKEN", value: "" }])
 
     await i18n.changeLanguage("en-US")
     expect(toProject(form({ amount: "18,000.50" })).deal.amount).toBe(18000.5)

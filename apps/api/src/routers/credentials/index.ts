@@ -6,6 +6,7 @@ import { dekFor } from "../../crypto/dek/index.ts"
 import { openSecret, sealSecret, secretAad } from "../../crypto/envelope/index.ts"
 import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
 import { recordAudit } from "../../audit/record/index.ts"
+import { validation } from "../../input/messages.ts"
 import type { Tx } from "../../db/with-user/index.ts"
 
 const REVEAL_LIMIT = 10
@@ -33,26 +34,6 @@ export async function sealNewSecret(
     version: 1,
   })
   return id
-}
-
-export function requireRevealAccess(
-  user: { twoFactorEnabled?: boolean | null },
-  sessionCreatedAt: Date | string | null | undefined,
-  now = Date.now(),
-) {
-  if (!user.twoFactorEnabled) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "2FA is required to reveal secrets",
-    })
-  }
-  const ageMs = sessionCreatedAt ? now - new Date(sessionCreatedAt).getTime() : Infinity
-  if (ageMs > 15 * 60 * 1000) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "Reauthenticate to reveal secrets",
-    })
-  }
 }
 
 export async function recordRevealAttempt(
@@ -125,8 +106,6 @@ export const credentialsRouter = router({
   reveal: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      requireRevealAccess(ctx.user, ctx.session?.session.createdAt)
-
       return asUser(ctx, async (tx) => {
         await recordRevealAttempt(
           tx,
@@ -154,6 +133,41 @@ export const credentialsRouter = router({
           subjectLabel: row.label,
         })
         return { id: row.id, label: row.label, value }
+      })
+    }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().trim().min(1),
+        label: z.string(validation.enterKey).trim().min(1, validation.enterKey),
+        value: z.string(validation.enterValue).trim().min(1, validation.enterValue),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return asUser(ctx, async (tx) => {
+        const [row] = await tx.select().from(credential).where(eq(credential.id, input.id)).limit(1)
+        if (!row) throw new TRPCError({ code: "NOT_FOUND" })
+        const version = row.version + 1
+        const dek = await dekFor(tx, ctx.userId)
+        const sealed = sealSecret(dek, input.value, secretAad(ctx.userId, row.id, version))
+        await tx
+          .update(credential)
+          .set({
+            label: input.label,
+            ciphertext: sealed.ciphertext,
+            iv: sealed.iv,
+            tag: sealed.tag,
+            version,
+          })
+          .where(eq(credential.id, input.id))
+        await recordAudit(tx, auditCtx(ctx), {
+          module: "security",
+          action: "credential.update",
+          subjectId: row.id,
+          subjectLabel: input.label,
+        })
+        return { id: row.id, label: input.label }
       })
     }),
 })

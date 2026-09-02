@@ -112,6 +112,9 @@ describe("CreateProjectDialog", () => {
     expect(await screen.findByText("Edit project")).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Save changes" }))
     await waitFor(() => expect(updateProject).toHaveBeenCalled())
+    expect(updateProject.mock.calls[0]?.[0].tools[0]?.secrets).toEqual([
+      { key: "API_KEY", value: "" },
+    ])
     await user.click(screen.getByRole("button", { name: "Add" }))
     expect(screen.getByText("Select a tool")).toBeInTheDocument()
     await user.click(screen.getAllByRole("button", { name: "Remove tool" })[1]!)

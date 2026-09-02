@@ -3,6 +3,7 @@ export const validation = {
   minChars: "Enter at least 2 characters",
   selectTool: "Select a tool",
   enterKey: "Enter the key",
+  enterValue: "Enter the value",
   selectContact: "Select a contact",
   enterPhone: "Enter the phone number",
   enterCompany: "Enter the company",

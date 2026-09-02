@@ -59,7 +59,10 @@ export function projectSchema() {
           secrets: z.array(
             z.object({
               key: z.string().trim().min(1, i18n.t("validation.enterKey")),
-              value: z.string().trim().min(1, i18n.t("validation.enterValue")),
+              // Empty is the keep-existing ciphertext sentinel on project
+              // update — list returns `value: ""` and never the plaintext.
+              value: z.string().trim(),
+              stored: z.boolean(),
             }),
           ),
         }),
@@ -174,6 +177,16 @@ export function projectSchema() {
             message: i18n.t("validation.enterInvoiceDate"),
           })
         }
+
+        tool.secrets.forEach((secret, secretIndex) => {
+          if (!secret.stored && !secret.value) {
+            ctx.addIssue({
+              code: "custom",
+              path: ["tools", index, "secrets", secretIndex, "value"],
+              message: i18n.t("validation.enterValue"),
+            })
+          }
+        })
       })
 
       if (values.repoPath && parseRepo(values.repoPath) == null) {
@@ -188,6 +201,8 @@ export function projectSchema() {
 
 export type ProjectFormValues = z.infer<ReturnType<typeof projectSchema>>
 export type ToolFormValues = ProjectFormValues["tools"][number]
+
+export const emptySecretForm = { key: "", value: "", stored: false }
 
 export const emptyToolForm: ToolFormValues = {
   toolId: "",
@@ -271,7 +286,7 @@ function toTool(values: ToolFormValues): Tool {
           payer: values.payer,
         }
       : undefined,
-    secrets: values.secrets,
+    secrets: values.secrets.map(({ key, value }) => ({ key, value })),
   }
 }
 
@@ -340,7 +355,11 @@ export function fromProject(project: Project): ProjectFormValues {
       cycle: tool.billing?.cycle ?? "monthly",
       nextInvoice: tool.billing?.nextInvoice ?? "",
       payer: tool.billing?.payer ?? "me",
-      secrets: tool.secrets,
+      secrets: tool.secrets.map((secret) => ({
+        key: secret.key,
+        value: "",
+        stored: true,
+      })),
     })),
     repoPath: project.repo?.fullName ?? "",
   }

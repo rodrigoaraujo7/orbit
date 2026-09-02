@@ -95,6 +95,17 @@ type BrowserRouter = {
     }
     delete: { mutate: (input: { id: string }) => Promise<{ ok: true }> }
   }
+  credentials: {
+    reveal: {
+      mutate: (input: { id: string }) => Promise<{ id: string; label: string; value: string }>
+    }
+    update: {
+      mutate: (input: { id: string; label: string; value: string }) => Promise<{
+        id: string
+        label: string
+      }>
+    }
+  }
   dashboard: {
     metrics: { query: (input?: DashboardFilterInput) => Promise<DashboardMetrics> }
   }

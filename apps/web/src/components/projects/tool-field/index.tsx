@@ -9,19 +9,22 @@ import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
+import { SECRET_VALUE_MASK } from "@/data/projects"
 import { OTHER_TOOL_ID } from "@/data/tool-catalog"
 import { billingCycleOptions, freeLabel, payerOptions } from "@/i18n/labels"
 import { getCurrencyOptions } from "@/lib/currency"
-import { hasPositiveAmount, type ProjectFormValues } from "@/lib/project-schema"
+import { emptySecretForm, hasPositiveAmount, type ProjectFormValues } from "@/lib/project-schema"
 import { ToolSelect } from "../tool-select"
 
 function SecretRow({
   toolIndex,
   index,
+  stored,
   onRemove,
 }: {
   toolIndex: number
   index: number
+  stored: boolean
   onRemove: () => void
 }) {
   const { t } = useTranslation()
@@ -32,9 +35,17 @@ function SecretRow({
   } = useFormContext<ProjectFormValues>()
 
   const secretErrors = errors.tools?.[toolIndex]?.secrets?.[index]
+  const valuePath = `tools.${toolIndex}.secrets.${index}.value` as const
 
   return (
     <div className="flex flex-col gap-1">
+      <input
+        type="checkbox"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+        {...register(`tools.${toolIndex}.secrets.${index}.stored`)}
+      />
       <div className="flex items-start gap-2">
         <Input
           {...register(`tools.${toolIndex}.secrets.${index}.key`)}
@@ -44,23 +55,39 @@ function SecretRow({
           className="flex-1 font-mono text-xs"
           autoComplete="off"
           spellCheck={false}
+          disabled={stored}
         />
         <div className="relative flex-1">
-          <Input
-            {...register(`tools.${toolIndex}.secrets.${index}.value`)}
-            type={revealed ? "text" : "password"}
-            aria-invalid={Boolean(secretErrors?.value)}
-            aria-label={t("common.secretValue")}
-            placeholder={t("common.valuePlaceholder")}
-            className="pr-9 font-mono text-xs"
-            autoComplete="off"
-            spellCheck={false}
-          />
+          {stored ? (
+            <>
+              <input type="hidden" {...register(valuePath)} />
+              <Input
+                type="password"
+                disabled
+                readOnly
+                value={SECRET_VALUE_MASK}
+                aria-label={t("common.secretValue")}
+                className="pr-9 font-mono text-xs"
+              />
+            </>
+          ) : (
+            <Input
+              {...register(valuePath)}
+              type={revealed ? "text" : "password"}
+              aria-invalid={Boolean(secretErrors?.value)}
+              aria-label={t("common.secretValue")}
+              placeholder={t("common.valuePlaceholder")}
+              className="pr-9 font-mono text-xs"
+              autoComplete="off"
+              spellCheck={false}
+            />
+          )}
           <button
             type="button"
+            disabled={stored}
             onClick={() => setRevealed((v) => !v)}
             aria-label={revealed ? t("common.hideValue") : t("common.revealValue")}
-            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
           >
             {revealed ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
           </button>
@@ -259,12 +286,7 @@ export function ToolField({ index, onRemove }: { index: number; onRemove: () => 
             <KeyRound className="size-3.5" />
             {t("projects.secretsEnv")}
           </Label>
-          <Button
-            type="button"
-            variant="ghost"
-            size="xs"
-            onClick={() => append({ key: "", value: "" })}
-          >
+          <Button type="button" variant="ghost" size="xs" onClick={() => append(emptySecretForm)}>
             <Plus />
             {t("common.add")}
           </Button>
@@ -277,6 +299,7 @@ export function ToolField({ index, onRemove }: { index: number; onRemove: () => 
                 key={field.id}
                 toolIndex={index}
                 index={secretIndex}
+                stored={Boolean(field.stored)}
                 onRemove={() => remove(secretIndex)}
               />
             ))}

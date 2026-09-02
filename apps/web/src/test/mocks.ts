@@ -66,6 +66,12 @@ export function createTrpcMock() {
       update: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
       delete: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
     },
+    credentials: {
+      reveal: {
+        mutate: vi.fn().mockResolvedValue({ id: "sec-1", label: "API_KEY", value: "sk_live" }),
+      },
+      update: { mutate: vi.fn().mockResolvedValue({ id: "sec-1", label: "API_KEY" }) },
+    },
     dashboard: {
       metrics: { query: vi.fn().mockResolvedValue(emptyMetrics()) },
     },

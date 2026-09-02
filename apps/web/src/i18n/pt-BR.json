@@ -89,7 +89,9 @@
     "hideValue": "Ocultar valor",
     "revealValue": "Revelar valor",
     "removeSecret": "Remover segredo",
-    "removeTool": "Remover ferramenta"
+    "removeTool": "Remover ferramenta",
+    "editSecret": "Editar segredo",
+    "editSecretDescription": "Substitua o valor armazenado. Altere a chave só se for renomeá-la."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -351,7 +353,8 @@
         }
       },
       "credential": {
-        "reveal": "Segredo revelado"
+        "reveal": "Segredo revelado",
+        "update": "Segredo atualizado"
       }
     },
     "loginFailed": "Login falhou",
@@ -535,6 +538,10 @@
     "cycle": "Ciclo",
     "invoiceDate": "Data da fatura",
     "secretsEnv": "Segredos (env)",
+    "secretUpdated": "Segredo atualizado",
+    "secretUpdateError": "Não foi possível atualizar o segredo",
+    "secretRevealError": "Não foi possível revelar o segredo",
+    "secretRevealLimit": "Muitas tentativas de revelar. Tente mais tarde.",
     "accountLabel": "Conta:",
     "whoPaysLabel": "Quem paga:",
     "invoiceLabel": "Fatura:",

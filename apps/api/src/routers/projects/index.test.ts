@@ -154,7 +154,7 @@ describe("projects router", () => {
     expect(row?.deal.currency).toBe("USD")
     expect(row?.tools.some((tool) => tool.billing?.amount === 20)).toBe(true)
     expect(row?.tools.find((tool) => tool.id === "aws")?.secrets).toEqual([
-      { key: "TOKEN", value: "" },
+      { id: expect.any(String), key: "TOKEN", value: "" },
     ])
 
     await api.projects.update({

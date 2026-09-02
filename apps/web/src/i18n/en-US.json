@@ -89,7 +89,9 @@
     "hideValue": "Hide value",
     "revealValue": "Reveal value",
     "removeSecret": "Remove secret",
-    "removeTool": "Remove tool"
+    "removeTool": "Remove tool",
+    "editSecret": "Edit secret",
+    "editSecretDescription": "Replace the stored value. Change the key only if you are renaming it."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -351,7 +353,8 @@
         }
       },
       "credential": {
-        "reveal": "Secret revealed"
+        "reveal": "Secret revealed",
+        "update": "Secret updated"
       }
     },
     "loginFailed": "Login failed",
@@ -535,6 +538,10 @@
     "cycle": "Cycle",
     "invoiceDate": "Invoice date",
     "secretsEnv": "Secrets (env)",
+    "secretUpdated": "Secret updated",
+    "secretUpdateError": "Could not update the secret",
+    "secretRevealError": "Could not reveal the secret",
+    "secretRevealLimit": "Too many reveal attempts. Try again later.",
     "accountLabel": "Account:",
     "whoPaysLabel": "Who pays:",
     "invoiceLabel": "Invoice:",

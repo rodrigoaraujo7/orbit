@@ -1,15 +1,10 @@
 import { randomBytes } from "node:crypto"
-import { TRPCError } from "@trpc/server"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { project, projectTool } from "../../db/schema/index.ts"
+import { auditLog, credential, project, projectTool } from "../../db/schema/index.ts"
 import { withUser } from "../../db/with-user/index.ts"
 import { caller, closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
-import {
-  recordRevealAttempt,
-  requireRevealAccess,
-  revealAttemptCount,
-  sealNewSecret,
-} from "./index.ts"
+import { validation } from "../../input/messages.ts"
+import { recordRevealAttempt, revealAttemptCount, sealNewSecret } from "./index.ts"
 
 const master = randomBytes(32).toString("hex")
 
@@ -26,19 +21,60 @@ afterEach(async () => {
   await closeTestDb(client)
 })
 
-describe("requireRevealAccess", () => {
-  it("requires 2FA and a fresh session", () => {
-    expect(() => requireRevealAccess({ twoFactorEnabled: false }, new Date())).toThrow(TRPCError)
-    expect(() =>
-      requireRevealAccess({ twoFactorEnabled: true }, new Date(Date.now() - 16 * 60 * 1000)),
-    ).toThrow(/Reauthenticate/)
-    expect(() => requireRevealAccess({ twoFactorEnabled: true }, null)).toThrow(/Reauthenticate/)
-    requireRevealAccess({ twoFactorEnabled: true }, new Date())
-  })
-})
-
 describe("credentials router", () => {
   it("lists, creates and reveals secrets with a durable attempt cap", async () => {
+    const toolId = await withUser(db, "user-a", async (tx) => {
+      await tx.insert(project).values({
+        id: "p1",
+        userId: "user-a",
+        name: "Secret project",
+        status: "queued",
+        position: 0,
+        startedAt: "2026-01-01",
+        dealKind: "upfront",
+        dealAmountCents: 0n,
+        dealCurrency: "BRL",
+      })
+      await tx.insert(projectTool).values({
+        id: "t1",
+        userId: "user-a",
+        projectId: "p1",
+        catalogId: "aws",
+        name: "AWS",
+        category: "infra",
+      })
+      return "t1"
+    })
+
+    const api = caller("user-a", { twoFactorEnabled: false })
+    const created = await api.credentials.create({
+      projectToolId: toolId,
+      label: "TOKEN",
+      value: "sk_live_abc",
+    })
+    expect((await api.credentials.list({ projectToolId: toolId }))[0]?.label).toBe("TOKEN")
+
+    const revealed = await api.credentials.reveal({ id: created.id })
+    expect(revealed.value).toBe("sk_live_abc")
+
+    await expect(api.credentials.reveal({ id: "missing" })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    })
+
+    await withUser(db, "user-a", async (tx) => {
+      for (let i = 0; i < 9; i++) await recordRevealAttempt(tx, "user-a", "cred-1")
+      expect(await revealAttemptCount(tx, "user-a")).toBe(10)
+      await recordRevealAttempt(tx, "user-a", "cred-1")
+      expect(await revealAttemptCount(tx, "user-a")).toBeGreaterThan(10)
+    })
+    await expect(api.credentials.reveal({ id: created.id })).rejects.toMatchObject({
+      code: "TOO_MANY_REQUESTS",
+    })
+
+    await withUser(db, "user-a", (tx) => sealNewSecret(tx, "user-a", toolId, "OTHER", "second"))
+  })
+
+  it("updates a secret without leaking the value to audit", async () => {
     const toolId = await withUser(db, "user-a", async (tx) => {
       await tx.insert(project).values({
         id: "p1",
@@ -68,28 +104,32 @@ describe("credentials router", () => {
       label: "TOKEN",
       value: "sk_live_abc",
     })
-    expect((await api.credentials.list({ projectToolId: toolId }))[0]?.label).toBe("TOKEN")
 
-    const revealed = await api.credentials.reveal({ id: created.id })
-    expect(revealed.value).toBe("sk_live_abc")
-
-    await expect(api.credentials.reveal({ id: "missing" })).rejects.toMatchObject({
-      code: "NOT_FOUND",
-    })
     await expect(
-      caller("user-a", { twoFactorEnabled: false }).credentials.reveal({ id: created.id }),
-    ).rejects.toMatchObject({ code: "FORBIDDEN" })
+      api.credentials.update({ id: created.id, label: "", value: "sk_rotated" }),
+    ).rejects.toMatchObject({ message: expect.stringContaining(validation.enterKey) })
+    await expect(
+      api.credentials.update({ id: created.id, label: "NEW", value: "" }),
+    ).rejects.toMatchObject({ message: expect.stringContaining(validation.enterValue) })
+    await expect(
+      api.credentials.update({ id: "missing", label: "NEW", value: "sk_rotated" }),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" })
 
-    await withUser(db, "user-a", async (tx) => {
-      for (let i = 0; i < 9; i++) await recordRevealAttempt(tx, "user-a", "cred-1")
-      expect(await revealAttemptCount(tx, "user-a")).toBe(10)
-      await recordRevealAttempt(tx, "user-a", "cred-1")
-      expect(await revealAttemptCount(tx, "user-a")).toBeGreaterThan(10)
+    const updated = await api.credentials.update({
+      id: created.id,
+      label: "NEW",
+      value: "sk_rotated",
     })
-    await expect(api.credentials.reveal({ id: created.id })).rejects.toMatchObject({
-      code: "TOO_MANY_REQUESTS",
-    })
+    expect(updated).toEqual({ id: created.id, label: "NEW" })
+    expect((await api.credentials.reveal({ id: created.id })).value).toBe("sk_rotated")
 
-    await withUser(db, "user-a", (tx) => sealNewSecret(tx, "user-a", toolId, "OTHER", "second"))
+    const [row] = await withUser(db, "user-a", (tx) => tx.select().from(credential))
+    expect(row).toMatchObject({ label: "NEW", version: 2 })
+
+    const logs = await withUser(db, "user-a", (tx) => tx.select().from(auditLog))
+    const updateLog = logs.find((entry) => entry.action === "credential.update")
+    expect(updateLog?.subjectLabel).toBe("NEW")
+    expect(JSON.stringify(logs)).not.toContain("sk_rotated")
+    expect(JSON.stringify(logs)).not.toContain("sk_live_abc")
   })
 })

@@ -33,7 +33,11 @@ export type ToolBilling = {
  * in-memory state. Once the API lands: encrypt at rest, never log it, and
  * never send the value back to the frontend after saving.
  */
+export const SECRET_VALUE_MASK = "•".repeat(12)
+
 export type Secret = {
+  /** Credential id when the secret is already stored. Absent on new form rows. */
+  id?: string
   key: string
   value: string
 }

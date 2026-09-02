@@ -3,6 +3,7 @@ import { cleanup, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { OTHER_TOOL_ID } from "@/data/tool-catalog"
+import { SECRET_VALUE_MASK } from "@/data/projects"
 import { emptyProjectForm, emptyToolForm, type ProjectFormValues } from "@/lib/project-schema"
 import { ToolField } from "./index"
 import { renderWithProviders } from "@/test/render"
@@ -54,6 +55,22 @@ describe("ToolField", () => {
     expect(screen.queryByPlaceholderText("API_KEY")).not.toBeInTheDocument()
   })
 
+  it("locks a stored secret behind a disabled mask", () => {
+    renderWithProviders(
+      <Harness
+        tool={{
+          ...emptyToolForm,
+          secrets: [{ key: "API_KEY", value: "", stored: true }],
+        }}
+      />,
+    )
+    expect(screen.getByLabelText("Secret key")).toBeDisabled()
+    expect(screen.getByLabelText("Secret key")).toHaveValue("API_KEY")
+    expect(screen.getByLabelText("Secret value")).toBeDisabled()
+    expect(screen.getByLabelText("Secret value")).toHaveValue(SECRET_VALUE_MASK)
+    expect(screen.getByRole("button", { name: "Reveal value" })).toBeDisabled()
+  })
+
   it("asks for a custom name for other tools and unlocks billing when paid", async () => {
     const user = userEvent.setup()
     renderWithProviders(
@@ -80,7 +97,7 @@ describe("ToolField", () => {
       const form = useForm<ProjectFormValues>({
         defaultValues: {
           ...emptyProjectForm,
-          tools: [{ ...emptyToolForm, secrets: [{ key: "", value: "" }] }],
+          tools: [{ ...emptyToolForm, secrets: [{ key: "", value: "", stored: false }] }],
         },
       })
       return (
@@ -110,7 +127,9 @@ describe("ToolField", () => {
       const form = useForm<ProjectFormValues>({
         defaultValues: {
           ...emptyProjectForm,
-          tools: [{ ...emptyToolForm, amount: "40", secrets: [{ key: "K", value: "" }] }],
+          tools: [
+            { ...emptyToolForm, amount: "40", secrets: [{ key: "K", value: "", stored: false }] },
+          ],
         },
       })
       return (

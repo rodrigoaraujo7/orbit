@@ -105,7 +105,11 @@ export async function listProjects(tx: Tx, _userId: string, filters?: ProjectLis
           ...tool,
           secrets: secrets
             .filter((s: typeof credential.$inferSelect) => s.projectToolId === tool.id)
-            .map((s: typeof credential.$inferSelect) => ({ key: s.label, value: "" })),
+            .map((s: typeof credential.$inferSelect) => ({
+              id: s.id,
+              key: s.label,
+              value: "",
+            })),
         })),
     ),
   )
