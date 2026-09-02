@@ -1,4 +1,4 @@
-import { act, cleanup, screen, within } from "@testing-library/react"
+import { cleanup, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -115,7 +115,6 @@ beforeEach(() => {
   trpc.github.status.query.mockResolvedValue({
     connected: false,
     login: null,
-    webhook: null,
   })
   trpc.github.repo.query.mockClear()
   trpc.github.repo.query.mockResolvedValue({
@@ -269,38 +268,6 @@ describe("project detail route", () => {
   })
 })
 
-/** jsdom has no EventSource; this one lets a test push a run down the stream. */
-class FakeEventSource {
-  static instances: FakeEventSource[] = []
-  listeners = new Map<string, ((event: MessageEvent<string>) => void)[]>()
-
-  constructor(public url: string) {
-    FakeEventSource.instances.push(this)
-  }
-
-  addEventListener(type: string, listener: (event: MessageEvent<string>) => void) {
-    this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener])
-  }
-
-  emit(type: string, data = "") {
-    for (const listener of this.listeners.get(type) ?? []) {
-      listener({ data } as MessageEvent<string>)
-    }
-  }
-
-  close() {}
-}
-
-function pushRun(run: typeof sampleWorkflowRun, branch = "main") {
-  const source = FakeEventSource.instances[FakeEventSource.instances.length - 1]!
-  act(() =>
-    source.emit(
-      "run",
-      JSON.stringify({ repo: "ada/portal", branch, run, source: "webhook" as const }),
-    ),
-  )
-}
-
 describe("project detail GitHub tab", () => {
   async function openGithubTab() {
     const user = userEvent.setup()
@@ -314,7 +281,6 @@ describe("project detail GitHub tab", () => {
     trpc.github.status.query.mockResolvedValue({
       connected: true,
       login: "ada",
-      webhook: null,
     })
   }
 
@@ -334,7 +300,7 @@ describe("project detail GitHub tab", () => {
     expect(await screen.findByText(/This project has no repository/)).toBeInTheDocument()
   })
 
-  it("lists the runs of the default branch and turns the header badge live", async () => {
+  it("lists the runs of the default branch and updates the header badge", async () => {
     connectGithub()
     trpc.github.runs.query.mockResolvedValue({
       branch: "main",
@@ -348,7 +314,7 @@ describe("project detail GitHub tab", () => {
     expect(await screen.findByText("release")).toBeInTheDocument()
     expect(trpc.github.runs.query).toHaveBeenCalledWith({ projectId: "p1", branch: undefined })
     // The fixture is cached as "success" and both runs passed, so the failure
-    // icon can only be the header badge following the live default-branch read.
+    // icon can only be the header badge following the default-branch read.
     expect(container.querySelectorAll(".lucide-circle-x")).toHaveLength(1)
   })
 
@@ -401,67 +367,5 @@ describe("project detail GitHub tab", () => {
     await user.click(await screen.findByRole("option", { name: /main/ }))
     expect(routeNavigate).toHaveBeenCalled()
     expect(search.next.branch).toBeUndefined()
-  })
-})
-
-describe("project detail live stream", () => {
-  beforeEach(() => {
-    FakeEventSource.instances = []
-    vi.stubGlobal("EventSource", FakeEventSource)
-    trpc.github.status.query.mockResolvedValue({
-      connected: true,
-      login: "ada",
-      webhook: null,
-    })
-  })
-
-  afterEach(() => {
-    vi.unstubAllGlobals()
-  })
-
-  it("adds a run pushed over the stream and refreshes the projects list", async () => {
-    trpc.github.runs.query.mockResolvedValue({
-      branch: "main",
-      defaultBranch: "main",
-      isDefaultBranch: true,
-      workflow: "success",
-      runs: [sampleWorkflowRun],
-    })
-    const user = userEvent.setup()
-    const { client } = renderWithProviders(<ProjectDetailPage />)
-    const invalidate = vi.spyOn(client, "invalidateQueries")
-
-    await user.click(await screen.findByRole("tab", { name: "GitHub" }))
-    expect(await screen.findByText("ci")).toBeInTheDocument()
-    await vi.waitFor(() => expect(FakeEventSource.instances).toHaveLength(1))
-    expect(FakeEventSource.instances[0]!.url).toContain("branch=main")
-
-    pushRun({
-      ...sampleWorkflowRun,
-      id: 999,
-      name: "release",
-      status: "running",
-      durationMs: null,
-      startedAt: "2026-09-02T10:00:00.000Z",
-    })
-
-    expect(await screen.findByText("release")).toBeInTheDocument()
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["projects"] })
-  })
-
-  it("drops a pushed run while the list is still loading", async () => {
-    search.value = { branch: "dev" }
-    trpc.github.runs.query.mockReturnValue(new Promise(() => {}))
-    const user = userEvent.setup()
-    const { client } = renderWithProviders(<ProjectDetailPage />)
-    const invalidate = vi.spyOn(client, "invalidateQueries")
-
-    await user.click(await screen.findByRole("tab", { name: "GitHub" }))
-    await vi.waitFor(() => expect(FakeEventSource.instances).toHaveLength(1))
-
-    pushRun({ ...sampleWorkflowRun, id: 999, name: "release" }, "dev")
-
-    expect(screen.queryByText("release")).not.toBeInTheDocument()
-    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ["projects"] })
   })
 })

@@ -174,8 +174,7 @@ create table if not exists user_key (
 );
 
 -- One GitHub personal access token per user, sealed with the same envelope as
--- credential. hook_id addresses the public webhook URL and hook_secret signs
--- its deliveries, so neither the user id nor the token ever travels to GitHub.
+-- credential. The token never leaves the server.
 create table if not exists github_token (
   user_id text primary key references "user"(id) on delete cascade,
   login text,
@@ -183,10 +182,11 @@ create table if not exists github_token (
   iv text not null,
   tag text not null,
   version integer not null default 1,
-  hook_id text not null unique,
-  hook_secret text not null,
   created_at timestamptz not null default now()
 );
+
+alter table github_token drop column if exists hook_secret;
+alter table github_token drop column if exists hook_id;
 
 create table if not exists audit_log (
   id text primary key,
@@ -319,7 +319,7 @@ declare t text;
 begin
   foreach t in array array[
     'contact','project','project_tool','credential','invoice','payment',
-    'custom_tool','user_key','audit_log'
+    'custom_tool','user_key','audit_log','github_token'
   ]
   loop
     execute format('alter table %I enable row level security', t);
@@ -333,17 +333,6 @@ begin
     );
   end loop;
 end $$;
-
--- github_token is also read by the webhook receiver, which has no session and
--- therefore no app.user_id to match on. RLS still isolates app_runtime, which
--- is what every tRPC path runs as; it is deliberately not FORCEd so the owner
--- connection can resolve hook_id -> user_id for an incoming delivery.
-alter table github_token enable row level security;
-alter table github_token no force row level security;
-drop policy if exists tenant_isolation on github_token;
-create policy tenant_isolation on github_token
-  using (user_id = nullif(current_setting('app.user_id', true), ''))
-  with check (user_id = nullif(current_setting('app.user_id', true), ''));
 
 -- Audit log: extra columns, append-only grants, drop client-side project history.
 alter table audit_log add column if not exists module text;

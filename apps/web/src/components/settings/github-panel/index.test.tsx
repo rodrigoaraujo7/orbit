@@ -18,31 +18,18 @@ vi.mock("@/lib/trpc", async () => {
 import { trpc } from "@/lib/trpc"
 import { GithubPanel } from "./index"
 
-const webhook = {
-  url: "https://example.test/api/github/webhook/hook-1",
-  secret: "hook-secret",
-}
+const connected = { connected: true, login: "ada" }
+const disconnected = { connected: false, login: null }
 
-const connected = { connected: true, login: "ada", webhook }
-
-const disconnected = { connected: false, login: null, webhook: null }
-
-const writeText = vi.fn().mockResolvedValue(undefined)
-
-/** userEvent.setup() installs its own clipboard, so ours has to come after it. */
 function setupUser() {
-  const user = userEvent.setup()
-  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } })
-  return user
+  return userEvent.setup()
 }
 
 beforeEach(() => {
   toastAdd.mockClear()
   trpc.github.status.query.mockResolvedValue(disconnected)
-  trpc.github.connect.mutate.mockResolvedValue({ login: "ada", webhook })
+  trpc.github.connect.mutate.mockResolvedValue({ login: "ada" })
   trpc.github.disconnect.mutate.mockResolvedValue({ ok: true })
-  writeText.mockClear()
-  writeText.mockResolvedValue(undefined)
 })
 
 afterEach(() => {
@@ -104,13 +91,12 @@ describe("GithubPanel", () => {
     )
   })
 
-  it("shows the account and the webhook credentials once connected", async () => {
+  it("shows the account once connected", async () => {
     trpc.github.status.query.mockResolvedValue(connected)
     renderWithProviders(<GithubPanel />)
 
     expect(await screen.findByText("Connected as ada")).toBeInTheDocument()
-    expect(screen.getByText(webhook.url)).toBeInTheDocument()
-    expect(screen.getByText(webhook.secret)).toBeInTheDocument()
+    expect(screen.queryByText("Real-time webhook")).not.toBeInTheDocument()
     expect(screen.queryByLabelText(/Personal access token/)).not.toBeInTheDocument()
   })
 
@@ -118,31 +104,6 @@ describe("GithubPanel", () => {
     trpc.github.status.query.mockResolvedValue({ ...connected, login: null })
     renderWithProviders(<GithubPanel />)
     expect(await screen.findByText(/does not name/)).toBeInTheDocument()
-  })
-
-  it("hides the webhook section when the server sends no credentials", async () => {
-    trpc.github.status.query.mockResolvedValue({ ...connected, webhook: null })
-    renderWithProviders(<GithubPanel />)
-    expect(await screen.findByText("Connected as ada")).toBeInTheDocument()
-    expect(screen.queryByText("Real-time webhook")).not.toBeInTheDocument()
-  })
-
-  it("copies the webhook credentials and reports a clipboard failure", async () => {
-    trpc.github.status.query.mockResolvedValue(connected)
-    const user = setupUser()
-    renderWithProviders(<GithubPanel />)
-
-    await user.click(await screen.findByRole("button", { name: "Copy Payload URL" }))
-    expect(writeText).toHaveBeenCalledWith(webhook.url)
-    await vi.waitFor(() =>
-      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "success" })),
-    )
-
-    writeText.mockRejectedValue(new Error("denied"))
-    await user.click(screen.getByRole("button", { name: "Copy Secret" }))
-    await vi.waitFor(() =>
-      expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: "error" })),
-    )
   })
 
   it("disconnects after confirmation and reports a failure", async () => {

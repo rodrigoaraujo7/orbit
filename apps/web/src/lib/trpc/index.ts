@@ -45,12 +45,9 @@ type InvoiceListResult = {
   totals: { count: number; paid: number; overdue: number }
 }
 
-export type GithubWebhook = { url: string; secret: string }
-
 export type GithubStatus = {
   connected: boolean
   login: string | null
-  webhook: GithubWebhook | null
 }
 
 export type GithubRepo = {
@@ -106,7 +103,6 @@ type BrowserRouter = {
     connect: {
       mutate: (input: { token: string }) => Promise<{
         login: string | null
-        webhook: GithubWebhook
       }>
     }
     disconnect: { mutate: () => Promise<{ ok: true }> }

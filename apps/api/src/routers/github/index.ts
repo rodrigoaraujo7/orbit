@@ -4,7 +4,6 @@ import { branchWorkflowStatus } from "shared"
 import { project } from "../../db/schema/index.ts"
 import type { Tx } from "../../db/with-user/index.ts"
 import { getRepo, listBranches, listWorkflowRuns, verifyToken } from "../../github/client/index.ts"
-import { webhookUrl } from "../../github/hook-url/index.ts"
 import { deleteGithubToken, readGithubToken, saveGithubToken } from "../../github/token/index.ts"
 import { githubConnectInput, githubProjectInput, githubRunsInput } from "../../input/github.ts"
 import { recordAudit } from "../../audit/record/index.ts"
@@ -34,25 +33,21 @@ export const githubRouter = router({
   status: protectedProcedure.query(({ ctx }) =>
     asUser(ctx, async (tx) => {
       const stored = await readGithubToken(tx, ctx.userId)
-      if (!stored) return { connected: false as const, login: null, webhook: null }
-      return {
-        connected: true as const,
-        login: stored.login,
-        webhook: { url: webhookUrl(stored.hookId), secret: stored.hookSecret },
-      }
+      if (!stored) return { connected: false as const, login: null }
+      return { connected: true as const, login: stored.login }
     }),
   ),
 
   connect: protectedProcedure.input(githubConnectInput).mutation(async ({ ctx, input }) => {
     const { login } = await verifyToken(input.token)
     return asUser(ctx, async (tx) => {
-      const { hookId, hookSecret } = await saveGithubToken(tx, ctx.userId, input.token, login)
+      await saveGithubToken(tx, ctx.userId, input.token, login)
       await recordAudit(tx, auditCtx(ctx), {
         module: "settings",
         action: "github.connect",
         subjectLabel: login ?? "github",
       })
-      return { login, webhook: { url: webhookUrl(hookId), secret: hookSecret } }
+      return { login }
     })
   }),
 

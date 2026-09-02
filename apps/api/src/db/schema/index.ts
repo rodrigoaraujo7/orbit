@@ -264,8 +264,6 @@ export const githubToken = pgTable("github_token", {
   iv: text("iv").notNull(),
   tag: text("tag").notNull(),
   version: integer("version").notNull().default(1),
-  hookId: text("hook_id").notNull().unique(),
-  hookSecret: text("hook_secret").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
 

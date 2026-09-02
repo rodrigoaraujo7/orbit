@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Copy, ExternalLink, Plug, Unplug } from "lucide-react"
+import { ExternalLink, Plug, Unplug } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -26,40 +26,6 @@ function tokenSchema() {
 }
 
 type TokenFormValues = z.infer<ReturnType<typeof tokenSchema>>
-
-/** One read-only value with a copy button — the webhook URL and its secret. */
-function CopyRow({ label, value }: { label: string; value: string }) {
-  const { t } = useTranslation()
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(value)
-      toast.add({ title: t("common.copied", { key: label }), type: "success" })
-    } catch {
-      toast.add({ title: t("common.copyFailed"), type: "error" })
-    }
-  }
-
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-2">
-        <code className="min-w-0 flex-1 truncate rounded-lg border bg-muted/40 px-3 py-2 text-xs">
-          {value}
-        </code>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon-sm"
-          onClick={copy}
-          aria-label={`${t("github.copy")} ${label}`}
-        >
-          <Copy />
-        </Button>
-      </div>
-    </div>
-  )
-}
 
 export function GithubPanel() {
   const { t } = useTranslation()
@@ -120,7 +86,7 @@ export function GithubPanel() {
             {status?.connected ? (
               <Badge variant="success">{t("github.connected")}</Badge>
             ) : (
-              <Badge variant="muted">{t("github.liveOffline")}</Badge>
+              <Badge variant="muted">{t("github.disconnected")}</Badge>
             )}
           </div>
           {status?.connected && (
@@ -179,17 +145,6 @@ export function GithubPanel() {
           </form>
         )}
       </section>
-
-      {status?.webhook && (
-        <section className="flex flex-col gap-3 rounded-xl border p-4">
-          <h3 className="font-subtitle text-base font-semibold tracking-tight">
-            {t("github.webhookTitle")}
-          </h3>
-          <p className="text-sm text-muted-foreground">{t("github.webhookDescription")}</p>
-          <CopyRow label={t("github.webhookUrl")} value={status.webhook.url} />
-          <CopyRow label={t("github.webhookSecret")} value={status.webhook.secret} />
-        </section>
-      )}
 
       <ConfirmDialog
         open={confirmingDisconnect}

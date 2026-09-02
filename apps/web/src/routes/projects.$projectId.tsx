@@ -1,15 +1,9 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { ArrowLeft, GitBranch, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react"
 import { useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  branchWorkflowStatus,
-  compactSearch,
-  mergeRun,
-  parseSearch,
-  projectDetailSearchSchema,
-} from "shared"
+import { compactSearch, parseSearch, projectDetailSearchSchema } from "shared"
 
 import {
   CreateProjectDialog,
@@ -29,10 +23,9 @@ import { isDealFree } from "@/data/projects"
 import { freeLabel } from "@/i18n/labels"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
 import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/format"
-import { useGithubStream } from "@/lib/github-stream"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
-import { trpc, type GithubRuns } from "@/lib/trpc"
+import { trpc } from "@/lib/trpc"
 
 function Card({ action, children }: { action?: ReactNode; children: ReactNode }) {
   return (
@@ -74,7 +67,6 @@ function ProjectDetailPage() {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const navigate = useNavigate()
   const routeNavigate = Route.useNavigate()
-  const queryClient = useQueryClient()
 
   const invoiceInput = {
     projectId,
@@ -115,27 +107,6 @@ function ProjectDetailPage() {
 
   // The URL may hold no branch at all; the server answers with the default one.
   const activeBranch = runsQuery.data?.branch ?? branch
-  const streamStatus = useGithubStream({
-    enabled: connected && Boolean(repoFullName) && Boolean(activeBranch),
-    repo: repoFullName,
-    branch: activeBranch,
-    onRun: (event) => {
-      queryClient.setQueryData(runsKey, (previous: GithubRuns | undefined) => {
-        if (!previous) return previous
-        const runs = mergeRun(previous.runs, event.run)
-        return {
-          ...previous,
-          runs,
-          workflow: branchWorkflowStatus(runs),
-        }
-      })
-      // The list badge and its SQL filter read the cached column the server
-      // just refreshed, so pull the projects list back in step.
-      if (runsQuery.data?.isDefaultBranch) {
-        void queryClient.invalidateQueries({ queryKey: ["projects"] })
-      }
-    },
-  })
 
   function refreshGithub() {
     void repoQuery.refetch()
@@ -198,7 +169,7 @@ function ProjectDetailPage() {
     )
     .join(" + ")
 
-  // Live status while the default branch is on screen; otherwise the value the
+  // Status of the default branch from this page load; otherwise the value the
   // server cached the last time it was, which is what the list shows too.
   const headerWorkflow =
     runsQuery.data?.isDefaultBranch && project.repo
@@ -454,7 +425,6 @@ function ProjectDetailPage() {
                   branch={activeBranch}
                   defaultBranch={runsQuery.data?.defaultBranch ?? ""}
                   onBranchChange={selectBranch}
-                  streamStatus={streamStatus}
                   isPending={runsQuery.isPending}
                   isFetching={runsQuery.isFetching}
                 />

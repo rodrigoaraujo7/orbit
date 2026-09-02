@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import { Check, ChevronDown, ExternalLink, GitBranch, Radio } from "lucide-react"
+import { Check, ChevronDown, ExternalLink, GitBranch } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import type { WorkflowRun } from "shared"
 
@@ -20,47 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { DataTable, type Column } from "@/components/ui/table"
-import { Tooltip } from "@/components/ui/tooltip"
 import { formatDuration, formatRelativeTime } from "@/lib/format"
-import type { StreamStatus } from "@/lib/github-stream"
-import { cn } from "@/lib/utils"
 import { WorkflowBadge } from "../status-badges"
-
-const STATUS_TONE: Record<StreamStatus, string> = {
-  connecting: "text-muted-foreground",
-  live: "text-success",
-  polling: "text-warning",
-  offline: "text-muted-foreground",
-}
-
-const STATUS_LABEL: Record<StreamStatus, string> = {
-  connecting: "github.liveConnecting",
-  live: "github.live",
-  polling: "github.livePolling",
-  offline: "github.liveOffline",
-}
-
-const STATUS_TOOLTIP: Record<StreamStatus, string> = {
-  connecting: "github.liveConnecting",
-  live: "github.liveTooltip",
-  polling: "github.livePollingTooltip",
-  offline: "github.liveOfflineTooltip",
-}
-
-/** Whether runs are arriving on their own, and how. */
-export function LiveIndicator({ status }: { status: StreamStatus }) {
-  const { t } = useTranslation()
-  return (
-    <Tooltip label={t(STATUS_TOOLTIP[status])} side="top">
-      <span
-        className={cn("inline-flex items-center gap-1.5 text-xs font-medium", STATUS_TONE[status])}
-      >
-        <Radio className={cn("size-3.5", status === "live" && "animate-pulse")} />
-        {t(STATUS_LABEL[status])}
-      </span>
-    </Tooltip>
-  )
-}
 
 /** Nothing to show yet: no repository, no connection, or the call failed. */
 export function WorkflowRunsEmpty({
@@ -153,7 +114,6 @@ export function WorkflowRunsTable({
   branch,
   defaultBranch,
   onBranchChange,
-  streamStatus,
   isPending,
   isFetching,
 }: {
@@ -162,7 +122,6 @@ export function WorkflowRunsTable({
   branch: string
   defaultBranch: string
   onBranchChange: (branch: string) => void
-  streamStatus: StreamStatus
   isPending: boolean
   isFetching: boolean
 }) {
@@ -255,7 +214,6 @@ export function WorkflowRunsTable({
             disabled={branches.length === 0}
           />
         </div>
-        <LiveIndicator status={streamStatus} />
       </div>
 
       <FilterPending

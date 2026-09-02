@@ -3,12 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { githubToken } from "../../db/schema/index.ts"
 import { withUser } from "../../db/with-user/index.ts"
 import { closeTestDb, insertUser, openTestDb } from "../../test/harness.ts"
-import {
-  deleteGithubToken,
-  readGithubToken,
-  readGithubTokenByHook,
-  saveGithubToken,
-} from "./index.ts"
+import { deleteGithubToken, readGithubToken, saveGithubToken } from "./index.ts"
 
 const master = randomBytes(32).toString("hex")
 
@@ -28,51 +23,29 @@ afterEach(async () => {
 
 describe("github token storage", () => {
   it("seals the token and reads it back", async () => {
-    const saved = await withUser(db, "user-a", (tx) =>
-      saveGithubToken(tx, "user-a", "ghp_secret", "ada"),
-    )
-    expect(saved.hookId).toBeTruthy()
-    expect(saved.hookSecret).toHaveLength(48)
+    await withUser(db, "user-a", (tx) => saveGithubToken(tx, "user-a", "ghp_secret", "ada"))
 
     const [row] = await db.select().from(githubToken)
     expect(row.ciphertext).not.toContain("ghp_secret")
 
     const stored = await withUser(db, "user-a", (tx) => readGithubToken(tx, "user-a"))
-    expect(stored).toMatchObject({
+    expect(stored).toEqual({
       userId: "user-a",
       token: "ghp_secret",
       login: "ada",
-      hookId: saved.hookId,
     })
   })
 
   it("returns null when the user never connected", async () => {
     expect(await withUser(db, "user-a", (tx) => readGithubToken(tx, "user-a"))).toBeNull()
-    expect(await readGithubTokenByHook(db, "nope")).toBeNull()
   })
 
-  it("keeps the hook credentials when the token is rotated", async () => {
-    const first = await withUser(db, "user-a", (tx) =>
-      saveGithubToken(tx, "user-a", "ghp_one", "ada"),
-    )
-    const second = await withUser(db, "user-a", (tx) =>
-      saveGithubToken(tx, "user-a", "ghp_two", null),
-    )
-    expect(second).toEqual(first)
+  it("replaces the token when the user reconnects", async () => {
+    await withUser(db, "user-a", (tx) => saveGithubToken(tx, "user-a", "ghp_one", "ada"))
+    await withUser(db, "user-a", (tx) => saveGithubToken(tx, "user-a", "ghp_two", null))
 
     const stored = await withUser(db, "user-a", (tx) => readGithubToken(tx, "user-a"))
     expect(stored).toMatchObject({ token: "ghp_two", login: null })
-  })
-
-  it("resolves a delivery by its hook id without a session", async () => {
-    const { hookId, hookSecret } = await withUser(db, "user-a", (tx) =>
-      saveGithubToken(tx, "user-a", "ghp_secret", "ada"),
-    )
-    expect(await readGithubTokenByHook(db, hookId)).toMatchObject({
-      userId: "user-a",
-      token: "ghp_secret",
-      hookSecret,
-    })
   })
 
   it("isolates one user from another", async () => {

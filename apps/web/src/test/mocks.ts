@@ -71,15 +71,11 @@ export function createTrpcMock() {
     },
     github: {
       status: {
-        query: vi.fn().mockResolvedValue({ connected: false, login: null, webhook: null }),
+        query: vi.fn().mockResolvedValue({ connected: false, login: null }),
       },
       connect: {
         mutate: vi.fn().mockResolvedValue({
           login: "ada",
-          webhook: {
-            url: "https://example.test/api/github/webhook/hook-1",
-            secret: "hook-secret",
-          },
         }),
       },
       disconnect: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },

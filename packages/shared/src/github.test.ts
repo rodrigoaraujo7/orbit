@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest"
-import {
-  branchWorkflowStatus,
-  isRunActive,
-  mergeRun,
-  runWorkflowStatus,
-  type WorkflowRun,
-} from "./github.ts"
+import { branchWorkflowStatus, isRunActive, runWorkflowStatus, type WorkflowRun } from "./github.ts"
 
 function run(overrides: Partial<WorkflowRun> = {}): WorkflowRun {
   return {
@@ -55,24 +49,5 @@ describe("branchWorkflowStatus", () => {
   it("takes the most recent run and falls back to none", () => {
     expect(branchWorkflowStatus([{ status: "failure" }, { status: "success" }])).toBe("failure")
     expect(branchWorkflowStatus([])).toBe("none")
-  })
-})
-
-describe("mergeRun", () => {
-  it("replaces a known run in place", () => {
-    const list = [run({ id: 2, startedAt: "2026-09-01T11:00:00Z" }), run({ id: 1 })]
-    const merged = mergeRun(list, run({ id: 1, status: "failure" }))
-    expect(merged).toHaveLength(2)
-    expect(merged[1]).toMatchObject({ id: 1, status: "failure" })
-  })
-
-  it("adds an unknown run and keeps the newest first", () => {
-    const merged = mergeRun([run({ id: 1 })], run({ id: 2, startedAt: "2026-09-01T12:00:00Z" }))
-    expect(merged.map((entry) => entry.id)).toEqual([2, 1])
-  })
-
-  it("breaks a start-time tie by id", () => {
-    const merged = mergeRun([run({ id: 5 })], run({ id: 9 }))
-    expect(merged.map((entry) => entry.id)).toEqual([9, 5])
   })
 })

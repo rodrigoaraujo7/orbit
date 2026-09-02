@@ -16,7 +16,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   }
 })
 
-import { LiveIndicator, WorkflowRunsEmpty, WorkflowRunsTable } from "./index"
+import { WorkflowRunsEmpty, WorkflowRunsTable } from "./index"
 
 function run(overrides: Partial<WorkflowRun> = {}): WorkflowRun {
   return { ...sampleWorkflowRun, ...overrides }
@@ -30,7 +30,6 @@ function renderTable(props: Partial<Parameters<typeof WorkflowRunsTable>[0]> = {
       branch="main"
       defaultBranch="main"
       onBranchChange={vi.fn()}
-      streamStatus="live"
       isPending={false}
       isFetching={false}
       {...props}
@@ -40,21 +39,6 @@ function renderTable(props: Partial<Parameters<typeof WorkflowRunsTable>[0]> = {
 
 afterEach(() => {
   cleanup()
-})
-
-describe("LiveIndicator", () => {
-  it("names every connection state", () => {
-    for (const [status, label] of [
-      ["connecting", "Connecting…"],
-      ["live", "Live"],
-      ["polling", "Polling"],
-      ["offline", "Offline"],
-    ] as const) {
-      renderWithProviders(<LiveIndicator status={status} />)
-      expect(screen.getByText(label)).toBeInTheDocument()
-      cleanup()
-    }
-  })
 })
 
 describe("WorkflowRunsEmpty", () => {

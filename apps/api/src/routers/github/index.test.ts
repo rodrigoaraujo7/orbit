@@ -90,16 +90,15 @@ describe("github.status", () => {
     expect(await caller("user-a").github.status()).toEqual({
       connected: false,
       login: null,
-      webhook: null,
     })
   })
 
-  it("returns the login and the webhook credentials once connected", async () => {
+  it("returns the login once connected", async () => {
     await connect()
-    const status = await caller("user-a").github.status()
-    expect(status).toMatchObject({ connected: true, login: "ada" })
-    expect(status.webhook?.url).toContain("/api/github/webhook/")
-    expect(status.webhook?.secret).toHaveLength(48)
+    expect(await caller("user-a").github.status()).toEqual({
+      connected: true,
+      login: "ada",
+    })
   })
 
   it("refuses an anonymous caller", async () => {

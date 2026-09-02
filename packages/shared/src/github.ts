@@ -33,7 +33,7 @@ export type WorkflowRun = {
   url: string
 }
 
-/** A run still moving — what the live stream and the spinning badge care about. */
+/** A run still moving — what the spinning badge cares about. */
 export function isRunActive(run: Pick<WorkflowRun, "status">) {
   return run.status === "running"
 }
@@ -41,18 +41,4 @@ export function isRunActive(run: Pick<WorkflowRun, "status">) {
 /** Status of a branch as a whole: the most recent run wins. */
 export function branchWorkflowStatus(runs: Pick<WorkflowRun, "status">[]): WorkflowStatus {
   return runs[0]?.status ?? "none"
-}
-
-/**
- * Merges a run pushed by the live stream into the list already on screen,
- * replacing it when the id is known and adding it otherwise. Ordered by start
- * time like the REST list — run numbers restart per workflow, so they cannot
- * order a list that mixes workflows.
- */
-export function mergeRun(runs: WorkflowRun[], incoming: WorkflowRun): WorkflowRun[] {
-  const known = runs.some((run) => run.id === incoming.id)
-  const next = known
-    ? runs.map((run) => (run.id === incoming.id ? incoming : run))
-    : [incoming, ...runs]
-  return next.sort((a, b) => b.startedAt.localeCompare(a.startedAt) || b.id - a.id)
 }
