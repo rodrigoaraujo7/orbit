@@ -1,9 +1,10 @@
-import { Puzzle, Users } from "lucide-react"
+import { GitBranch, Puzzle, Users } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Tabs, TabsDock, TabsDockTab, TabsPanel } from "@/components/ui/tabs"
 import { ContactsPanel } from "../contacts-panel"
 import { CustomToolsPanel } from "../custom-tools-panel"
+import { GithubPanel } from "../github-panel"
 
 export function GeneralRegistry() {
   const { t } = useTranslation()
@@ -16,6 +17,9 @@ export function GeneralRegistry() {
         <TabsDockTab value="custom-tools" icon={Puzzle}>
           {t("settings.customTools")}
         </TabsDockTab>
+        <TabsDockTab value="github" icon={GitBranch}>
+          {t("settings.github")}
+        </TabsDockTab>
       </TabsDock>
 
       <TabsPanel value="contacts" className="mt-4">
@@ -23,6 +27,9 @@ export function GeneralRegistry() {
       </TabsPanel>
       <TabsPanel value="custom-tools" className="mt-4">
         <CustomToolsPanel />
+      </TabsPanel>
+      <TabsPanel value="github" className="mt-4">
+        <GithubPanel />
       </TabsPanel>
     </Tabs>
   )

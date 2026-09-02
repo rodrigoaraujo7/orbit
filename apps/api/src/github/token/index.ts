@@ -59,12 +59,7 @@ export async function readGithubTokenByHook(
  * Reconnecting keeps the existing hook id and secret so a webhook already
  * registered on GitHub keeps working after the token is rotated.
  */
-export async function saveGithubToken(
-  tx: Tx,
-  userId: string,
-  token: string,
-  login: string | null,
-) {
+export async function saveGithubToken(tx: Tx, userId: string, token: string, login: string | null) {
   const [existing] = await tx
     .select()
     .from(githubToken)

@@ -90,8 +90,7 @@ describe("github.status", () => {
     expect(await caller("user-a").github.status()).toEqual({
       connected: false,
       login: null,
-      webhookUrl: null,
-      secret: null,
+      webhook: null,
     })
   })
 
@@ -99,8 +98,8 @@ describe("github.status", () => {
     await connect()
     const status = await caller("user-a").github.status()
     expect(status).toMatchObject({ connected: true, login: "ada" })
-    expect(status.webhookUrl).toContain("/api/github/webhook/")
-    expect(status.secret).toHaveLength(48)
+    expect(status.webhook?.url).toContain("/api/github/webhook/")
+    expect(status.webhook?.secret).toHaveLength(48)
   })
 
   it("refuses an anonymous caller", async () => {

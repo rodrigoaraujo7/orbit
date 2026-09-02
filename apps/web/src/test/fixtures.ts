@@ -1,4 +1,5 @@
 import { vi } from "vitest"
+import type { WorkflowRun } from "shared"
 import type { Contact } from "@/data/contacts"
 import type { CustomTool } from "@/data/custom-tools"
 import type { Invoice, Project, Tool } from "@/data/projects"
@@ -69,6 +70,22 @@ export const sampleCustomTool: CustomTool = {
   id: "t1",
   name: "CI",
   category: "deploy",
+}
+
+export const sampleWorkflowRun: WorkflowRun = {
+  id: 101,
+  name: "ci",
+  runNumber: 42,
+  status: "success",
+  event: "push",
+  branch: "main",
+  sha: "abc1234",
+  title: "ship the portal",
+  actor: "ada",
+  startedAt: "2026-09-01T10:00:00.000Z",
+  updatedAt: "2026-09-01T10:02:00.000Z",
+  durationMs: 120000,
+  url: "https://github.com/ada/portal/actions/runs/101",
 }
 
 export function createProjectsStoreMock(overrides: Record<string, unknown> = {}) {

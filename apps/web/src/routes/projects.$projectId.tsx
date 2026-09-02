@@ -1,9 +1,15 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { ArrowLeft, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react"
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query"
+import { ArrowLeft, GitBranch, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react"
 import { useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { compactSearch, invoiceSearchSchema, parseSearch } from "shared"
+import {
+  branchWorkflowStatus,
+  compactSearch,
+  mergeRun,
+  parseSearch,
+  projectDetailSearchSchema,
+} from "shared"
 
 import {
   CreateProjectDialog,
@@ -12,27 +18,21 @@ import {
 import { InvoicesTable } from "@/components/projects/invoices-table"
 import { StatusLabel, WorkflowBadge } from "@/components/projects/status-badges"
 import { ToolDetails } from "@/components/projects/tool-details"
+import { WorkflowRunsEmpty, WorkflowRunsTable } from "@/components/projects/workflow-runs"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Emphasis } from "@/components/ui/emphasis"
+import { GitHubIcon } from "@/components/ui/github-icon"
 import { Tabs, TabsDock, TabsDockTab, TabsPanel } from "@/components/ui/tabs"
 import { Tooltip } from "@/components/ui/tooltip"
 import { isDealFree } from "@/data/projects"
 import { freeLabel } from "@/i18n/labels"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
 import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/format"
+import { useGithubStream } from "@/lib/github-stream"
 import { useProjects } from "@/lib/projects-store"
 import { useRegistry } from "@/lib/registry-store"
-import { trpc } from "@/lib/trpc"
-
-// lucide-react has no GitHub brand logo — official svg inlined.
-function GitHubIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.93.57.1.78-.25.78-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.05 11.05 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.24 2.76.12 3.05.74.8 1.18 1.83 1.18 3.09 0 4.43-2.69 5.41-5.25 5.69.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .3.2.66.79.55A10.52 10.52 0 0 0 23.5 12c0-6.35-5.15-11.5-11.5-11.5Z" />
-    </svg>
-  )
-}
+import { trpc, type GithubRuns } from "@/lib/trpc"
 
 function Card({ action, children }: { action?: ReactNode; children: ReactNode }) {
   return (
@@ -74,6 +74,7 @@ function ProjectDetailPage() {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const navigate = useNavigate()
   const routeNavigate = Route.useNavigate()
+  const queryClient = useQueryClient()
 
   const invoiceInput = {
     projectId,
@@ -88,6 +89,63 @@ function ProjectDetailPage() {
     enabled: Boolean(project),
   })
 
+  const repoFullName = project?.repo?.fullName ?? ""
+  const githubQuery = useQuery({
+    queryKey: ["github", "status"],
+    queryFn: () => trpc.github.status.query(),
+  })
+  const connected = githubQuery.data?.connected ?? false
+
+  const repoQuery = useQuery({
+    queryKey: ["github", "repo", projectId],
+    queryFn: () => trpc.github.repo.query({ projectId }),
+    enabled: connected && Boolean(repoFullName),
+    retry: false,
+  })
+
+  const branch = search.branch ?? ""
+  const runsKey = ["github", "runs", projectId, branch] as const
+  const runsQuery = useQuery({
+    queryKey: runsKey,
+    queryFn: () => trpc.github.runs.query({ projectId, branch: branch || undefined }),
+    enabled: connected && Boolean(repoFullName),
+    placeholderData: keepPreviousData,
+    retry: false,
+  })
+
+  // The URL may hold no branch at all; the server answers with the default one.
+  const activeBranch = runsQuery.data?.branch ?? branch
+  const streamStatus = useGithubStream({
+    enabled: connected && Boolean(repoFullName) && Boolean(activeBranch),
+    repo: repoFullName,
+    branch: activeBranch,
+    onRun: (event) => {
+      queryClient.setQueryData(runsKey, (previous: GithubRuns | undefined) => {
+        if (!previous) return previous
+        const runs = mergeRun(previous.runs, event.run)
+        return {
+          ...previous,
+          runs,
+          workflow: branchWorkflowStatus(runs),
+        }
+      })
+      // The list badge and its SQL filter read the cached column the server
+      // just refreshed, so pull the projects list back in step.
+      if (runsQuery.data?.isDefaultBranch) {
+        void queryClient.invalidateQueries({ queryKey: ["projects"] })
+      }
+    },
+  })
+
+  function refreshGithub() {
+    void repoQuery.refetch()
+    void runsQuery.refetch()
+  }
+
+  function selectBranch(next: string) {
+    patchSearch({ branch: next === repoQuery.data?.defaultBranch ? undefined : next })
+  }
+
   function openEditDialog(config: EditDialogConfig) {
     setEditDialog(config)
     setDialogOpen(true)
@@ -100,7 +158,7 @@ function ProjectDetailPage() {
     navigate({ to: "/projects" })
   }
 
-  function patchInvoiceSearch(patch: Partial<typeof search>) {
+  function patchSearch(patch: Partial<typeof search>) {
     void routeNavigate({
       search: (prev) => compactSearch({ ...prev, ...patch }),
       replace: true,
@@ -140,6 +198,13 @@ function ProjectDetailPage() {
     )
     .join(" + ")
 
+  // Live status while the default branch is on screen; otherwise the value the
+  // server cached the last time it was, which is what the list shows too.
+  const headerWorkflow =
+    runsQuery.data?.isDefaultBranch && project.repo
+      ? runsQuery.data.workflow
+      : (project.repo?.workflow ?? "none")
+
   return (
     <div className="animate-in fade-in duration-300">
       <CreateProjectDialog
@@ -171,11 +236,8 @@ function ProjectDetailPage() {
           <BackLink />
           <div className="flex gap-1">
             <Tooltip label={t("projects.refreshProject")} side="top">
-              {/* ponytail: no-op — there is no real fetch yet (in-memory
-                  state, see projects-store.tsx). Plug in a refetch once the
-                  API exists. */}
-              <Button variant="outline" size="icon-sm" onClick={() => {}}>
-                <RefreshCw />
+              <Button variant="outline" size="icon-sm" onClick={refreshGithub}>
+                <RefreshCw className={runsQuery.isFetching ? "animate-spin" : undefined} />
               </Button>
             </Tooltip>
             <Button
@@ -215,7 +277,7 @@ function ProjectDetailPage() {
               <GitHubIcon className="size-3.5 text-muted-foreground transition-colors group-hover:text-primary" />
               {project.repo.fullName}
             </a>
-            <WorkflowBadge status={project.repo.workflow} iconOnly tooltip />
+            <WorkflowBadge status={headerWorkflow} iconOnly tooltip />
           </div>
         )}
         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
@@ -244,6 +306,9 @@ function ProjectDetailPage() {
             </TabsDockTab>
             <TabsDockTab value="tools" icon={Wrench}>
               {t("common.tools")}
+            </TabsDockTab>
+            <TabsDockTab value="github" icon={GitBranch}>
+              {t("github.tab")}
             </TabsDockTab>
           </TabsDock>
 
@@ -293,10 +358,10 @@ function ProjectDetailPage() {
                   monthFrom={search.from ?? ""}
                   monthTo={search.to ?? ""}
                   onStatusChange={(status) =>
-                    patchInvoiceSearch({ status: status === "all" ? undefined : status })
+                    patchSearch({ status: status === "all" ? undefined : status })
                   }
-                  onMonthFromChange={(from) => patchInvoiceSearch({ from: from || undefined })}
-                  onMonthToChange={(to) => patchInvoiceSearch({ to: to || undefined })}
+                  onMonthFromChange={(from) => patchSearch({ from: from || undefined })}
+                  onMonthToChange={(to) => patchSearch({ to: to || undefined })}
                   isPending={invoicesQuery.isPending}
                   isFetching={invoicesQuery.isFetching}
                 />
@@ -354,6 +419,48 @@ function ProjectDetailPage() {
               )}
             </Card>
           </TabsPanel>
+
+          <TabsPanel value="github" className="pt-4">
+            <Card
+              action={
+                <Tooltip label={t("projects.refreshProject")} side="top">
+                  <Button variant="outline" size="icon-sm" onClick={refreshGithub}>
+                    <RefreshCw className={runsQuery.isFetching ? "animate-spin" : undefined} />
+                  </Button>
+                </Tooltip>
+              }
+            >
+              <p className="font-subtitle text-2xl font-semibold tracking-tight">
+                {project.repo?.fullName ?? t("kanban.noRepository")}
+              </p>
+
+              {!project.repo && <WorkflowRunsEmpty message={t("github.noRepository")} />}
+
+              {project.repo && !connected && (
+                <WorkflowRunsEmpty
+                  message={t("github.connectPrompt")}
+                  action={{ label: t("github.goToSettings"), to: "/settings" }}
+                />
+              )}
+
+              {project.repo && connected && runsQuery.isError && (
+                <WorkflowRunsEmpty message={t("github.loadError")} />
+              )}
+
+              {project.repo && connected && !runsQuery.isError && (
+                <WorkflowRunsTable
+                  runs={runsQuery.data?.runs ?? []}
+                  branches={repoQuery.data?.branches ?? []}
+                  branch={activeBranch}
+                  defaultBranch={runsQuery.data?.defaultBranch ?? ""}
+                  onBranchChange={selectBranch}
+                  streamStatus={streamStatus}
+                  isPending={runsQuery.isPending}
+                  isFetching={runsQuery.isFetching}
+                />
+              )}
+            </Card>
+          </TabsPanel>
         </Tabs>
       </div>
     </div>
@@ -361,6 +468,6 @@ function ProjectDetailPage() {
 }
 
 export const Route = createFileRoute("/projects/$projectId")({
-  validateSearch: (search) => parseSearch(invoiceSearchSchema, search),
+  validateSearch: (search) => parseSearch(projectDetailSearchSchema, search),
   component: ProjectDetailPage,
 })

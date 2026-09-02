@@ -161,6 +161,56 @@
       "none": "No GitHub Actions runs"
     }
   },
+  "github": {
+    "title": "GitHub",
+    "tab": "GitHub",
+    "connect": "Connect",
+    "connecting": "Connecting…",
+    "disconnect": "Disconnect",
+    "connected": "Connected",
+    "connectedAs": "Connected as {{login}}",
+    "connectedNoLogin": "Connected with a token GitHub does not name.",
+    "notConnected": "GitHub is not connected.",
+    "panelDescription": "Connect a personal access token to read repositories and Actions runs. The token is stored encrypted and never leaves the server.",
+    "tokenLabel": "Personal access token",
+    "tokenPlaceholder": "ghp_…",
+    "tokenHint": "Needs the repo scope for private repositories, public_repo for public ones.",
+    "createToken": "Create a token on GitHub",
+    "tokenConnected": "GitHub connected",
+    "tokenConnectError": "Could not connect to GitHub",
+    "tokenDisconnected": "GitHub disconnected",
+    "tokenDisconnectError": "Could not disconnect from GitHub",
+    "disconnectTitle": "Disconnect GitHub",
+    "disconnectDescription": "Projects keep their repository, but runs stop loading.",
+    "disconnectWord": "disconnect",
+    "webhookTitle": "Real-time webhook",
+    "webhookDescription": "Optional. Add this webhook to a repository, with the workflow_run event, and runs update the instant GitHub reports them. Without it the open page polls every few seconds.",
+    "webhookUrl": "Payload URL",
+    "webhookSecret": "Secret",
+    "copy": "Copy",
+    "noRepository": "This project has no repository. Add one to see its Actions runs.",
+    "connectPrompt": "Connect GitHub in settings to see the Actions runs of this repository.",
+    "goToSettings": "Open settings",
+    "branch": "Branch",
+    "defaultBranch": "default",
+    "noRuns": "No Actions runs on this branch.",
+    "live": "Live",
+    "liveConnecting": "Connecting…",
+    "livePolling": "Polling",
+    "liveOffline": "Offline",
+    "liveTooltip": "Runs arrive over a live connection",
+    "livePollingTooltip": "No webhook registered — checking GitHub every few seconds",
+    "liveOfflineTooltip": "The live connection dropped; reload to reconnect",
+    "run": "Workflow",
+    "runNumber": "#{{number}}",
+    "commit": "Commit",
+    "actor": "Triggered by",
+    "duration": "Duration",
+    "started": "Started",
+    "openRun": "Open run on GitHub",
+    "loadError": "Could not load the Actions runs.",
+    "rateLimited": "GitHub rate limit reached. Try again in a few minutes."
+  },
   "category": {
     "deploy": "Deploy & Hosting",
     "database": "Database",
@@ -218,7 +268,8 @@
     "enterToolName": "Enter the tool name",
     "enterInvoiceDate": "Enter the invoice date",
     "repoFormat": "Use the owner/repository format",
-    "selectCategory": "Select a category"
+    "selectCategory": "Select a category",
+    "enterGithubToken": "Enter the GitHub token"
   },
   "format": {
     "inInstallments": "{{amount}} in {{count}}x",
@@ -229,7 +280,14 @@
     "toolsProgress_one": "{{paid}} paid · {{free}} free",
     "toolsProgress_other": "{{paid}} paid · {{free}} free",
     "installmentOption": "{{count}}x of {{amount}} interest-free",
-    "amountPerMonth": "{{amount}}/mo"
+    "amountPerMonth": "{{amount}}/mo",
+    "secondsShort": "{{count}}s",
+    "minutesShort": "{{count}}m {{seconds}}s",
+    "hoursShort": "{{count}}h {{minutes}}m",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
   },
   "audit": {
     "title": "Audit",
@@ -528,6 +586,7 @@
     "toolCreateError": "Could not create tool",
     "editToolDescription": "Update this tool's details.",
     "newToolDescription": "Register a tool outside the catalog to reuse across projects.",
-    "customToolPlaceholder": "TOTVS Protheus"
+    "customToolPlaceholder": "TOTVS Protheus",
+    "github": "GitHub"
   }
 }

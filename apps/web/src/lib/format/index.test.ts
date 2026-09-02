@@ -7,9 +7,11 @@ import {
   formatDateTime,
   formatDeal,
   formatDealProgress,
+  formatDuration,
   formatMonth,
   formatMonthLong,
   formatPercent,
+  formatRelativeTime,
   formatToolsProgress,
   maskBrPhone,
 } from "./index"
@@ -71,5 +73,25 @@ describe("format", () => {
     expect(formatCurrency(1, "USD")).toBe(formatCurrency(1, "USD"))
     expect(formatCompactCurrency(1, "USD")).toBe(formatCompactCurrency(1, "USD"))
     expect(formatPercent(0.5)).toBe(formatPercent(0.5))
+  })
+
+  it("formats how long a workflow run took", async () => {
+    await i18n.changeLanguage("en-US")
+    expect(formatDuration(-500)).toBe("0s")
+    expect(formatDuration(45_000)).toBe("45s")
+    expect(formatDuration(192_000)).toBe("3m 12s")
+    expect(formatDuration(3_840_000)).toBe("1h 4m")
+  })
+
+  it("formats how long ago a run started", async () => {
+    await i18n.changeLanguage("en-US")
+    const now = Date.parse("2026-09-10T12:00:00Z")
+    const ago = (ms: number) => formatRelativeTime(new Date(now - ms).toISOString(), now)
+
+    expect(ago(20_000)).toBe("just now")
+    expect(ago(12 * 60_000)).toBe("12m ago")
+    expect(ago(3 * 3_600_000)).toBe("3h ago")
+    expect(ago(2 * 86_400_000)).toBe("2d ago")
+    expect(ago(30 * 86_400_000)).toBe("08/11/2026")
   })
 })

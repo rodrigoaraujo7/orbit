@@ -57,7 +57,7 @@ export async function githubFetch(token: string, path: string): Promise<FetchRes
     },
   })
   const text = await response.text()
-  let body: unknown = null
+  let body: unknown
   try {
     body = text ? JSON.parse(text) : null
   } catch {
@@ -125,7 +125,9 @@ export function toWorkflowRun(raw: RawWorkflowRun): WorkflowRun {
     updatedAt: raw.updated_at,
     // A run still going has no duration yet — the UI counts from startedAt.
     durationMs:
-      status === "running" ? null : new Date(raw.updated_at).getTime() - new Date(startedAt).getTime(),
+      status === "running"
+        ? null
+        : new Date(raw.updated_at).getTime() - new Date(startedAt).getTime(),
     url: raw.html_url,
   }
 }

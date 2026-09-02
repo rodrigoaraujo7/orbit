@@ -34,12 +34,11 @@ export const githubRouter = router({
   status: protectedProcedure.query(({ ctx }) =>
     asUser(ctx, async (tx) => {
       const stored = await readGithubToken(tx, ctx.userId)
-      if (!stored) return { connected: false as const, login: null, webhookUrl: null, secret: null }
+      if (!stored) return { connected: false as const, login: null, webhook: null }
       return {
         connected: true as const,
         login: stored.login,
-        webhookUrl: webhookUrl(stored.hookId),
-        secret: stored.hookSecret,
+        webhook: { url: webhookUrl(stored.hookId), secret: stored.hookSecret },
       }
     }),
   ),
@@ -53,7 +52,7 @@ export const githubRouter = router({
         action: "github.connect",
         subjectLabel: login ?? "github",
       })
-      return { login, webhookUrl: webhookUrl(hookId), secret: hookSecret }
+      return { login, webhook: { url: webhookUrl(hookId), secret: hookSecret } }
     })
   }),
 
@@ -111,10 +110,7 @@ export const githubRouter = router({
 
     if (isDefaultBranch) {
       await asUser(ctx, (tx) =>
-        tx
-          .update(project)
-          .set({ repoWorkflow: workflow })
-          .where(eq(project.id, input.projectId)),
+        tx.update(project).set({ repoWorkflow: workflow }).where(eq(project.id, input.projectId)),
       )
     }
 

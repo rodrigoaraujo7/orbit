@@ -7,6 +7,8 @@ import type {
   Invoice,
   InvoiceListFilters,
   ProjectListFilters,
+  WorkflowRun,
+  WorkflowStatus,
 } from "shared"
 
 import type { Contact } from "@/data/contacts"
@@ -43,6 +45,29 @@ type InvoiceListResult = {
   totals: { count: number; paid: number; overdue: number }
 }
 
+export type GithubWebhook = { url: string; secret: string }
+
+export type GithubStatus = {
+  connected: boolean
+  login: string | null
+  webhook: GithubWebhook | null
+}
+
+export type GithubRepo = {
+  fullName: string
+  defaultBranch: string
+  isPrivate: boolean
+  branches: string[]
+}
+
+export type GithubRuns = {
+  branch: string
+  defaultBranch: string
+  isDefaultBranch: boolean
+  workflow: WorkflowStatus
+  runs: WorkflowRun[]
+}
+
 type BrowserRouter = {
   audit: {
     list: {
@@ -75,6 +100,20 @@ type BrowserRouter = {
   }
   dashboard: {
     metrics: { query: (input?: DashboardFilterInput) => Promise<DashboardMetrics> }
+  }
+  github: {
+    status: { query: () => Promise<GithubStatus> }
+    connect: {
+      mutate: (input: { token: string }) => Promise<{
+        login: string | null
+        webhook: GithubWebhook
+      }>
+    }
+    disconnect: { mutate: () => Promise<{ ok: true }> }
+    repo: { query: (input: { projectId: string }) => Promise<GithubRepo> }
+    runs: {
+      query: (input: { projectId: string; branch?: string; limit?: number }) => Promise<GithubRuns>
+    }
   }
   projects: {
     list: { query: (input?: ProjectListFilters) => Promise<Project[]> }

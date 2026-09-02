@@ -57,8 +57,6 @@ describe("parseWorkflowRunEvent", () => {
     expect(
       parseWorkflowRunEvent("workflow_run", { workflow_run: delivery.workflow_run }),
     ).toBeNull()
-    expect(
-      parseWorkflowRunEvent("workflow_run", { ...delivery, repository: {} }),
-    ).toBeNull()
+    expect(parseWorkflowRunEvent("workflow_run", { ...delivery, repository: {} })).toBeNull()
   })
 })
