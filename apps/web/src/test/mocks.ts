@@ -2,7 +2,7 @@ import { vi } from "vitest"
 import type { Project } from "@/data/projects"
 import type { Contact } from "@/data/contacts"
 import type { CustomTool } from "@/data/custom-tools"
-import { emptyFilters, type DashboardMetrics } from "shared"
+import { emptyFilters, type DashboardMetrics, type WorkflowRun } from "shared"
 
 export function emptyMetrics(overrides: Partial<DashboardMetrics> = {}): DashboardMetrics {
   return {
@@ -68,6 +68,38 @@ export function createTrpcMock() {
     },
     dashboard: {
       metrics: { query: vi.fn().mockResolvedValue(emptyMetrics()) },
+    },
+    github: {
+      status: {
+        query: vi.fn().mockResolvedValue({ connected: false, login: null, webhook: null }),
+      },
+      connect: {
+        mutate: vi.fn().mockResolvedValue({
+          login: "ada",
+          webhook: {
+            url: "https://example.test/api/github/webhook/hook-1",
+            secret: "hook-secret",
+          },
+        }),
+      },
+      disconnect: { mutate: vi.fn().mockResolvedValue({ ok: true as const }) },
+      repo: {
+        query: vi.fn().mockResolvedValue({
+          fullName: "ada/portal",
+          defaultBranch: "main",
+          isPrivate: true,
+          branches: ["main", "dev"],
+        }),
+      },
+      runs: {
+        query: vi.fn().mockResolvedValue({
+          branch: "main",
+          defaultBranch: "main",
+          isDefaultBranch: true,
+          workflow: "none",
+          runs: [] as WorkflowRun[],
+        }),
+      },
     },
     projects: {
       list: { query: vi.fn().mockResolvedValue([] as Project[]) },

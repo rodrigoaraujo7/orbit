@@ -255,6 +255,20 @@ export const userKey = pgTable("user_key", {
   masterKeyVersion: integer("master_key_version").notNull().default(1),
 })
 
+export const githubToken = pgTable("github_token", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  login: text("login"),
+  ciphertext: text("ciphertext").notNull(),
+  iv: text("iv").notNull(),
+  tag: text("tag").notNull(),
+  version: integer("version").notNull().default(1),
+  hookId: text("hook_id").notNull().unique(),
+  hookSecret: text("hook_secret").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const auditLog = pgTable("audit_log", {
   id: text("id").primaryKey(),
   userId: text("user_id")
@@ -288,5 +302,6 @@ export const schema = {
   payment,
   customTool,
   userKey,
+  githubToken,
   auditLog,
 }

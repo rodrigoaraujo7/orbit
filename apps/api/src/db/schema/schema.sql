@@ -173,6 +173,21 @@ create table if not exists user_key (
   master_key_version integer not null default 1
 );
 
+-- One GitHub personal access token per user, sealed with the same envelope as
+-- credential. hook_id addresses the public webhook URL and hook_secret signs
+-- its deliveries, so neither the user id nor the token ever travels to GitHub.
+create table if not exists github_token (
+  user_id text primary key references "user"(id) on delete cascade,
+  login text,
+  ciphertext text not null,
+  iv text not null,
+  tag text not null,
+  version integer not null default 1,
+  hook_id text not null unique,
+  hook_secret text not null,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists audit_log (
   id text primary key,
   user_id text not null references "user"(id) on delete cascade,
@@ -294,7 +309,7 @@ do $$ begin
   execute 'revoke all on all tables in schema public from app_runtime';
   execute 'alter default privileges in schema public revoke select, insert, update, delete on tables from app_runtime';
   execute 'grant usage on schema public to app_runtime';
-  execute 'grant select, insert, update, delete on contact, project, project_tool, credential, invoice, payment, custom_tool, user_key to app_runtime';
+  execute 'grant select, insert, update, delete on contact, project, project_tool, credential, invoice, payment, custom_tool, user_key, github_token to app_runtime';
   execute 'grant select, insert on audit_log to app_runtime';
   execute 'grant usage, select on all sequences in schema public to app_runtime';
 end $$;
@@ -318,6 +333,17 @@ begin
     );
   end loop;
 end $$;
+
+-- github_token is also read by the webhook receiver, which has no session and
+-- therefore no app.user_id to match on. RLS still isolates app_runtime, which
+-- is what every tRPC path runs as; it is deliberately not FORCEd so the owner
+-- connection can resolve hook_id -> user_id for an incoming delivery.
+alter table github_token enable row level security;
+alter table github_token no force row level security;
+drop policy if exists tenant_isolation on github_token;
+create policy tenant_isolation on github_token
+  using (user_id = nullif(current_setting('app.user_id', true), ''))
+  with check (user_id = nullif(current_setting('app.user_id', true), ''));
 
 -- Audit log: extra columns, append-only grants, drop client-side project history.
 alter table audit_log add column if not exists module text;

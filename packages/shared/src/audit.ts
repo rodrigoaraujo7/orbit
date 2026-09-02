@@ -30,6 +30,8 @@ export const AUDIT_ACTIONS = [
   "contact.create",
   "contact.update",
   "contact.delete",
+  "github.connect",
+  "github.disconnect",
   "security.login",
   "security.logout",
   "security.login.failed",

@@ -26,5 +26,15 @@ export function webOriginAliases(origin: string): string[] {
   return [...unique]
 }
 
-export const webOrigin = optionalEnv("WEB_ORIGIN") ?? DEFAULT_WEB_ORIGIN
+export function resolveWebOrigin(value: string | undefined | null = optionalEnv("WEB_ORIGIN")) {
+  return value ?? DEFAULT_WEB_ORIGIN
+}
+
+export const webOrigin = resolveWebOrigin()
 export const trustedWebOrigins = webOriginAliases(webOrigin)
+
+export function resolveAuthBaseUrl(
+  value: string | undefined | null = optionalEnv("BETTER_AUTH_URL"),
+) {
+  return value ?? webOrigin
+}

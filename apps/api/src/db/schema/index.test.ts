@@ -14,6 +14,7 @@ describe("drizzle schema", () => {
         "contact",
         "credential",
         "customTool",
+        "githubToken",
         "invoice",
         "payment",
         "project",

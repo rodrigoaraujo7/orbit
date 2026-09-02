@@ -6,6 +6,7 @@ import {
   dashboardFiltersSchema,
   invoiceListFiltersSchema,
   kanbanSearchSchema,
+  projectDetailSearchSchema,
   projectListFiltersSchema,
   projectsSearchSchema,
 } from "./filters.ts"
@@ -53,5 +54,13 @@ describe("parseSearch", () => {
       period: "7d",
       module: "kanban",
     })
+  })
+
+  it("keeps the branch alongside the invoice filters on project detail", () => {
+    expect(parseSearch(projectDetailSearchSchema, { status: "paid", branch: " main " })).toEqual({
+      status: "paid",
+      branch: "main",
+    })
+    expect(parseSearch(projectDetailSearchSchema, { branch: "" })).toEqual({})
   })
 })

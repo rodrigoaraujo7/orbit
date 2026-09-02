@@ -38,6 +38,11 @@ vi.mock("@/lib/registry-store", () => ({
   RegistryProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
+vi.mock("@/lib/trpc", async () => {
+  const { createTrpcMock } = await import("@/test/mocks")
+  return { trpc: createTrpcMock() }
+})
+
 import { GeneralRegistry } from "./index"
 
 afterEach(() => {
@@ -45,11 +50,13 @@ afterEach(() => {
 })
 
 describe("GeneralRegistry", () => {
-  it("switches between contacts and custom tools", async () => {
+  it("switches between contacts, custom tools and GitHub", async () => {
     const user = userEvent.setup()
     renderWithProviders(<GeneralRegistry />)
     expect(screen.getByText("Ada Lovelace")).toBeInTheDocument()
     await user.click(screen.getByRole("tab", { name: /Custom tools/ }))
     expect(await screen.findByText("CI")).toBeInTheDocument()
+    await user.click(screen.getByRole("tab", { name: /GitHub/ }))
+    expect(await screen.findByText(/Connect a personal access token/)).toBeInTheDocument()
   })
 })

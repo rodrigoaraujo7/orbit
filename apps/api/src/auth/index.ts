@@ -10,7 +10,7 @@ import { schema, user } from "../db/schema/index.ts"
 import { withUser } from "../db/with-user/index.ts"
 import { env, optionalEnv } from "../env/index.ts"
 import { validation } from "../input/messages.ts"
-import { trustedWebOrigins, webOrigin } from "../web-origin/index.ts"
+import { trustedWebOrigins, resolveAuthBaseUrl } from "../web-origin/index.ts"
 
 async function logSecurity(userId: string, action: string, headers: Headers | null | undefined) {
   try {
@@ -105,7 +105,7 @@ export function createAuth() {
       : "dev-only-better-auth-secret-not-for-production")
 
   return betterAuth({
-    baseURL: optionalEnv("BETTER_AUTH_URL") ?? webOrigin,
+    baseURL: resolveAuthBaseUrl(),
     secret,
     trustedOrigins: [
       ...trustedWebOrigins,

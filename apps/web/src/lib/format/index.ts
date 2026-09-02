@@ -51,6 +51,38 @@ export function formatDateTime(iso: string) {
   return time ? `${formatDate(datePart)} ${time}` : formatDate(datePart)
 }
 
+/** "45s", "3m 12s", "1h 04m" — how long a workflow run took. */
+export function formatDuration(ms: number) {
+  const totalSeconds = Math.max(0, Math.round(ms / 1000))
+  if (totalSeconds < 60) return i18n.t("format.secondsShort", { count: totalSeconds })
+  if (totalSeconds < 3600) {
+    return i18n.t("format.minutesShort", {
+      count: Math.floor(totalSeconds / 60),
+      seconds: totalSeconds % 60,
+    })
+  }
+  return i18n.t("format.hoursShort", {
+    count: Math.floor(totalSeconds / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+  })
+}
+
+/**
+ * "just now", "12m ago", "3h ago", then the plain date once a run is old
+ * enough that the exact day reads better than a countdown.
+ */
+export function formatRelativeTime(iso: string, now = Date.now()) {
+  const elapsed = now - new Date(iso).getTime()
+  const minutes = Math.floor(elapsed / 60000)
+  if (minutes < 1) return i18n.t("format.justNow")
+  if (minutes < 60) return i18n.t("format.minutesAgo", { count: minutes })
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return i18n.t("format.hoursAgo", { count: hours })
+  const days = Math.floor(hours / 24)
+  if (days < 7) return i18n.t("format.daysAgo", { count: days })
+  return formatDate(iso.slice(0, 10))
+}
+
 /** "$18,000.00 in 3x", "R$ 18.000,00 à vista" or "Free"/"Grátis". */
 export function formatDeal(deal: Deal) {
   if (isDealFree(deal)) return i18n.t("deal.free")

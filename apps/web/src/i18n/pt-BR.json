@@ -161,6 +161,56 @@
       "none": "Sem runs do GitHub Actions"
     }
   },
+  "github": {
+    "title": "GitHub",
+    "tab": "GitHub",
+    "connect": "Conectar",
+    "connecting": "Conectando…",
+    "disconnect": "Desconectar",
+    "connected": "Conectado",
+    "connectedAs": "Conectado como {{login}}",
+    "connectedNoLogin": "Conectado com um token que o GitHub não identifica.",
+    "notConnected": "O GitHub não está conectado.",
+    "panelDescription": "Conecte um token de acesso pessoal para ler repositórios e execuções do Actions. O token é guardado criptografado e nunca sai do servidor.",
+    "tokenLabel": "Token de acesso pessoal",
+    "tokenPlaceholder": "ghp_…",
+    "tokenHint": "Precisa do escopo repo para repositórios privados e public_repo para os públicos.",
+    "createToken": "Criar um token no GitHub",
+    "tokenConnected": "GitHub conectado",
+    "tokenConnectError": "Não foi possível conectar ao GitHub",
+    "tokenDisconnected": "GitHub desconectado",
+    "tokenDisconnectError": "Não foi possível desconectar do GitHub",
+    "disconnectTitle": "Desconectar o GitHub",
+    "disconnectDescription": "Os projetos mantêm o repositório, mas as execuções deixam de carregar.",
+    "disconnectWord": "desconectar",
+    "webhookTitle": "Webhook em tempo real",
+    "webhookDescription": "Opcional. Adicione este webhook a um repositório, com o evento workflow_run, e as execuções atualizam no instante em que o GitHub avisa. Sem ele, a página aberta consulta a cada poucos segundos.",
+    "webhookUrl": "URL do payload",
+    "webhookSecret": "Secret",
+    "copy": "Copiar",
+    "noRepository": "Este projeto não tem repositório. Adicione um para ver as execuções do Actions.",
+    "connectPrompt": "Conecte o GitHub nas configurações para ver as execuções do Actions deste repositório.",
+    "goToSettings": "Abrir configurações",
+    "branch": "Branch",
+    "defaultBranch": "padrão",
+    "noRuns": "Nenhuma execução do Actions nesta branch.",
+    "live": "Ao vivo",
+    "liveConnecting": "Conectando…",
+    "livePolling": "Consultando",
+    "liveOffline": "Offline",
+    "liveTooltip": "As execuções chegam por uma conexão ao vivo",
+    "livePollingTooltip": "Nenhum webhook registrado — consultando o GitHub a cada poucos segundos",
+    "liveOfflineTooltip": "A conexão ao vivo caiu; recarregue para reconectar",
+    "run": "Workflow",
+    "runNumber": "#{{number}}",
+    "commit": "Commit",
+    "actor": "Disparado por",
+    "duration": "Duração",
+    "started": "Início",
+    "openRun": "Abrir execução no GitHub",
+    "loadError": "Não foi possível carregar as execuções do Actions.",
+    "rateLimited": "Limite de requisições do GitHub atingido. Tente de novo em alguns minutos."
+  },
   "category": {
     "deploy": "Deploy & Hosting",
     "database": "Banco de dados",
@@ -218,7 +268,8 @@
     "enterToolName": "Informe o nome da ferramenta",
     "enterInvoiceDate": "Informe a data da fatura",
     "repoFormat": "Use o formato usuario/repositorio",
-    "selectCategory": "Selecione a categoria"
+    "selectCategory": "Selecione a categoria",
+    "enterGithubToken": "Informe o token do GitHub"
   },
   "format": {
     "inInstallments": "{{amount}} em {{count}}x",
@@ -229,7 +280,14 @@
     "toolsProgress_one": "{{paid}} paga · {{free}} grátis",
     "toolsProgress_other": "{{paid}} pagas · {{free}} grátis",
     "installmentOption": "{{count}}x de {{amount}} sem juros",
-    "amountPerMonth": "{{amount}}/mês"
+    "amountPerMonth": "{{amount}}/mês",
+    "secondsShort": "{{count}}s",
+    "minutesShort": "{{count}}min {{seconds}}s",
+    "hoursShort": "{{count}}h {{minutes}}min",
+    "justNow": "agora",
+    "minutesAgo": "há {{count}}min",
+    "hoursAgo": "há {{count}}h",
+    "daysAgo": "há {{count}}d"
   },
   "audit": {
     "title": "Auditoria",
@@ -528,6 +586,7 @@
     "toolCreateError": "Erro ao criar ferramenta",
     "editToolDescription": "Atualize os dados desta ferramenta.",
     "newToolDescription": "Cadastre uma ferramenta fora do catálogo para reaproveitar em vários projetos.",
-    "customToolPlaceholder": "TOTVS Protheus"
+    "customToolPlaceholder": "TOTVS Protheus",
+    "github": "GitHub"
   }
 }

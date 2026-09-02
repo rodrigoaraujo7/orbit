@@ -69,6 +69,12 @@ export const invoiceSearchSchema = z.object({
 })
 export type InvoiceSearch = z.infer<typeof invoiceSearchSchema>
 
+/** Full URL search for `/projects/$projectId`: invoice filters plus the branch tab. */
+export const projectDetailSearchSchema = invoiceSearchSchema.extend({
+  branch: optionalString,
+})
+export type ProjectDetailSearch = z.infer<typeof projectDetailSearchSchema>
+
 /** URL search for `/audit`. */
 export const auditSearchSchema = z.object({
   q: optionalString,

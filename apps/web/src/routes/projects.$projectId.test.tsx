@@ -1,8 +1,14 @@
-import { cleanup, screen, within } from "@testing-library/react"
+import { act, cleanup, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { sampleContact, sampleInvoice, sampleProject, sampleTool } from "@/test/fixtures"
+import {
+  sampleContact,
+  sampleInvoice,
+  sampleProject,
+  sampleTool,
+  sampleWorkflowRun,
+} from "@/test/fixtures"
 import { renderWithProviders } from "@/test/render"
 
 vi.mock("@/lib/trpc", async () => {
@@ -15,13 +21,16 @@ import { trpc } from "@/lib/trpc"
 const navigate = vi.fn()
 const routeNavigate = vi.fn((opts?: { search?: unknown }) => {
   if (opts && typeof opts.search === "function") {
-    opts.search(search.value)
+    search.next = opts.search(search.value) as Record<string, string | undefined>
   }
 })
 const deleteProject = vi.fn()
 const findProject = vi.fn((id: string) => (id === "p1" ? sampleProject : undefined))
 const findContact = vi.fn(() => sampleContact)
-const search = vi.hoisted(() => ({ value: {} as Record<string, string | undefined> }))
+const search = vi.hoisted(() => ({
+  value: {} as Record<string, string | undefined>,
+  next: {} as Record<string, string | undefined>,
+}))
 const params = vi.hoisted(() => ({ projectId: "p1" }))
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -92,6 +101,7 @@ beforeEach(() => {
   deleteProject.mockReset()
   params.projectId = "p1"
   search.value = {}
+  search.next = {}
   findProject.mockImplementation((id: string) => (id === "p1" ? sampleProject : undefined))
   findContact.mockReturnValue(sampleContact)
   vi.spyOn(Route, "useParams").mockReturnValue(params as never)
@@ -100,6 +110,27 @@ beforeEach(() => {
   trpc.invoices.list.query.mockResolvedValue({
     items: [sampleInvoice],
     totals: { count: 1, paid: 1, overdue: 0 },
+  })
+  trpc.github.status.query.mockClear()
+  trpc.github.status.query.mockResolvedValue({
+    connected: false,
+    login: null,
+    webhook: null,
+  })
+  trpc.github.repo.query.mockClear()
+  trpc.github.repo.query.mockResolvedValue({
+    fullName: "ada/portal",
+    defaultBranch: "main",
+    isPrivate: true,
+    branches: ["main", "dev"],
+  })
+  trpc.github.runs.query.mockClear()
+  trpc.github.runs.query.mockResolvedValue({
+    branch: "main",
+    defaultBranch: "main",
+    isDefaultBranch: true,
+    workflow: "none",
+    runs: [],
   })
 })
 
@@ -235,5 +266,202 @@ describe("project detail route", () => {
     renderWithProviders(<ProjectDetailPage />)
     await user.click(screen.getByRole("tab", { name: /Tools/ }))
     expect(await screen.findByText("No monthly billing")).toBeInTheDocument()
+  })
+})
+
+/** jsdom has no EventSource; this one lets a test push a run down the stream. */
+class FakeEventSource {
+  static instances: FakeEventSource[] = []
+  listeners = new Map<string, ((event: MessageEvent<string>) => void)[]>()
+
+  constructor(public url: string) {
+    FakeEventSource.instances.push(this)
+  }
+
+  addEventListener(type: string, listener: (event: MessageEvent<string>) => void) {
+    this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener])
+  }
+
+  emit(type: string, data = "") {
+    for (const listener of this.listeners.get(type) ?? []) {
+      listener({ data } as MessageEvent<string>)
+    }
+  }
+
+  close() {}
+}
+
+function pushRun(run: typeof sampleWorkflowRun, branch = "main") {
+  const source = FakeEventSource.instances[FakeEventSource.instances.length - 1]!
+  act(() =>
+    source.emit(
+      "run",
+      JSON.stringify({ repo: "ada/portal", branch, run, source: "webhook" as const }),
+    ),
+  )
+}
+
+describe("project detail GitHub tab", () => {
+  async function openGithubTab() {
+    const user = userEvent.setup()
+    const view = renderWithProviders(<ProjectDetailPage />)
+    expect(await screen.findByRole("heading", { name: "Portal" })).toBeInTheDocument()
+    await user.click(screen.getByRole("tab", { name: "GitHub" }))
+    return { user, ...view }
+  }
+
+  function connectGithub() {
+    trpc.github.status.query.mockResolvedValue({
+      connected: true,
+      login: "ada",
+      webhook: null,
+    })
+  }
+
+  it("keeps the branch in the URL search", () => {
+    expect(Route.options.validateSearch?.({ branch: "dev" })).toMatchObject({ branch: "dev" })
+  })
+
+  it("asks the user to connect GitHub first", async () => {
+    await openGithubTab()
+    expect(await screen.findByText(/Connect GitHub in settings/)).toBeInTheDocument()
+    expect(trpc.github.runs.query).not.toHaveBeenCalled()
+  })
+
+  it("says a project without a repository has nothing to show", async () => {
+    findProject.mockReturnValue({ ...sampleProject, repo: null })
+    await openGithubTab()
+    expect(await screen.findByText(/This project has no repository/)).toBeInTheDocument()
+  })
+
+  it("lists the runs of the default branch and turns the header badge live", async () => {
+    connectGithub()
+    trpc.github.runs.query.mockResolvedValue({
+      branch: "main",
+      defaultBranch: "main",
+      isDefaultBranch: true,
+      workflow: "failure",
+      runs: [sampleWorkflowRun, { ...sampleWorkflowRun, id: 102, runNumber: 43, name: "release" }],
+    })
+
+    const { container } = await openGithubTab()
+    expect(await screen.findByText("release")).toBeInTheDocument()
+    expect(trpc.github.runs.query).toHaveBeenCalledWith({ projectId: "p1", branch: undefined })
+    // The fixture is cached as "success" and both runs passed, so the failure
+    // icon can only be the header badge following the live default-branch read.
+    expect(container.querySelectorAll(".lucide-circle-x")).toHaveLength(1)
+  })
+
+  it("moves to another branch through the URL", async () => {
+    connectGithub()
+    const { user } = await openGithubTab()
+
+    await vi.waitFor(() => expect(screen.getByRole("combobox", { name: "Branch" })).toBeEnabled())
+    await user.click(screen.getByRole("combobox", { name: "Branch" }))
+    await user.click(await screen.findByRole("option", { name: /dev/ }))
+    expect(routeNavigate).toHaveBeenCalled()
+  })
+
+  it("reports a failed read", async () => {
+    connectGithub()
+    trpc.github.runs.query.mockRejectedValue(new Error("rate limited"))
+
+    await openGithubTab()
+    expect(await screen.findByText("Could not load the Actions runs.")).toBeInTheDocument()
+  })
+
+  it("refetches on demand from the header", async () => {
+    connectGithub()
+    const user = userEvent.setup()
+    renderWithProviders(<ProjectDetailPage />)
+    expect(await screen.findByRole("heading", { name: "Portal" })).toBeInTheDocument()
+    await vi.waitFor(() => expect(trpc.github.runs.query).toHaveBeenCalledTimes(1))
+
+    const refresh = screen
+      .getAllByRole("button")
+      .filter((button) => button.hasAttribute("data-base-ui-tooltip-trigger"))[0]!
+    await user.click(refresh)
+    await vi.waitFor(() => expect(trpc.github.runs.query).toHaveBeenCalledTimes(2))
+  })
+
+  it("clears the branch from the URL when the default one is picked", async () => {
+    connectGithub()
+    search.value = { branch: "dev" }
+    trpc.github.runs.query.mockResolvedValue({
+      branch: "dev",
+      defaultBranch: "main",
+      isDefaultBranch: false,
+      workflow: "none",
+      runs: [],
+    })
+    const { user } = await openGithubTab()
+
+    await vi.waitFor(() => expect(screen.getByRole("combobox", { name: "Branch" })).toBeEnabled())
+    await user.click(screen.getByRole("combobox", { name: "Branch" }))
+    await user.click(await screen.findByRole("option", { name: /main/ }))
+    expect(routeNavigate).toHaveBeenCalled()
+    expect(search.next.branch).toBeUndefined()
+  })
+})
+
+describe("project detail live stream", () => {
+  beforeEach(() => {
+    FakeEventSource.instances = []
+    vi.stubGlobal("EventSource", FakeEventSource)
+    trpc.github.status.query.mockResolvedValue({
+      connected: true,
+      login: "ada",
+      webhook: null,
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it("adds a run pushed over the stream and refreshes the projects list", async () => {
+    trpc.github.runs.query.mockResolvedValue({
+      branch: "main",
+      defaultBranch: "main",
+      isDefaultBranch: true,
+      workflow: "success",
+      runs: [sampleWorkflowRun],
+    })
+    const user = userEvent.setup()
+    const { client } = renderWithProviders(<ProjectDetailPage />)
+    const invalidate = vi.spyOn(client, "invalidateQueries")
+
+    await user.click(await screen.findByRole("tab", { name: "GitHub" }))
+    expect(await screen.findByText("ci")).toBeInTheDocument()
+    await vi.waitFor(() => expect(FakeEventSource.instances).toHaveLength(1))
+    expect(FakeEventSource.instances[0]!.url).toContain("branch=main")
+
+    pushRun({
+      ...sampleWorkflowRun,
+      id: 999,
+      name: "release",
+      status: "running",
+      durationMs: null,
+      startedAt: "2026-09-02T10:00:00.000Z",
+    })
+
+    expect(await screen.findByText("release")).toBeInTheDocument()
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["projects"] })
+  })
+
+  it("drops a pushed run while the list is still loading", async () => {
+    search.value = { branch: "dev" }
+    trpc.github.runs.query.mockReturnValue(new Promise(() => {}))
+    const user = userEvent.setup()
+    const { client } = renderWithProviders(<ProjectDetailPage />)
+    const invalidate = vi.spyOn(client, "invalidateQueries")
+
+    await user.click(await screen.findByRole("tab", { name: "GitHub" }))
+    await vi.waitFor(() => expect(FakeEventSource.instances).toHaveLength(1))
+
+    pushRun({ ...sampleWorkflowRun, id: 999, name: "release" }, "dev")
+
+    expect(screen.queryByText("release")).not.toBeInTheDocument()
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ["projects"] })
   })
 })
