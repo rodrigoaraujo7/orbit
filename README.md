@@ -92,7 +92,18 @@ Sign up with email and password on first visit.
 
 Separate processes: `pnpm dev:web` and `pnpm dev:api`.
 
-## 5. Checks (optional)
+## 5. GitHub Actions
+
+Each user connects one **personal access token** under Settings → GitHub. The token is sealed with the same envelope crypto as tool secrets (`MASTER_KEY` is required). Create a classic token with `repo` for private repositories, or `public_repo` for public ones — both include reading Actions.
+
+Projects already store `owner/repo`. Once a token is connected, the project page shows a GitHub tab with the Actions runs of a selectable branch (the default branch is preselected). The list badge uses the latest default-branch run.
+
+Runs update in real time:
+
+- Open the project page: the API keeps an SSE stream and polls GitHub for that branch while the tab is open.
+- Optional webhook: copy the payload URL and secret from Settings and add a repository webhook with the `workflow_run` event. Deliveries update the badge and the table instantly. For a local install, set `PUBLIC_API_URL` to a public tunnel of the API.
+
+## 6. Checks (optional)
 
 ```bash
 pnpm --filter api test
