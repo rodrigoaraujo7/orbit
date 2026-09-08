@@ -65,6 +65,7 @@ DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
 | Variable                  | Required           | What it is                                                                                                        |
 | ------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | `DATABASE_URL`            | yes                | Postgres URL. Hostless `postgres:///projects_manager` uses `/var/run/postgresql`. Do not use `usuario@localhost`. |
+| `BETTER_AUTH_SECRET`      | yes                | Better Auth signing secret. `openssl rand -hex 32`. Missing or the known insecure default refuses boot.           |
 | `MASTER_KEY`              | for stored secrets | 32 bytes: **64 hex chars** or base64. `openssl rand -hex 32`. Do not rotate without a re-encrypt path.            |
 | `BETTER_AUTH_URL`         | no                 | Auth base URL. Default `WEB_ORIGIN`.                                                                              |
 | `WEB_ORIGIN`              | no                 | Frontend origin (CORS + cookies). Default `http://localhost:5173`.                                                |
@@ -75,7 +76,7 @@ DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
 | `RESEND_TEMPLATE_CONFIRM` | for email          | Resend template id for confirmation mail.                                                                         |
 | `RESEND_TEMPLATE_LOGIN`   | for email          | Resend template id for login mail.                                                                                |
 
-`BETTER_AUTH_SECRET` is not in `.env.example`. In development the API uses a built-in secret; set a 32-byte hex value (`openssl rand -hex 32`) before production.
+Session cookies use the `Secure` flag when the auth origin (`BETTER_AUTH_URL`, otherwise `WEB_ORIGIN`) is HTTPS.
 
 Web has no `.env`. It proxies to `localhost:3100`.
 

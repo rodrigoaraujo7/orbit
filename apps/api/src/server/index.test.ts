@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { INSECURE_BETTER_AUTH_SECRET } from "../auth/secret/index.ts"
 
 const { serve, mountApi, applySchema, createDb } = vi.hoisted(() => ({
   serve: vi.fn((opts: { port: number }, cb: (info: { port: number }) => void) => {
@@ -21,6 +22,8 @@ describe("start", () => {
     vi.unstubAllEnvs()
     serve.mockClear()
     mountApi.mockClear()
+    createDb.mockClear()
+    applySchema.mockClear()
   })
 
   it("throws without DATABASE_URL", async () => {
@@ -28,8 +31,23 @@ describe("start", () => {
     await expect(start()).rejects.toThrow(/missing env DATABASE_URL/)
   })
 
+  it("throws without BETTER_AUTH_SECRET", async () => {
+    vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
+    delete process.env.BETTER_AUTH_SECRET
+    await expect(start()).rejects.toThrow(/missing env BETTER_AUTH_SECRET/)
+    expect(createDb).not.toHaveBeenCalled()
+  })
+
+  it("throws when BETTER_AUTH_SECRET is the known insecure default", async () => {
+    vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
+    vi.stubEnv("BETTER_AUTH_SECRET", INSECURE_BETTER_AUTH_SECRET)
+    await expect(start()).rejects.toThrow(/known insecure default/)
+    expect(createDb).not.toHaveBeenCalled()
+  })
+
   it("warns without a Better Auth API key and listens", async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
     vi.stubEnv("BETTER_AUTH_API_KEY", "")
     delete process.env.PORT
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
@@ -50,6 +68,7 @@ describe("start", () => {
 
   it("honours an explicit port", async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
     vi.stubEnv("BETTER_AUTH_API_KEY", "key")
     vi.spyOn(console, "log").mockImplementation(() => {})
     await start({ port: 3100 })

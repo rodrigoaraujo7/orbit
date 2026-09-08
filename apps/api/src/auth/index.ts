@@ -8,9 +8,9 @@ import { recordAudit } from "../audit/record/index.ts"
 import { getDb } from "../db/client/index.ts"
 import { schema, user } from "../db/schema/index.ts"
 import { withUser } from "../db/with-user/index.ts"
-import { env, optionalEnv } from "../env/index.ts"
 import { validation } from "../input/messages.ts"
-import { trustedWebOrigins, resolveAuthBaseUrl } from "../web-origin/index.ts"
+import { originUsesHttps, trustedWebOrigins, resolveAuthBaseUrl } from "../web-origin/index.ts"
+import { resolveBetterAuthSecret } from "./secret/index.ts"
 
 async function logSecurity(userId: string, action: string, headers: Headers | null | undefined) {
   try {
@@ -98,14 +98,11 @@ export async function afterAuthHook(ctx: AuthHookCtx) {
 }
 
 export function createAuth() {
-  const secret =
-    optionalEnv("BETTER_AUTH_SECRET") ??
-    (process.env.NODE_ENV === "production"
-      ? env("BETTER_AUTH_SECRET")
-      : "dev-only-better-auth-secret-not-for-production")
+  const secret = resolveBetterAuthSecret()
+  const baseURL = resolveAuthBaseUrl()
 
   return betterAuth({
-    baseURL: resolveAuthBaseUrl(),
+    baseURL,
     secret,
     trustedOrigins: [
       ...trustedWebOrigins,
@@ -121,7 +118,7 @@ export function createAuth() {
       defaultCookieAttributes: {
         httpOnly: true,
         sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        secure: originUsesHttps(baseURL),
       },
     },
     plugins: [twoFactor({ issuer: "Projects Manager" }), dash()],
