@@ -76,6 +76,8 @@ DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
 | `RESEND_TEMPLATE_CONFIRM` | for email          | Resend template id for confirmation mail.                                                                         |
 | `RESEND_TEMPLATE_LOGIN`   | for email          | Resend template id for login mail.                                                                                |
 
+If `BETTER_AUTH_SECRET` is missing or blank, boot and `/api/auth/*` return an error. There is no fallback secret.
+
 Session cookies use the `Secure` flag when the auth origin (`BETTER_AUTH_URL`, otherwise `WEB_ORIGIN`) is HTTPS.
 
 Web has no `.env`. It proxies to `localhost:3100`.

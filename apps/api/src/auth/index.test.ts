@@ -28,6 +28,8 @@ describe("createAuth", () => {
     vi.stubEnv("NODE_ENV", "test")
     delete process.env.BETTER_AUTH_SECRET
     expect(() => createAuth()).toThrow(/missing env BETTER_AUTH_SECRET/)
+    vi.stubEnv("BETTER_AUTH_SECRET", "   ")
+    expect(() => createAuth()).toThrow(/missing env BETTER_AUTH_SECRET/)
     vi.stubEnv("NODE_ENV", "production")
     expect(() => createAuth()).toThrow(/missing env BETTER_AUTH_SECRET/)
     vi.stubEnv("BETTER_AUTH_SECRET", "prod-secret-must-be-long-enough")
