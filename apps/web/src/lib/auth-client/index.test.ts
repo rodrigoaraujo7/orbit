@@ -11,6 +11,6 @@ describe("authClient", () => {
     expect(typeof authClient.twoFactor.verifyOtp).toBe("function")
     expect(typeof authClient.requestPasswordReset).toBe("function")
     expect(typeof authClient.resetPassword).toBe("function")
-    expect(typeof authClient.updateUser).toBe("function")
+    expect(typeof authClient.sendVerificationEmail).toBe("function")
   })
 })

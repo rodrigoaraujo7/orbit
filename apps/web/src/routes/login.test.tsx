@@ -10,6 +10,7 @@ const signInEmail = vi.fn()
 const signUpEmail = vi.fn()
 const sendOtp = vi.fn()
 const verifyOtp = vi.fn()
+const sendVerificationEmail = vi.fn()
 
 vi.mock("@/components/Grainient", () => ({
   default: () => <div data-testid="grainient" />,
@@ -46,6 +47,7 @@ vi.mock("@/lib/auth-client", () => ({
       sendOtp: (...args: unknown[]) => sendOtp(...args),
       verifyOtp: (...args: unknown[]) => verifyOtp(...args),
     },
+    sendVerificationEmail: (...args: unknown[]) => sendVerificationEmail(...args),
   },
 }))
 
@@ -64,6 +66,7 @@ beforeEach(() => {
   signUpEmail.mockReset()
   sendOtp.mockReset()
   verifyOtp.mockReset()
+  sendVerificationEmail.mockReset()
 })
 
 async function signIn(user: ReturnType<typeof userEvent.setup>) {
@@ -172,34 +175,51 @@ describe("login route", () => {
   it("asks for confirmation after sign up", async () => {
     const user = userEvent.setup()
     signUpEmail.mockResolvedValue({ error: null, data: { user: { id: "u1" } } })
+    sendVerificationEmail.mockResolvedValue({ error: null, data: { status: true } })
     renderWithProviders(<LoginPage />)
     await user.click(screen.getByRole("button", { name: "Create" }))
     await user.type(screen.getByLabelText("Name"), "Ada")
     await user.type(screen.getByLabelText("Email"), "ada@test.local")
     await user.type(screen.getByLabelText("Password"), "password1")
     await user.click(screen.getByRole("button", { name: "Sign up" }))
-    expect(await screen.findByText("Confirm your email")).toBeInTheDocument()
+    const dialog = await screen.findByRole("dialog")
+    expect(dialog).toHaveTextContent("Confirm your email")
+    expect(dialog).toHaveTextContent("ada@test.local")
     expect(signUpEmail).toHaveBeenCalledWith({
       name: "Ada",
       email: "ada@test.local",
       password: "password1",
       locale: "en-US",
     })
+    await user.click(screen.getByRole("button", { name: "Send the link again" }))
+    expect(await screen.findByText("New link sent.")).toBeInTheDocument()
+    expect(sendVerificationEmail).toHaveBeenCalledWith({
+      email: "ada@test.local",
+      callbackURL: "/",
+    })
+    expect(screen.getByRole("button", { name: "Send a new code in 30s" })).toBeDisabled()
+    expect(
+      await screen.findByRole("button", { name: "Send a new code in 29s" }, { timeout: 3000 }),
+    ).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Back to sign in" }))
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument()
   })
 
-  it("sends an unconfirmed account back to the confirmation screen", async () => {
+  it("sends an unconfirmed account to the confirmation dialog", async () => {
     const user = userEvent.setup()
     signInEmail.mockResolvedValue({ error: { code: "EMAIL_NOT_VERIFIED" }, data: null })
+    sendVerificationEmail.mockResolvedValue({ error: { status: 429 }, data: null })
     renderWithProviders(<LoginPage />)
     await signIn(user)
-    expect(await screen.findByText("Confirm your email")).toBeInTheDocument()
+    expect(await screen.findByRole("dialog")).toHaveTextContent("Confirm your email")
     expect(
       screen.getByText(
         "We sent a confirmation link to ada@test.local. Open it to activate your account, then sign in.",
       ),
     ).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Send the link again" }))
+    expect(await screen.findByText("Too many requests. Try again later.")).toBeInTheDocument()
   })
 
   it("shows sign-up errors and can switch back", async () => {

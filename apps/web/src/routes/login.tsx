@@ -10,6 +10,16 @@ import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+import {
+  ResponsiveDialog,
+  ResponsiveDialogBody,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog"
 import i18n, { getLocale } from "@/i18n"
 import { authClient } from "@/lib/auth-client"
 import { authErrorMessage } from "@/lib/auth-errors"
@@ -21,8 +31,8 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 })
 
-/** Sign-in walks three screens in one form, so each step validates only its own fields. */
-type Step = "credentials" | "otp" | "confirm"
+/** Sign-in walks credentials then the emailed code; confirmation is a dialog. */
+type Step = "credentials" | "otp"
 
 function authSchema(mode: "signin" | "signup", step: Step) {
   return z.object({
@@ -65,8 +75,12 @@ function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin")
   const [step, setStep] = useState<Step>("credentials")
   const [pendingEmail, setPendingEmail] = useState("")
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [cooldown, setCooldown] = useState(0)
+  const [confirmCooldown, setConfirmCooldown] = useState(0)
   const [notice, setNotice] = useState("")
+  const [confirmNotice, setConfirmNotice] = useState("")
+  const [confirmError, setConfirmError] = useState("")
   const {
     register,
     handleSubmit,
@@ -87,12 +101,27 @@ function LoginPage() {
     return () => clearTimeout(timer)
   }, [cooldown])
 
+  useEffect(() => {
+    if (confirmCooldown <= 0) return
+    const timer = setTimeout(() => setConfirmCooldown((seconds) => seconds - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [confirmCooldown])
+
   function switchMode() {
     setMode(mode === "signin" ? "signup" : "signin")
     setStep("credentials")
     setValue("code", "")
     setNotice("")
     clearErrors()
+  }
+
+  function showConfirmation(email: string) {
+    setPendingEmail(email)
+    setConfirmNotice("")
+    setConfirmError("")
+    setConfirmOpen(true)
+    setMode("signin")
+    setStep("credentials")
   }
 
   async function requestCode() {
@@ -109,6 +138,21 @@ function LoginPage() {
     clearErrors("code")
     setNotice("")
     if (await requestCode()) setNotice(t("auth.codeResent"))
+  }
+
+  async function resendConfirmation() {
+    setConfirmError("")
+    setConfirmNotice("")
+    const result = await authClient.sendVerificationEmail({
+      email: pendingEmail,
+      callbackURL: "/",
+    })
+    if (result.error) {
+      setConfirmError(authErrorMessage(result.error, t("auth.resetLinkFailed")))
+      return
+    }
+    setConfirmCooldown(RESEND_COOLDOWN_SECONDS)
+    setConfirmNotice(t("auth.linkResent"))
   }
 
   const onSubmit = handleSubmit(async (values) => {
@@ -135,8 +179,7 @@ function LoginPage() {
         })
         return
       }
-      setPendingEmail(values.email)
-      setStep("confirm")
+      showConfirmation(values.email)
       return
     }
 
@@ -147,8 +190,7 @@ function LoginPage() {
     if (result.error) {
       // Better Auth resends the confirmation link along with this failure.
       if (result.error.code === "EMAIL_NOT_VERIFIED") {
-        setPendingEmail(values.email)
-        setStep("confirm")
+        showConfirmation(values.email)
         return
       }
       setError("password", {
@@ -166,13 +208,6 @@ function LoginPage() {
     await navigate({ to: "/" })
   })
 
-  const heading =
-    step === "otp"
-      ? t("auth.verificationCode")
-      : step === "confirm"
-        ? t("auth.confirmEmailTitle")
-        : null
-
   return (
     <AuthShell onSubmit={onSubmit}>
       <div className="flex flex-col items-start gap-2">
@@ -180,7 +215,9 @@ function LoginPage() {
           key={`${step}-${mode}`}
           className="font-subtitle text-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300"
         >
-          {heading ?? (
+          {step === "otp" ? (
+            t("auth.verificationCode")
+          ) : (
             <>
               {mode === "signin" ? t("auth.signInTo") : t("auth.createAccountOn")}
               <span className="shimmer shimmer-color-[oklch(from_var(--primary)_0.82_c_h)] [animation-delay:1s] text-primary font-heading text-[1.15em] italic">
@@ -209,11 +246,6 @@ function LoginPage() {
         {step === "otp" && (
           <p className="text-sm text-muted-foreground">
             {t("auth.codeSentTo", { email: pendingEmail })}
-          </p>
-        )}
-        {step === "confirm" && (
-          <p className="text-sm text-muted-foreground">
-            {t("auth.confirmEmailDescription", { email: pendingEmail })}
           </p>
         )}
       </div>
@@ -303,25 +335,51 @@ function LoginPage() {
           </Button>
         </>
       )}
-      {step === "confirm" ? (
-        <Button type="button" variant="secondary" onClick={switchMode}>
-          {t("auth.backToSignIn")}
-        </Button>
-      ) : (
-        <Button
-          type="submit"
-          className="shadow-[0_0_16px_rgba(192,58,74,0.45)] transition-shadow duration-[350ms] hover:bg-primary hover:shadow-[0_0_28px_rgba(192,58,74,0.7)] active:translate-y-0"
-          disabled={isSubmitting}
-        >
-          {isSubmitting
-            ? t("common.wait")
-            : step === "otp"
-              ? t("auth.verify")
-              : mode === "signin"
-                ? t("auth.signIn")
-                : t("auth.signUp")}
-        </Button>
-      )}
+      <Button
+        type="submit"
+        className="shadow-[0_0_16px_rgba(192,58,74,0.45)] transition-shadow duration-[350ms] hover:bg-primary hover:shadow-[0_0_28px_rgba(192,58,74,0.7)] active:translate-y-0"
+        disabled={isSubmitting}
+      >
+        {isSubmitting
+          ? t("common.wait")
+          : step === "otp"
+            ? t("auth.verify")
+            : mode === "signin"
+              ? t("auth.signIn")
+              : t("auth.signUp")}
+      </Button>
+      <ResponsiveDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <ResponsiveDialogContent>
+          <ResponsiveDialogHeader>
+            <div>
+              <ResponsiveDialogTitle>{t("auth.confirmEmailTitle")}</ResponsiveDialogTitle>
+              <ResponsiveDialogDescription>
+                {t("auth.confirmEmailDescription", { email: pendingEmail })}
+              </ResponsiveDialogDescription>
+            </div>
+            <ResponsiveDialogClose />
+          </ResponsiveDialogHeader>
+          <ResponsiveDialogBody className="flex flex-col gap-2">
+            {confirmNotice && <p className="text-xs text-muted-foreground">{confirmNotice}</p>}
+            {confirmError && <p className="text-xs text-destructive">{confirmError}</p>}
+          </ResponsiveDialogBody>
+          <ResponsiveDialogFooter>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={confirmCooldown > 0}
+              onClick={() => void resendConfirmation()}
+            >
+              {confirmCooldown > 0
+                ? t("auth.resendIn", { seconds: confirmCooldown })
+                : t("auth.resendLink")}
+            </Button>
+            <Button type="button" onClick={() => setConfirmOpen(false)}>
+              {t("auth.backToSignIn")}
+            </Button>
+          </ResponsiveDialogFooter>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </AuthShell>
   )
 }

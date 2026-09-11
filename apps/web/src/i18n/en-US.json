@@ -249,6 +249,8 @@
     "requestNewLink": "Request a new link",
     "confirmEmailTitle": "Confirm your email",
     "confirmEmailDescription": "We sent a confirmation link to {{email}}. Open it to activate your account, then sign in.",
+    "resendLink": "Send the link again",
+    "linkResent": "New link sent.",
     "invalidCredentials": "Invalid email or password",
     "invalidCode": "Invalid code",
     "emailNotVerified": "Confirm your email before signing in. We just sent a new link.",
