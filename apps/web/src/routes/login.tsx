@@ -119,9 +119,12 @@ function LoginPage() {
     setPendingEmail(email)
     setConfirmNotice("")
     setConfirmError("")
-    setConfirmOpen(true)
-    setMode("signin")
-    setStep("credentials")
+    // Open on the next frame so the Sign up click cannot dismiss the dialog.
+    window.setTimeout(() => {
+      setConfirmOpen(true)
+      setMode("signin")
+      setStep("credentials")
+    }, 0)
   }
 
   async function requestCode() {
@@ -209,145 +212,147 @@ function LoginPage() {
   })
 
   return (
-    <AuthShell onSubmit={onSubmit}>
-      <div className="flex flex-col items-start gap-2">
-        <h1
-          key={`${step}-${mode}`}
-          className="font-subtitle text-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300"
-        >
-          {step === "otp" ? (
-            t("auth.verificationCode")
-          ) : (
-            <>
-              {mode === "signin" ? t("auth.signInTo") : t("auth.createAccountOn")}
-              <span className="shimmer shimmer-color-[oklch(from_var(--primary)_0.82_c_h)] [animation-delay:1s] text-primary font-heading text-[1.15em] italic">
-                {t("auth.brand")}
-              </span>
-            </>
-          )}
-        </h1>
-        {step === "credentials" && (
-          <p
-            key={mode}
-            className="text-sm text-muted-foreground motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
+    <>
+      <AuthShell onSubmit={onSubmit}>
+        <div className="flex flex-col items-start gap-2">
+          <h1
+            key={`${step}-${mode}`}
+            className="font-subtitle text-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300"
           >
-            {mode === "signin" ? t("auth.noAccount") : t("auth.hasAccount")}
+            {step === "otp" ? (
+              t("auth.verificationCode")
+            ) : (
+              <>
+                {mode === "signin" ? t("auth.signInTo") : t("auth.createAccountOn")}
+                <span className="shimmer shimmer-color-[oklch(from_var(--primary)_0.82_c_h)] [animation-delay:1s] text-primary font-heading text-[1.15em] italic">
+                  {t("auth.brand")}
+                </span>
+              </>
+            )}
+          </h1>
+          {step === "credentials" && (
+            <p
+              key={mode}
+              className="text-sm text-muted-foreground motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
+            >
+              {mode === "signin" ? t("auth.noAccount") : t("auth.hasAccount")}
+              <Button
+                type="button"
+                variant="link"
+                className="inline h-auto p-0 text-white no-underline transition-colors duration-150 hover:no-underline hover:text-muted-foreground"
+                onClick={switchMode}
+              >
+                {mode === "signin" ? t("auth.create") : t("auth.signIn")}
+              </Button>
+              .
+            </p>
+          )}
+          {step === "otp" && (
+            <p className="text-sm text-muted-foreground">
+              {t("auth.codeSentTo", { email: pendingEmail })}
+            </p>
+          )}
+        </div>
+        {step === "credentials" && (
+          <>
+            <div
+              className={cn(
+                "grid transition-[grid-template-rows,margin] duration-300 ease-out motion-reduce:transition-none",
+                mode === "signup" ? "grid-rows-[1fr]" : "grid-rows-[0fr] -mb-4",
+              )}
+            >
+              <div className="min-h-0 overflow-hidden" inert={mode !== "signup"}>
+                <Field label={t("common.name")} error={errors.name?.message}>
+                  {(props) => (
+                    <Input
+                      {...props}
+                      {...register("name")}
+                      autoComplete="name"
+                      tabIndex={mode === "signup" ? undefined : -1}
+                    />
+                  )}
+                </Field>
+              </div>
+            </div>
+            <Field label={t("common.email")} error={errors.email?.message}>
+              {(props) => (
+                <Input {...props} {...register("email")} type="email" autoComplete="email" />
+              )}
+            </Field>
+            <Field label={t("auth.password")} error={errors.password?.message}>
+              {(props) => (
+                <Input
+                  {...props}
+                  {...register("password")}
+                  type="password"
+                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                />
+              )}
+            </Field>
+            {mode === "signin" && (
+              <Link
+                to="/forgot-password"
+                className="-mt-1 self-start text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                {t("auth.forgotPassword")}
+              </Link>
+            )}
+          </>
+        )}
+        {step === "otp" && (
+          <>
+            <Field label={t("auth.emailCode")} error={errors.code?.message} hint={notice}>
+              {(props) => (
+                <Controller
+                  name="code"
+                  control={control}
+                  render={({ field }) => (
+                    <InputOTP
+                      {...props}
+                      maxLength={6}
+                      value={field.value}
+                      onChange={field.onChange}
+                      containerClassName="w-full"
+                    >
+                      <InputOTPGroup className="w-full">
+                        {[0, 1, 2, 3, 4, 5].map((index) => (
+                          <InputOTPSlot
+                            key={index}
+                            index={index}
+                            aria-invalid={props["aria-invalid"]}
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                  )}
+                />
+              )}
+            </Field>
             <Button
               type="button"
               variant="link"
-              className="inline h-auto p-0 text-white no-underline transition-colors duration-150 hover:no-underline hover:text-muted-foreground"
-              onClick={switchMode}
+              className="-mt-1 h-auto self-start p-0 text-xs text-muted-foreground no-underline hover:text-foreground hover:underline"
+              disabled={cooldown > 0}
+              onClick={() => void resendCode()}
             >
-              {mode === "signin" ? t("auth.create") : t("auth.signIn")}
+              {cooldown > 0 ? t("auth.resendIn", { seconds: cooldown }) : t("auth.resendCode")}
             </Button>
-            .
-          </p>
+          </>
         )}
-        {step === "otp" && (
-          <p className="text-sm text-muted-foreground">
-            {t("auth.codeSentTo", { email: pendingEmail })}
-          </p>
-        )}
-      </div>
-      {step === "credentials" && (
-        <>
-          <div
-            className={cn(
-              "grid transition-[grid-template-rows,margin] duration-300 ease-out motion-reduce:transition-none",
-              mode === "signup" ? "grid-rows-[1fr]" : "grid-rows-[0fr] -mb-4",
-            )}
-          >
-            <div className="min-h-0 overflow-hidden" inert={mode !== "signup"}>
-              <Field label={t("common.name")} error={errors.name?.message}>
-                {(props) => (
-                  <Input
-                    {...props}
-                    {...register("name")}
-                    autoComplete="name"
-                    tabIndex={mode === "signup" ? undefined : -1}
-                  />
-                )}
-              </Field>
-            </div>
-          </div>
-          <Field label={t("common.email")} error={errors.email?.message}>
-            {(props) => (
-              <Input {...props} {...register("email")} type="email" autoComplete="email" />
-            )}
-          </Field>
-          <Field label={t("auth.password")} error={errors.password?.message}>
-            {(props) => (
-              <Input
-                {...props}
-                {...register("password")}
-                type="password"
-                autoComplete={mode === "signin" ? "current-password" : "new-password"}
-              />
-            )}
-          </Field>
-          {mode === "signin" && (
-            <Link
-              to="/forgot-password"
-              className="-mt-1 self-start text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-            >
-              {t("auth.forgotPassword")}
-            </Link>
-          )}
-        </>
-      )}
-      {step === "otp" && (
-        <>
-          <Field label={t("auth.emailCode")} error={errors.code?.message} hint={notice}>
-            {(props) => (
-              <Controller
-                name="code"
-                control={control}
-                render={({ field }) => (
-                  <InputOTP
-                    {...props}
-                    maxLength={6}
-                    value={field.value}
-                    onChange={field.onChange}
-                    containerClassName="w-full"
-                  >
-                    <InputOTPGroup className="w-full">
-                      {[0, 1, 2, 3, 4, 5].map((index) => (
-                        <InputOTPSlot
-                          key={index}
-                          index={index}
-                          aria-invalid={props["aria-invalid"]}
-                        />
-                      ))}
-                    </InputOTPGroup>
-                  </InputOTP>
-                )}
-              />
-            )}
-          </Field>
-          <Button
-            type="button"
-            variant="link"
-            className="-mt-1 h-auto self-start p-0 text-xs text-muted-foreground no-underline hover:text-foreground hover:underline"
-            disabled={cooldown > 0}
-            onClick={() => void resendCode()}
-          >
-            {cooldown > 0 ? t("auth.resendIn", { seconds: cooldown }) : t("auth.resendCode")}
-          </Button>
-        </>
-      )}
-      <Button
-        type="submit"
-        className="shadow-[0_0_16px_rgba(192,58,74,0.45)] transition-shadow duration-[350ms] hover:bg-primary hover:shadow-[0_0_28px_rgba(192,58,74,0.7)] active:translate-y-0"
-        disabled={isSubmitting}
-      >
-        {isSubmitting
-          ? t("common.wait")
-          : step === "otp"
-            ? t("auth.verify")
-            : mode === "signin"
-              ? t("auth.signIn")
-              : t("auth.signUp")}
-      </Button>
+        <Button
+          type="submit"
+          className="shadow-[0_0_16px_rgba(192,58,74,0.45)] transition-shadow duration-[350ms] hover:bg-primary hover:shadow-[0_0_28px_rgba(192,58,74,0.7)] active:translate-y-0"
+          disabled={isSubmitting}
+        >
+          {isSubmitting
+            ? t("common.wait")
+            : step === "otp"
+              ? t("auth.verify")
+              : mode === "signin"
+                ? t("auth.signIn")
+                : t("auth.signUp")}
+        </Button>
+      </AuthShell>
       <ResponsiveDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <ResponsiveDialogContent>
           <ResponsiveDialogHeader>
@@ -380,6 +385,6 @@ function LoginPage() {
           </ResponsiveDialogFooter>
         </ResponsiveDialogContent>
       </ResponsiveDialog>
-    </AuthShell>
+    </>
   )
 }

@@ -41,7 +41,7 @@ function Gate() {
 
   const isPublic = PUBLIC_ROUTES.has(pathname)
 
-  if (isPending) return <LoadingScreen />
+  if (isPending && !isPublic) return <LoadingScreen />
   if (!data && !isPublic) return <Navigate to="/login" />
   if (data && isPublic) return <Navigate to="/" />
   if (isPublic) return <Outlet />

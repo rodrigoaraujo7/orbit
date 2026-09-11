@@ -106,6 +106,15 @@ describe("root Gate", () => {
     expect(screen.getByText("Loading…")).toBeInTheDocument()
   })
 
+  it("keeps public routes mounted while the session is refetching", () => {
+    session.isPending = true
+    session.data = null
+    pathname.value = "/login"
+    renderWithProviders(<Root />)
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByText("Loading…")).not.toBeInTheDocument()
+  })
+
   it("redirects anonymous users to login", () => {
     session.data = null
     pathname.value = "/dashboard"
