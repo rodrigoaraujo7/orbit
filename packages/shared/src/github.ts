@@ -1,5 +1,39 @@
 import type { WorkflowStatus } from "./domain.ts"
 
+/** Canonical origin used for stored repo URLs and `<a href>`s. */
+export const GITHUB_REPO_PREFIX = "https://github.com/"
+
+/** Same owner/repo check as the project form `parseRepo` path. */
+export const repoFullNamePattern = /^[\w.-]+\/[\w.-]+$/
+
+export function isGithubRepoFullName(fullName: string): boolean {
+  return repoFullNamePattern.test(fullName)
+}
+
+export function githubRepoUrl(fullName: string): string {
+  return `${GITHUB_REPO_PREFIX}${fullName}`
+}
+
+/** True only for `https://github.com/<owner>/<repo>` with no extra path, query, or credentials. */
+export function isHttpsGithubRepoUrl(url: string): boolean {
+  return (
+    url.startsWith(GITHUB_REPO_PREFIX) && isGithubRepoFullName(url.slice(GITHUB_REPO_PREFIX.length))
+  )
+}
+
+export function isGithubRepoUrl(fullName: string, url: string): boolean {
+  return isGithubRepoFullName(fullName) && url === githubRepoUrl(fullName)
+}
+
+/**
+ * Href-safe GitHub repo URL. Always derived from `fullName`, never from a stored
+ * `url`, so `javascript:`, `data:`, and `http:` values cannot reach an `<a>`.
+ */
+export function githubRepoHref(fullName: string): string | undefined {
+  if (!isGithubRepoFullName(fullName)) return undefined
+  return githubRepoUrl(fullName)
+}
+
 /** `workflow_run.conclusion` values that read as a red build. */
 const FAILED_CONCLUSIONS = ["failure", "timed_out", "startup_failure"]
 

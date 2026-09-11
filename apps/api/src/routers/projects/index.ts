@@ -1,6 +1,7 @@
 import { and, eq, gte, ilike, lte, or } from "drizzle-orm"
 import {
   fromCents,
+  githubRepoUrl,
   lastDayOfMonth,
   projectListFiltersSchema,
   toCents,
@@ -58,7 +59,7 @@ function rowToProject(
     repo: row.repoFullName
       ? {
           fullName: row.repoFullName,
-          url: row.repoUrl ?? "",
+          url: githubRepoUrl(row.repoFullName),
           workflow: row.repoWorkflow ?? "none",
         }
       : null,
@@ -262,7 +263,7 @@ export const projectsRouter = router({
         dealCurrency: input.deal.currency,
         dealInstallments: input.deal.installments ?? null,
         repoFullName: input.repo?.fullName ?? null,
-        repoUrl: input.repo?.url ?? null,
+        repoUrl: input.repo ? githubRepoUrl(input.repo.fullName) : null,
         repoWorkflow: input.repo?.workflow ?? null,
         description: input.description ?? null,
         comments: input.comments ?? [],
@@ -319,7 +320,7 @@ export const projectsRouter = router({
           dealCurrency: input.deal.currency,
           dealInstallments: input.deal.installments ?? null,
           repoFullName: input.repo?.fullName ?? null,
-          repoUrl: input.repo?.url ?? null,
+          repoUrl: input.repo ? githubRepoUrl(input.repo.fullName) : null,
           repoWorkflow: input.repo?.workflow ?? null,
           description: input.description ?? null,
           comments: input.comments ?? [],

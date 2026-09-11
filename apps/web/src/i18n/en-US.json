@@ -258,6 +258,7 @@
     "enterToolName": "Enter the tool name",
     "enterInvoiceDate": "Enter the invoice date",
     "repoFormat": "Use the owner/repository format",
+    "repoUrl": "Use an https://github.com/owner/repository URL",
     "selectCategory": "Select a category",
     "enterGithubToken": "Enter the GitHub token"
   },

@@ -3,6 +3,8 @@ import {
   billingCycleSchema,
   dealKindSchema,
   DEFAULT_CURRENCY,
+  GITHUB_REPO_PREFIX,
+  githubRepoUrl,
   hasPositiveAmount as hasPositiveAmountWithLocale,
   parseAmount as parseAmountWithLocale,
   payerSchema,
@@ -249,7 +251,7 @@ function formatAmountInput(value: number): string {
   })
 }
 
-export const GITHUB_PREFIX = "https://github.com/"
+export const GITHUB_PREFIX = GITHUB_REPO_PREFIX
 
 /**
  * Validates "owner/repo". Tolerates pasting the whole URL by mistake (the
@@ -263,7 +265,7 @@ function parseRepo(raw: string): { fullName: string; url: string } | null {
   const match = /^([\w.-]+)\/([\w.-]+)$/.exec(path)
   if (!match) return null
   const [, owner, repo] = match
-  return { fullName: `${owner}/${repo}`, url: `${GITHUB_PREFIX}${owner}/${repo}` }
+  return { fullName: `${owner}/${repo}`, url: githubRepoUrl(`${owner}/${repo}`) }
 }
 
 function toTool(values: ToolFormValues): Tool {

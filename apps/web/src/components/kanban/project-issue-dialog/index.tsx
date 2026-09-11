@@ -3,6 +3,7 @@ import { ExternalLink, Pencil, User } from "lucide-react"
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
+import { githubRepoHref } from "shared"
 
 import { StatusLabel, StatusSelect, WorkflowBadge } from "@/components/projects/status-badges"
 import { Button } from "@/components/ui/button"
@@ -267,7 +268,7 @@ export function ProjectIssueDialog({
               {project.repo ? (
                 <div className="flex flex-col gap-2">
                   <a
-                    href={project.repo.url}
+                    href={githubRepoHref(project.repo.fullName)}
                     target="_blank"
                     rel="noreferrer"
                     className="rounded-sm font-medium outline-none hover:text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"

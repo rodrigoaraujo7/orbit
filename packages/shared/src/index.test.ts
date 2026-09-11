@@ -17,6 +17,7 @@ describe("shared barrel", () => {
     expect(shared.runWorkflowStatus("completed", "success")).toBe("success")
     expect(typeof shared.isRunActive).toBe("function")
     expect(typeof shared.branchWorkflowStatus).toBe("function")
+    expect(shared.githubRepoHref("org/app")).toBe("https://github.com/org/app")
     expect(shared.projectDetailSearchSchema.safeParse({ branch: "main" }).success).toBe(true)
   })
 })
