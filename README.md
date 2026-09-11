@@ -70,7 +70,7 @@ DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
 | `BETTER_AUTH_URL`         | no                 | Auth base URL. Default `WEB_ORIGIN`.                                                                              |
 | `WEB_ORIGIN`              | no                 | Frontend origin (CORS + cookies). Default `http://localhost:5173`.                                                |
 | `PORT`                    | yes for Vite       | Must be **3100** so the web proxy hits the API. Code default is `3000` if unset.                                  |
-| `BETTER_AUTH_API_KEY`     | no                 | Better Auth dashboard only. Empty is fine; the API warns and still starts.                                        |
+| `BETTER_AUTH_API_KEY`     | no                 | Better Auth dashboard only. Empty is fine; the API warns, leaves `/api/auth/dash/*` unmounted, and still starts.  |
 | `RESEND_API_KEY`          | for email          | Resend API key. Leave empty until you send mail.                                                                  |
 | `EMAIL_FROM`              | for email          | From header, e.g. `Projects Manager <noreply@example.com>`.                                                       |
 | `RESEND_TEMPLATE_CONFIRM` | for email          | Resend template id for confirmation mail.                                                                         |
@@ -79,6 +79,8 @@ DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
 If `BETTER_AUTH_SECRET` is missing or blank, boot and `/api/auth/*` return an error. There is no fallback secret.
 
 Session cookies use the `Secure` flag when the auth origin (`BETTER_AUTH_URL`, otherwise `WEB_ORIGIN`) is HTTPS.
+
+The hosted Better Auth dashboard (`/api/auth/dash/*`: user management, impersonation, password reset, 2FA backup codes) is admin over every tenant and this product has no RBAC, so the plugin is registered only when `BETTER_AUTH_API_KEY` holds at least 32 characters with 12 or more distinct ones. Below that the routes never exist and `https://dash.better-auth.com` is not a trusted origin. When they do exist, CORS accepts that origin on the dashboard routes only.
 
 Web has no `.env`. It proxies to `localhost:3100`.
 

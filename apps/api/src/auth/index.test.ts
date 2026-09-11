@@ -3,10 +3,25 @@ import { APIError } from "better-auth/api"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { auditLog } from "../db/schema/index.ts"
 import { afterAuthHook, beforeAuthHook, createAuth, getAuth, resetAuth } from "./index.ts"
+import { DASH_ORIGIN } from "./dash/index.ts"
 import { INSECURE_BETTER_AUTH_SECRET } from "./secret/index.ts"
 import { closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
 import { withUser } from "../db/with-user/index.ts"
 import { dbHolder } from "../test/setup.ts"
+
+const STRONG_DASH_KEY = "ba-infra-3f9c1d7e5a2b8046acde1975"
+
+type AuthInstance = ReturnType<typeof createAuth>
+
+function pluginIds(auth: AuthInstance) {
+  return (auth.options.plugins ?? []).map((plugin) => plugin.id)
+}
+
+function dashEndpointPaths(auth: AuthInstance) {
+  return Object.values(auth.api as Record<string, { path?: unknown }>)
+    .map((endpoint) => endpoint.path)
+    .filter((path): path is string => typeof path === "string" && path.startsWith("/dash"))
+}
 
 describe("createAuth", () => {
   afterEach(() => {
@@ -55,6 +70,36 @@ describe("createAuth", () => {
     vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
     vi.stubEnv("BETTER_AUTH_URL", "https://app.example.com")
     expect(createAuth()).toBeTruthy()
+    resetAuth()
+    await closeTestDb(client)
+  })
+
+  it("leaves the dash admin surface unmounted without a strong BETTER_AUTH_API_KEY", async () => {
+    const { client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+
+    for (const key of ["", "dev-key", "a".repeat(40)]) {
+      vi.stubEnv("BETTER_AUTH_API_KEY", key)
+      const auth = createAuth()
+      expect(pluginIds(auth)).not.toContain("dash")
+      expect(dashEndpointPaths(auth)).toEqual([])
+      expect(auth.options.trustedOrigins).not.toContain(DASH_ORIGIN)
+      resetAuth()
+    }
+
+    await closeTestDb(client)
+  })
+
+  it("mounts the dash admin surface with a strong BETTER_AUTH_API_KEY", async () => {
+    const { client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    vi.stubEnv("BETTER_AUTH_API_KEY", STRONG_DASH_KEY)
+
+    const auth = createAuth()
+    expect(pluginIds(auth)).toContain("dash")
+    expect(dashEndpointPaths(auth).length).toBeGreaterThan(0)
+    expect(auth.options.trustedOrigins).toContain(DASH_ORIGIN)
+
     resetAuth()
     await closeTestDb(client)
   })
