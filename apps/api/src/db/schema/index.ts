@@ -20,6 +20,7 @@ export const user = pgTable("user", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
+  locale: text("locale").notNull().default("en-US"),
 })
 
 export const session = pgTable("session", {
