@@ -19,7 +19,15 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>()
   return {
     ...actual,
-    Link: ({ children, to, className }: { children?: ReactNode; to?: string; className?: string }) => (
+    Link: ({
+      children,
+      to,
+      className,
+    }: {
+      children?: ReactNode
+      to?: string
+      className?: string
+    }) => (
       <a href={String(to)} className={className}>
         {children}
       </a>
@@ -139,11 +147,26 @@ describe("login route", () => {
     renderWithProviders(<LoginPage />)
     await signIn(user)
     expect(await screen.findByText("Could not send a new code")).toBeInTheDocument()
-    // The failed send left no cooldown, so the resend button is live right away.
+    // A failed send leaves no cooldown, so the resend button is live right away.
+    await user.click(screen.getByRole("button", { name: "Send a new code" }))
+    expect(await screen.findByText("Could not send a new code")).toBeInTheDocument()
+    expect(screen.queryByText("New code sent.")).not.toBeInTheDocument()
     sendOtp.mockResolvedValue({ error: null, data: { status: true } })
     await user.click(screen.getByRole("button", { name: "Send a new code" }))
     expect(await screen.findByText("New code sent.")).toBeInTheDocument()
-    expect(sendOtp).toHaveBeenCalledTimes(2)
+    expect(sendOtp).toHaveBeenCalledTimes(3)
+  })
+
+  it("counts the resend cooldown down", async () => {
+    const user = userEvent.setup()
+    signInEmail.mockResolvedValue({ error: null, data: { twoFactorRedirect: true } })
+    sendOtp.mockResolvedValue({ error: null, data: { status: true } })
+    renderWithProviders(<LoginPage />)
+    await signIn(user)
+    expect(await screen.findByRole("button", { name: "Send a new code in 30s" })).toBeDisabled()
+    expect(
+      await screen.findByRole("button", { name: "Send a new code in 29s" }, { timeout: 3000 }),
+    ).toBeInTheDocument()
   })
 
   it("asks for confirmation after sign up", async () => {

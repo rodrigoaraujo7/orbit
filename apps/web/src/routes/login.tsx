@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
@@ -72,8 +72,8 @@ function LoginPage() {
     handleSubmit,
     setError,
     clearErrors,
+    control,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<AuthFormValues>({
     resolver: (values, context, options) =>
@@ -267,19 +267,29 @@ function LoginPage() {
         <>
           <Field label={t("auth.emailCode")} error={errors.code?.message} hint={notice}>
             {(props) => (
-              <InputOTP
-                {...props}
-                maxLength={6}
-                value={watch("code")}
-                onChange={(value) => setValue("code", value)}
-                containerClassName="w-full"
-              >
-                <InputOTPGroup className="w-full">
-                  {[0, 1, 2, 3, 4, 5].map((index) => (
-                    <InputOTPSlot key={index} index={index} aria-invalid={props["aria-invalid"]} />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
+              <Controller
+                name="code"
+                control={control}
+                render={({ field }) => (
+                  <InputOTP
+                    {...props}
+                    maxLength={6}
+                    value={field.value}
+                    onChange={field.onChange}
+                    containerClassName="w-full"
+                  >
+                    <InputOTPGroup className="w-full">
+                      {[0, 1, 2, 3, 4, 5].map((index) => (
+                        <InputOTPSlot
+                          key={index}
+                          index={index}
+                          aria-invalid={props["aria-invalid"]}
+                        />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                )}
+              />
             )}
           </Field>
           <Button
