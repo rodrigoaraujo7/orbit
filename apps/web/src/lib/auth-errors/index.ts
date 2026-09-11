@@ -6,6 +6,8 @@ const AUTH_ERROR_KEYS: Record<string, string> = {
   USER_NOT_FOUND: "auth.invalidCredentials",
   CREDENTIAL_ACCOUNT_NOT_FOUND: "auth.invalidCredentials",
   INVALID_EMAIL: "auth.emailInvalid",
+  EMAIL_NOT_VERIFIED: "auth.emailNotVerified",
+  INVALID_TOKEN: "auth.invalidResetLink",
   USER_ALREADY_EXISTS: "auth.emailInUse",
   USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "auth.emailInUse",
   PASSWORD_TOO_SHORT: "auth.passwordMin",
