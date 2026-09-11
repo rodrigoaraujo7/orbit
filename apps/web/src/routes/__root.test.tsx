@@ -127,6 +127,16 @@ describe("root Gate", () => {
     expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
   })
 
+  it("lets anonymous users reach the password recovery routes", () => {
+    session.data = null
+    for (const route of ["/forgot-password", "/reset-password"]) {
+      pathname.value = route
+      const { unmount } = renderWithProviders(<Root />)
+      expect(screen.getByTestId("outlet")).toBeInTheDocument()
+      unmount()
+    }
+  })
+
   it("wraps authenticated pages in the shell", () => {
     renderWithProviders(<Root />)
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
