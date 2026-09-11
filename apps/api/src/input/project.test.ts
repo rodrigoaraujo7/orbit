@@ -134,6 +134,18 @@ describe("projectInput", () => {
         projectInput.safeParse({
           ...validProject,
           repo: {
+            fullName: "just-a-name",
+            url: "https://github.com/org/app",
+            workflow: "none",
+          },
+        }),
+      ),
+    ).toContain(`repo.fullName: ${validation.repoFormat}`)
+    expect(
+      messages(
+        projectInput.safeParse({
+          ...validProject,
+          repo: {
             fullName: "https://github.com/org/app",
             url: "https://github.com/org/app",
             workflow: "none",
@@ -147,6 +159,48 @@ describe("projectInput", () => {
         repo: { fullName: "org/app", url: "https://github.com/org/app", workflow: "pending" },
       }).success,
     ).toBe(false)
+    expect(
+      messages(
+        projectInput.safeParse({
+          ...validProject,
+          repo: { fullName: "org/app", url: "javascript:alert(1)", workflow: "none" },
+        }),
+      ),
+    ).toContain(`repo.url: ${validation.repoUrl}`)
+    expect(
+      messages(
+        projectInput.safeParse({
+          ...validProject,
+          repo: {
+            fullName: "org/app",
+            url: "data:text/html,<script>alert(1)</script>",
+            workflow: "none",
+          },
+        }),
+      ),
+    ).toContain(`repo.url: ${validation.repoUrl}`)
+    expect(
+      messages(
+        projectInput.safeParse({
+          ...validProject,
+          repo: { fullName: "org/app", url: "http://github.com/org/app", workflow: "none" },
+        }),
+      ),
+    ).toContain(`repo.url: ${validation.repoUrl}`)
+    expect(
+      messages(
+        projectInput.safeParse({
+          ...validProject,
+          repo: { fullName: "org/app", url: "https://github.com/other/repo", workflow: "none" },
+        }),
+      ),
+    ).toContain(`repo.url: ${validation.repoUrl}`)
+    expect(
+      projectInput.safeParse({
+        ...validProject,
+        repo: { fullName: "org/app", url: "https://github.com/org/app", workflow: "none" },
+      }).success,
+    ).toBe(true)
     expect(
       messages(
         projectInput.safeParse({

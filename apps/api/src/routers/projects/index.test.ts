@@ -217,6 +217,13 @@ describe("projects router", () => {
       }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" })
     await expect(api.projects.delete({ id: "" })).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    await expect(
+      api.projects.create({
+        ...baseProject,
+        clientId: contactRow.id,
+        repo: { fullName: "org/app", url: "javascript:alert(1)", workflow: "none" },
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" })
   })
 
   it("creates with an explicit id and updates omitted optional fields", async () => {
@@ -313,7 +320,11 @@ describe("projects router", () => {
       })
     })
     const withRepo = (await api.projects.list()).find((item) => item.id === "p-repo")
-    expect(withRepo?.repo).toMatchObject({ fullName: "org/app", url: "", workflow: "none" })
+    expect(withRepo?.repo).toMatchObject({
+      fullName: "org/app",
+      url: "https://github.com/org/app",
+      workflow: "none",
+    })
     await api.projects.update({
       id: "p-diff",
       name: "Diffed",
@@ -325,6 +336,31 @@ describe("projects router", () => {
       repo: null,
     })
     expect((await api.projects.list()).some((item) => item.name === "Diffed")).toBe(true)
+  })
+
+  it("does not expose a stored javascript: repo url", async () => {
+    await withUser(db, "user-a", async (tx) => {
+      await tx.insert(project).values({
+        id: "p-xss",
+        userId: "user-a",
+        name: "XSS",
+        status: "queued",
+        position: 0,
+        startedAt: "2026-01-01",
+        dealKind: "upfront",
+        dealAmountCents: 0n,
+        dealCurrency: "BRL",
+        repoFullName: "org/app",
+        repoUrl: "javascript:alert(1)",
+        repoWorkflow: "none",
+      })
+    })
+    const listed = await caller("user-a").projects.list()
+    expect(listed.find((item) => item.id === "p-xss")?.repo).toEqual({
+      fullName: "org/app",
+      url: "https://github.com/org/app",
+      workflow: "none",
+    })
   })
 
   it("reinserts ciphertext under the same credential id on empty-value updates", async () => {

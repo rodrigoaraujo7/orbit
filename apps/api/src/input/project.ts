@@ -2,15 +2,16 @@ import { z } from "zod"
 import {
   billingCycleSchema,
   dealKindSchema,
+  githubRepoUrl,
+  isGithubRepoFullName,
+  isHttpsGithubRepoUrl,
   payerSchema,
   projectStatusSchema,
+  repoFullNamePattern,
   TOOL_CATEGORIES,
   workflowStatusSchema,
 } from "shared"
 import { validation } from "./messages.ts"
-
-/** Same owner/repo check as the UI `parseRepo` path (after toProject()). */
-const repoFullName = /^[\w.-]+\/[\w.-]+$/
 
 const secretInput = z.object({
   key: z.string(validation.enterKey).trim().min(1, validation.enterKey),
@@ -59,11 +60,24 @@ const commentInput = z.object({
   body: z.string().trim().min(1),
 })
 
-const repoInput = z.object({
-  fullName: z.string().regex(repoFullName, validation.repoFormat),
-  url: z.string(),
-  workflow: workflowStatusSchema,
-})
+function refineRepo(repo: { fullName: string; url: string }, ctx: z.RefinementCtx) {
+  if (!isGithubRepoFullName(repo.fullName)) return
+  if (repo.url !== githubRepoUrl(repo.fullName)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["url"],
+      message: validation.repoUrl,
+    })
+  }
+}
+
+const repoInput = z
+  .object({
+    fullName: z.string().regex(repoFullNamePattern, validation.repoFormat),
+    url: z.string().refine(isHttpsGithubRepoUrl, validation.repoUrl),
+    workflow: workflowStatusSchema,
+  })
+  .superRefine(refineRepo)
 
 function refineProject(
   values: { deal: { kind: string; amount: number; installments?: number } },

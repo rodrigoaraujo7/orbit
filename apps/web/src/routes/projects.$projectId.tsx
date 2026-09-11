@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { ArrowLeft, GitBranch, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react"
 import { useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { compactSearch, parseSearch, projectDetailSearchSchema } from "shared"
+import { compactSearch, githubRepoHref, parseSearch, projectDetailSearchSchema } from "shared"
 
 import {
   CreateProjectDialog,
@@ -240,7 +240,7 @@ function ProjectDetailPage() {
         {project.repo && (
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <a
-              href={project.repo.url}
+              href={githubRepoHref(project.repo.fullName)}
               target="_blank"
               rel="noreferrer"
               className="group inline-flex items-center gap-1.5 rounded-sm text-sm font-medium outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"

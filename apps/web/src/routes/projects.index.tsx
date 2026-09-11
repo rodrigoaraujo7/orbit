@@ -3,7 +3,7 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { ExternalLink, Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { compactSearch, parseSearch, projectsSearchSchema } from "shared"
+import { compactSearch, githubRepoHref, parseSearch, projectsSearchSchema } from "shared"
 
 import { PageHeader } from "@/components/layout/page"
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog"
@@ -177,7 +177,7 @@ function ProjectsPage() {
         project.repo ? (
           <div className="group flex items-center gap-2">
             <a
-              href={project.repo.url}
+              href={githubRepoHref(project.repo.fullName)}
               target="_blank"
               rel="noreferrer"
               onClick={(event) => event.stopPropagation()}

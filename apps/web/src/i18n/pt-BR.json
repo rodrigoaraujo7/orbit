@@ -258,6 +258,7 @@
     "enterToolName": "Informe o nome da ferramenta",
     "enterInvoiceDate": "Informe a data da fatura",
     "repoFormat": "Use o formato usuario/repositorio",
+    "repoUrl": "Use uma URL https://github.com/usuario/repositorio",
     "selectCategory": "Selecione a categoria",
     "enterGithubToken": "Informe o token do GitHub"
   },
