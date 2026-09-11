@@ -72,7 +72,7 @@ DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
 | `WEB_ORIGIN`          | no                 | Frontend origin (CORS + cookies). Default `http://localhost:5173`.                                                                                                  |
 | `PORT`                | yes for Vite       | Must be **3100** so the web proxy hits the API. Code default is `3000` if unset.                                                                                    |
 | `BETTER_AUTH_API_KEY` | no                 | Better Auth dashboard only. Empty is fine; the API warns, leaves `/api/auth/dash/*` unmounted, and still starts.                                                    |
-| `RESEND_API_KEY`      | for email          | Resend API key. Empty prints codes and links to the console instead of sending mail.                                                                                |
+| `RESEND_API_KEY`      | yes                | Resend API key. Missing or blank refuses boot and mail send with `missing env RESEND_API_KEY`.                                                                      |
 | `EMAIL_FROM`          | for email          | From header. Default `Projects Manager <noreply@projectsmanager.rodrigoleite.dev>`. Until that domain verifies, a failed send retries from `onboarding@resend.dev`. |
 | `RESEND_TEMPLATE_*`   | no                 | Template alias overrides, one per mail. See the table below.                                                                                                        |
 
@@ -87,7 +87,7 @@ Sign-in needs a confirmed address and a six-digit code emailed on every login; t
 | Password reset       | `RESEND_TEMPLATE_RESET_PASSWORD`  | `pm-reset-password`  | `NAME`, `URL`                         |
 | New sign-in alert    | `RESEND_TEMPLATE_NEW_LOGIN`       | `pm-new-login`       | `NAME`, `BROWSER`, `OS`, `IP`, `WHEN` |
 
-Without `RESEND_API_KEY` nothing leaves the process: every mail is logged with `console.info` under `[email:dev]`, so local sign-in works by copying the code out of the API output.
+If `RESEND_API_KEY` is missing or blank, boot and mail send throw `missing env RESEND_API_KEY`. There is no console fallback.
 
 If `BETTER_AUTH_SECRET` is missing or blank, boot and `/api/auth/*` return an error. There is no fallback secret.
 
@@ -108,7 +108,7 @@ pnpm dev
 - App: [http://localhost:5173](http://localhost:5173)
 - API: [http://localhost:3100](http://localhost:3100)
 
-Sign up with email and password on first visit, then open the confirmation link and the sign-in code. Without `RESEND_API_KEY` both are printed by the API process.
+Sign up with email and password on first visit, then open the confirmation link and the sign-in code from Resend.
 
 Separate processes: `pnpm dev:web` and `pnpm dev:api`.
 

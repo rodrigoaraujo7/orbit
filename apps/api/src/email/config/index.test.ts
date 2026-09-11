@@ -5,7 +5,6 @@ import {
   DEFAULT_EMAIL_LOCALE,
   EMAIL_KINDS,
   EMAIL_LOCALES,
-  emailEnabled,
   emailFrom,
   emailLocale,
   OTP_PERIOD_MINUTES,
@@ -18,18 +17,15 @@ afterEach(() => {
 })
 
 describe("email config", () => {
-  it("treats a missing or blank API key as disabled", () => {
+  it("requires a non-blank API key", () => {
     delete process.env.RESEND_API_KEY
-    expect(resendApiKey()).toBeUndefined()
-    expect(emailEnabled()).toBe(false)
+    expect(() => resendApiKey()).toThrow(/missing env RESEND_API_KEY/)
 
     vi.stubEnv("RESEND_API_KEY", "   ")
-    expect(resendApiKey()).toBeUndefined()
-    expect(emailEnabled()).toBe(false)
+    expect(() => resendApiKey()).toThrow(/missing env RESEND_API_KEY/)
 
     vi.stubEnv("RESEND_API_KEY", " re_test_key ")
     expect(resendApiKey()).toBe("re_test_key")
-    expect(emailEnabled()).toBe(true)
   })
 
   it("falls back to the project sender", () => {

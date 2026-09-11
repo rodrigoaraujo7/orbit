@@ -5,11 +5,13 @@ import { resolveBetterAuthSecret } from "../auth/secret/index.ts"
 import { resolveTrustedOrigins } from "../auth/trusted-origins/index.ts"
 import { applySchema, createDb } from "../db/client/index.ts"
 import { resolveDatabaseUrlSecret } from "../db/url/index.ts"
+import { resendApiKey } from "../email/config/index.ts"
 import { mountApi } from "../mount/index.ts"
 
 export async function start(options?: { port?: number }) {
   resolveDatabaseUrlSecret()
   resolveBetterAuthSecret()
+  resendApiKey()
   resolveTrustedOrigins()
   const keyStatus = dashKeyStatus()
   if (keyStatus !== "ok") {

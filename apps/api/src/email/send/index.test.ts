@@ -128,18 +128,14 @@ describe("email senders", () => {
     expect(variables.WHEN).toContain("2026")
   })
 
-  it("logs to the console instead of calling Resend without an API key", async () => {
+  it("rejects sending without an API key", async () => {
     vi.stubEnv("RESEND_API_KEY", "")
-    const info = vi.spyOn(console, "info").mockImplementation(() => {})
     const { sent, fetchImpl } = recorder()
 
-    await sendLoginOtp(ada, "654321", { fetchImpl })
-
-    expect(sent).toEqual([])
-    expect(info).toHaveBeenCalledWith(
-      "[email:dev] login-otp to ada@test.local — Your Projects Manager sign-in code",
-      { NAME: "Ada Lovelace", CODE: "654321", MINUTES: "10" },
+    await expect(sendLoginOtp(ada, "654321", { fetchImpl })).rejects.toThrow(
+      /missing env RESEND_API_KEY/,
     )
+    expect(sent).toEqual([])
   })
 
   it("retries from the Resend onboarding address when the product domain is unverified", async () => {

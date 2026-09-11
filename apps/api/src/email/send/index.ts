@@ -54,12 +54,6 @@ async function deliver(
   const locale = emailLocale(recipient.locale)
   const subject = emailSubject(kind, locale)
   const apiKey = resendApiKey()
-
-  if (!apiKey) {
-    console.info(`[email:dev] ${kind} to ${recipient.email} — ${subject}`, variables)
-    return
-  }
-
   const payload = {
     to: [recipient.email],
     subject,

@@ -33,20 +33,16 @@ function setting(name: string) {
   return value ? value : undefined
 }
 
+export const MISSING_RESEND_API_KEY = "missing env RESEND_API_KEY"
+
 export function resendApiKey() {
-  return setting("RESEND_API_KEY")
+  const key = setting("RESEND_API_KEY")
+  if (!key) throw new Error(MISSING_RESEND_API_KEY)
+  return key
 }
 
 export function emailFrom() {
   return setting("EMAIL_FROM") ?? DEFAULT_EMAIL_FROM
-}
-
-/**
- * Without an API key the senders log to the console instead of calling Resend,
- * so a local checkout and the test suite never touch the network.
- */
-export function emailEnabled() {
-  return resendApiKey() !== undefined
 }
 
 /** Alias of the published Resend template, before the locale suffix. */
