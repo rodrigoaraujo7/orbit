@@ -63,7 +63,7 @@ function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <AuthShell onSubmit={(event) => event.preventDefault()}>
+      <AuthShell>
         <div className="flex flex-col items-start gap-2">
           <h1 className="font-subtitle text-xl">{t("auth.resetTitle")}</h1>
           <p className="text-sm text-muted-foreground">{t("auth.invalidResetLink")}</p>

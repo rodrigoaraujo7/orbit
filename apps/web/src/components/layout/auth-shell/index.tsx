@@ -61,14 +61,31 @@ function LocaleToggle() {
   )
 }
 
-/** Card over the animated gradient shared by every signed-out screen. */
+/**
+ * Card over the animated gradient shared by every signed-out screen. Screens
+ * with nothing to submit (a dead reset link) get a plain container instead.
+ */
 function AuthShell({
   children,
   onSubmit,
 }: {
   children: ReactNode
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void
+  onSubmit?: (event: FormEvent<HTMLFormElement>) => void
 }) {
+  const cardClassName =
+    "relative z-10 flex w-full max-w-sm flex-col gap-4 rounded-xl bg-card/40 p-6 shadow-lg ring-1 ring-white/10 backdrop-blur-xl"
+  const header = (
+    <>
+      <div className="flex w-full items-start justify-between gap-2">
+        <div className="grid size-10 place-items-center rounded-lg bg-muted text-base font-bold text-muted-foreground">
+          P
+        </div>
+        <LocaleToggle />
+      </div>
+      {children}
+    </>
+  )
+
   return (
     <main className="relative grid min-h-svh place-items-center overflow-hidden p-6">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
@@ -97,19 +114,13 @@ function AuthShell({
           zoom={0.9}
         />
       </div>
-      <form
-        onSubmit={onSubmit}
-        noValidate
-        className="relative z-10 flex w-full max-w-sm flex-col gap-4 rounded-xl bg-card/40 p-6 shadow-lg ring-1 ring-white/10 backdrop-blur-xl"
-      >
-        <div className="flex w-full items-start justify-between gap-2">
-          <div className="grid size-10 place-items-center rounded-lg bg-muted text-base font-bold text-muted-foreground">
-            P
-          </div>
-          <LocaleToggle />
-        </div>
-        {children}
-      </form>
+      {onSubmit ? (
+        <form onSubmit={onSubmit} noValidate className={cardClassName}>
+          {header}
+        </form>
+      ) : (
+        <div className={cardClassName}>{header}</div>
+      )}
     </main>
   )
 }
