@@ -1,4 +1,4 @@
-import { cleanup, screen, waitFor } from "@testing-library/react"
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -182,9 +182,13 @@ describe("login route", () => {
     await user.type(screen.getByLabelText("Email"), "ada@test.local")
     await user.type(screen.getByLabelText("Password"), "password1")
     await user.click(screen.getByRole("button", { name: "Sign up" }))
-    const dialog = await screen.findByRole("dialog")
-    expect(dialog).toHaveTextContent("Confirm your email")
-    expect(dialog).toHaveTextContent("ada@test.local")
+    expect(await screen.findByText("Confirm your email")).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "We sent a confirmation link to ada@test.local. Open it to activate your account, then sign in.",
+      ),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     expect(signUpEmail).toHaveBeenCalledWith({
       name: "Ada",
       email: "ada@test.local",
@@ -197,22 +201,26 @@ describe("login route", () => {
       email: "ada@test.local",
       callbackURL: "/",
     })
-    expect(screen.getByRole("button", { name: "Send a new code in 30s" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Send the link again in 30s" })).toBeDisabled()
     expect(
-      await screen.findByRole("button", { name: "Send a new code in 29s" }, { timeout: 3000 }),
+      await screen.findByRole("button", { name: "Send the link again in 29s" }, { timeout: 3000 }),
     ).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Back to sign in" }))
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Create" })).toBeInTheDocument()
+    expect(screen.getByLabelText("Email")).toBeInTheDocument()
+    expect(screen.queryByText("Confirm your email")).not.toBeInTheDocument()
   })
 
-  it("sends an unconfirmed account to the confirmation dialog", async () => {
+  it("swaps the form to confirmation when the account is not verified", async () => {
     const user = userEvent.setup()
     signInEmail.mockResolvedValue({ error: { code: "EMAIL_NOT_VERIFIED" }, data: null })
     sendVerificationEmail.mockResolvedValue({ error: { status: 429 }, data: null })
     renderWithProviders(<LoginPage />)
     await signIn(user)
-    expect(await screen.findByRole("dialog")).toHaveTextContent("Confirm your email")
+    expect(await screen.findByText("Confirm your email")).toBeInTheDocument()
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Email")).not.toBeInTheDocument()
     expect(
       screen.getByText(
         "We sent a confirmation link to ada@test.local. Open it to activate your account, then sign in.",
@@ -220,6 +228,9 @@ describe("login route", () => {
     ).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Send the link again" }))
     expect(await screen.findByText("Too many requests. Try again later.")).toBeInTheDocument()
+    signInEmail.mockClear()
+    fireEvent.submit(document.querySelector("form")!)
+    expect(signInEmail).not.toHaveBeenCalled()
   })
 
   it("shows sign-up errors and can switch back", async () => {
