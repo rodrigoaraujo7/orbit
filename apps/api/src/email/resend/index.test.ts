@@ -19,7 +19,11 @@ afterEach(() => {
 describe("sendResendEmail", () => {
   it("posts the template payload with the API key", async () => {
     const call = vi.fn(async () => ok()) as unknown as FetchLike
-    await sendResendEmail(email, { apiKey: "re_test", idempotencyKey: "login-otp-abc", fetchImpl: call })
+    await sendResendEmail(email, {
+      apiKey: "re_test",
+      idempotencyKey: "login-otp-abc",
+      fetchImpl: call,
+    })
 
     expect(call).toHaveBeenCalledWith("https://api.resend.com/emails", {
       method: "POST",

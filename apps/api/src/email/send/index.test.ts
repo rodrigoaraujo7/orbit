@@ -96,12 +96,16 @@ describe("email senders", () => {
     await sendNewLoginAlert({ ...ada, locale: "pt-BR" }, { at: AT }, { fetchImpl })
     await sendNewLoginAlert({ email: "ghost@test.local", name: "  " }, { at: AT }, { fetchImpl })
 
-    expect((sent[0].body.template as { variables: Record<string, string> }).variables).toMatchObject({
+    expect(
+      (sent[0].body.template as { variables: Record<string, string> }).variables,
+    ).toMatchObject({
       BROWSER: "Desconhecido",
       OS: "Desconhecido",
       IP: "Desconhecido",
     })
-    expect((sent[1].body.template as { variables: Record<string, string> }).variables).toMatchObject({
+    expect(
+      (sent[1].body.template as { variables: Record<string, string> }).variables,
+    ).toMatchObject({
       NAME: "ghost@test.local",
       BROWSER: "Unknown",
     })

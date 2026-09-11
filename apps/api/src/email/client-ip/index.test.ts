@@ -9,9 +9,9 @@ describe("clientIp", () => {
 
   it("falls back to x-real-ip", () => {
     expect(clientIp(new Headers({ "x-real-ip": " 198.51.100.7 " }))).toBe("198.51.100.7")
-    expect(clientIp(new Headers({ "x-forwarded-for": " , 10.0.0.1", "x-real-ip": "198.51.100.7" }))).toBe(
-      "198.51.100.7",
-    )
+    expect(
+      clientIp(new Headers({ "x-forwarded-for": " , 10.0.0.1", "x-real-ip": "198.51.100.7" })),
+    ).toBe("198.51.100.7")
   })
 
   it("returns null without any address header", () => {

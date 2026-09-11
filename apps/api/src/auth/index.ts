@@ -71,12 +71,24 @@ export function emailRecipient(candidate: {
 
 type MailedUser = { email?: unknown; name?: unknown; locale?: unknown }
 
-export async function sendVerificationEmailFor({ user: target, url }: { user: MailedUser; url: string }) {
+export async function sendVerificationEmailFor({
+  user: target,
+  url,
+}: {
+  user: MailedUser
+  url: string
+}) {
   const recipient = emailRecipient(target)
   if (recipient) await sendAccountConfirmation(recipient, url)
 }
 
-export async function sendResetPasswordEmail({ user: target, url }: { user: MailedUser; url: string }) {
+export async function sendResetPasswordEmail({
+  user: target,
+  url,
+}: {
+  user: MailedUser
+  url: string
+}) {
   const recipient = emailRecipient(target)
   if (recipient) await sendPasswordReset(recipient, url)
 }
@@ -182,7 +194,12 @@ export function createAuth() {
     session: { expiresIn: SESSION_EXPIRES_IN, updateAge: SESSION_UPDATE_AGE },
     user: {
       additionalFields: {
-        locale: { type: "string", defaultValue: DEFAULT_EMAIL_LOCALE, input: true, required: false },
+        locale: {
+          type: "string",
+          defaultValue: DEFAULT_EMAIL_LOCALE,
+          input: true,
+          required: false,
+        },
       },
     },
     emailAndPassword: {
