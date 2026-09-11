@@ -1,7 +1,6 @@
 import { optionalEnv } from "../../env/index.ts"
 import { trustedWebOrigins } from "../../web-origin/index.ts"
 
-export const BETTER_AUTH_DASHBOARD_ORIGIN = "https://dash.better-auth.com"
 export const INVALID_AUTH_TRUSTED_ORIGIN = "AUTH_TRUSTED_ORIGIN must be a single origin URL"
 
 export function resolveAuthTrustedOrigin(
@@ -26,8 +25,10 @@ export function resolveAuthTrustedOrigin(
 
 export function resolveTrustedOrigins(
   extra: string | undefined | null = optionalEnv("AUTH_TRUSTED_ORIGIN"),
+  dashOrigin?: string,
 ) {
-  const origins = [...trustedWebOrigins, BETTER_AUTH_DASHBOARD_ORIGIN]
+  const origins = [...trustedWebOrigins]
+  if (dashOrigin) origins.push(dashOrigin)
   const tunnel = resolveAuthTrustedOrigin(extra)
   if (tunnel && !origins.includes(tunnel)) {
     origins.push(tunnel)

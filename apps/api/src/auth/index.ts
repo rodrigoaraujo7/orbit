@@ -1,5 +1,5 @@
 import { dash } from "@better-auth/infra"
-import { betterAuth } from "better-auth"
+import { betterAuth, type BetterAuthPlugin } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api"
 import { twoFactor } from "better-auth/plugins"
@@ -10,6 +10,7 @@ import { schema, user } from "../db/schema/index.ts"
 import { withUser } from "../db/with-user/index.ts"
 import { validation } from "../input/messages.ts"
 import { originUsesHttps, resolveAuthBaseUrl } from "../web-origin/index.ts"
+import { DASH_ORIGIN, resolveDashApiKey } from "./dash/index.ts"
 import { resolveBetterAuthSecret } from "./secret/index.ts"
 import { resolveTrustedOrigins } from "./trusted-origins/index.ts"
 
@@ -101,11 +102,13 @@ export async function afterAuthHook(ctx: AuthHookCtx) {
 export function createAuth() {
   const secret = resolveBetterAuthSecret()
   const baseURL = resolveAuthBaseUrl()
+  const dashApiKey = resolveDashApiKey()
+  const dashPlugins: BetterAuthPlugin[] = dashApiKey ? [dash({ apiKey: dashApiKey })] : []
 
   return betterAuth({
     baseURL,
     secret,
-    trustedOrigins: resolveTrustedOrigins(),
+    trustedOrigins: resolveTrustedOrigins(undefined, dashApiKey ? DASH_ORIGIN : undefined),
     database: drizzleAdapter(getDb(), {
       provider: "pg",
       schema,
@@ -118,7 +121,7 @@ export function createAuth() {
         secure: originUsesHttps(baseURL),
       },
     },
-    plugins: [twoFactor({ issuer: "Projects Manager" }), dash()],
+    plugins: [twoFactor({ issuer: "Projects Manager" }), ...dashPlugins],
     hooks: {
       before: createAuthMiddleware(beforeAuthHook),
       after: createAuthMiddleware(afterAuthHook),

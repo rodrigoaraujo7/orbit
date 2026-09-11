@@ -68,7 +68,7 @@ describe("start", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
     const log = vi.spyOn(console, "log").mockImplementation(() => {})
     await start()
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/BETTER_AUTH_API_KEY/))
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^missing BETTER_AUTH_API_KEY/))
     expect(createDb).toHaveBeenCalled()
     expect(applySchema).toHaveBeenCalled()
     expect(mountApi).toHaveBeenCalled()
@@ -81,15 +81,29 @@ describe("start", () => {
     log.mockRestore()
   })
 
-  it("honours an explicit port", async () => {
+  it("warns about a weak Better Auth API key", async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
     vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
     vi.stubEnv("BETTER_AUTH_API_KEY", "key")
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    vi.spyOn(console, "log").mockImplementation(() => {})
+    await start()
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^weak BETTER_AUTH_API_KEY/))
+    warn.mockRestore()
+  })
+
+  it("honours an explicit port and stays quiet with a strong key", async () => {
+    vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    vi.stubEnv("BETTER_AUTH_API_KEY", "ba-infra-3f9c1d7e5a2b8046acde1975")
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
     vi.spyOn(console, "log").mockImplementation(() => {})
     await start({ port: 3100 })
+    expect(warn).not.toHaveBeenCalled()
     expect(serve).toHaveBeenCalledWith(
       expect.objectContaining({ port: 3100 }),
       expect.any(Function),
     )
+    warn.mockRestore()
   })
 })

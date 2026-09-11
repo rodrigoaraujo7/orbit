@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { DASH_ORIGIN } from "../dash/index.ts"
 import { trustedWebOrigins } from "../../web-origin/index.ts"
 import {
-  BETTER_AUTH_DASHBOARD_ORIGIN,
   INVALID_AUTH_TRUSTED_ORIGIN,
   resolveAuthTrustedOrigin,
   resolveTrustedOrigins,
@@ -47,31 +47,37 @@ describe("resolveAuthTrustedOrigin", () => {
 })
 
 describe("resolveTrustedOrigins", () => {
-  it("trusts the web origin and Better Auth dashboard only by default", () => {
+  it("trusts the web origin by default and never a host wildcard", () => {
     delete process.env.AUTH_TRUSTED_ORIGIN
-    expect(resolveTrustedOrigins()).toEqual([...trustedWebOrigins, BETTER_AUTH_DASHBOARD_ORIGIN])
-    expect(resolveTrustedOrigins(null)).toEqual([
-      ...trustedWebOrigins,
-      BETTER_AUTH_DASHBOARD_ORIGIN,
-    ])
+    expect(resolveTrustedOrigins()).toEqual([...trustedWebOrigins])
+    expect(resolveTrustedOrigins(null)).toEqual([...trustedWebOrigins])
+    expect(resolveTrustedOrigins()).not.toContain(DASH_ORIGIN)
     expect(resolveTrustedOrigins()).not.toContain("https://*.ngrok-free.app")
     expect(resolveTrustedOrigins().some((origin) => origin.includes("*"))).toBe(false)
+  })
+
+  it("appends the dash origin only when it is provided", () => {
+    expect(resolveTrustedOrigins(undefined, DASH_ORIGIN)).toEqual([
+      ...trustedWebOrigins,
+      DASH_ORIGIN,
+    ])
+    expect(resolveTrustedOrigins(DASH_ORIGIN, DASH_ORIGIN)).toEqual([
+      ...trustedWebOrigins,
+      DASH_ORIGIN,
+    ])
   })
 
   it("appends a single extra origin and skips duplicates", () => {
     expect(resolveTrustedOrigins("https://tunnel.example.test")).toEqual([
       ...trustedWebOrigins,
-      BETTER_AUTH_DASHBOARD_ORIGIN,
       "https://tunnel.example.test",
     ])
-    expect(resolveTrustedOrigins(BETTER_AUTH_DASHBOARD_ORIGIN)).toEqual([
+    expect(resolveTrustedOrigins("https://tunnel.example.test", DASH_ORIGIN)).toEqual([
       ...trustedWebOrigins,
-      BETTER_AUTH_DASHBOARD_ORIGIN,
+      DASH_ORIGIN,
+      "https://tunnel.example.test",
     ])
-    expect(resolveTrustedOrigins(trustedWebOrigins[0])).toEqual([
-      ...trustedWebOrigins,
-      BETTER_AUTH_DASHBOARD_ORIGIN,
-    ])
+    expect(resolveTrustedOrigins(trustedWebOrigins[0])).toEqual([...trustedWebOrigins])
     vi.stubEnv("AUTH_TRUSTED_ORIGIN", "https://from-env.example.test")
     expect(resolveTrustedOrigins()).toContain("https://from-env.example.test")
   })
