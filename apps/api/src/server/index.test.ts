@@ -31,6 +31,12 @@ describe("start", () => {
     await expect(start()).rejects.toThrow(/missing env DATABASE_URL/)
   })
 
+  it("throws when DATABASE_URL is blank", async () => {
+    vi.stubEnv("DATABASE_URL", "   ")
+    await expect(start()).rejects.toThrow(/missing env DATABASE_URL/)
+    expect(createDb).not.toHaveBeenCalled()
+  })
+
   it("throws without BETTER_AUTH_SECRET", async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
     delete process.env.BETTER_AUTH_SECRET
@@ -48,7 +54,7 @@ describe("start", () => {
   it("warns without a Better Auth API key and listens", async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
     vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
-    vi.stubEnv("BETTER_AUTH_API_KEY", "")
+    vi.stubEnv("BETTER_AUTH_API_KEY", "   ")
     delete process.env.PORT
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
     const log = vi.spyOn(console, "log").mockImplementation(() => {})

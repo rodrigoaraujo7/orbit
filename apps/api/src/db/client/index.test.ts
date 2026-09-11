@@ -54,4 +54,16 @@ describe("createDb / applySchema / getDb", () => {
       host: "/var/run/postgresql",
     })
   })
+
+  it("trims DATABASE_URL and rejects a blank value", () => {
+    vi.stubEnv("DATABASE_URL", "  postgres://localhost/test  ")
+    createDb()
+    expect(postgres).toHaveBeenCalledWith(
+      "postgres://localhost/test",
+      postgresClientOptions("postgres://localhost/test"),
+    )
+    resetDb()
+    vi.stubEnv("DATABASE_URL", "   ")
+    expect(() => createDb()).toThrow(/missing env DATABASE_URL/)
+  })
 })
