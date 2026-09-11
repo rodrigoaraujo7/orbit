@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { INSECURE_BETTER_AUTH_SECRET } from "../auth/secret/index.ts"
+import { INVALID_AUTH_TRUSTED_ORIGIN } from "../auth/trusted-origins/index.ts"
 
 const { serve, mountApi, applySchema, createDb } = vi.hoisted(() => ({
   serve: vi.fn((opts: { port: number }, cb: (info: { port: number }) => void) => {
@@ -48,6 +49,14 @@ describe("start", () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
     vi.stubEnv("BETTER_AUTH_SECRET", INSECURE_BETTER_AUTH_SECRET)
     await expect(start()).rejects.toThrow(/known insecure default/)
+    expect(createDb).not.toHaveBeenCalled()
+  })
+
+  it("throws when AUTH_TRUSTED_ORIGIN is a wildcard", async () => {
+    vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    vi.stubEnv("AUTH_TRUSTED_ORIGIN", "https://*.ngrok-free.app")
+    await expect(start()).rejects.toThrow(INVALID_AUTH_TRUSTED_ORIGIN)
     expect(createDb).not.toHaveBeenCalled()
   })
 

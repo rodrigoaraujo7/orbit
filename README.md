@@ -68,6 +68,7 @@ DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
 | `BETTER_AUTH_SECRET`      | yes                | Better Auth signing secret. `openssl rand -hex 32`. Missing or the known insecure default refuses boot.           |
 | `MASTER_KEY`              | for stored secrets | 32 bytes: **64 hex chars** or base64. `openssl rand -hex 32`. Do not rotate without a re-encrypt path.            |
 | `BETTER_AUTH_URL`         | no                 | Auth base URL. Default `WEB_ORIGIN`.                                                                              |
+| `AUTH_TRUSTED_ORIGIN`     | no                 | Extra Better Auth CSRF origin. One `http(s)` URL. Wildcards and lists are rejected.                               |
 | `WEB_ORIGIN`              | no                 | Frontend origin (CORS + cookies). Default `http://localhost:5173`.                                                |
 | `PORT`                    | yes for Vite       | Must be **3100** so the web proxy hits the API. Code default is `3000` if unset.                                  |
 | `BETTER_AUTH_API_KEY`     | no                 | Better Auth dashboard only. Empty is fine; the API warns, leaves `/api/auth/dash/*` unmounted, and still starts.  |
@@ -77,6 +78,8 @@ DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
 | `RESEND_TEMPLATE_LOGIN`   | for email          | Resend template id for login mail.                                                                                |
 
 If `BETTER_AUTH_SECRET` is missing or blank, boot and `/api/auth/*` return an error. There is no fallback secret.
+
+If `AUTH_TRUSTED_ORIGIN` is set, it must be a single `http(s)` origin. Wildcards and comma-separated lists are rejected at boot.
 
 Session cookies use the `Secure` flag when the auth origin (`BETTER_AUTH_URL`, otherwise `WEB_ORIGIN`) is HTTPS.
 
