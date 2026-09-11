@@ -58,6 +58,21 @@ describe("createAuth", () => {
     resetAuth()
     await closeTestDb(client)
   })
+
+  it("does not trust every ngrok-free.app host", async () => {
+    const src = await readFile(new URL("./index.ts", import.meta.url), "utf8")
+    expect(src).not.toContain("*.ngrok-free.app")
+    expect(src).not.toContain("ngrok")
+
+    const { client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    vi.stubEnv("AUTH_TRUSTED_ORIGIN", "https://*.ngrok-free.app")
+    expect(() => createAuth()).toThrow(/AUTH_TRUSTED_ORIGIN/)
+    vi.stubEnv("AUTH_TRUSTED_ORIGIN", "https://abc.ngrok-free.app")
+    expect(createAuth()).toBeTruthy()
+    resetAuth()
+    await closeTestDb(client)
+  })
 })
 
 describe("afterAuthHook", () => {

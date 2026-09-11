@@ -9,8 +9,9 @@ import { getDb } from "../db/client/index.ts"
 import { schema, user } from "../db/schema/index.ts"
 import { withUser } from "../db/with-user/index.ts"
 import { validation } from "../input/messages.ts"
-import { originUsesHttps, trustedWebOrigins, resolveAuthBaseUrl } from "../web-origin/index.ts"
+import { originUsesHttps, resolveAuthBaseUrl } from "../web-origin/index.ts"
 import { resolveBetterAuthSecret } from "./secret/index.ts"
+import { resolveTrustedOrigins } from "./trusted-origins/index.ts"
 
 async function logSecurity(userId: string, action: string, headers: Headers | null | undefined) {
   try {
@@ -104,11 +105,7 @@ export function createAuth() {
   return betterAuth({
     baseURL,
     secret,
-    trustedOrigins: [
-      ...trustedWebOrigins,
-      "https://dash.better-auth.com",
-      "https://*.ngrok-free.app",
-    ],
+    trustedOrigins: resolveTrustedOrigins(),
     database: drizzleAdapter(getDb(), {
       provider: "pg",
       schema,
