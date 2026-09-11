@@ -21,7 +21,16 @@ export function loadDotEnv(file = join(import.meta.dirname, "../../.env")) {
   }
 }
 
-loadDotEnv()
+/** Vitest imports this module; a local `.env` must not leak into assertions. */
+export function shouldLoadDotEnv(env: NodeJS.ProcessEnv = process.env) {
+  return !env.VITEST
+}
+
+export function bootEnv(env: NodeJS.ProcessEnv = process.env, load: () => void = loadDotEnv) {
+  if (shouldLoadDotEnv(env)) load()
+}
+
+bootEnv()
 
 export function env(name: string) {
   const value = process.env[name]
