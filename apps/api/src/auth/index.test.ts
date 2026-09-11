@@ -1,7 +1,9 @@
+import { readFile } from "node:fs/promises"
 import { APIError } from "better-auth/api"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { auditLog } from "../db/schema/index.ts"
 import { afterAuthHook, beforeAuthHook, createAuth, getAuth, resetAuth } from "./index.ts"
+import { INSECURE_BETTER_AUTH_SECRET } from "./secret/index.ts"
 import { closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
 import { withUser } from "../db/with-user/index.ts"
 import { dbHolder } from "../test/setup.ts"
@@ -12,22 +14,46 @@ describe("createAuth", () => {
     vi.unstubAllEnvs()
   })
 
-  it("uses a dev secret outside production and a singleton", async () => {
+  it("uses a singleton once BETTER_AUTH_SECRET is set", async () => {
     const { client } = await openTestDb()
-    vi.stubEnv("NODE_ENV", "development")
-    delete process.env.BETTER_AUTH_SECRET
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
     const first = getAuth()
     expect(getAuth()).toBe(first)
     resetAuth()
     await closeTestDb(client)
   })
 
-  it("requires BETTER_AUTH_SECRET in production", async () => {
+  it("requires BETTER_AUTH_SECRET in every environment", async () => {
     const { client } = await openTestDb()
-    vi.stubEnv("NODE_ENV", "production")
+    vi.stubEnv("NODE_ENV", "test")
     delete process.env.BETTER_AUTH_SECRET
     expect(() => createAuth()).toThrow(/missing env BETTER_AUTH_SECRET/)
+    vi.stubEnv("BETTER_AUTH_SECRET", "   ")
+    expect(() => createAuth()).toThrow(/missing env BETTER_AUTH_SECRET/)
+    vi.stubEnv("NODE_ENV", "production")
+    expect(() => createAuth()).toThrow(/missing env BETTER_AUTH_SECRET/)
     vi.stubEnv("BETTER_AUTH_SECRET", "prod-secret-must-be-long-enough")
+    expect(createAuth()).toBeTruthy()
+    resetAuth()
+    await closeTestDb(client)
+  })
+
+  it("does not fall back to the known insecure default secret", async () => {
+    const src = await readFile(new URL("./index.ts", import.meta.url), "utf8")
+    expect(src).not.toContain(INSECURE_BETTER_AUTH_SECRET)
+
+    const { client } = await openTestDb()
+    vi.stubEnv("NODE_ENV", "test")
+    vi.stubEnv("BETTER_AUTH_SECRET", INSECURE_BETTER_AUTH_SECRET)
+    expect(() => createAuth()).toThrow(/known insecure default/)
+    resetAuth()
+    await closeTestDb(client)
+  })
+
+  it("creates auth when the origin is https", async () => {
+    const { client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    vi.stubEnv("BETTER_AUTH_URL", "https://app.example.com")
     expect(createAuth()).toBeTruthy()
     resetAuth()
     await closeTestDb(client)
@@ -187,10 +213,12 @@ describe("beforeAuthHook", () => {
 describe("signup input", () => {
   afterEach(() => {
     resetAuth()
+    vi.unstubAllEnvs()
   })
 
   it("rejects short names and passwords on email signup", async () => {
     const { client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
     const auth = createAuth()
 
     await expect(

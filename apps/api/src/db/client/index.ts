@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url"
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 import { schema } from "../schema/index.ts"
-import { env } from "../../env/index.ts"
+import { resolveDatabaseUrlSecret } from "../url/index.ts"
 import { postgresClientOptions } from "../postgres-options.ts"
 
 const schemaSql = readFileSync(
@@ -12,7 +12,7 @@ const schemaSql = readFileSync(
   "utf8",
 )
 
-export function createDb(url = env("DATABASE_URL")) {
+export function createDb(url = resolveDatabaseUrlSecret()) {
   const client = postgres(url, postgresClientOptions(url))
   const db = drizzle({ client, schema })
   return { client, db }

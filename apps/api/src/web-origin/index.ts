@@ -38,3 +38,11 @@ export function resolveAuthBaseUrl(
 ) {
   return value ?? webOrigin
 }
+
+export function originUsesHttps(origin: string) {
+  try {
+    return new URL(origin).protocol === "https:"
+  } catch {
+    return false
+  }
+}

@@ -67,6 +67,7 @@ function SecretList({ secrets }: { secrets: Secret[] }) {
       })
       return
     }
+    /* v8 ignore next -- reveal is disabled while a fetch is in flight */
     if (pendingKey) return
     setPendingKey(key)
     try {
@@ -99,7 +100,7 @@ function SecretList({ secrets }: { secrets: Secret[] }) {
                 onClick={() => void copySecret(secret, key)}
                 className="min-w-0 truncate rounded-sm px-1 -mx-1 cursor-pointer transition-colors hover:bg-muted"
               >
-                {isRevealed ? (plaintexts[key] ?? SECRET_VALUE_MASK) : SECRET_VALUE_MASK}
+                {isRevealed ? plaintexts[key] : SECRET_VALUE_MASK}
               </button>
               <span className="ml-auto flex shrink-0 items-center">
                 <Button

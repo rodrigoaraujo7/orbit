@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { webOriginAliases, resolveWebOrigin, resolveAuthBaseUrl } from "./index.ts"
+import { webOriginAliases, resolveWebOrigin, resolveAuthBaseUrl, originUsesHttps } from "./index.ts"
 
 const loopbackHost = "localhost"
 const localOrigin = `http://${loopbackHost}:5173`
@@ -32,5 +32,16 @@ describe("resolveAuthBaseUrl", () => {
   it("uses BETTER_AUTH_URL when set and otherwise the web origin", () => {
     expect(resolveAuthBaseUrl("https://auth.example.com")).toBe("https://auth.example.com")
     expect(resolveAuthBaseUrl(null)).toBe(resolveWebOrigin())
+  })
+})
+
+describe("originUsesHttps", () => {
+  it("is true only for https origins", () => {
+    expect(originUsesHttps("https://app.example.com")).toBe(true)
+    expect(originUsesHttps("https://localhost:5173")).toBe(true)
+    expect(originUsesHttps(localOrigin)).toBe(false)
+    expect(originUsesHttps("http://app.example.com")).toBe(false)
+    expect(originUsesHttps("not a url")).toBe(false)
+    expect(originUsesHttps("")).toBe(false)
   })
 })

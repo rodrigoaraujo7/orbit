@@ -110,6 +110,86 @@ describe("ToolDetails", () => {
     expect(screen.getByRole("button", { name: "Reveal value" })).toBeInTheDocument()
   })
 
+  it("reports reveal errors for a missing id, empty value, or non-Error throw", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(
+      <ToolDetails
+        tool={{
+          ...sampleTool,
+          secrets: [{ key: "TOKEN", value: "" }],
+        }}
+      />,
+    )
+    await user.click(screen.getByRole("button", { name: "Reveal value" }))
+    await waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Could not reveal the secret", type: "error" }),
+      ),
+    )
+    cleanup()
+    toastAdd.mockClear()
+
+    trpc.credentials.reveal.mutate.mockResolvedValueOnce({
+      id: "sec-1",
+      label: "API_KEY",
+      value: "",
+    })
+    renderWithProviders(
+      <ToolDetails
+        tool={{
+          ...sampleTool,
+          secrets: [{ id: "sec-1", key: "TESTE_SECRET", value: "" }],
+        }}
+      />,
+    )
+    await user.click(screen.getByRole("button", { name: "Reveal value" }))
+    await waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Could not reveal the secret", type: "error" }),
+      ),
+    )
+    cleanup()
+    toastAdd.mockClear()
+
+    trpc.credentials.reveal.mutate.mockRejectedValueOnce("nope")
+    renderWithProviders(
+      <ToolDetails
+        tool={{
+          ...sampleTool,
+          secrets: [{ id: "sec-1", key: "TESTE_SECRET", value: "" }],
+        }}
+      />,
+    )
+    await user.click(screen.getByRole("button", { name: "Reveal value" }))
+    await waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Could not reveal the secret", type: "error" }),
+      ),
+    )
+  })
+
+  it("reports copy errors when revealing the stored secret fails", async () => {
+    const user = userEvent.setup()
+    trpc.credentials.reveal.mutate.mockRejectedValueOnce(new Error("TOO_MANY_REQUESTS"))
+    renderWithProviders(
+      <ToolDetails
+        tool={{
+          ...sampleTool,
+          secrets: [{ id: "sec-1", key: "TESTE_SECRET", value: "" }],
+        }}
+      />,
+    )
+    await user.click(screen.getByText(SECRET_VALUE_MASK))
+    await waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Too many reveal attempts. Try again later.",
+          type: "error",
+        }),
+      ),
+    )
+  })
+
   it("shows a free badge, missing account and copy errors", async () => {
     const user = userEvent.setup()
     Object.defineProperty(navigator, "clipboard", {
