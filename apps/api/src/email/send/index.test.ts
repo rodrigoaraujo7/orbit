@@ -41,11 +41,11 @@ describe("email senders", () => {
 
     expect(sent[0].body).toEqual({
       from: "Projects Manager <noreply@projectsmanager.rodrigoleite.dev>",
-      to: "ada@test.local",
+      to: ["ada@test.local"],
       subject: "Your Projects Manager sign-in code",
       template: {
         id: "pm-login-otp-en-us",
-        variables: { name: "Ada Lovelace", code: "123456", minutes: "10" },
+        variables: { NAME: "Ada Lovelace", CODE: "123456", MINUTES: "10" },
       },
     })
     expect(sent[0].headers["Idempotency-Key"]).toMatch(/^login-otp-[0-9a-f]{64}$/)
@@ -64,14 +64,14 @@ describe("email senders", () => {
       subject: "Confirm your Projects Manager account",
       template: {
         id: "pm-confirm-account-en-us",
-        variables: { name: "Ada Lovelace", url: "https://app.test/verify?token=abc" },
+        variables: { NAME: "Ada Lovelace", URL: "https://app.test/verify?token=abc" },
       },
     })
     expect(sent[1].body).toMatchObject({
       subject: "Redefina sua senha do Projects Manager",
       template: {
         id: "pm-reset-password-pt-br",
-        variables: { url: "https://app.test/reset-password?token=xyz" },
+        variables: { URL: "https://app.test/reset-password?token=xyz" },
       },
     })
   })
@@ -86,9 +86,9 @@ describe("email senders", () => {
     await sendNewLoginAlert(ada, { headers, at: AT }, { fetchImpl })
 
     const variables = (sent[0].body.template as { variables: Record<string, string> }).variables
-    expect(variables).toMatchObject({ browser: "Chrome", os: "macOS", ip: "203.0.113.9" })
-    expect(variables.when).toContain("2026")
-    expect(variables.when).toContain("(UTC)")
+    expect(variables).toMatchObject({ BROWSER: "Chrome", OS: "macOS", IP: "203.0.113.9" })
+    expect(variables.WHEN).toContain("2026")
+    expect(variables.WHEN).toContain("(UTC)")
   })
 
   it("labels unknown sign-in details in the recipient locale", async () => {
@@ -97,13 +97,13 @@ describe("email senders", () => {
     await sendNewLoginAlert({ email: "ghost@test.local", name: "  " }, { at: AT }, { fetchImpl })
 
     expect((sent[0].body.template as { variables: Record<string, string> }).variables).toMatchObject({
-      browser: "Desconhecido",
-      os: "Desconhecido",
-      ip: "Desconhecido",
+      BROWSER: "Desconhecido",
+      OS: "Desconhecido",
+      IP: "Desconhecido",
     })
     expect((sent[1].body.template as { variables: Record<string, string> }).variables).toMatchObject({
-      name: "ghost@test.local",
-      browser: "Unknown",
+      NAME: "ghost@test.local",
+      BROWSER: "Unknown",
     })
   })
 
@@ -115,7 +115,7 @@ describe("email senders", () => {
     vi.useRealTimers()
 
     const variables = (sent[0].body.template as { variables: Record<string, string> }).variables
-    expect(variables.when).toContain("2026")
+    expect(variables.WHEN).toContain("2026")
   })
 
   it("logs to the console instead of calling Resend without an API key", async () => {
@@ -128,7 +128,7 @@ describe("email senders", () => {
     expect(sent).toEqual([])
     expect(info).toHaveBeenCalledWith(
       "[email:dev] login-otp to ada@test.local — Your Projects Manager sign-in code",
-      { name: "Ada Lovelace", code: "654321", minutes: "10" },
+      { NAME: "Ada Lovelace", CODE: "654321", MINUTES: "10" },
     )
   })
 

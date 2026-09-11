@@ -3,9 +3,9 @@ import { sendResendEmail, type FetchLike } from "./index.ts"
 
 const email = {
   from: "Projects Manager <noreply@projectsmanager.rodrigoleite.dev>",
-  to: "ada@test.local",
+  to: ["ada@test.local"],
   subject: "Your Projects Manager sign-in code",
-  template: { id: "pm-login-otp-en-us", variables: { code: "123456" } },
+  template: { id: "pm-login-otp-en-us", variables: { CODE: "123456" } },
 }
 
 function ok() {

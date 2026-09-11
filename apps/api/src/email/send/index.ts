@@ -53,7 +53,7 @@ async function deliver(
     await sendResendEmail(
       {
         from: emailFrom(),
-        to: recipient.email,
+        to: [recipient.email],
         subject,
         template: { id: templateAlias(kind, locale), variables },
       },
@@ -86,7 +86,7 @@ export function sendLoginOtp(user: EmailRecipient, otp: string, options?: Delive
   return deliver(
     "login-otp",
     user,
-    { name: displayName(user), code: otp, minutes: String(OTP_PERIOD_MINUTES) },
+    { NAME: displayName(user), CODE: otp, MINUTES: String(OTP_PERIOD_MINUTES) },
     options,
   )
 }
@@ -96,11 +96,11 @@ export function sendAccountConfirmation(
   url: string,
   options?: DeliverOptions,
 ) {
-  return deliver("confirm-account", user, { name: displayName(user), url }, options)
+  return deliver("confirm-account", user, { NAME: displayName(user), URL: url }, options)
 }
 
 export function sendPasswordReset(user: EmailRecipient, url: string, options?: DeliverOptions) {
-  return deliver("reset-password", user, { name: displayName(user), url }, options)
+  return deliver("reset-password", user, { NAME: displayName(user), URL: url }, options)
 }
 
 export function sendNewLoginAlert(
@@ -115,11 +115,11 @@ export function sendNewLoginAlert(
     "new-login",
     user,
     {
-      name: displayName(user),
-      browser: browser ?? unknown,
-      os: os ?? unknown,
-      ip: clientIp(context.headers) ?? unknown,
-      when: formatSignInTime(context.at ?? new Date(), locale),
+      NAME: displayName(user),
+      BROWSER: browser ?? unknown,
+      OS: os ?? unknown,
+      IP: clientIp(context.headers) ?? unknown,
+      WHEN: formatSignInTime(context.at ?? new Date(), locale),
     },
     options,
   )

@@ -6,7 +6,7 @@ const RESEND_ENDPOINT = "https://api.resend.com/emails"
  */
 export type ResendEmail = {
   from: string
-  to: string
+  to: string[]
   subject: string
   template: { id: string; variables: Record<string, string> }
 }
