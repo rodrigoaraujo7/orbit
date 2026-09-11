@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto"
 import {
   emailFrom,
+  FALLBACK_EMAIL_FROM,
   emailLocale,
   OTP_PERIOD_MINUTES,
   resendApiKey,
@@ -27,11 +28,21 @@ export type SignInContext = {
 /** Test seam: the senders call Resend through `fetch` unless one is supplied. */
 export type DeliverOptions = { fetchImpl?: FetchLike }
 
-function idempotencyKey(kind: EmailKind, to: string, variables: Record<string, string>) {
+function idempotencyKey(
+  kind: EmailKind,
+  to: string,
+  from: string,
+  variables: Record<string, string>,
+) {
   const digest = createHash("sha256")
-    .update(`${kind}\n${to}\n${JSON.stringify(variables)}`)
+    .update(`${kind}\n${to}\n${from}\n${JSON.stringify(variables)}`)
     .digest("hex")
   return `${kind}-${digest}`
+}
+
+export function isUnverifiedSender(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error)
+  return /not verified|unverified domain/i.test(message)
 }
 
 async function deliver(
@@ -49,21 +60,39 @@ async function deliver(
     return
   }
 
+  const payload = {
+    to: [recipient.email],
+    subject,
+    template: { id: templateAlias(kind, locale), variables },
+  }
+  const from = emailFrom()
+
   try {
     await sendResendEmail(
-      {
-        from: emailFrom(),
-        to: [recipient.email],
-        subject,
-        template: { id: templateAlias(kind, locale), variables },
-      },
+      { from, ...payload },
       {
         apiKey,
-        idempotencyKey: idempotencyKey(kind, recipient.email, variables),
+        idempotencyKey: idempotencyKey(kind, recipient.email, from, variables),
         fetchImpl: options.fetchImpl,
       },
     )
   } catch (error) {
+    if (from !== FALLBACK_EMAIL_FROM && isUnverifiedSender(error)) {
+      try {
+        await sendResendEmail(
+          { from: FALLBACK_EMAIL_FROM, ...payload },
+          {
+            apiKey,
+            idempotencyKey: idempotencyKey(kind, recipient.email, FALLBACK_EMAIL_FROM, variables),
+            fetchImpl: options.fetchImpl,
+          },
+        )
+        return
+      } catch (retryError) {
+        console.error(`failed to send the ${kind} email`, retryError)
+        return
+      }
+    }
     console.error(`failed to send the ${kind} email`, error)
   }
 }

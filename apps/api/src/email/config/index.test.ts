@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   DEFAULT_EMAIL_FROM,
+  FALLBACK_EMAIL_FROM,
   DEFAULT_EMAIL_LOCALE,
   EMAIL_KINDS,
   EMAIL_LOCALES,
@@ -34,6 +35,7 @@ describe("email config", () => {
   it("falls back to the project sender", () => {
     delete process.env.EMAIL_FROM
     expect(emailFrom()).toBe(DEFAULT_EMAIL_FROM)
+    expect(FALLBACK_EMAIL_FROM).toContain("onboarding@resend.dev")
     vi.stubEnv("EMAIL_FROM", "Ada <ada@test.local>")
     expect(emailFrom()).toBe("Ada <ada@test.local>")
   })

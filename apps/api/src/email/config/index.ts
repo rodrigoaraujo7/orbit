@@ -11,6 +11,8 @@ export const DEFAULT_EMAIL_LOCALE: EmailLocale = "en-US"
 export const OTP_PERIOD_MINUTES = 10
 
 export const DEFAULT_EMAIL_FROM = "Projects Manager <noreply@projectsmanager.rodrigoleite.dev>"
+/** Resend only delivers from this address until the product domain is verified. */
+export const FALLBACK_EMAIL_FROM = "Projects Manager <onboarding@resend.dev>"
 
 const TEMPLATE_ENV: Record<EmailKind, string> = {
   "login-otp": "RESEND_TEMPLATE_LOGIN_OTP",
