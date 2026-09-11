@@ -1,29 +1,30 @@
 ---
-description: Every behavior change ships with a colocated *.check.ts and a passing check script.
+description: Every behavior change ships with a colocated *.test.ts(x) and a green `pnpm coverage` at 100%.
 alwaysApply: true
 ---
 
 # Test coverage every time
 
-Do not ship a behavior change without automated coverage in the same change. If you add or change logic, add or update a check. Do not finish with “tests later”.
+Do not ship a behavior change without automated coverage in the same change. If you add or change logic, add or update a test. Do not finish with “tests later”.
 
-This repo uses colocated Node self-checks, not Vitest/Jest. Keep that.
+This repo runs Vitest with a single root `vitest.config.ts` (`projects` for `packages/shared`, `apps/api`, `apps/web`) and `all: true` coverage held at **100% lines, branches, functions and statements**. Untested code fails `pnpm coverage`, so new code arrives with its test or it does not arrive.
 
 ```
-# ❌ BAD — new helper, no check
+# ❌ BAD — new helper, no test
 src/lib/period-bounds.ts
 
-# ✅ GOOD — helper plus colocated check, wired in package.json
+# ✅ GOOD — helper plus colocated test
 src/lib/period-bounds.ts
-src/lib/period-bounds.check.ts
+src/lib/period-bounds.test.ts
 ```
 
-- Colocate `foo.check.ts` next to `foo.ts` (same folder). Name it after the module, e.g. `pagination.check.ts`.
-- Assert with a small local helper that **throws** on mismatch. End with `console.log("….check.ts: ok")`.
-- Run with `node --experimental-strip-types path/to/file.check.ts`. Wire a `check:` script (or append to existing `check` / `lint`) in that package’s `package.json`.
-- Changing covered behavior means **updating the check**, not deleting assertions.
-- Extract testable logic (pure functions, SQL filters, routers, schemas, parsers) out of UI. Do not add React Testing Library or a new test runner.
-- API DB checks use `createTestDb` / `withUser` like `projects.filters.check.ts`.
-- Run the relevant `pnpm --filter <pkg> check…` and keep it green before declaring done.
+- Colocate `foo.test.ts` next to `foo.ts` (same folder), or `index.test.ts` beside `index.ts` in a module folder. React components use `index.test.tsx`.
+- Web components are tested with React Testing Library plus `@testing-library/user-event`, rendered through `renderWithProviders` from `@/test/render`. Query by role and label, not by class or test id, unless there is nothing else.
+- API tests use `createTestDb` / `openTestDb` (PGlite) and `withUser` for RLS, like `projects.filters.check`-era code now does in `*.test.ts`.
+- Prefer extracting logic (pure functions, SQL filters, routers, schemas, parsers) out of UI so it can be asserted directly, but a branch that only exists in a component still needs a component test.
+- Changing covered behavior means **updating the test**, not deleting assertions.
+- Keep a Better Auth callback a named exported function instead of an inline arrow; the 100% function threshold needs a handle on it.
+- Third-party primitives copied in verbatim (`src/components/ui/*.tsx` from shadcn, `Grainient`) are excluded in `vitest.config.ts`. Add a new one to that list rather than writing a test for code you did not write.
+- Run `pnpm test` while iterating and `pnpm coverage` before declaring done.
 
-**Out of scope** (no new check file): copy-only i18n catalog edits, comments, Cursor rules, docs, and CSS with no behavior change. Still run existing checks if those files are already covered (e.g. `check:i18n`).
+**Out of scope** (no new test file): copy-only i18n catalog edits, comments, Cursor rules, docs, and CSS with no behavior change. Still run existing tests if those files are already covered (e.g. `pnpm --filter web check:i18n`).
