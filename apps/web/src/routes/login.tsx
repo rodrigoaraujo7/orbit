@@ -1,81 +1,30 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
-import { Languages } from "lucide-react"
-
-import Grainient from "@/components/Grainient"
+import { AuthShell } from "@/components/layout/auth-shell"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import i18n, { getLocale, setLocale, type Locale } from "@/i18n"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+import i18n, { getLocale } from "@/i18n"
 import { authClient } from "@/lib/auth-client"
 import { authErrorMessage } from "@/lib/auth-errors"
 import { cn } from "@/lib/utils"
 
-const LOCALE_ORDER = ["en-US", "pt-BR"] as const
-
-function LocaleToggle() {
-  const { t } = useTranslation()
-  const locale = getLocale()
-  const labels = {
-    "en-US": t("common.english"),
-    "pt-BR": t("common.portuguese"),
-  } as const
-  const [offset, setOffset] = useState(() => LOCALE_ORDER.indexOf(locale))
-
-  function toggle() {
-    const next: Locale = locale === "en-US" ? "pt-BR" : "en-US"
-    setOffset((value) => value + 1)
-    setLocale(next)
-  }
-
-  const reel = Array.from(
-    { length: offset + 2 },
-    (_, index) => LOCALE_ORDER[index % LOCALE_ORDER.length],
-  )
-
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="xs"
-      aria-label={t("common.language")}
-      onClick={toggle}
-      className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground"
-    >
-      <Languages />
-      <span className="grid justify-items-start">
-        {LOCALE_ORDER.map((code) => (
-          <span key={code} className="invisible col-start-1 row-start-1 font-medium">
-            {labels[code]}
-          </span>
-        ))}
-        <span className="col-start-1 row-start-1 block h-[1.25em] overflow-hidden leading-[1.25em]">
-          <span
-            className="flex flex-col motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.22,1.4,0.36,1)] motion-reduce:transition-none"
-            style={{ transform: `translateY(${-offset * 1.25}em)` }}
-          >
-            {reel.map((code, index) => (
-              <span key={`${code}-${index}`} className="h-[1.25em] font-medium leading-[1.25em]">
-                {labels[code]}
-              </span>
-            ))}
-          </span>
-        </span>
-      </span>
-    </Button>
-  )
-}
+const RESEND_COOLDOWN_SECONDS = 30
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
 })
 
-function authSchema(mode: "signin" | "signup", step: "credentials" | "totp") {
+/** Sign-in walks three screens in one form, so each step validates only its own fields. */
+type Step = "credentials" | "otp" | "confirm"
+
+function authSchema(mode: "signin" | "signup", step: Step) {
   return z.object({
     name:
       step === "credentials" && mode === "signup"
@@ -98,12 +47,12 @@ function authSchema(mode: "signin" | "signup", step: "credentials" | "totp") {
           ? z.string().min(1, i18n.t("auth.passwordRequired")).min(8, i18n.t("auth.passwordMin"))
           : z.string().min(1, i18n.t("auth.passwordRequired"))
         : z.string(),
-    totp:
-      step === "totp"
+    code:
+      step === "otp"
         ? z
             .string()
             .trim()
-            .regex(/^\d{6}$/, i18n.t("auth.totpRequired"))
+            .regex(/^\d{6}$/, i18n.t("auth.codeRequired"))
         : z.string(),
   })
 }
@@ -114,140 +63,162 @@ function LoginPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [mode, setMode] = useState<"signin" | "signup">("signin")
-  const [step, setStep] = useState<"credentials" | "totp">("credentials")
+  const [step, setStep] = useState<Step>("credentials")
+  const [pendingEmail, setPendingEmail] = useState("")
+  const [cooldown, setCooldown] = useState(0)
+  const [notice, setNotice] = useState("")
   const {
     register,
     handleSubmit,
     setError,
     clearErrors,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<AuthFormValues>({
     resolver: (values, context, options) =>
       zodResolver(authSchema(mode, step))(values, context, options),
-    defaultValues: { name: "", email: "", password: "", totp: "" },
+    defaultValues: { name: "", email: "", password: "", code: "" },
   })
+
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const timer = setTimeout(() => setCooldown((seconds) => seconds - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [cooldown])
 
   function switchMode() {
     setMode(mode === "signin" ? "signup" : "signin")
     setStep("credentials")
-    setValue("totp", "")
+    setValue("code", "")
+    setNotice("")
     clearErrors()
   }
 
+  async function requestCode() {
+    const result = await authClient.twoFactor.sendOtp()
+    if (result.error) {
+      setError("code", { message: authErrorMessage(result.error, t("auth.resendFailed")) })
+      return false
+    }
+    setCooldown(RESEND_COOLDOWN_SECONDS)
+    return true
+  }
+
+  async function resendCode() {
+    clearErrors("code")
+    setNotice("")
+    if (await requestCode()) setNotice(t("auth.codeResent"))
+  }
+
   const onSubmit = handleSubmit(async (values) => {
-    if (step === "totp") {
-      const result = await authClient.twoFactor.verifyTotp({ code: values.totp })
+    if (step === "otp") {
+      const result = await authClient.twoFactor.verifyOtp({ code: values.code })
       if (result.error) {
-        setError("totp", { message: authErrorMessage(result.error, t("auth.invalidCode")) })
+        setError("code", { message: authErrorMessage(result.error, t("auth.invalidCode")) })
         return
       }
       await navigate({ to: "/" })
       return
     }
-    const result =
-      mode === "signup"
-        ? await authClient.signUp.email({
-            name: values.name,
-            email: values.email,
-            password: values.password,
-          })
-        : await authClient.signIn.email({ email: values.email, password: values.password })
+
+    if (mode === "signup") {
+      const result = await authClient.signUp.email({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        locale: getLocale(),
+      })
+      if (result.error) {
+        setError("password", {
+          message: authErrorMessage(result.error, t("auth.signUpFailed")),
+        })
+        return
+      }
+      setPendingEmail(values.email)
+      setStep("confirm")
+      return
+    }
+
+    const result = await authClient.signIn.email({
+      email: values.email,
+      password: values.password,
+    })
     if (result.error) {
+      // Better Auth resends the confirmation link along with this failure.
+      if (result.error.code === "EMAIL_NOT_VERIFIED") {
+        setPendingEmail(values.email)
+        setStep("confirm")
+        return
+      }
       setError("password", {
-        message: authErrorMessage(
-          result.error,
-          mode === "signup" ? t("auth.signUpFailed") : t("auth.signInFailed"),
-        ),
+        message: authErrorMessage(result.error, t("auth.signInFailed")),
       })
       return
     }
-    if (
-      mode === "signin" &&
-      result.data &&
-      "twoFactorRedirect" in result.data &&
-      result.data.twoFactorRedirect
-    ) {
-      setStep("totp")
+    if (result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) {
+      setPendingEmail(values.email)
+      setStep("otp")
+      setValue("code", "")
+      await requestCode()
       return
     }
     await navigate({ to: "/" })
   })
 
+  const heading =
+    step === "otp"
+      ? t("auth.verificationCode")
+      : step === "confirm"
+        ? t("auth.confirmEmailTitle")
+        : null
+
   return (
-    <main className="relative grid min-h-svh place-items-center overflow-hidden p-6">
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <Grainient
-          color1="#c03a4a"
-          color2="#020202"
-          color3="#c03a4a"
-          timeSpeed={0.5}
-          colorBalance={-0.5}
-          warpStrength={1}
-          warpFrequency={5}
-          warpSpeed={2}
-          warpAmplitude={50}
-          blendAngle={0}
-          blendSoftness={0.05}
-          rotationAmount={500}
-          noiseScale={2}
-          grainAmount={0.1}
-          grainScale={2}
-          grainAnimated={false}
-          contrast={1.3}
-          gamma={1}
-          saturation={1}
-          centerX={0}
-          centerY={0}
-          zoom={0.9}
-        />
-      </div>
-      <form
-        onSubmit={onSubmit}
-        noValidate
-        className="relative z-10 flex w-full max-w-sm flex-col gap-4 rounded-xl bg-card/40 p-6 shadow-lg ring-1 ring-white/10 backdrop-blur-xl"
-      >
-        <div className="flex flex-col items-start gap-2">
-          <div className="flex w-full items-start justify-between gap-2">
-            <div className="grid size-10 place-items-center rounded-lg bg-muted text-base font-bold text-muted-foreground">
-              P
-            </div>
-            <LocaleToggle />
-          </div>
-          <h1
-            key={`${step}-${mode}`}
-            className="font-subtitle text-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300"
-          >
-            {step === "totp" ? (
-              t("auth.verificationCode")
-            ) : (
-              <>
-                {mode === "signin" ? t("auth.signInTo") : t("auth.createAccountOn")}
-                <span className="shimmer shimmer-color-[oklch(from_var(--primary)_0.82_c_h)] [animation-delay:1s] text-primary font-heading text-[1.15em] italic">
-                  {t("auth.brand")}
-                </span>
-              </>
-            )}
-          </h1>
-          {step === "credentials" && (
-            <p
-              key={mode}
-              className="text-sm text-muted-foreground motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
-            >
-              {mode === "signin" ? t("auth.noAccount") : t("auth.hasAccount")}
-              <Button
-                type="button"
-                variant="link"
-                className="inline h-auto p-0 text-white no-underline transition-colors duration-150 hover:no-underline hover:text-muted-foreground"
-                onClick={switchMode}
-              >
-                {mode === "signin" ? t("auth.create") : t("auth.signIn")}
-              </Button>
-              .
-            </p>
+    <AuthShell onSubmit={onSubmit}>
+      <div className="flex flex-col items-start gap-2">
+        <h1
+          key={`${step}-${mode}`}
+          className="font-subtitle text-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300"
+        >
+          {heading ?? (
+            <>
+              {mode === "signin" ? t("auth.signInTo") : t("auth.createAccountOn")}
+              <span className="shimmer shimmer-color-[oklch(from_var(--primary)_0.82_c_h)] [animation-delay:1s] text-primary font-heading text-[1.15em] italic">
+                {t("auth.brand")}
+              </span>
+            </>
           )}
-        </div>
+        </h1>
         {step === "credentials" && (
+          <p
+            key={mode}
+            className="text-sm text-muted-foreground motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
+          >
+            {mode === "signin" ? t("auth.noAccount") : t("auth.hasAccount")}
+            <Button
+              type="button"
+              variant="link"
+              className="inline h-auto p-0 text-white no-underline transition-colors duration-150 hover:no-underline hover:text-muted-foreground"
+              onClick={switchMode}
+            >
+              {mode === "signin" ? t("auth.create") : t("auth.signIn")}
+            </Button>
+            .
+          </p>
+        )}
+        {step === "otp" && (
+          <p className="text-sm text-muted-foreground">
+            {t("auth.codeSentTo", { email: pendingEmail })}
+          </p>
+        )}
+        {step === "confirm" && (
+          <p className="text-sm text-muted-foreground">
+            {t("auth.confirmEmailDescription", { email: pendingEmail })}
+          </p>
+        )}
+      </div>
+      {step === "credentials" && (
+        <>
           <div
             className={cn(
               "grid transition-[grid-template-rows,margin] duration-300 ease-out motion-reduce:transition-none",
@@ -267,38 +238,66 @@ function LoginPage() {
               </Field>
             </div>
           </div>
-        )}
-        {step === "credentials" && (
-          <>
-            <Field label={t("common.email")} error={errors.email?.message}>
-              {(props) => (
-                <Input {...props} {...register("email")} type="email" autoComplete="email" />
-              )}
-            </Field>
-            <Field label={t("auth.password")} error={errors.password?.message}>
-              {(props) => (
-                <Input
-                  {...props}
-                  {...register("password")}
-                  type="password"
-                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                />
-              )}
-            </Field>
-          </>
-        )}
-        {step === "totp" && (
-          <Field label={t("auth.totp")} error={errors.totp?.message}>
+          <Field label={t("common.email")} error={errors.email?.message}>
+            {(props) => (
+              <Input {...props} {...register("email")} type="email" autoComplete="email" />
+            )}
+          </Field>
+          <Field label={t("auth.password")} error={errors.password?.message}>
             {(props) => (
               <Input
                 {...props}
-                {...register("totp")}
-                inputMode="numeric"
-                autoComplete="one-time-code"
+                {...register("password")}
+                type="password"
+                autoComplete={mode === "signin" ? "current-password" : "new-password"}
               />
             )}
           </Field>
-        )}
+          {mode === "signin" && (
+            <Link
+              to="/forgot-password"
+              className="-mt-1 self-start text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              {t("auth.forgotPassword")}
+            </Link>
+          )}
+        </>
+      )}
+      {step === "otp" && (
+        <>
+          <Field label={t("auth.emailCode")} error={errors.code?.message} hint={notice}>
+            {(props) => (
+              <InputOTP
+                {...props}
+                maxLength={6}
+                value={watch("code")}
+                onChange={(value) => setValue("code", value)}
+                containerClassName="w-full"
+              >
+                <InputOTPGroup className="w-full">
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <InputOTPSlot key={index} index={index} aria-invalid={props["aria-invalid"]} />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            )}
+          </Field>
+          <Button
+            type="button"
+            variant="link"
+            className="-mt-1 h-auto self-start p-0 text-xs text-muted-foreground no-underline hover:text-foreground hover:underline"
+            disabled={cooldown > 0}
+            onClick={() => void resendCode()}
+          >
+            {cooldown > 0 ? t("auth.resendIn", { seconds: cooldown }) : t("auth.resendCode")}
+          </Button>
+        </>
+      )}
+      {step === "confirm" ? (
+        <Button type="button" variant="secondary" onClick={switchMode}>
+          {t("auth.backToSignIn")}
+        </Button>
+      ) : (
         <Button
           type="submit"
           className="shadow-[0_0_16px_rgba(192,58,74,0.45)] transition-shadow duration-[350ms] hover:bg-primary hover:shadow-[0_0_28px_rgba(192,58,74,0.7)] active:translate-y-0"
@@ -306,13 +305,13 @@ function LoginPage() {
         >
           {isSubmitting
             ? t("common.wait")
-            : step === "totp"
+            : step === "otp"
               ? t("auth.verify")
               : mode === "signin"
                 ? t("auth.signIn")
                 : t("auth.signUp")}
         </Button>
-      </form>
-    </main>
+      )}
+    </AuthShell>
   )
 }

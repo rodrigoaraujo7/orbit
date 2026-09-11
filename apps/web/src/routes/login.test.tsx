@@ -1,5 +1,6 @@
 import { cleanup, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import type { ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import i18n from "@/i18n"
 import { renderWithProviders } from "@/test/render"
@@ -7,7 +8,8 @@ import { renderWithProviders } from "@/test/render"
 const navigate = vi.fn()
 const signInEmail = vi.fn()
 const signUpEmail = vi.fn()
-const verifyTotp = vi.fn()
+const sendOtp = vi.fn()
+const verifyOtp = vi.fn()
 
 vi.mock("@/components/Grainient", () => ({
   default: () => <div data-testid="grainient" />,
@@ -17,6 +19,11 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>()
   return {
     ...actual,
+    Link: ({ children, to, className }: { children?: ReactNode; to?: string; className?: string }) => (
+      <a href={String(to)} className={className}>
+        {children}
+      </a>
+    ),
     useNavigate: () => navigate,
   }
 })
@@ -27,7 +34,10 @@ vi.mock("@/lib/auth-client", () => ({
     signIn: { email: (...args: unknown[]) => signInEmail(...args) },
     signUp: { email: (...args: unknown[]) => signUpEmail(...args) },
     signOut: vi.fn(),
-    twoFactor: { verifyTotp: (...args: unknown[]) => verifyTotp(...args) },
+    twoFactor: {
+      sendOtp: (...args: unknown[]) => sendOtp(...args),
+      verifyOtp: (...args: unknown[]) => verifyOtp(...args),
+    },
   },
 }))
 
@@ -44,17 +54,22 @@ beforeEach(() => {
   navigate.mockReset()
   signInEmail.mockReset()
   signUpEmail.mockReset()
-  verifyTotp.mockReset()
+  sendOtp.mockReset()
+  verifyOtp.mockReset()
 })
+
+async function signIn(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText("Email"), "ada@test.local")
+  await user.type(screen.getByLabelText("Password"), "secret123")
+  await user.click(screen.getByRole("button", { name: "Sign in" }))
+}
 
 describe("login route", () => {
   it("signs in and navigates home", async () => {
     const user = userEvent.setup()
     signInEmail.mockResolvedValue({ error: null, data: {} })
     renderWithProviders(<LoginPage />)
-    await user.type(screen.getByLabelText("Email"), "ada@test.local")
-    await user.type(screen.getByLabelText("Password"), "secret")
-    await user.click(screen.getByRole("button", { name: "Sign in" }))
+    await signIn(user)
     await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/" }))
   })
 
@@ -62,50 +77,106 @@ describe("login route", () => {
     const user = userEvent.setup()
     signInEmail.mockResolvedValue({ error: { code: "INVALID_EMAIL_OR_PASSWORD" }, data: null })
     renderWithProviders(<LoginPage />)
-    await user.type(screen.getByLabelText("Email"), "ada@test.local")
-    await user.type(screen.getByLabelText("Password"), "bad")
-    await user.click(screen.getByRole("button", { name: "Sign in" }))
+    await signIn(user)
     expect(await screen.findByText("Invalid email or password")).toBeInTheDocument()
   })
 
-  it("prompts for 2FA and verifies the code", async () => {
-    const user = userEvent.setup()
-    signInEmail.mockResolvedValue({ error: null, data: { twoFactorRedirect: true } })
-    verifyTotp.mockResolvedValue({ error: null, data: {} })
+  it("links to the password recovery screen", () => {
     renderWithProviders(<LoginPage />)
-    await user.type(screen.getByLabelText("Email"), "ada@test.local")
-    await user.type(screen.getByLabelText("Password"), "secret")
-    await user.click(screen.getByRole("button", { name: "Sign in" }))
-    expect(await screen.findByText("Verification code")).toBeInTheDocument()
-    await user.type(screen.getByLabelText("TOTP code"), "123456")
-    await user.click(screen.getByRole("button", { name: "Verify" }))
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/" }))
+    expect(screen.getByRole("link", { name: "Forgot your password?" })).toHaveAttribute(
+      "href",
+      "/forgot-password",
+    )
   })
 
-  it("shows an invalid 2FA code", async () => {
+  it("sends an email code and verifies it", async () => {
     const user = userEvent.setup()
     signInEmail.mockResolvedValue({ error: null, data: { twoFactorRedirect: true } })
-    verifyTotp.mockResolvedValue({ error: { code: "INVALID_CODE" }, data: null })
+    sendOtp.mockResolvedValue({ error: null, data: { status: true } })
+    verifyOtp.mockResolvedValue({ error: null, data: {} })
     renderWithProviders(<LoginPage />)
-    await user.type(screen.getByLabelText("Email"), "ada@test.local")
-    await user.type(screen.getByLabelText("Password"), "secret")
-    await user.click(screen.getByRole("button", { name: "Sign in" }))
-    await user.type(await screen.findByLabelText("TOTP code"), "000000")
+    await signIn(user)
+    expect(await screen.findByText("Verification code")).toBeInTheDocument()
+    expect(
+      screen.getByText("We sent a 6-digit code to ada@test.local. It expires in 10 minutes."),
+    ).toBeInTheDocument()
+    expect(sendOtp).toHaveBeenCalled()
+    expect(screen.getByRole("button", { name: "Send a new code in 30s" })).toBeDisabled()
+    await user.type(screen.getByLabelText("Email code"), "123456")
+    await user.click(screen.getByRole("button", { name: "Verify" }))
+    await waitFor(() => expect(verifyOtp).toHaveBeenCalledWith({ code: "123456" }))
+    expect(navigate).toHaveBeenCalledWith({ to: "/" })
+  })
+
+  it("rejects a code that is not six digits", async () => {
+    const user = userEvent.setup()
+    signInEmail.mockResolvedValue({ error: null, data: { twoFactorRedirect: true } })
+    sendOtp.mockResolvedValue({ error: null, data: { status: true } })
+    renderWithProviders(<LoginPage />)
+    await signIn(user)
+    await user.type(await screen.findByLabelText("Email code"), "123")
+    await user.click(screen.getByRole("button", { name: "Verify" }))
+    expect(await screen.findByText("Enter the 6-digit code")).toBeInTheDocument()
+    expect(verifyOtp).not.toHaveBeenCalled()
+  })
+
+  it("shows an invalid email code", async () => {
+    const user = userEvent.setup()
+    signInEmail.mockResolvedValue({ error: null, data: { twoFactorRedirect: true } })
+    sendOtp.mockResolvedValue({ error: null, data: { status: true } })
+    verifyOtp.mockResolvedValue({ error: { code: "INVALID_CODE" }, data: null })
+    renderWithProviders(<LoginPage />)
+    await signIn(user)
+    await user.type(await screen.findByLabelText("Email code"), "000000")
     await user.click(screen.getByRole("button", { name: "Verify" }))
     expect(await screen.findByText("Invalid code")).toBeInTheDocument()
   })
 
-  it("switches to sign up and creates an account", async () => {
+  it("reports a failure to send the code and resends on request", async () => {
     const user = userEvent.setup()
-    signUpEmail.mockResolvedValue({ error: null, data: {} })
+    signInEmail.mockResolvedValue({ error: null, data: { twoFactorRedirect: true } })
+    sendOtp.mockResolvedValue({ error: { code: "INTERNAL_SERVER_ERROR" }, data: null })
+    renderWithProviders(<LoginPage />)
+    await signIn(user)
+    expect(await screen.findByText("Could not send a new code")).toBeInTheDocument()
+    // The failed send left no cooldown, so the resend button is live right away.
+    sendOtp.mockResolvedValue({ error: null, data: { status: true } })
+    await user.click(screen.getByRole("button", { name: "Send a new code" }))
+    expect(await screen.findByText("New code sent.")).toBeInTheDocument()
+    expect(sendOtp).toHaveBeenCalledTimes(2)
+  })
+
+  it("asks for confirmation after sign up", async () => {
+    const user = userEvent.setup()
+    signUpEmail.mockResolvedValue({ error: null, data: { user: { id: "u1" } } })
     renderWithProviders(<LoginPage />)
     await user.click(screen.getByRole("button", { name: "Create" }))
     await user.type(screen.getByLabelText("Name"), "Ada")
     await user.type(screen.getByLabelText("Email"), "ada@test.local")
     await user.type(screen.getByLabelText("Password"), "password1")
     await user.click(screen.getByRole("button", { name: "Sign up" }))
-    await waitFor(() => expect(signUpEmail).toHaveBeenCalled())
-    expect(navigate).toHaveBeenCalledWith({ to: "/" })
+    expect(await screen.findByText("Confirm your email")).toBeInTheDocument()
+    expect(signUpEmail).toHaveBeenCalledWith({
+      name: "Ada",
+      email: "ada@test.local",
+      password: "password1",
+      locale: "en-US",
+    })
+    await user.click(screen.getByRole("button", { name: "Back to sign in" }))
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument()
+  })
+
+  it("sends an unconfirmed account back to the confirmation screen", async () => {
+    const user = userEvent.setup()
+    signInEmail.mockResolvedValue({ error: { code: "EMAIL_NOT_VERIFIED" }, data: null })
+    renderWithProviders(<LoginPage />)
+    await signIn(user)
+    expect(await screen.findByText("Confirm your email")).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "We sent a confirmation link to ada@test.local. Open it to activate your account, then sign in.",
+      ),
+    ).toBeInTheDocument()
   })
 
   it("shows sign-up errors and can switch back", async () => {

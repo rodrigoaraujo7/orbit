@@ -37,6 +37,8 @@ if (typeof window !== "undefined") {
 
   window.ResizeObserver = ResizeObserverStub
   window.IntersectionObserver = IntersectionObserverStub as unknown as typeof IntersectionObserver
+  // jsdom has no layout, so input-otp's caret probe would throw on a timer.
+  document.elementFromPoint = vi.fn(() => null)
   Element.prototype.scrollIntoView = vi.fn()
   HTMLElement.prototype.hasPointerCapture = vi.fn()
   HTMLElement.prototype.setPointerCapture = vi.fn()
