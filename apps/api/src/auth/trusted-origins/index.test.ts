@@ -39,7 +39,9 @@ describe("resolveAuthTrustedOrigin", () => {
       INVALID_AUTH_TRUSTED_ORIGIN,
     )
     expect(() => resolveAuthTrustedOrigin("not a url")).toThrow(INVALID_AUTH_TRUSTED_ORIGIN)
-    expect(() => resolveAuthTrustedOrigin("ftp://example.test")).toThrow(INVALID_AUTH_TRUSTED_ORIGIN)
+    expect(() => resolveAuthTrustedOrigin("ftp://example.test")).toThrow(
+      INVALID_AUTH_TRUSTED_ORIGIN,
+    )
     expect(() => resolveAuthTrustedOrigin("https:///")).toThrow(INVALID_AUTH_TRUSTED_ORIGIN)
   })
 })
@@ -48,7 +50,10 @@ describe("resolveTrustedOrigins", () => {
   it("trusts the web origin and Better Auth dashboard only by default", () => {
     delete process.env.AUTH_TRUSTED_ORIGIN
     expect(resolveTrustedOrigins()).toEqual([...trustedWebOrigins, BETTER_AUTH_DASHBOARD_ORIGIN])
-    expect(resolveTrustedOrigins(null)).toEqual([...trustedWebOrigins, BETTER_AUTH_DASHBOARD_ORIGIN])
+    expect(resolveTrustedOrigins(null)).toEqual([
+      ...trustedWebOrigins,
+      BETTER_AUTH_DASHBOARD_ORIGIN,
+    ])
     expect(resolveTrustedOrigins()).not.toContain("https://*.ngrok-free.app")
     expect(resolveTrustedOrigins().some((origin) => origin.includes("*"))).toBe(false)
   })
