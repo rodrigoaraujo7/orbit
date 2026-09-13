@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto"
 import {
   emailFrom,
-  FALLBACK_EMAIL_FROM,
   emailLocale,
   OTP_PERIOD_MINUTES,
   resendApiKey,
@@ -40,11 +39,6 @@ function idempotencyKey(
   return `${kind}-${digest}`
 }
 
-export function isUnverifiedSender(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error)
-  return /not verified|unverified domain/i.test(message)
-}
-
 async function deliver(
   kind: EmailKind,
   recipient: EmailRecipient,
@@ -54,16 +48,16 @@ async function deliver(
   const locale = emailLocale(recipient.locale)
   const subject = emailSubject(kind, locale)
   const apiKey = resendApiKey()
-  const payload = {
-    to: [recipient.email],
-    subject,
-    template: { id: templateAlias(kind, locale), variables },
-  }
   const from = emailFrom()
 
   try {
     await sendResendEmail(
-      { from, ...payload },
+      {
+        from,
+        to: [recipient.email],
+        subject,
+        template: { id: templateAlias(kind, locale), variables },
+      },
       {
         apiKey,
         idempotencyKey: idempotencyKey(kind, recipient.email, from, variables),
@@ -71,23 +65,8 @@ async function deliver(
       },
     )
   } catch (error) {
-    if (from !== FALLBACK_EMAIL_FROM && isUnverifiedSender(error)) {
-      try {
-        await sendResendEmail(
-          { from: FALLBACK_EMAIL_FROM, ...payload },
-          {
-            apiKey,
-            idempotencyKey: idempotencyKey(kind, recipient.email, FALLBACK_EMAIL_FROM, variables),
-            fetchImpl: options.fetchImpl,
-          },
-        )
-        return
-      } catch (retryError) {
-        console.error(`failed to send the ${kind} email`, retryError)
-        return
-      }
-    }
     console.error(`failed to send the ${kind} email`, error)
+    throw error
   }
 }
 

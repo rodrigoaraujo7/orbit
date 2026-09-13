@@ -62,19 +62,19 @@ Docker Postgres:
 DATABASE_URL=postgres://postgres@localhost:5432/projects_manager
 ```
 
-| Variable              | Required           | What it is                                                                                                                                                          |
-| --------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`        | yes                | Postgres URL. Hostless `postgres:///projects_manager` uses `/var/run/postgresql`. Do not use `usuario@localhost`.                                                   |
-| `BETTER_AUTH_SECRET`  | yes                | Better Auth signing secret. `openssl rand -hex 32`. Missing or the known insecure default refuses boot.                                                             |
-| `MASTER_KEY`          | for stored secrets | 32 bytes: **64 hex chars** or base64. `openssl rand -hex 32`. Do not rotate without a re-encrypt path.                                                              |
-| `BETTER_AUTH_URL`     | no                 | Auth base URL. Default `WEB_ORIGIN`.                                                                                                                                |
-| `AUTH_TRUSTED_ORIGIN` | no                 | Extra Better Auth CSRF origin. One `http(s)` URL. Wildcards and lists are rejected.                                                                                 |
-| `WEB_ORIGIN`          | no                 | Frontend origin (CORS + cookies). Default `http://localhost:5173`.                                                                                                  |
-| `PORT`                | yes for Vite       | Must be **3100** so the web proxy hits the API. Code default is `3000` if unset.                                                                                    |
-| `BETTER_AUTH_API_KEY` | no                 | Better Auth dashboard only. Empty is fine; the API warns, leaves `/api/auth/dash/*` unmounted, and still starts.                                                    |
-| `RESEND_API_KEY`      | yes                | Resend API key. Missing or blank refuses boot and mail send with `missing env RESEND_API_KEY`.                                                                      |
-| `EMAIL_FROM`          | for email          | From header. Default `Projects Manager <noreply@projectsmanager.rodrigoleite.dev>`. Until that domain verifies, a failed send retries from `onboarding@resend.dev`. |
-| `RESEND_TEMPLATE_*`   | no                 | Template alias overrides, one per mail. See the table below.                                                                                                        |
+| Variable              | Required           | What it is                                                                                                                                                     |
+| --------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`        | yes                | Postgres URL. Hostless `postgres:///projects_manager` uses `/var/run/postgresql`. Do not use `usuario@localhost`.                                              |
+| `BETTER_AUTH_SECRET`  | yes                | Better Auth signing secret. `openssl rand -hex 32`. Missing or the known insecure default refuses boot.                                                        |
+| `MASTER_KEY`          | for stored secrets | 32 bytes: **64 hex chars** or base64. `openssl rand -hex 32`. Do not rotate without a re-encrypt path.                                                         |
+| `BETTER_AUTH_URL`     | no                 | Auth base URL. Default `WEB_ORIGIN`.                                                                                                                           |
+| `AUTH_TRUSTED_ORIGIN` | no                 | Extra Better Auth CSRF origin. One `http(s)` URL. Wildcards and lists are rejected.                                                                            |
+| `WEB_ORIGIN`          | no                 | Frontend origin (CORS + cookies). Default `http://localhost:5173`.                                                                                             |
+| `PORT`                | yes for Vite       | Must be **3100** so the web proxy hits the API. Code default is `3000` if unset.                                                                               |
+| `BETTER_AUTH_API_KEY` | no                 | Better Auth dashboard only. Empty is fine; the API warns, leaves `/api/auth/dash/*` unmounted, and still starts.                                               |
+| `RESEND_API_KEY`      | yes                | Resend API key. Missing or blank refuses boot and mail send with `missing env RESEND_API_KEY`.                                                                 |
+| `EMAIL_FROM`          | for email          | From header. Default `Projects Manager <noreply@projectsmanager.rodrigoleite.dev>`. An unverified domain fails the send; there is no onboarding-address retry. |
+| `RESEND_TEMPLATE_*`   | no                 | Template alias overrides, one per mail. See the table below.                                                                                                   |
 
 ### Email
 
