@@ -454,6 +454,12 @@ describe("signup input", () => {
       body: { email: "ok@test.local", password: "password1234", name: "Ada Lovelace" },
     })
     expect(signedUp.user.name).toBe("Ada Lovelace")
+
+    await expect(
+      auth.api.signUpEmail({
+        body: { email: "ok@test.local", password: "password1234", name: "Ada Lovelace" },
+      }),
+    ).rejects.toMatchObject({ body: { code: "USER_ALREADY_EXISTS" } })
     resetAuth()
     await closeTestDb(client)
   })

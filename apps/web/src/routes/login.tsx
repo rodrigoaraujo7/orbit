@@ -160,7 +160,12 @@ function LoginPage() {
         locale: getLocale(),
       })
       if (result.error) {
-        setError("password", {
+        const field =
+          result.error.code === "USER_ALREADY_EXISTS" ||
+          result.error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"
+            ? "email"
+            : "password"
+        setError(field, {
           message: authErrorMessage(result.error, t("auth.signUpFailed")),
         })
         return

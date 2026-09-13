@@ -126,6 +126,19 @@ export async function beforeAuthHook(ctx: AuthHookCtx) {
   if (typeof name !== "string" || name.trim().length < 2) {
     throw new APIError("BAD_REQUEST", { message: validation.minChars })
   }
+  const email =
+    ctx.body && typeof ctx.body === "object" && "email" in ctx.body
+      ? (ctx.body as { email?: unknown }).email
+      : undefined
+  if (typeof email === "string") {
+    const existing = await userIdByEmail(email.trim().toLowerCase())
+    if (existing) {
+      throw new APIError("UNPROCESSABLE_ENTITY", {
+        message: "User already exists",
+        code: "USER_ALREADY_EXISTS",
+      })
+    }
+  }
 }
 
 /** A session now exists: record the login and tell the account holder about it. */
