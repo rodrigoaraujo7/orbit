@@ -109,8 +109,13 @@ describe("login route", () => {
     await signIn(user)
     expect(await screen.findByText("Verification code")).toBeInTheDocument()
     expect(
-      screen.getByText("We sent a 6-digit code to ada@test.local. It expires in 10 minutes."),
+      screen.getByText(
+        (_, el) =>
+          el?.tagName === "P" &&
+          el.textContent === "We sent a 6-digit code to ada@test.local. It expires in 10 minutes.",
+      ),
     ).toBeInTheDocument()
+    expect(screen.getByText("ada@test.local")).toHaveClass("font-heading", "italic", "text-primary")
     expect(sendOtp).toHaveBeenCalled()
     expect(screen.getByRole("button", { name: "Send a new code in 30s" })).toBeDisabled()
     await user.type(screen.getByLabelText("Email code"), "123456")
@@ -185,9 +190,13 @@ describe("login route", () => {
     expect(await screen.findByText("Confirm your email")).toBeInTheDocument()
     expect(
       screen.getByText(
-        "We sent a confirmation link to ada@test.local. Open it to activate your account, then sign in.",
+        (_, el) =>
+          el?.tagName === "P" &&
+          el.textContent ===
+            "We sent a confirmation link to ada@test.local. Open it to activate your account, then sign in.",
       ),
     ).toBeInTheDocument()
+    expect(screen.getByText("ada@test.local")).toHaveClass("font-heading", "italic", "text-primary")
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     expect(signUpEmail).toHaveBeenCalledWith({
       name: "Ada",
@@ -223,9 +232,13 @@ describe("login route", () => {
     expect(screen.queryByLabelText("Email")).not.toBeInTheDocument()
     expect(
       screen.getByText(
-        "We sent a confirmation link to ada@test.local. Open it to activate your account, then sign in.",
+        (_, el) =>
+          el?.tagName === "P" &&
+          el.textContent ===
+            "We sent a confirmation link to ada@test.local. Open it to activate your account, then sign in.",
       ),
     ).toBeInTheDocument()
+    expect(screen.getByText("ada@test.local")).toHaveClass("font-heading", "italic", "text-primary")
     await user.click(screen.getByRole("button", { name: "Send the link again" }))
     expect(await screen.findByText("Too many requests. Try again later.")).toBeInTheDocument()
     signInEmail.mockClear()
@@ -245,6 +258,33 @@ describe("login route", () => {
     expect(await screen.findByText("This email is already in use")).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Sign in" }))
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument()
+  })
+
+  it("maps the alternate duplicate-email code onto the email field", async () => {
+    const user = userEvent.setup()
+    signUpEmail.mockResolvedValue({
+      error: { code: "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL" },
+      data: null,
+    })
+    renderWithProviders(<LoginPage />)
+    await user.click(screen.getByRole("button", { name: "Create" }))
+    await user.type(screen.getByLabelText("Name"), "Ada")
+    await user.type(screen.getByLabelText("Email"), "ada@test.local")
+    await user.type(screen.getByLabelText("Password"), "password1")
+    await user.click(screen.getByRole("button", { name: "Sign up" }))
+    expect(await screen.findByText("This email is already in use")).toBeInTheDocument()
+  })
+
+  it("shows other sign-up errors on the password field", async () => {
+    const user = userEvent.setup()
+    signUpEmail.mockResolvedValue({ error: { code: "FAILED_TO_CREATE_USER" }, data: null })
+    renderWithProviders(<LoginPage />)
+    await user.click(screen.getByRole("button", { name: "Create" }))
+    await user.type(screen.getByLabelText("Name"), "Ada")
+    await user.type(screen.getByLabelText("Email"), "ada@test.local")
+    await user.type(screen.getByLabelText("Password"), "password1")
+    await user.click(screen.getByRole("button", { name: "Sign up" }))
+    expect(await screen.findByText("Could not create the account")).toBeInTheDocument()
   })
 
   it("toggles the locale", async () => {

@@ -2,11 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import { AuthShell } from "@/components/layout/auth-shell"
 import { Button } from "@/components/ui/button"
+import { Emphasis } from "@/components/ui/emphasis"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
@@ -241,12 +242,20 @@ function LoginPage() {
         )}
         {step === "otp" && (
           <p className="text-sm text-muted-foreground">
-            {t("auth.codeSentTo", { email: pendingEmail })}
+            <Trans
+              i18nKey="auth.codeSentTo"
+              values={{ email: pendingEmail }}
+              components={{ email: <Emphasis className="text-primary" /> }}
+            />
           </p>
         )}
         {step === "confirm" && (
           <p className="text-sm text-muted-foreground">
-            {t("auth.confirmEmailDescription", { email: pendingEmail })}
+            <Trans
+              i18nKey="auth.confirmEmailDescription"
+              values={{ email: pendingEmail }}
+              components={{ email: <Emphasis className="text-primary" /> }}
+            />
           </p>
         )}
       </div>
