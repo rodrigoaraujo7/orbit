@@ -52,9 +52,18 @@ describe("start", () => {
     expect(createDb).not.toHaveBeenCalled()
   })
 
+  it("throws without RESEND_API_KEY", async () => {
+    vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    delete process.env.RESEND_API_KEY
+    await expect(start()).rejects.toThrow(/missing env RESEND_API_KEY/)
+    expect(createDb).not.toHaveBeenCalled()
+  })
+
   it("throws when AUTH_TRUSTED_ORIGIN is a wildcard", async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
     vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    vi.stubEnv("RESEND_API_KEY", "re_test")
     vi.stubEnv("AUTH_TRUSTED_ORIGIN", "https://*.ngrok-free.app")
     await expect(start()).rejects.toThrow(INVALID_AUTH_TRUSTED_ORIGIN)
     expect(createDb).not.toHaveBeenCalled()
@@ -63,6 +72,7 @@ describe("start", () => {
   it("warns without a Better Auth API key and listens", async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
     vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    vi.stubEnv("RESEND_API_KEY", "re_test")
     vi.stubEnv("BETTER_AUTH_API_KEY", "   ")
     delete process.env.PORT
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
@@ -84,6 +94,7 @@ describe("start", () => {
   it("warns about a weak Better Auth API key", async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
     vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    vi.stubEnv("RESEND_API_KEY", "re_test")
     vi.stubEnv("BETTER_AUTH_API_KEY", "key")
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
     vi.spyOn(console, "log").mockImplementation(() => {})
@@ -95,6 +106,7 @@ describe("start", () => {
   it("honours an explicit port and stays quiet with a strong key", async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
     vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    vi.stubEnv("RESEND_API_KEY", "re_test")
     vi.stubEnv("BETTER_AUTH_API_KEY", "ba-infra-3f9c1d7e5a2b8046acde1975")
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
     vi.spyOn(console, "log").mockImplementation(() => {})

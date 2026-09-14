@@ -10,12 +10,14 @@ const auth = vi.hoisted(() => ({
     isPending: false,
   })),
   signOut: vi.fn(),
+  updateUser: vi.fn(),
 }))
 
 vi.mock("@/lib/auth-client", () => ({
   authClient: {
     useSession: auth.useSession,
     signOut: auth.signOut,
+    updateUser: auth.updateUser,
   },
 }))
 
@@ -40,6 +42,7 @@ describe("UserMenu", () => {
     expect(screen.getByText("Switch account")).toBeInTheDocument()
     await user.click(screen.getByRole("menuitem", { name: /Português/ }))
     expect(i18n.language).toBe("pt-BR")
+    expect(auth.updateUser).toHaveBeenCalledWith({ locale: "pt-BR" })
     await user.click(screen.getByText("AL"))
     await user.click(await screen.findByRole("menuitem", { name: /English/ }))
     expect(i18n.language).toBe("en-US")

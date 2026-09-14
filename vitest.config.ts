@@ -39,6 +39,7 @@ export default defineConfig({
         "apps/web/src/components/ui/emphasis.tsx",
         "apps/web/src/components/ui/field.tsx",
         "apps/web/src/components/ui/input.tsx",
+        "apps/web/src/components/ui/input-otp.tsx",
         "apps/web/src/components/ui/label.tsx",
         "apps/web/src/components/ui/select.tsx",
         "apps/web/src/components/ui/tabs.tsx",

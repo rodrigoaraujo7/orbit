@@ -106,6 +106,15 @@ describe("root Gate", () => {
     expect(screen.getByText("Loading…")).toBeInTheDocument()
   })
 
+  it("keeps public routes mounted while the session is refetching", () => {
+    session.isPending = true
+    session.data = null
+    pathname.value = "/login"
+    renderWithProviders(<Root />)
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByText("Loading…")).not.toBeInTheDocument()
+  })
+
   it("redirects anonymous users to login", () => {
     session.data = null
     pathname.value = "/dashboard"
@@ -125,6 +134,16 @@ describe("root Gate", () => {
     renderWithProviders(<Root />)
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
     expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
+  })
+
+  it("lets anonymous users reach the password recovery routes", () => {
+    session.data = null
+    for (const route of ["/forgot-password", "/reset-password"]) {
+      pathname.value = route
+      const { unmount } = renderWithProviders(<Root />)
+      expect(screen.getByTestId("outlet")).toBeInTheDocument()
+      unmount()
+    }
   })
 
   it("wraps authenticated pages in the shell", () => {

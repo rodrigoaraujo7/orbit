@@ -29,6 +29,8 @@ export function UserMenu({ collapsed = false }: { collapsed?: boolean }) {
 
   function chooseLocale(next: Locale) {
     setLocale(next)
+    // Transactional emails are rendered from the stored locale, not the browser.
+    void authClient.updateUser({ locale: next })
   }
 
   return (

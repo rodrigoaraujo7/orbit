@@ -7,7 +7,8 @@ create table if not exists "user" (
   image text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  two_factor_enabled boolean default false
+  two_factor_enabled boolean default false,
+  locale text not null default 'en-US'
 );
 
 create table if not exists session (
@@ -225,6 +226,17 @@ update account
   where issuer is null or issuer = '';
 alter table account alter column issuer set not null;
 create unique index if not exists "account_issuer_accountId_uidx" on account (issuer, account_id);
+
+-- Email OTP is now the only second factor and sign-in requires a confirmed
+-- address. Accounts that predate both are grandfathered in, once: the create
+-- table above already has locale, so a fresh database raises duplicate_column
+-- here and never touches rows Better Auth just wrote.
+alter table "user" add column if not exists two_factor_enabled boolean default false;
+do $$ begin
+  alter table "user" add column locale text not null default 'en-US';
+  update "user" set email_verified = true, two_factor_enabled = true;
+exception when duplicate_column then null;
+end $$;
 do $$ begin
   alter table contact add constraint contact_id_user_id_key unique (id, user_id);
 exception when duplicate_object or duplicate_table then null;

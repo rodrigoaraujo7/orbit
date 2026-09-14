@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { env, loadDotEnv, optionalEnv } from "./index.ts"
+import { bootEnv, env, loadDotEnv, optionalEnv, shouldLoadDotEnv } from "./index.ts"
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -45,5 +45,15 @@ describe("env helpers", () => {
     expect(optionalEnv("ABSENT_FOR_SURE")).toBeUndefined()
     expect(env("PRESENT")).toBe("yes")
     expect(() => env("ABSENT_FOR_SURE")).toThrow(/missing env ABSENT_FOR_SURE/)
+  })
+
+  it("skips auto-loading dotenv under Vitest", () => {
+    expect(shouldLoadDotEnv({ VITEST: "true" })).toBe(false)
+    expect(shouldLoadDotEnv({})).toBe(true)
+    const load = vi.fn()
+    bootEnv({ VITEST: "true" }, load)
+    expect(load).not.toHaveBeenCalled()
+    bootEnv({}, load)
+    expect(load).toHaveBeenCalledTimes(1)
   })
 })

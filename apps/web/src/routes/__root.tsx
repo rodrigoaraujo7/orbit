@@ -12,6 +12,9 @@ import { RegistryProvider, useRegistry } from "@/lib/registry-store"
 
 const queryClient = new QueryClient()
 
+/** Reached without a session: sign-in plus the two password recovery screens. */
+const PUBLIC_ROUTES = new Set(["/login", "/forgot-password", "/reset-password"])
+
 function LoadingScreen({ message }: { message?: string }) {
   const { t } = useTranslation()
   return (
@@ -36,10 +39,12 @@ function Gate() {
   const { data, isPending } = authClient.useSession()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
-  if (isPending) return <LoadingScreen />
-  if (!data && pathname !== "/login") return <Navigate to="/login" />
-  if (data && pathname === "/login") return <Navigate to="/" />
-  if (pathname === "/login") return <Outlet />
+  const isPublic = PUBLIC_ROUTES.has(pathname)
+
+  if (isPending && !isPublic) return <LoadingScreen />
+  if (!data && !isPublic) return <Navigate to="/login" />
+  if (data && isPublic) return <Navigate to="/" />
+  if (isPublic) return <Outlet />
 
   return (
     <QueryClientProvider client={queryClient}>
