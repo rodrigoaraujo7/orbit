@@ -110,6 +110,17 @@
     "switchAccount": "Trocar de conta",
     "signOut": "Sair"
   },
+  "errors": {
+    "notFoundCode": "404",
+    "notFoundTitle": "Página não encontrada",
+    "notFoundDescription": "Este endereço não existe, ou o que estava aqui foi movido.",
+    "genericCode": "500",
+    "genericTitle": "Algo quebrou nesta página",
+    "genericDescription": "A página parou antes de terminar de carregar. Tente de novo — se continuar falhando, volte em alguns minutos.",
+    "tryAgain": "Tentar de novo",
+    "backToDashboard": "Voltar para o dashboard",
+    "details": "Detalhes técnicos"
+  },
   "status": {
     "queued": "Na fila",
     "in-development": "Em desenvolvimento",
