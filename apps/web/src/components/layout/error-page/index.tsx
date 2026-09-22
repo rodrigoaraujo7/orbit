@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
+import { authClient } from "@/lib/auth-client"
 
 /**
  * Full-height stop screen shared by the router: the 404 for addresses that do
@@ -43,12 +44,21 @@ function ErrorPage({
   )
 }
 
-function BackToDashboard() {
+function HomeLink() {
   const { t } = useTranslation()
+  const { data } = authClient.useSession()
+  if (data) {
+    return (
+      <Button variant="outline" size="sm" render={<Link to="/" />}>
+        <ArrowLeft />
+        {t("errors.backToDashboard")}
+      </Button>
+    )
+  }
   return (
-    <Button variant="outline" size="sm" render={<Link to="/" />}>
+    <Button variant="outline" size="sm" render={<Link to="/login" />}>
       <ArrowLeft />
-      {t("errors.backToDashboard")}
+      {t("auth.backToSignIn")}
     </Button>
   )
 }
@@ -61,7 +71,7 @@ function NotFoundPage() {
       title={t("errors.notFoundTitle")}
       description={t("errors.notFoundDescription")}
       icon={<Compass className="size-5" />}
-      actions={<BackToDashboard />}
+      actions={<HomeLink />}
     />
   )
 }
@@ -75,7 +85,7 @@ function RouteErrorPage({ reset }: { error?: unknown; reset?: () => void }) {
       description={t("errors.genericDescription")}
       actions={
         <>
-          <BackToDashboard />
+          <HomeLink />
           <Button size="sm" onClick={() => (reset ? reset() : window.location.reload())}>
             <RotateCcw />
             {t("errors.tryAgain")}

@@ -11,11 +11,22 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }))
 
+const session = vi.hoisted(() => ({
+  data: { user: { id: "u1" } } as { user: { id: string } } | null,
+}))
+
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    useSession: () => ({ data: session.data, isPending: false }),
+  },
+}))
+
 import { ErrorPage, NotFoundPage, RouteErrorPage } from "./index"
 
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
+  session.data = { user: { id: "u1" } }
 })
 
 describe("ErrorPage", () => {
@@ -37,6 +48,13 @@ describe("NotFoundPage", () => {
       screen.getByText("This address does not exist, or what used to be here has moved."),
     ).toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Back to the dashboard" })).toHaveAttribute("href", "/")
+  })
+
+  it("points signed-out visitors at sign in instead of the dashboard", () => {
+    session.data = null
+    renderWithProviders(<NotFoundPage />)
+    expect(screen.getByRole("link", { name: "Back to sign in" })).toHaveAttribute("href", "/login")
+    expect(screen.queryByRole("link", { name: "Back to the dashboard" })).not.toBeInTheDocument()
   })
 })
 
