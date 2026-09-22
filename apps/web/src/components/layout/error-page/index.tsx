@@ -16,15 +16,21 @@ function ErrorPage({
   description,
   icon,
   actions,
+  fullScreen = false,
 }: {
   code: string
   title: string
   description: string
   icon?: ReactNode
   actions?: ReactNode
+  fullScreen?: boolean
 }) {
   return (
-    <main className="animate-in fade-in zoom-in-95 grid min-h-full place-items-center px-6 py-24 duration-500">
+    <main
+      className={`animate-in fade-in zoom-in-95 grid place-items-center px-6 py-24 duration-500 ${
+        fullScreen ? "min-h-svh" : "min-h-full"
+      }`}
+    >
       <div className="flex w-full max-w-md flex-col items-center gap-4 text-center">
         <div className="grid size-11 place-items-center rounded-xl bg-muted text-muted-foreground">
           {icon ?? <TriangleAlert className="size-5" />}
@@ -72,6 +78,7 @@ function NotFoundPage() {
       description={t("errors.notFoundDescription")}
       icon={<Compass className="size-5" />}
       actions={<HomeLink />}
+      fullScreen
     />
   )
 }

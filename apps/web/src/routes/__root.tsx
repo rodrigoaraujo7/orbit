@@ -49,13 +49,12 @@ function Gate() {
   if (isPending && !isPublic) return <LoadingScreen />
   if (!data && !isPublic && !isNotFound) return <Navigate to="/login" />
   if (data && isPublic) return <Navigate to="/" />
-  if (!data && (isPublic || isNotFound)) {
-    return isNotFound ? (
+  if (isPublic) return <Outlet />
+  if (isNotFound) {
+    return (
       <div className="min-h-svh">
         <Outlet />
       </div>
-    ) : (
-      <Outlet />
     )
   }
 

@@ -37,6 +37,13 @@ describe("ErrorPage", () => {
     expect(screen.queryByRole("link")).not.toBeInTheDocument()
     expect(screen.queryByRole("button")).not.toBeInTheDocument()
   })
+
+  it("can fill the viewport when asked to", () => {
+    const { container } = renderWithProviders(
+      <ErrorPage code="404" title="Missing" description="Gone." fullScreen />,
+    )
+    expect(container.querySelector("main")).toHaveClass("min-h-svh")
+  })
 })
 
 describe("NotFoundPage", () => {

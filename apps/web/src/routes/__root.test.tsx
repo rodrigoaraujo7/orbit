@@ -190,12 +190,12 @@ describe("root Gate", () => {
     expect(screen.queryByTestId("outlet")).not.toBeInTheDocument()
   })
 
-  it("keeps the shell around a not-found page when the user is signed in", () => {
+  it("shows the not-found outlet without the shell when the user is signed in", () => {
     pathname.value = "/this-page-does-not-exist"
     matches.value = [{ status: "success", _notFound: true }]
     renderWithProviders(<Root />)
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
-    expect(screen.getByLabelText("Open menu")).toBeInTheDocument()
+    expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
   })
 
   it("wraps authenticated pages in the shell", () => {
