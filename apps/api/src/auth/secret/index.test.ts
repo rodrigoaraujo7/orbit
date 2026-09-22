@@ -21,11 +21,14 @@ describe("resolveBetterAuthSecret", () => {
   })
 
   it("rejects a missing, blank, or known insecure default instead of falling back", () => {
+    vi.stubEnv("BETTER_AUTH_SECRET", "from-env-better-auth-secret")
     expect(() => resolveBetterAuthSecret(undefined)).toThrow(MISSING_BETTER_AUTH_SECRET)
     expect(() => resolveBetterAuthSecret(null)).toThrow(MISSING_BETTER_AUTH_SECRET)
     expect(() => resolveBetterAuthSecret("")).toThrow(MISSING_BETTER_AUTH_SECRET)
     expect(() => resolveBetterAuthSecret("   ")).toThrow(MISSING_BETTER_AUTH_SECRET)
-    delete process.env.BETTER_AUTH_SECRET
+    expect(resolveBetterAuthSecret()).toBe("from-env-better-auth-secret")
+
+    vi.stubEnv("BETTER_AUTH_SECRET", undefined)
     expect(() => resolveBetterAuthSecret()).toThrow(MISSING_BETTER_AUTH_SECRET)
     expect(() => resolveBetterAuthSecret(INSECURE_BETTER_AUTH_SECRET)).toThrow(
       /known insecure default/,
@@ -35,6 +38,7 @@ describe("resolveBetterAuthSecret", () => {
     )
     vi.stubEnv("BETTER_AUTH_SECRET", INSECURE_BETTER_AUTH_SECRET)
     expect(() => resolveBetterAuthSecret()).toThrow(/known insecure default/)
+    expect(() => resolveBetterAuthSecret(undefined)).toThrow(MISSING_BETTER_AUTH_SECRET)
   })
 
   it("identifies secret configuration errors", () => {
