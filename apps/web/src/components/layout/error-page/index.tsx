@@ -3,7 +3,7 @@ import { ArrowLeft, Compass, RotateCcw, TriangleAlert } from "lucide-react"
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
-import Beams from "@/components/Beams"
+import Beams from "@/components/ui/Beams"
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 

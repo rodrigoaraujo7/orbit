@@ -11,7 +11,7 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }))
 
-vi.mock("@/components/Beams", () => ({
+vi.mock("@/components/ui/Beams", () => ({
   default: () => <div data-testid="beams" />,
 }))
 

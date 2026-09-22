@@ -28,7 +28,7 @@ export default defineConfig({
         "apps/web/src/main.tsx",
         "apps/web/src/routeTree.gen.ts",
         "apps/web/src/components/Grainient.jsx",
-        "apps/web/src/components/Beams.jsx",
+        "apps/web/src/components/ui/Beams.jsx",
         "apps/web/src/test/**",
         "apps/api/src/test/**",
         "apps/web/src/components/ui/badge.tsx",
