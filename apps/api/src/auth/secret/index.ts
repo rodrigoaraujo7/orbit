@@ -11,9 +11,14 @@ const insecureSecrets = new Set<string>([
   BETTER_AUTH_LIBRARY_DEFAULT_SECRET,
 ])
 
-export function resolveBetterAuthSecret(
-  value: string | undefined | null = optionalEnv("BETTER_AUTH_SECRET"),
-) {
+/**
+ * An omitted argument reads `BETTER_AUTH_SECRET`. An explicit `undefined` is missing
+ * and must not fall back to the environment — a default parameter treats those calls
+ * as the same, so a build that injects the secret would accept the missing value.
+ */
+export function resolveBetterAuthSecret(value?: string | null): string
+export function resolveBetterAuthSecret(...passed: (string | null | undefined)[]): string {
+  const value = passed.length === 0 ? optionalEnv("BETTER_AUTH_SECRET") : passed[0]
   const secret = value?.trim() ?? ""
   if (!secret) {
     throw new Error(MISSING_BETTER_AUTH_SECRET)
