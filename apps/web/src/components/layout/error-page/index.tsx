@@ -29,17 +29,22 @@ function ErrorPage({
 }) {
   return (
     <main className="fixed inset-0 z-50 grid place-items-center overflow-hidden p-6">
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <Beams
-          beamWidth={2}
-          beamHeight={14}
-          beamNumber={14}
-          lightColor="#c03a4a"
-          speed={2.3}
-          noiseIntensity={1.75}
-          scale={0.15}
-          rotation={0}
-        />
+      <div
+        className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden"
+        aria-hidden
+      >
+        <div style={{ width: "1080px", height: "1080px", position: "relative" }}>
+          <Beams
+            beamWidth={2}
+            beamHeight={14}
+            beamNumber={14}
+            lightColor="#c03a4a"
+            speed={2.3}
+            noiseIntensity={1.75}
+            scale={0.15}
+            rotation={0}
+          />
+        </div>
       </div>
       <div className={glassCardClassName}>
         <div className="grid size-11 place-items-center rounded-xl bg-muted text-muted-foreground">
