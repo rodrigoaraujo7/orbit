@@ -11,6 +11,10 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }))
 
+vi.mock("@/components/Beams", () => ({
+  default: () => <div data-testid="beams" />,
+}))
+
 const session = vi.hoisted(() => ({
   data: { user: { id: "u1" } } as { user: { id: string } } | null,
 }))
@@ -34,15 +38,9 @@ describe("ErrorPage", () => {
     renderWithProviders(<ErrorPage code="418" title="Teapot" description="No coffee here." />)
     expect(screen.getByText("418")).toBeInTheDocument()
     expect(screen.getByRole("heading", { name: "Teapot" })).toBeInTheDocument()
+    expect(screen.getByTestId("beams")).toBeInTheDocument()
     expect(screen.queryByRole("link")).not.toBeInTheDocument()
     expect(screen.queryByRole("button")).not.toBeInTheDocument()
-  })
-
-  it("can fill the viewport when asked to", () => {
-    const { container } = renderWithProviders(
-      <ErrorPage code="404" title="Missing" description="Gone." fullScreen />,
-    )
-    expect(container.querySelector("main")).toHaveClass("min-h-svh")
   })
 })
 

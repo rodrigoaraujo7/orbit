@@ -3,8 +3,12 @@ import { ArrowLeft, Compass, RotateCcw, TriangleAlert } from "lucide-react"
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
+import Beams from "@/components/Beams"
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
+
+const glassCardClassName =
+  "relative z-10 flex w-full max-w-sm flex-col items-center gap-4 rounded-xl bg-card/40 p-6 text-center shadow-lg ring-1 ring-white/10 backdrop-blur-xl"
 
 /**
  * Full-height stop screen shared by the router: the 404 for addresses that do
@@ -16,22 +20,28 @@ function ErrorPage({
   description,
   icon,
   actions,
-  fullScreen = false,
 }: {
   code: string
   title: string
   description: string
   icon?: ReactNode
   actions?: ReactNode
-  fullScreen?: boolean
 }) {
   return (
-    <main
-      className={`animate-in fade-in zoom-in-95 grid place-items-center px-6 py-24 duration-500 ${
-        fullScreen ? "min-h-svh" : "min-h-full"
-      }`}
-    >
-      <div className="flex w-full max-w-md flex-col items-center gap-4 text-center">
+    <main className="relative grid min-h-svh place-items-center overflow-hidden p-6">
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <Beams
+          beamWidth={2}
+          beamHeight={14}
+          beamNumber={14}
+          lightColor="#c03a4a"
+          speed={2.3}
+          noiseIntensity={1.75}
+          scale={0.15}
+          rotation={0}
+        />
+      </div>
+      <div className={glassCardClassName}>
         <div className="grid size-11 place-items-center rounded-xl bg-muted text-muted-foreground">
           {icon ?? <TriangleAlert className="size-5" />}
         </div>
@@ -78,7 +88,6 @@ function NotFoundPage() {
       description={t("errors.notFoundDescription")}
       icon={<Compass className="size-5" />}
       actions={<HomeLink />}
-      fullScreen
     />
   )
 }

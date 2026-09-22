@@ -37,10 +37,11 @@ function WorkspaceGate({ children }: { children: ReactNode }) {
 
 function Gate() {
   const { data, isPending } = authClient.useSession()
-  const { pathname, isNotFound } = useRouterState({
+  const { pathname, isNotFound, isRouteError } = useRouterState({
     select: (s) => ({
       pathname: s.location.pathname,
       isNotFound: (s.matches ?? []).some((match) => match.status === "notFound" || match._notFound),
+      isRouteError: (s.matches ?? []).some((match) => match.status === "error"),
     }),
   })
 
@@ -50,7 +51,7 @@ function Gate() {
   if (!data && !isPublic && !isNotFound) return <Navigate to="/login" />
   if (data && isPublic) return <Navigate to="/" />
   if (isPublic) return <Outlet />
-  if (isNotFound) {
+  if (isNotFound || isRouteError) {
     return (
       <div className="min-h-svh">
         <Outlet />

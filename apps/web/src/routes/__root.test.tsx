@@ -198,6 +198,14 @@ describe("root Gate", () => {
     expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
   })
 
+  it("shows the error outlet without the shell when a route throws", () => {
+    pathname.value = "/dashboard"
+    matches.value = [{ status: "error" }]
+    renderWithProviders(<Root />)
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
+  })
+
   it("wraps authenticated pages in the shell", () => {
     renderWithProviders(<Root />)
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
