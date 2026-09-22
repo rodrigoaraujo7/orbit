@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api-production-b70f.up.railway.app/api/:path*"
+    },
+    {
+      "source": "/trpc/:path*",
+      "destination": "https://api-production-b70f.up.railway.app/trpc/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
