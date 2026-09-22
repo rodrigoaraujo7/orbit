@@ -110,6 +110,16 @@
     "switchAccount": "Switch account",
     "signOut": "Sign out"
   },
+  "errors": {
+    "notFoundCode": "404",
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "This address does not exist, or what used to be here has moved.",
+    "genericCode": "500",
+    "genericTitle": "Something broke on this page",
+    "genericDescription": "The page stopped before it finished loading. Try again — if it keeps failing, come back in a few minutes.",
+    "tryAgain": "Try again",
+    "backToDashboard": "Back to the dashboard"
+  },
   "status": {
     "queued": "Queued",
     "in-development": "In development",

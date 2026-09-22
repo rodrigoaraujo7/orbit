@@ -4,6 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { renderWithProviders } from "@/test/render"
 
 const pathname = vi.hoisted(() => ({ value: "/" }))
+const matches = vi.hoisted(() => ({
+  value: [] as Array<{ status: string; _notFound?: boolean }> | undefined,
+}))
 const session = vi.hoisted(() => ({
   data: { user: { id: "u1", name: "Ada", email: "ada@test.local" } } as {
     user: { id: string; name: string; email: string }
@@ -35,9 +38,12 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
     Navigate: ({ to }: { to: string }) => <div data-testid="navigate">{to}</div>,
     Outlet: () => <div data-testid="outlet">outlet</div>,
     useRouterState: (opts?: {
-      select?: (state: { location: { pathname: string } }) => unknown
+      select?: (state: {
+        location: { pathname: string }
+        matches: Array<{ status: string; _notFound?: boolean }>
+      }) => unknown
     }) => {
-      const state = { location: { pathname: pathname.value } }
+      const state = { location: { pathname: pathname.value }, matches: matches.value }
       return opts?.select ? opts.select(state) : state
     },
   }
@@ -93,6 +99,7 @@ afterEach(() => {
 
 beforeEach(() => {
   pathname.value = "/"
+  matches.value = []
   session.data = { user: { id: "u1", name: "Ada", email: "ada@test.local" } }
   session.isPending = false
   workspace.isPending = false
@@ -122,6 +129,14 @@ describe("root Gate", () => {
     expect(screen.getByTestId("navigate")).toHaveTextContent("/login")
   })
 
+  it("still sends anonymous users to login when match data has not arrived", () => {
+    session.data = null
+    pathname.value = "/dashboard"
+    matches.value = undefined
+    renderWithProviders(<Root />)
+    expect(screen.getByTestId("navigate")).toHaveTextContent("/login")
+  })
+
   it("redirects signed-in users away from login", () => {
     pathname.value = "/login"
     renderWithProviders(<Root />)
@@ -144,6 +159,51 @@ describe("root Gate", () => {
       expect(screen.getByTestId("outlet")).toBeInTheDocument()
       unmount()
     }
+  })
+
+  it("shows the not-found outlet to anonymous users without the shell", () => {
+    session.data = null
+    pathname.value = "/this-page-does-not-exist"
+    matches.value = [{ status: "success", _notFound: true }]
+    renderWithProviders(<Root />)
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByTestId("navigate")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
+  })
+
+  it("also treats a nested notFound match as a 404", () => {
+    session.data = null
+    pathname.value = "/this-page-does-not-exist"
+    matches.value = [{ status: "notFound" }]
+    renderWithProviders(<Root />)
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByTestId("navigate")).not.toBeInTheDocument()
+  })
+
+  it("waits for the session before showing a not-found page", () => {
+    session.isPending = true
+    session.data = null
+    pathname.value = "/this-page-does-not-exist"
+    matches.value = [{ status: "success", _notFound: true }]
+    renderWithProviders(<Root />)
+    expect(screen.getByText("Loading…")).toBeInTheDocument()
+    expect(screen.queryByTestId("outlet")).not.toBeInTheDocument()
+  })
+
+  it("shows the not-found outlet without the shell when the user is signed in", () => {
+    pathname.value = "/this-page-does-not-exist"
+    matches.value = [{ status: "success", _notFound: true }]
+    renderWithProviders(<Root />)
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
+  })
+
+  it("shows the error outlet without the shell when a route throws", () => {
+    pathname.value = "/dashboard"
+    matches.value = [{ status: "error" }]
+    renderWithProviders(<Root />)
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
   })
 
   it("wraps authenticated pages in the shell", () => {
