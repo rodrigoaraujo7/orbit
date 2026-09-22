@@ -40,7 +40,7 @@ function Gate() {
   const { pathname, isNotFound } = useRouterState({
     select: (s) => ({
       pathname: s.location.pathname,
-      isNotFound: (s.matches ?? []).some((match) => match.status === "notFound"),
+      isNotFound: (s.matches ?? []).some((match) => match.status === "notFound" || match._notFound),
     }),
   })
 

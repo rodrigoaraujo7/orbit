@@ -5,7 +5,7 @@ import { renderWithProviders } from "@/test/render"
 
 const pathname = vi.hoisted(() => ({ value: "/" }))
 const matches = vi.hoisted(() => ({
-  value: [] as Array<{ status: string }> | undefined,
+  value: [] as Array<{ status: string; _notFound?: boolean }> | undefined,
 }))
 const session = vi.hoisted(() => ({
   data: { user: { id: "u1", name: "Ada", email: "ada@test.local" } } as {
@@ -40,7 +40,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
     useRouterState: (opts?: {
       select?: (state: {
         location: { pathname: string }
-        matches: Array<{ status: string }>
+        matches: Array<{ status: string; _notFound?: boolean }>
       }) => unknown
     }) => {
       const state = { location: { pathname: pathname.value }, matches: matches.value }
@@ -164,18 +164,27 @@ describe("root Gate", () => {
   it("shows the not-found outlet to anonymous users without the shell", () => {
     session.data = null
     pathname.value = "/this-page-does-not-exist"
-    matches.value = [{ status: "notFound" }]
+    matches.value = [{ status: "success", _notFound: true }]
     renderWithProviders(<Root />)
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
     expect(screen.queryByTestId("navigate")).not.toBeInTheDocument()
     expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
   })
 
+  it("also treats a nested notFound match as a 404", () => {
+    session.data = null
+    pathname.value = "/this-page-does-not-exist"
+    matches.value = [{ status: "notFound" }]
+    renderWithProviders(<Root />)
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByTestId("navigate")).not.toBeInTheDocument()
+  })
+
   it("waits for the session before showing a not-found page", () => {
     session.isPending = true
     session.data = null
     pathname.value = "/this-page-does-not-exist"
-    matches.value = [{ status: "notFound" }]
+    matches.value = [{ status: "success", _notFound: true }]
     renderWithProviders(<Root />)
     expect(screen.getByText("Loading…")).toBeInTheDocument()
     expect(screen.queryByTestId("outlet")).not.toBeInTheDocument()
@@ -183,7 +192,7 @@ describe("root Gate", () => {
 
   it("keeps the shell around a not-found page when the user is signed in", () => {
     pathname.value = "/this-page-does-not-exist"
-    matches.value = [{ status: "notFound" }]
+    matches.value = [{ status: "success", _notFound: true }]
     renderWithProviders(<Root />)
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
     expect(screen.getByLabelText("Open menu")).toBeInTheDocument()
