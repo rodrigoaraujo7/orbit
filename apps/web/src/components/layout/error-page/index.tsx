@@ -28,7 +28,7 @@ function ErrorPage({
   actions?: ReactNode
 }) {
   return (
-    <main className="relative grid min-h-svh place-items-center overflow-hidden p-6">
+    <main className="fixed inset-0 z-50 grid place-items-center overflow-hidden p-6">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <Beams
           beamWidth={2}
