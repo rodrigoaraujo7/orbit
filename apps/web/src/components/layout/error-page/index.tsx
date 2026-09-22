@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import { Compass, RotateCcw, TriangleAlert } from "lucide-react"
+import { ArrowLeft, Compass, RotateCcw, TriangleAlert } from "lucide-react"
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -15,16 +15,13 @@ function ErrorPage({
   description,
   icon,
   actions,
-  details,
 }: {
   code: string
   title: string
   description: string
   icon?: ReactNode
   actions?: ReactNode
-  details?: string
 }) {
-  const { t } = useTranslation()
   return (
     <main className="animate-in fade-in zoom-in-95 grid min-h-full place-items-center px-6 py-24 duration-500">
       <div className="flex w-full max-w-md flex-col items-center gap-4 text-center">
@@ -41,16 +38,6 @@ function ErrorPage({
         {actions && (
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2">{actions}</div>
         )}
-        {details && (
-          <details className="mt-2 w-full text-left">
-            <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-              {t("errors.details")}
-            </summary>
-            <pre className="mt-2 max-h-40 overflow-auto rounded-lg bg-muted p-3 text-xs whitespace-pre-wrap text-muted-foreground">
-              {details}
-            </pre>
-          </details>
-        )}
       </div>
     </main>
   )
@@ -60,7 +47,7 @@ function BackToDashboard() {
   const { t } = useTranslation()
   return (
     <Button variant="outline" size="sm" render={<Link to="/" />}>
-      <Compass />
+      <ArrowLeft />
       {t("errors.backToDashboard")}
     </Button>
   )
@@ -79,22 +66,20 @@ function NotFoundPage() {
   )
 }
 
-function RouteErrorPage({ error, reset }: { error?: unknown; reset?: () => void }) {
+function RouteErrorPage({ reset }: { error?: unknown; reset?: () => void }) {
   const { t } = useTranslation()
-  const message = error instanceof Error ? error.message : undefined
   return (
     <ErrorPage
       code={t("errors.genericCode")}
       title={t("errors.genericTitle")}
       description={t("errors.genericDescription")}
-      details={message}
       actions={
         <>
+          <BackToDashboard />
           <Button size="sm" onClick={() => (reset ? reset() : window.location.reload())}>
             <RotateCcw />
             {t("errors.tryAgain")}
           </Button>
-          <BackToDashboard />
         </>
       }
     />

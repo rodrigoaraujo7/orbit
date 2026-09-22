@@ -118,8 +118,7 @@
     "genericTitle": "Algo quebrou nesta página",
     "genericDescription": "A página parou antes de terminar de carregar. Tente de novo — se continuar falhando, volte em alguns minutos.",
     "tryAgain": "Tentar de novo",
-    "backToDashboard": "Voltar para o dashboard",
-    "details": "Detalhes técnicos"
+    "backToDashboard": "Voltar para o dashboard"
   },
   "status": {
     "queued": "Na fila",

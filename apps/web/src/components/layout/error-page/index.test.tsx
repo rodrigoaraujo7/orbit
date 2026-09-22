@@ -38,27 +38,26 @@ describe("NotFoundPage", () => {
     ).toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Back to the dashboard" })).toHaveAttribute("href", "/")
   })
-
-  it("has no technical details block", () => {
-    renderWithProviders(<NotFoundPage />)
-    expect(screen.queryByText("Technical details")).not.toBeInTheDocument()
-  })
 })
 
 describe("RouteErrorPage", () => {
-  it("shows the generic error copy with the thrown message", () => {
+  it("shows the generic error copy without technical details", () => {
     renderWithProviders(<RouteErrorPage error={new Error("boom")} reset={vi.fn()} />)
     expect(screen.getByText("500")).toBeInTheDocument()
     expect(
       screen.getByRole("heading", { name: "Something broke on this page" }),
     ).toBeInTheDocument()
-    expect(screen.getByText("Technical details")).toBeInTheDocument()
-    expect(screen.getByText("boom")).toBeInTheDocument()
+    expect(screen.queryByText("Technical details")).not.toBeInTheDocument()
+    expect(screen.queryByText("boom")).not.toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Back to the dashboard" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument()
   })
 
-  it("omits the details block when the error is not an Error", () => {
-    renderWithProviders(<RouteErrorPage error="plain string" />)
-    expect(screen.queryByText("Technical details")).not.toBeInTheDocument()
+  it("places the retry action after the dashboard link", () => {
+    renderWithProviders(<RouteErrorPage error={new Error("boom")} reset={vi.fn()} />)
+    const dashboard = screen.getByRole("link", { name: "Back to the dashboard" })
+    const retry = screen.getByRole("button", { name: "Try again" })
+    expect(dashboard.compareDocumentPosition(retry) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it("retries through the router reset when one is given", async () => {

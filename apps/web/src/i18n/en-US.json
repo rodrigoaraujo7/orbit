@@ -118,8 +118,7 @@
     "genericTitle": "Something broke on this page",
     "genericDescription": "The page stopped before it finished loading. Try again — if it keeps failing, come back in a few minutes.",
     "tryAgain": "Try again",
-    "backToDashboard": "Back to the dashboard",
-    "details": "Technical details"
+    "backToDashboard": "Back to the dashboard"
   },
   "status": {
     "queued": "Queued",
