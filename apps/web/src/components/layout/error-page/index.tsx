@@ -29,11 +29,8 @@ function ErrorPage({
 }) {
   return (
     <main className="fixed inset-0 z-50 grid place-items-center overflow-hidden p-6">
-      <div
-        className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden"
-        aria-hidden
-      >
-        <div style={{ width: "1080px", height: "1080px", position: "relative" }}>
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <div style={{ width: "100%", height: "100%", position: "relative" }}>
           <Beams
             beamWidth={2}
             beamHeight={14}

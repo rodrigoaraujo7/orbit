@@ -40,7 +40,7 @@ describe("ErrorPage", () => {
     expect(screen.getByRole("heading", { name: "Teapot" })).toBeInTheDocument()
     const beams = screen.getByTestId("beams")
     expect(beams).toBeInTheDocument()
-    expect(beams.parentElement).toHaveStyle({ width: "1080px", height: "1080px" })
+    expect(beams.parentElement).toHaveStyle({ width: "100%", height: "100%" })
     expect(screen.queryByRole("link")).not.toBeInTheDocument()
     expect(screen.queryByRole("button")).not.toBeInTheDocument()
   })
