@@ -6,7 +6,7 @@ import { DEFAULT_CURRENCY } from "./currency.ts"
 import { addMonths, monthOf, monthRange, todayIso } from "./dates.ts"
 import type { BillingCycle, InvoiceStatus, Payer } from "./domain.ts"
 import { effectiveMonth } from "./invoice-table.ts"
-import { generateInvoices } from "./invoices.ts"
+import { generateInvoices, type InvoiceOverrides } from "./invoices.ts"
 import type { Project, Tool } from "./project.ts"
 import { type ToolCategory } from "./tool-category.ts"
 
@@ -136,6 +136,7 @@ export function revenueByMonth(
   projects: Project[],
   months: string[],
   currency: string,
+  overrides: InvoiceOverrides = {},
 ): RevenueMonth[] {
   const buckets = new Map<string, RevenueMonth>(
     months.map((month) => [month, { month, recebido: 0, aReceber: 0, atrasado: 0 }]),
@@ -143,7 +144,7 @@ export function revenueByMonth(
 
   for (const project of projects) {
     if (dealCurrency(project) !== currency) continue
-    for (const invoice of generateInvoices(project, "")) {
+    for (const invoice of generateInvoices(project, "", overrides)) {
       const bucket = buckets.get(effectiveMonth(invoice))
       if (!bucket) continue
       if (invoice.status === "paid") bucket.recebido += invoice.amount
@@ -432,8 +433,9 @@ export function financeSummary(
   projects: Project[],
   months: string[],
   currency: string,
+  overrides: InvoiceOverrides = {},
 ): FinanceSummary {
-  const revenue = revenueByMonth(projects, months, currency)
+  const revenue = revenueByMonth(projects, months, currency, overrides)
   const recebido = revenue.reduce((total, month) => total + month.recebido, 0)
   const aReceber = revenue.reduce((total, month) => total + month.aReceber, 0)
   const atrasado = revenue.reduce((total, month) => total + month.atrasado, 0)
@@ -531,13 +533,14 @@ export function paymentRulerLanes(
   projects: Project[],
   months: string[],
   currency: string,
+  overrides: InvoiceOverrides = {},
 ): RulerLane[] {
   const monthSet = new Set(months)
   return projects
     .filter((project) => dealCurrency(project) === currency)
     .map((project) => {
       const byMonth: Record<string, RulerInvoice[]> = {}
-      for (const invoice of generateInvoices(project, "")) {
+      for (const invoice of generateInvoices(project, "", overrides)) {
         const month = effectiveMonth(invoice)
         if (!monthSet.has(month)) continue
         byMonth[month] ??= []
@@ -603,6 +606,7 @@ export function buildDashboardMetrics(
   projects: Project[],
   filters: DashboardFilters,
   contacts: { id: string; name: string }[],
+  overrides: InvoiceOverrides = {},
 ): DashboardMetrics {
   const filtered = applyFilters(projects, filters)
   const months = resolveMonths(projects, filters)
@@ -612,14 +616,14 @@ export function buildDashboardMetrics(
     options: dashboardOptions(projects, contacts),
     months,
     currency,
-    summary: financeSummary(filtered, months, currency),
-    previous: financeSummary(filtered, previous, currency),
-    revenueByMonth: revenueByMonth(filtered, months, currency),
+    summary: financeSummary(filtered, months, currency, overrides),
+    previous: financeSummary(filtered, previous, currency, overrides),
+    revenueByMonth: revenueByMonth(filtered, months, currency, overrides),
     profitByProject: profitByProject(filtered, months, currency).filter(
       (row) => row.receita > 0 || row.custo > 0,
     ),
     clientGrowth: clientGrowth(filtered, months),
-    rulerLanes: paymentRulerLanes(filtered, months, currency),
+    rulerLanes: paymentRulerLanes(filtered, months, currency, overrides),
     toolsSummary: toolsSummary(filtered, months, currency),
     toolCostByTool: toolCostByTool(filtered, months, currency),
     toolCostByCategory: toolCostByCategory(filtered, months, currency),

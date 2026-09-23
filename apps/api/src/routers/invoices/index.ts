@@ -1,9 +1,13 @@
+import { TRPCError } from "@trpc/server"
 import { and, eq } from "drizzle-orm"
 import { z } from "zod"
 import {
   filterInvoices,
   generateInvoices,
   invoiceListFiltersSchema,
+  type InvoiceOverrides,
+  type InvoiceStatus,
+  type PaymentMethod,
   type Project,
   invoiceStatusSchema,
   paymentMethodSchema,
@@ -12,7 +16,75 @@ import {
 import { contact, invoice, payment } from "../../db/schema/index.ts"
 import { listProjects } from "../projects/index.ts"
 import { asUser, auditCtx, protectedProcedure, router } from "../../trpc/init/index.ts"
+import type { Tx } from "../../db/with-user/index.ts"
 import { recordAudit } from "../../audit/record/index.ts"
+
+/** "YYYY-MM-DDTHH:mm", the shape the generated invoices use for `paidAt`. */
+function paidAtLabel(date: Date) {
+  return date.toISOString().slice(0, 16)
+}
+
+/**
+ * Persisted rows keyed by id. A row whose id matches a generated invoice is the
+ * status the user set by hand on it.
+ */
+export async function loadInvoiceOverrides(tx: Tx, projectId?: string): Promise<InvoiceOverrides> {
+  const rows = await tx
+    .select({
+      id: invoice.id,
+      status: invoice.status,
+      paymentMethod: invoice.paymentMethod,
+      paidAt: invoice.paidAt,
+    })
+    .from(invoice)
+    .where(projectId ? eq(invoice.projectId, projectId) : undefined)
+  const overrides: InvoiceOverrides = {}
+  for (const row of rows) {
+    overrides[row.id] = {
+      status: row.status as InvoiceStatus,
+      paymentMethod: (row.paymentMethod ?? undefined) as PaymentMethod | undefined,
+      paidAt: row.paidAt ? paidAtLabel(row.paidAt) : undefined,
+    }
+  }
+  return overrides
+}
+
+async function clientName(tx: Tx, clientId: string | null | undefined) {
+  if (!clientId) return ""
+  const [client] = await tx
+    .select({ name: contact.name })
+    .from(contact)
+    .where(eq(contact.id, clientId))
+    .limit(1)
+  /* v8 ignore next -- project_contact_user_fk keeps a set client id pointing at a row */
+  return client?.name ?? ""
+}
+
+/**
+ * Generated invoices live only in memory until the user changes one; this
+ * writes that invoice down so its new status has a row to live on.
+ */
+async function persistGeneratedInvoice(tx: Tx, userId: string, id: string) {
+  const projects = await listProjects(tx, userId)
+  const found = projects.find((row: Project) => id.startsWith(`${row.id}-invoice-`))
+  const generated = found ? generateInvoices(found, "").find((row) => row.id === id) : undefined
+  if (!found || !generated) throw new TRPCError({ code: "NOT_FOUND" })
+  const row = {
+    id,
+    userId,
+    projectId: found.id,
+    amountCents: toCents(generated.amount),
+    currency: generated.currency,
+    status: generated.status,
+    dueDate: generated.generatedAt,
+    paymentMethod: generated.paymentMethod ?? null,
+    referenceMonth: generated.referenceMonth ?? null,
+    payerName: await clientName(tx, found.clientId),
+    hasAttachment: generated.hasAttachment,
+  }
+  await tx.insert(invoice).values(row)
+  return { ...row, paidAt: null }
+}
 
 const money = z.object({
   amount: z.number(),
@@ -26,14 +98,11 @@ export const invoicesRouter = router({
       const found = projects.find((row: Project) => row.id === input.projectId)
       if (!found) return { items: [], totals: { count: 0, paid: 0, overdue: 0 } }
 
-      const [client] = found.clientId
-        ? await tx
-            .select({ name: contact.name })
-            .from(contact)
-            .where(eq(contact.id, found.clientId))
-            .limit(1)
-        : []
-      const all = generateInvoices(found, client?.name ?? "")
+      const all = generateInvoices(
+        found,
+        await clientName(tx, found.clientId),
+        await loadInvoiceOverrides(tx, found.id),
+      )
       const items = filterInvoices(all, {
         status: input.status ?? "all",
         monthFrom: input.monthFrom ?? "",
@@ -88,23 +157,29 @@ export const invoicesRouter = router({
   setStatus: protectedProcedure
     .input(
       z.object({
-        id: z.string(),
+        id: z.string().trim().min(1),
         status: invoiceStatusSchema,
         paymentMethod: paymentMethodSchema.optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       await asUser(ctx, async (tx) => {
-        const [prev] = await tx.select().from(invoice).where(eq(invoice.id, input.id)).limit(1)
+        const [stored] = await tx.select().from(invoice).where(eq(invoice.id, input.id)).limit(1)
+        const prev = stored ?? (await persistGeneratedInvoice(tx, ctx.userId, input.id))
+        const paid = input.status === "paid"
         await tx
           .update(invoice)
           .set({
             status: input.status,
-            paymentMethod: input.paymentMethod ?? null,
-            paidAt: input.status === "paid" ? new Date() : null,
+            paymentMethod: paid ? (input.paymentMethod ?? prev.paymentMethod) : null,
+            paidAt: paid
+              ? prev.status === "paid" && prev.paidAt
+                ? prev.paidAt
+                : new Date()
+              : null,
           })
           .where(eq(invoice.id, input.id))
-        if (prev && prev.status !== input.status) {
+        if (prev.status !== input.status) {
           await recordAudit(tx, auditCtx(ctx), {
             module: "project",
             action: "financial.invoice.status",
