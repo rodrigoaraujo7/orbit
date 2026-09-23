@@ -36,11 +36,10 @@ const STATUS_VARIANT: Record<InvoiceStatus, React.ComponentProps<typeof Badge>["
 }
 
 const menuItemClass =
-  "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
+  "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:cursor-not-allowed data-disabled:opacity-50"
 
-// Share/generate boleto/pix/change status/attach do nothing yet — with no
-// invoice API for now, the items are UI only (same state as before, in
-// invoice-card.tsx).
+// Share/generate boleto/pix/change status/attach are not wired to the API yet,
+// so the items stay visible but disabled.
 function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
   const { t } = useTranslation()
   return (
@@ -54,23 +53,23 @@ function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
       <Menu.Portal>
         <Menu.Positioner sideOffset={4} align="end" className="z-[60]">
           <Menu.Popup className="min-w-44 rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
-            <Menu.Item onClick={() => {}} className={menuItemClass}>
+            <Menu.Item disabled className={menuItemClass}>
               <Share2 className="size-3.5" />
               {t("invoice.share")}
             </Menu.Item>
-            <Menu.Item onClick={() => {}} className={menuItemClass}>
+            <Menu.Item disabled className={menuItemClass}>
               <Barcode className="size-3.5" />
               {t("invoice.generateBoleto")}
             </Menu.Item>
-            <Menu.Item onClick={() => {}} className={menuItemClass}>
+            <Menu.Item disabled className={menuItemClass}>
               <QrCode className="size-3.5" />
               {t("invoice.generatePix")}
             </Menu.Item>
-            <Menu.Item onClick={() => {}} className={menuItemClass}>
+            <Menu.Item disabled className={menuItemClass}>
               <RefreshCw className="size-3.5" />
               {t("invoice.changeStatus")}
             </Menu.Item>
-            <Menu.Item onClick={() => {}} className={menuItemClass}>
+            <Menu.Item disabled className={menuItemClass}>
               <Paperclip className="size-3.5" />
               {invoice.hasAttachment ? t("invoice.viewAttachment") : t("invoice.attachInvoice")}
             </Menu.Item>

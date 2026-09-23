@@ -66,18 +66,22 @@ describe("InvoicesTable", () => {
     expect(screen.getByText("One-time payment")).toBeInTheDocument()
     expect(screen.getByText("Not set")).toBeInTheDocument()
     await user.click(screen.getAllByRole("button", { name: "More actions" })[0]!)
-    expect(await screen.findByText("Share invoice")).toBeInTheDocument()
-    expect(screen.getByText("View attachment")).toBeInTheDocument()
-    await user.click(screen.getByText("Share invoice"))
-    await user.click(screen.getAllByRole("button", { name: "More actions" })[0]!)
-    await user.click(await screen.findByText("View attachment"))
+    for (const name of [
+      "Share invoice",
+      "Generate boleto",
+      "Generate pix",
+      "Change status",
+      "View attachment",
+    ]) {
+      expect(await screen.findByRole("menuitem", { name })).toHaveAttribute("aria-disabled", "true")
+    }
+    await user.keyboard("{Escape}")
     await user.click(screen.getAllByRole("button", { name: "More actions" })[1]!)
-    expect(await screen.findByText("Attach invoice")).toBeInTheDocument()
-    await user.click(screen.getByText("Generate boleto"))
-    await user.click(screen.getAllByRole("button", { name: "More actions" })[2]!)
-    await user.click(await screen.findByText("Generate pix"))
-    await user.click(screen.getAllByRole("button", { name: "More actions" })[0]!)
-    await user.click(await screen.findByText("Change status"))
+    expect(await screen.findByRole("menuitem", { name: "Attach invoice" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    )
+    await user.keyboard("{Escape}")
     await user.click(screen.getAllByRole("combobox")[0]!)
     await user.click(await screen.findByRole("option", { name: "Paid" }))
     expect(onStatusChange).toHaveBeenCalledWith("paid")
