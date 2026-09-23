@@ -107,6 +107,7 @@ beforeEach(() => {
   vi.spyOn(Route, "useParams").mockReturnValue(params as never)
   vi.spyOn(Route, "useSearch").mockImplementation(() => search.value as never)
   vi.spyOn(Route, "useNavigate").mockReturnValue(routeNavigate as never)
+  trpc.invoices.list.query.mockClear()
   trpc.invoices.list.query.mockResolvedValue({
     items: [sampleInvoice],
     totals: { count: 1, paid: 1, overdue: 0 },
@@ -226,6 +227,31 @@ describe("project detail route", () => {
     await user.click(toolTriggers[toolTriggers.length - 2]!)
     await user.click(toolTriggers[toolTriggers.length - 1]!)
     expect(await screen.findByText("Edit tools")).toBeInTheDocument()
+  })
+
+  it("refetches invoices and projects from the finance and tools refresh buttons", async () => {
+    const user = userEvent.setup()
+    const { client } = renderWithProviders(<ProjectDetailPage />)
+    const invalidate = vi.spyOn(client, "invalidateQueries")
+    expect(await screen.findByRole("heading", { name: "Portal" })).toBeInTheDocument()
+    await vi.waitFor(() => expect(trpc.invoices.list.query).toHaveBeenCalledTimes(1))
+
+    const financeRefresh = screen
+      .getAllByRole("button")
+      .filter((el) => el.hasAttribute("data-base-ui-tooltip-trigger"))[1]!
+    await user.click(financeRefresh)
+    await vi.waitFor(() => expect(trpc.invoices.list.query).toHaveBeenCalledTimes(2))
+
+    await user.click(screen.getByRole("tab", { name: "Tools" }))
+    const toolTriggers = screen
+      .getAllByRole("button")
+      .filter((el) => el.hasAttribute("data-base-ui-tooltip-trigger"))
+    const toolsRefresh = toolTriggers[toolTriggers.length - 2]!
+    await user.click(toolsRefresh)
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["projects"] })
+
+    void client.prefetchQuery({ queryKey: ["projects"], queryFn: () => new Promise(() => {}) })
+    await vi.waitFor(() => expect(toolsRefresh.querySelector(".animate-spin")).not.toBeNull())
   })
 
   it("shows invoice skeleton while the query is pending", () => {

@@ -1,5 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useIsFetching, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ArrowLeft, GitBranch, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react"
 import { useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
@@ -67,6 +67,8 @@ function ProjectDetailPage() {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const navigate = useNavigate()
   const routeNavigate = Route.useNavigate()
+  const queryClient = useQueryClient()
+  const projectsFetching = useIsFetching({ queryKey: ["projects"] }) > 0
 
   const invoiceInput = {
     projectId,
@@ -111,6 +113,14 @@ function ProjectDetailPage() {
   function refreshGithub() {
     void repoQuery.refetch()
     void runsQuery.refetch()
+  }
+
+  function refreshFinance() {
+    void invoicesQuery.refetch()
+  }
+
+  function refreshTools() {
+    void queryClient.invalidateQueries({ queryKey: ["projects"] })
   }
 
   function selectBranch(next: string) {
@@ -288,10 +298,10 @@ function ProjectDetailPage() {
               action={
                 <>
                   <Tooltip label={t("projects.refreshFinance")} side="top">
-                    {/* ponytail: no-op — same as the header refresh, no real
-                        fetch yet (see the comment further up). */}
-                    <Button variant="outline" size="icon-sm" onClick={() => {}}>
-                      <RefreshCw />
+                    <Button variant="outline" size="icon-sm" onClick={refreshFinance}>
+                      <RefreshCw
+                        className={invoicesQuery.isFetching ? "animate-spin" : undefined}
+                      />
                     </Button>
                   </Tooltip>
                   <Tooltip label={t("projects.editFinance")} side="top">
@@ -345,10 +355,8 @@ function ProjectDetailPage() {
               action={
                 <>
                   <Tooltip label={t("projects.refreshTools")} side="top">
-                    {/* ponytail: no-op — same as the header refresh, no real
-                        fetch yet (see the comment further up). */}
-                    <Button variant="outline" size="icon-sm" onClick={() => {}}>
-                      <RefreshCw />
+                    <Button variant="outline" size="icon-sm" onClick={refreshTools}>
+                      <RefreshCw className={projectsFetching ? "animate-spin" : undefined} />
                     </Button>
                   </Tooltip>
                   <Tooltip label={t("projects.editTools")} side="top">
