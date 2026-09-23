@@ -16,6 +16,7 @@ export default defineConfig({
         "packages/shared/src/**/*.ts",
         "apps/api/src/**/*.ts",
         "apps/web/src/**/*.{ts,tsx}",
+        "apps/web/middleware.ts",
       ],
       exclude: [
         "**/*.test.ts",
