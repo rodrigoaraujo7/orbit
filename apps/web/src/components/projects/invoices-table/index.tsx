@@ -1,6 +1,8 @@
 import { Menu } from "@base-ui/react/menu"
 import {
   Barcode,
+  Check,
+  ChevronRight,
   CreditCard,
   MoreVertical,
   Paperclip,
@@ -35,12 +37,23 @@ const STATUS_VARIANT: Record<InvoiceStatus, React.ComponentProps<typeof Badge>["
   overdue: "destructive",
 }
 
+const popupClass =
+  "min-w-44 rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0"
+
 const menuItemClass =
   "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:cursor-not-allowed data-disabled:opacity-50"
 
-// Share/generate boleto/pix/change status/attach are not wired to the API yet,
-// so the items stay visible but disabled.
-function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
+const INVOICE_STATUSES: InvoiceStatus[] = ["pending", "paid", "overdue"]
+
+// Share/generate boleto/pix/attach are not wired to the API yet, so those
+// items stay visible but disabled.
+function InvoiceActionsMenu({
+  invoice,
+  onChangeStatus,
+}: {
+  invoice: Invoice
+  onChangeStatus: (invoice: Invoice, status: InvoiceStatus) => void
+}) {
   const { t } = useTranslation()
   return (
     <Menu.Root>
@@ -52,7 +65,7 @@ function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
 
       <Menu.Portal>
         <Menu.Positioner sideOffset={4} align="end" className="z-[60]">
-          <Menu.Popup className="min-w-44 rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg transition-[transform,opacity] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
+          <Menu.Popup className={popupClass}>
             <Menu.Item disabled className={menuItemClass}>
               <Share2 className="size-3.5" />
               {t("invoice.share")}
@@ -65,10 +78,31 @@ function InvoiceActionsMenu({ invoice }: { invoice: Invoice }) {
               <QrCode className="size-3.5" />
               {t("invoice.generatePix")}
             </Menu.Item>
-            <Menu.Item disabled className={menuItemClass}>
-              <RefreshCw className="size-3.5" />
-              {t("invoice.changeStatus")}
-            </Menu.Item>
+            <Menu.SubmenuRoot>
+              <Menu.SubmenuTrigger className={menuItemClass}>
+                <RefreshCw className="size-3.5" />
+                {t("invoice.changeStatus")}
+                <ChevronRight className="ml-auto size-3.5" />
+              </Menu.SubmenuTrigger>
+              <Menu.Portal>
+                <Menu.Positioner sideOffset={4} className="z-[60]">
+                  <Menu.Popup className={popupClass}>
+                    {INVOICE_STATUSES.map((status) => (
+                      <Menu.Item
+                        key={status}
+                        disabled={status === invoice.status}
+                        onClick={() => onChangeStatus(invoice, status)}
+                        className={menuItemClass}
+                      >
+                        <StatusDot className={STATUS_DOT[status]} />
+                        {invoiceStatusLabel(status)}
+                        {status === invoice.status && <Check className="ml-auto size-3.5" />}
+                      </Menu.Item>
+                    ))}
+                  </Menu.Popup>
+                </Menu.Positioner>
+              </Menu.Portal>
+            </Menu.SubmenuRoot>
             <Menu.Item disabled className={menuItemClass}>
               <Paperclip className="size-3.5" />
               {invoice.hasAttachment ? t("invoice.viewAttachment") : t("invoice.attachInvoice")}
@@ -102,6 +136,7 @@ export function InvoicesTable({
   onStatusChange,
   onMonthFromChange,
   onMonthToChange,
+  onInvoiceStatusChange,
   isPending,
   isFetching,
 }: {
@@ -112,6 +147,7 @@ export function InvoicesTable({
   onStatusChange: (status: InvoiceStatus | "all") => void
   onMonthFromChange: (value: string) => void
   onMonthToChange: (value: string) => void
+  onInvoiceStatusChange: (invoice: Invoice, status: InvoiceStatus) => void
   isPending: boolean
   isFetching: boolean
 }) {
@@ -200,7 +236,9 @@ export function InvoicesTable({
       key: "actions",
       header: "",
       className: "w-10 text-right",
-      cell: (invoice) => <InvoiceActionsMenu invoice={invoice} />,
+      cell: (invoice) => (
+        <InvoiceActionsMenu invoice={invoice} onChangeStatus={onInvoiceStatusChange} />
+      ),
     },
   ]
 

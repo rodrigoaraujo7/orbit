@@ -6,6 +6,8 @@ import type {
   DashboardMetrics,
   Invoice,
   InvoiceListFilters,
+  InvoiceStatus,
+  PaymentMethod,
   ProjectListFilters,
   WorkflowRun,
   WorkflowStatus,
@@ -133,6 +135,13 @@ type BrowserRouter = {
   }
   invoices: {
     list: { query: (input: InvoiceListFilters) => Promise<InvoiceListResult> }
+    setStatus: {
+      mutate: (input: {
+        id: string
+        status: InvoiceStatus
+        paymentMethod?: PaymentMethod
+      }) => Promise<{ ok: true }>
+    }
   }
   tools: {
     listCustom: { query: () => Promise<CustomTool[]> }

@@ -114,6 +114,7 @@ export function createTrpcMock() {
       list: {
         query: vi.fn().mockResolvedValue({ items: [], totals: { count: 0, paid: 0, overdue: 0 } }),
       },
+      setStatus: { mutate: vi.fn().mockResolvedValue({ ok: true }) },
     },
     tools: {
       listCustom: { query: vi.fn().mockResolvedValue([] as CustomTool[]) },

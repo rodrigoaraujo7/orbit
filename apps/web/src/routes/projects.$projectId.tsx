@@ -1,5 +1,11 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { keepPreviousData, useIsFetching, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  keepPreviousData,
+  useIsFetching,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { ArrowLeft, GitBranch, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react"
 import { useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
@@ -18,8 +24,9 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Emphasis } from "@/components/ui/emphasis"
 import { GitHubIcon } from "@/components/ui/github-icon"
 import { Tabs, TabsDock, TabsDockTab, TabsPanel } from "@/components/ui/tabs"
+import { toast } from "@/components/ui/toast"
 import { Tooltip } from "@/components/ui/tooltip"
-import { isDealFree } from "@/data/projects"
+import { isDealFree, type InvoiceStatus } from "@/data/projects"
 import { freeLabel } from "@/i18n/labels"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
 import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/format"
@@ -122,6 +129,18 @@ function ProjectDetailPage() {
   function refreshTools() {
     void queryClient.invalidateQueries({ queryKey: ["projects"] })
   }
+
+  const setInvoiceStatus = useMutation({
+    mutationFn: (input: { id: string; status: InvoiceStatus }) =>
+      trpc.invoices.setStatus.mutate(input),
+    onSuccess: () => {
+      toast.add({ title: t("invoice.statusChanged"), type: "success" })
+      for (const queryKey of [["projects"], ["dashboard"], ["invoices"], ["audit"]]) {
+        void queryClient.invalidateQueries({ queryKey })
+      }
+    },
+    onError: () => toast.add({ title: t("invoice.statusChangeError"), type: "error" }),
+  })
 
   function selectBranch(next: string) {
     patchSearch({ branch: next === repoQuery.data?.defaultBranch ? undefined : next })
@@ -343,6 +362,9 @@ function ProjectDetailPage() {
                   }
                   onMonthFromChange={(from) => patchSearch({ from: from || undefined })}
                   onMonthToChange={(to) => patchSearch({ to: to || undefined })}
+                  onInvoiceStatusChange={(invoice, status) =>
+                    setInvoiceStatus.mutate({ id: invoice.id, status })
+                  }
                   isPending={invoicesQuery.isPending}
                   isFetching={invoicesQuery.isFetching}
                 />
