@@ -143,6 +143,8 @@
     "generateBoleto": "Gerar boleto",
     "generatePix": "Gerar pix",
     "changeStatus": "Alterar status",
+    "statusChanged": "Status da fatura atualizado",
+    "statusChangeError": "Não foi possível atualizar o status da fatura",
     "viewAttachment": "Ver anexo",
     "attachInvoice": "Anexar fatura",
     "empty": "Nenhuma fatura encontrada com esses filtros."

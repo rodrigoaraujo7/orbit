@@ -1,4 +1,4 @@
-import { cleanup, screen } from "@testing-library/react"
+import { cleanup, fireEvent, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { Invoice } from "@/data/projects"
@@ -46,10 +46,11 @@ const invoices: Invoice[] = [
 
 describe("InvoicesTable", () => {
   it("renders rows, menus and filter callbacks", async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ pointerEventsCheck: 0 })
     const onStatusChange = vi.fn()
     const onMonthFromChange = vi.fn()
     const onMonthToChange = vi.fn()
+    const onInvoiceStatusChange = vi.fn()
     renderWithProviders(
       <InvoicesTable
         invoices={invoices}
@@ -59,6 +60,7 @@ describe("InvoicesTable", () => {
         onStatusChange={onStatusChange}
         onMonthFromChange={onMonthFromChange}
         onMonthToChange={onMonthToChange}
+        onInvoiceStatusChange={onInvoiceStatusChange}
         isPending={false}
         isFetching={false}
       />,
@@ -66,18 +68,26 @@ describe("InvoicesTable", () => {
     expect(screen.getByText("One-time payment")).toBeInTheDocument()
     expect(screen.getByText("Not set")).toBeInTheDocument()
     await user.click(screen.getAllByRole("button", { name: "More actions" })[0]!)
-    expect(await screen.findByText("Share invoice")).toBeInTheDocument()
-    expect(screen.getByText("View attachment")).toBeInTheDocument()
-    await user.click(screen.getByText("Share invoice"))
-    await user.click(screen.getAllByRole("button", { name: "More actions" })[0]!)
-    await user.click(await screen.findByText("View attachment"))
+    for (const name of ["Share invoice", "Generate boleto", "Generate pix", "View attachment"]) {
+      expect(await screen.findByRole("menuitem", { name })).toHaveAttribute("aria-disabled", "true")
+    }
+    await user.keyboard("{Escape}")
     await user.click(screen.getAllByRole("button", { name: "More actions" })[1]!)
-    expect(await screen.findByText("Attach invoice")).toBeInTheDocument()
-    await user.click(screen.getByText("Generate boleto"))
-    await user.click(screen.getAllByRole("button", { name: "More actions" })[2]!)
-    await user.click(await screen.findByText("Generate pix"))
+    expect(await screen.findByRole("menuitem", { name: "Attach invoice" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    )
+    await user.keyboard("{Escape}")
+
     await user.click(screen.getAllByRole("button", { name: "More actions" })[0]!)
-    await user.click(await screen.findByText("Change status"))
+    await user.click(await screen.findByRole("menuitem", { name: "Change status" }))
+    expect(await screen.findByRole("menuitem", { name: "Paid" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    )
+    fireEvent.click(screen.getByRole("menuitem", { name: "Overdue" }))
+    expect(onInvoiceStatusChange).toHaveBeenCalledWith(invoices[0], "overdue")
+
     await user.click(screen.getAllByRole("combobox")[0]!)
     await user.click(await screen.findByRole("option", { name: "Paid" }))
     expect(onStatusChange).toHaveBeenCalledWith("paid")
@@ -116,6 +126,7 @@ describe("InvoicesTable", () => {
         onStatusChange={vi.fn()}
         onMonthFromChange={vi.fn()}
         onMonthToChange={vi.fn()}
+        onInvoiceStatusChange={vi.fn()}
         isPending
         isFetching
       />,
@@ -133,6 +144,7 @@ describe("InvoicesTable", () => {
         onStatusChange={vi.fn()}
         onMonthFromChange={vi.fn()}
         onMonthToChange={vi.fn()}
+        onInvoiceStatusChange={vi.fn()}
         isPending={false}
         isFetching
       />,

@@ -85,4 +85,24 @@ describe("generateInvoices", () => {
     )
     expect(invoices.every((row) => row.status === "pending")).toBe(true)
   })
+
+  it("replaces the derived status with an override for the same invoice id", () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 5, 15))
+    const invoices = generateInvoices(
+      project({ deal: { kind: "installment", amount: 2000, installments: 2 } }),
+      "Ada",
+      {
+        "p1-invoice-1": { status: "overdue" },
+        "p1-invoice-2": { status: "paid", paymentMethod: "pix", paidAt: "2026-06-15T10:00" },
+      },
+    )
+    expect(invoices[0]).toMatchObject({ status: "overdue", paymentMethod: undefined })
+    expect(invoices[0]?.paidAt).toBeUndefined()
+    expect(invoices[1]).toMatchObject({
+      status: "paid",
+      paymentMethod: "pix",
+      paidAt: "2026-06-15T10:00",
+    })
+  })
 })
