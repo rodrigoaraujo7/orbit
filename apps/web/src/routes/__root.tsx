@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import { I18nextProvider, useTranslation } from "react-i18next"
 
 import { AppShell } from "@/components/layout/app-shell"
+import { LoadingScreen } from "@/components/layout/loading-screen"
 import { Toaster } from "@/components/ui/toast"
 import i18n from "@/i18n"
 import { authClient } from "@/lib/auth-client"
@@ -14,15 +15,6 @@ const queryClient = new QueryClient()
 
 /** Reached without a session: sign-in plus the two password recovery screens. */
 const PUBLIC_ROUTES = new Set(["/login", "/forgot-password", "/reset-password"])
-
-function LoadingScreen({ message }: { message?: string }) {
-  const { t } = useTranslation()
-  return (
-    <div className="grid min-h-svh place-items-center text-sm text-muted-foreground">
-      {message ?? t("common.loading")}
-    </div>
-  )
-}
 
 function WorkspaceGate({ children }: { children: ReactNode }) {
   const { t } = useTranslation()

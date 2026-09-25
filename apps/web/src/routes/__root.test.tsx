@@ -110,7 +110,7 @@ describe("root Gate", () => {
   it("shows a loading screen while the session is pending", () => {
     session.isPending = true
     renderWithProviders(<Root />)
-    expect(screen.getByText("Loading…")).toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent("Opening your workspace…")
   })
 
   it("keeps public routes mounted while the session is refetching", () => {
@@ -119,7 +119,7 @@ describe("root Gate", () => {
     pathname.value = "/login"
     renderWithProviders(<Root />)
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
-    expect(screen.queryByText("Loading…")).not.toBeInTheDocument()
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
   })
 
   it("redirects anonymous users to login", () => {
@@ -186,7 +186,7 @@ describe("root Gate", () => {
     pathname.value = "/this-page-does-not-exist"
     matches.value = [{ status: "success", _notFound: true }]
     renderWithProviders(<Root />)
-    expect(screen.getByText("Loading…")).toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent("Opening your workspace…")
     expect(screen.queryByTestId("outlet")).not.toBeInTheDocument()
   })
 
@@ -215,7 +215,7 @@ describe("root Gate", () => {
   it("shows workspace loading and error states", () => {
     workspace.isPending = true
     const { rerender } = renderWithProviders(<Root />)
-    expect(screen.getByText("Loading…")).toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent("Opening your workspace…")
     workspace.isPending = false
     workspace.isError = true
     rerender(<Root />)
