@@ -1,33 +1,10 @@
 import type { LucideIcon } from "lucide-react"
-import { useRef } from "react"
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 
 import { cn } from "@/lib/utils"
 
-export function Tabs({
-  onValueChange,
-  className,
-  ...props
-}: React.ComponentProps<typeof TabsPrimitive.Root>) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  return (
-    <div ref={ref} className="max-md:scroll-mt-14">
-      <TabsPrimitive.Root
-        {...props}
-        className={className}
-        onValueChange={(value, eventDetails) => {
-          onValueChange?.(value, eventDetails)
-          ref.current?.scrollIntoView({
-            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-              ? "auto"
-              : "smooth",
-            block: "start",
-          })
-        }}
-      />
-    </div>
-  )
+export function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Root>) {
+  return <TabsPrimitive.Root className={className} {...props} />
 }
 
 export function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
