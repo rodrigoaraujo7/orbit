@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { DASH_ORIGIN } from "../dash/index.ts"
 import { trustedWebOrigins } from "../../web-origin/index.ts"
+import { DASH_ORIGIN } from "../dash/index.ts"
 import {
   INVALID_AUTH_TRUSTED_ORIGIN,
   resolveAuthTrustedOrigin,
   resolveTrustedOrigins,
+  VERCEL_PREVIEW_ORIGIN,
 } from "./index.ts"
 
 afterEach(() => {
@@ -42,28 +43,59 @@ describe("resolveAuthTrustedOrigin", () => {
     expect(() => resolveAuthTrustedOrigin("ftp://example.test")).toThrow(
       INVALID_AUTH_TRUSTED_ORIGIN,
     )
-    expect(() => resolveAuthTrustedOrigin("https:///")).toThrow(INVALID_AUTH_TRUSTED_ORIGIN)
+    expect(() => resolveAuthTrustedOrigin("https://")).toThrow(INVALID_AUTH_TRUSTED_ORIGIN)
   })
 })
 
 describe("resolveTrustedOrigins", () => {
-  it("trusts the web origin by default and never a host wildcard", () => {
+  it("trusts the web origin and this project's Vercel previews", () => {
     delete process.env.AUTH_TRUSTED_ORIGIN
-    expect(resolveTrustedOrigins()).toEqual([...trustedWebOrigins])
-    expect(resolveTrustedOrigins(null)).toEqual([...trustedWebOrigins])
+    expect(resolveTrustedOrigins()).toEqual([...trustedWebOrigins, VERCEL_PREVIEW_ORIGIN])
+    expect(resolveTrustedOrigins(null)).toEqual([...trustedWebOrigins, VERCEL_PREVIEW_ORIGIN])
     expect(resolveTrustedOrigins()).not.toContain(DASH_ORIGIN)
     expect(resolveTrustedOrigins()).not.toContain("https://*.ngrok-free.app")
-    expect(resolveTrustedOrigins().some((origin) => origin.includes("*"))).toBe(false)
+    expect(resolveTrustedOrigins()).not.toContain("https://*.vercel.app")
+    expect(resolveTrustedOrigins().filter((origin) => origin.includes("*"))).toEqual([
+      VERCEL_PREVIEW_ORIGIN,
+    ])
+  })
+
+  it("accepts this project's preview hosts and rejects other sites", async () => {
+    const { matchesOriginPattern } =
+      (await import("../../../node_modules/better-auth/dist/auth/trusted-origins.mjs")) as {
+        matchesOriginPattern: (url: string, pattern: string) => boolean
+      }
+    const allowed = [
+      "https://projects-manager-web-git-cursor-6d7579-rodrigo-araujos-projects.vercel.app",
+      "https://projects-manager-web-abc123-rodrigo-araujos-projects.vercel.app",
+    ]
+    const rejected = [
+      "https://evil.vercel.app",
+      "https://*.vercel.app",
+      "https://projects-manager-web.vercel.app",
+      "https://projects-manager-web-git-x-other-team.vercel.app",
+      "http://projects-manager-web-git-x-rodrigo-araujos-projects.vercel.app",
+      "https://projects-manager-web-git-x-rodrigo-araujos-projects.vercel.app.evil.com",
+      "https://app.projectsmanager.rodrigoleite.dev",
+    ]
+    for (const origin of allowed) {
+      expect(matchesOriginPattern(origin, VERCEL_PREVIEW_ORIGIN)).toBe(true)
+    }
+    for (const origin of rejected) {
+      expect(matchesOriginPattern(origin, VERCEL_PREVIEW_ORIGIN)).toBe(false)
+    }
   })
 
   it("appends the dash origin only when it is provided", () => {
     expect(resolveTrustedOrigins(undefined, DASH_ORIGIN)).toEqual([
       ...trustedWebOrigins,
       DASH_ORIGIN,
+      VERCEL_PREVIEW_ORIGIN,
     ])
     expect(resolveTrustedOrigins(DASH_ORIGIN, DASH_ORIGIN)).toEqual([
       ...trustedWebOrigins,
       DASH_ORIGIN,
+      VERCEL_PREVIEW_ORIGIN,
     ])
   })
 
@@ -71,13 +103,22 @@ describe("resolveTrustedOrigins", () => {
     expect(resolveTrustedOrigins("https://tunnel.example.test")).toEqual([
       ...trustedWebOrigins,
       "https://tunnel.example.test",
+      VERCEL_PREVIEW_ORIGIN,
     ])
     expect(resolveTrustedOrigins("https://tunnel.example.test", DASH_ORIGIN)).toEqual([
       ...trustedWebOrigins,
       DASH_ORIGIN,
       "https://tunnel.example.test",
+      VERCEL_PREVIEW_ORIGIN,
     ])
-    expect(resolveTrustedOrigins(trustedWebOrigins[0])).toEqual([...trustedWebOrigins])
+    expect(resolveTrustedOrigins(trustedWebOrigins[0])).toEqual([
+      ...trustedWebOrigins,
+      VERCEL_PREVIEW_ORIGIN,
+    ])
+    expect(resolveTrustedOrigins(undefined, VERCEL_PREVIEW_ORIGIN)).toEqual([
+      ...trustedWebOrigins,
+      VERCEL_PREVIEW_ORIGIN,
+    ])
     vi.stubEnv("AUTH_TRUSTED_ORIGIN", "https://from-env.example.test")
     expect(resolveTrustedOrigins()).toContain("https://from-env.example.test")
   })
