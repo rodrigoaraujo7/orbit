@@ -9,6 +9,7 @@ import i18n from "@/i18n"
 import { authClient } from "@/lib/auth-client"
 import { ProjectsProvider, useProjects } from "@/lib/projects-store"
 import { RegistryProvider, useRegistry } from "@/lib/registry-store"
+import { renderedPathname, showStopScreen } from "./-rendered-path"
 
 const queryClient = new QueryClient()
 
@@ -35,43 +36,68 @@ function WorkspaceGate({ children }: { children: ReactNode }) {
   return children
 }
 
+function WorkspaceProviders({ children }: { children: ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RegistryProvider>
+        <ProjectsProvider>{children}</ProjectsProvider>
+      </RegistryProvider>
+    </QueryClientProvider>
+  )
+}
+
 function Gate() {
   const { data, isPending } = authClient.useSession()
-  const { pathname, isNotFound, isRouteError } = useRouterState({
+  const { pathname, isNotFound, isRouteError, status, matches } = useRouterState({
     select: (s) => ({
       pathname: s.location.pathname,
-      isNotFound: (s.matches ?? []).some((match) => match.status === "notFound" || match._notFound),
-      isRouteError: (s.matches ?? []).some((match) => match.status === "error"),
+      status: s.status,
+      matches: s.matches,
+      isNotFound: (s.matches ?? []).some(
+        (match) => match?.status === "notFound" || match?._notFound,
+      ),
+      isRouteError: (s.matches ?? []).some((match) => match?.status === "error"),
     }),
   })
 
-  const isPublic = PUBLIC_ROUTES.has(pathname)
+  const activePath = renderedPathname(pathname, status, matches, (path) => PUBLIC_ROUTES.has(path))
+  const isPublic = PUBLIC_ROUTES.has(activePath)
+  const stopScreen = showStopScreen(status, isNotFound, isRouteError)
 
   if (isPending && !isPublic) return <LoadingScreen />
-  if (!data && !isPublic && !isNotFound) return <Navigate to="/login" />
+  if (!data && !isPublic && !stopScreen) {
+    // The address is already public, but the private page is still mounted.
+    // Redirecting again restarts the navigation and never lets login paint.
+    if (PUBLIC_ROUTES.has(pathname)) {
+      return (
+        <WorkspaceProviders>
+          <Outlet />
+        </WorkspaceProviders>
+      )
+    }
+    return <Navigate to="/login" />
+  }
   if (data && isPublic) return <Navigate to="/" />
   if (isPublic) return <Outlet />
-  if (isNotFound || isRouteError) {
+  if (stopScreen) {
     return (
-      <div className="min-h-svh">
-        <Outlet />
-      </div>
+      <WorkspaceProviders>
+        <div className="min-h-svh">
+          <Outlet />
+        </div>
+      </WorkspaceProviders>
     )
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <RegistryProvider>
-        <ProjectsProvider>
-          <WorkspaceGate>
-            <AppShell>
-              <Outlet />
-            </AppShell>
-          </WorkspaceGate>
-          <Toaster />
-        </ProjectsProvider>
-      </RegistryProvider>
-    </QueryClientProvider>
+    <WorkspaceProviders>
+      <WorkspaceGate>
+        <AppShell>
+          <Outlet />
+        </AppShell>
+      </WorkspaceGate>
+      <Toaster />
+    </WorkspaceProviders>
   )
 }
 

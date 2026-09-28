@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router"
+import { Link, useRouterState } from "@tanstack/react-router"
 import { ArrowLeft, Compass, RotateCcw, TriangleAlert } from "lucide-react"
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
@@ -81,8 +81,14 @@ function HomeLink() {
   )
 }
 
+function useRouterPending() {
+  return useRouterState({ select: (state) => state.status === "pending" })
+}
+
 function NotFoundPage() {
   const { t } = useTranslation()
+  const pending = useRouterPending()
+  if (pending) return null
   return (
     <ErrorPage
       code={t("errors.notFoundCode")}
@@ -96,6 +102,8 @@ function NotFoundPage() {
 
 function RouteErrorPage({ reset }: { error?: unknown; reset?: () => void }) {
   const { t } = useTranslation()
+  const pending = useRouterPending()
+  if (pending) return null
   return (
     <ErrorPage
       code={t("errors.genericCode")}
