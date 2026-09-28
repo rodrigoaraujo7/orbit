@@ -43,7 +43,7 @@ describe("LoadingScreen", () => {
     expect(indexHtml).toContain('id="boot"')
     expect(indexHtml).toContain('role="status"')
     expect(indexHtml).toContain("@layer base")
-    expect(indexHtml).toContain("background: #020202")
+    expect(indexHtml).toContain("background: #030303")
     expect(indexHtml).not.toContain("#121212")
     expect(indexHtml).not.toMatch(/#root\s*\{[^}]*background/)
   })
