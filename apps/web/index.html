@@ -5,9 +5,119 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>projects-manager</title>
+    <!--
+      Critical paint for the cold load, before the JS bundle (and Tailwind)
+      arrive. Copy must stay in sync with common.openingWorkspace and
+      auth.brand in both locale catalogs.
+    -->
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body,
+      #root {
+        margin: 0;
+        min-height: 100%;
+        background: #121212;
+        color: #b5b5b5;
+      }
+      #boot {
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        padding: 1.5rem;
+        text-align: center;
+        font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+      }
+      .boot-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+      }
+      .boot-mark {
+        position: relative;
+        width: 4rem;
+        height: 4rem;
+        display: grid;
+        place-items: center;
+      }
+      .boot-spin {
+        position: absolute;
+        inset: 0;
+        border-radius: 9999px;
+        border: 2px solid rgba(192, 58, 74, 0.25);
+        border-top-color: #c03a4a;
+        animation: boot-spin 0.8s linear infinite;
+      }
+      .boot-logo {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: grid;
+        place-items: center;
+        border-radius: 0.5rem;
+        background: #c03a4a;
+        color: #fafafa;
+        font-weight: 700;
+        font-size: 1rem;
+        box-shadow: 0 8px 24px rgba(192, 58, 74, 0.35);
+      }
+      .boot-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      .boot-brand {
+        margin: 0;
+        color: #fafafa;
+        font-family: "Instrument Serif", ui-serif, Georgia, serif;
+        font-size: 1.5rem;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+      }
+      .boot-label {
+        margin: 0;
+        font-size: 0.875rem;
+      }
+      @keyframes boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-spin {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="boot" role="status" aria-live="polite" aria-busy="true">
+        <div class="boot-stack">
+          <div class="boot-mark">
+            <span class="boot-spin" aria-hidden="true"></span>
+            <span class="boot-logo">P</span>
+          </div>
+          <div class="boot-copy">
+            <p class="boot-brand">Projects Manager</p>
+            <p id="boot-label" class="boot-label">Opening your workspace…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      try {
+        if (localStorage.getItem("locale") === "pt-BR") {
+          document.documentElement.lang = "pt-BR"
+          var label = document.getElementById("boot-label")
+          if (label) label.textContent = "Abrindo seu espaço de trabalho…"
+        }
+      } catch (e) {
+        /* storage blocked */
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
