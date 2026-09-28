@@ -43,7 +43,7 @@ describe("resolveAuthTrustedOrigin", () => {
     expect(() => resolveAuthTrustedOrigin("ftp://example.test")).toThrow(
       INVALID_AUTH_TRUSTED_ORIGIN,
     )
-    expect(() => resolveAuthTrustedOrigin("https://")).toThrow(INVALID_AUTH_TRUSTED_ORIGIN)
+    expect(() => resolveAuthTrustedOrigin("https:///")).toThrow(INVALID_AUTH_TRUSTED_ORIGIN)
   })
 })
 
