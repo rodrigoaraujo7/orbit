@@ -139,14 +139,22 @@ const Grainient = ({
     const container = containerRef.current
     if (!container) return
 
-    const renderer = new Renderer({
-      webgl: 2,
-      alpha: true,
-      antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2),
-    })
+    let renderer
+    try {
+      renderer = new Renderer({
+        webgl: 2,
+        alpha: true,
+        antialias: false,
+        dpr: Math.min(window.devicePixelRatio || 1, 2),
+      })
+    } catch {
+      // A missing WebGL context throws inside ogl. That used to escape the
+      // effect and the route error boundary replaced the page with the 500 screen.
+      return
+    }
 
     const gl = renderer.gl
+    if (!gl) return
     const canvas = gl.canvas
     canvas.style.width = "100%"
     canvas.style.height = "100%"
