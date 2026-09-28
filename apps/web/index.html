@@ -8,19 +8,22 @@
     <!--
       Critical paint for the cold load, before the JS bundle (and Tailwind)
       arrive. Copy must stay in sync with common.openingWorkspace and
-      auth.brand in both locale catalogs.
+      auth.brand in both locale catalogs. The fill is #030303, the sRGB
+      value of --background (oklch(0.1 0 0), the same color inputs use). It lives in
+      @layer base and does not paint #root, so the theme can replace it.
     -->
     <style>
-      :root {
-        color-scheme: dark;
-      }
-      html,
-      body,
-      #root {
-        margin: 0;
-        min-height: 100%;
-        background: #121212;
-        color: #b5b5b5;
+      @layer base {
+        :root {
+          color-scheme: dark;
+        }
+        html,
+        body {
+          margin: 0;
+          min-height: 100%;
+          background: #030303;
+          color: #b5b5b5;
+        }
       }
       #boot {
         min-height: 100svh;

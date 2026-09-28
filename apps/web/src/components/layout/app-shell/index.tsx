@@ -61,7 +61,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [collapsed])
 
   return (
-    <div className="flex min-h-svh flex-col md:flex-row">
+    <div className="flex min-h-svh flex-col bg-background md:flex-row">
       {/* Desktop sidebar */}
       <aside
         className={cn(
@@ -111,7 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </DrawerContent>
       </Drawer>
 
-      <main className="flex-1 overflow-x-hidden">{children}</main>
+      <main className="flex-1 overflow-x-hidden bg-background">{children}</main>
     </div>
   )
 }

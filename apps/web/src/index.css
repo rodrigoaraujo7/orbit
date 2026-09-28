@@ -19,7 +19,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --background: oklch(0.09 0 0);
+  --background: oklch(0.1 0 0);
   --foreground: oklch(0.985 0 0);
 
   --card: oklch(0.14 0 0);
@@ -136,7 +136,7 @@
     @apply relative bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply bg-background font-sans;
   }
 
   /* Scrollbar minimalista: fina, sem seta, some quando não tem hover. */

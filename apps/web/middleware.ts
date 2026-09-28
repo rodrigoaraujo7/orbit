@@ -4,6 +4,9 @@ const PRODUCTION_API_ORIGIN = "https://api-production-b70f.up.railway.app"
 
 function previewApiOrigin(env: { VERCEL_ENV?: string; VERCEL_GIT_PULL_REQUEST_ID?: string }) {
   const pullRequest = env.VERCEL_GIT_PULL_REQUEST_ID?.trim()
+  // The first deployment of a branch is created before the pull request
+  // exists, so this id is empty and `/api` stays on production. A later web
+  // deploy, after the pull request is open, receives the id.
   if (env.VERCEL_ENV === "preview" && pullRequest) {
     return `https://api-projects-manager-pr-${pullRequest}.up.railway.app`
   }
