@@ -7,6 +7,7 @@ export default defineConfig({
       "packages/ui/vitest.config.ts",
       "apps/api/vitest.config.ts",
       "apps/web/vitest.config.ts",
+      "apps/marketing/vitest.config.ts",
     ],
     coverage: {
       provider: "v8",
@@ -18,6 +19,7 @@ export default defineConfig({
         "packages/ui/src/**/*.{ts,tsx}",
         "apps/api/src/**/*.ts",
         "apps/web/src/**/*.{ts,tsx}",
+        "apps/marketing/src/**/*.{ts,tsx}",
       ],
       exclude: [
         "**/*.test.ts",
@@ -34,6 +36,7 @@ export default defineConfig({
         "apps/web/src/test/**",
         "apps/api/src/test/**",
         "packages/ui/src/test/**",
+        "apps/marketing/src/test/**",
         "packages/ui/src/Grainient.jsx",
         "packages/ui/src/badge.tsx",
         "packages/ui/src/button.tsx",

@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "ui/theme.css";
+
+/* next/font sets these variables on <html>. They replace the family names from the shared theme. */
+@theme inline {
+  --font-sans: var(--font-instrument-sans), "Instrument Sans", sans-serif;
+  --font-heading: var(--font-instrument-serif), "Instrument Serif", serif;
+  --font-subtitle: var(--font-instrument-sans), "Instrument Sans", sans-serif;
+}

@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "title": "Projects Manager",
+    "description": "Clients, projects, invoices, and encrypted tool credentials for freelance developers — in one account."
+  },
+  "nav": {
+    "product": "Product",
+    "pains": "Pains",
+    "features": "Features",
+    "how": "How it works",
+    "security": "Security",
+    "faq": "FAQ",
+    "signIn": "Sign in",
+    "getStarted": "Get started",
+    "language": "Language",
+    "english": "English",
+    "portuguese": "Português"
+  },
+  "hero": {
+    "eyebrow": "For freelance developers",
+    "titleBefore": "Run the studio from ",
+    "titleEmphasis": "one place",
+    "titleAfter": ".",
+    "subtitle": "Clients, projects, invoices, and the logins for tools you pay for — kept in your account, not in a spreadsheet.",
+    "primary": "Get started",
+    "secondary": "See how it works"
+  },
+  "pains": {
+    "title": "The work is scattered. The money is too.",
+    "subtitle": "Freelancing breaks down in the gaps between tools.",
+    "scattered": {
+      "title": "Clients and projects live in spreadsheets",
+      "body": "Names, statuses, and notes drift across tabs until you cannot tell what is still active."
+    },
+    "invoices": {
+      "title": "Invoices go out and then go quiet",
+      "body": "Without a payment ruler, unpaid months hide until cash is already tight."
+    },
+    "secrets": {
+      "title": "Tool credentials end up in chat",
+      "body": "Paid logins get pasted into messages because there is nowhere safe to keep them next to the project."
+    },
+    "overview": {
+      "title": "Work and revenue never share a view",
+      "body": "The board says what is moving. Nothing says what it is worth this month."
+    }
+  },
+  "features": {
+    "title": "Everything the studio needs",
+    "subtitle": "One account. Your clients, your pipeline, your billing.",
+    "kanban": {
+      "title": "Kanban pipeline",
+      "body": "Move a project across the board as the work moves, without losing the client or the money attached to it."
+    },
+    "invoices": {
+      "title": "Invoices and a payment ruler",
+      "body": "See which months are paid, pending, or late for every project."
+    },
+    "finance": {
+      "title": "Finance dashboard",
+      "body": "Revenue, outstanding invoices, and the shape of the month, in one view."
+    },
+    "secrets": {
+      "title": "Encrypted tool secrets",
+      "body": "Store the credentials for the tools you pay for, sealed per account."
+    },
+    "github": {
+      "title": "GitHub Actions on the project",
+      "body": "Connect a personal token and read the latest workflow runs for the repository already on the project."
+    },
+    "audit": {
+      "title": "Audit log",
+      "body": "A record of what changed, so a month later you can still see who moved what."
+    }
+  },
+  "how": {
+    "title": "Three steps, then it is your system",
+    "addClient": {
+      "title": "Add a client",
+      "body": "Keep the people you bill in a registry you can reuse on every project."
+    },
+    "createProject": {
+      "title": "Create a project",
+      "body": "Attach the client, the repository, and the tools that project depends on."
+    },
+    "track": {
+      "title": "Track work and billing",
+      "body": "Move the card, send the invoice, and watch the month fill in."
+    }
+  },
+  "security": {
+    "title": "Isolated by default",
+    "subtitle": "Your studio data is not mixed with anyone else's.",
+    "isolation": {
+      "title": "Per-user isolation",
+      "body": "Every row belongs to your account. Another user cannot read your clients, projects, or invoices."
+    },
+    "encryption": {
+      "title": "Envelope encryption for secrets",
+      "body": "Tool credentials are sealed before they are stored, and stay attached to the project that uses them."
+    },
+    "emailCode": {
+      "title": "An email code on every sign-in",
+      "body": "A password is not enough. Each login also needs a six-digit code sent to your inbox."
+    }
+  },
+  "faq": {
+    "title": "Questions",
+    "who": {
+      "q": "Who is this for?",
+      "a": "Freelance developers who bill clients, run a handful of projects, and pay for the tools those projects need."
+    },
+    "data": {
+      "q": "Where does my data live?",
+      "a": "In your account, on the app. This site is only the introduction."
+    },
+    "secrets": {
+      "q": "Can I store API keys and logins?",
+      "a": "Yes. Paid-tool credentials are encrypted per account and stay attached to the project that uses them."
+    },
+    "start": {
+      "q": "How do I start?",
+      "a": "Create an account on the app, confirm your email, and add your first client."
+    }
+  },
+  "cta": {
+    "title": "Put the studio in one place.",
+    "subtitle": "Sign in if you already have an account, or create one and add your first client.",
+    "button": "Get started"
+  },
+  "footer": {
+    "tagline": "Clients, projects, invoices, and tool credentials for freelance developers.",
+    "rights": "Projects Manager"
+  }
+}

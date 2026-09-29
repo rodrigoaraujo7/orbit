@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "title": "Projects Manager",
+    "description": "Clientes, projetos, faturas e credenciais de ferramentas criptografadas para desenvolvedores freelancers — numa só conta."
+  },
+  "nav": {
+    "product": "Produto",
+    "pains": "Dores",
+    "features": "Recursos",
+    "how": "Como funciona",
+    "security": "Segurança",
+    "faq": "Perguntas",
+    "signIn": "Entrar",
+    "getStarted": "Começar",
+    "language": "Idioma",
+    "english": "English",
+    "portuguese": "Português"
+  },
+  "hero": {
+    "eyebrow": "Para desenvolvedores freelancers",
+    "titleBefore": "Conduza o estúdio num ",
+    "titleEmphasis": "só lugar",
+    "titleAfter": ".",
+    "subtitle": "Clientes, projetos, faturas e os acessos das ferramentas que você paga — na sua conta, não numa planilha.",
+    "primary": "Começar",
+    "secondary": "Ver como funciona"
+  },
+  "pains": {
+    "title": "O trabalho está espalhado. O dinheiro também.",
+    "subtitle": "O freelance se perde nos vãos entre as ferramentas.",
+    "scattered": {
+      "title": "Clientes e projetos vivem em planilhas",
+      "body": "Nomes, status e anotações se espalham em abas até você não saber o que ainda está ativo."
+    },
+    "invoices": {
+      "title": "A fatura sai e depois o silêncio",
+      "body": "Sem uma régua de pagamento, os meses em aberto só aparecem quando o caixa já apertou."
+    },
+    "secrets": {
+      "title": "Credenciais de ferramentas vão parar no chat",
+      "body": "Logins pagos são colados em mensagens porque não há um lugar seguro para guardá-los junto do projeto."
+    },
+    "overview": {
+      "title": "Trabalho e receita nunca dividem a mesma tela",
+      "body": "O quadro diz o que está andando. Nada diz quanto isso vale neste mês."
+    }
+  },
+  "features": {
+    "title": "Tudo o que o estúdio precisa",
+    "subtitle": "Uma conta. Seus clientes, seu fluxo, sua cobrança.",
+    "kanban": {
+      "title": "Pipeline em kanban",
+      "body": "Mova o projeto no quadro conforme o trabalho anda, sem perder o cliente nem o dinheiro ligados a ele."
+    },
+    "invoices": {
+      "title": "Faturas e régua de pagamento",
+      "body": "Veja quais meses estão pagos, pendentes ou atrasados em cada projeto."
+    },
+    "finance": {
+      "title": "Painel financeiro",
+      "body": "Receita, faturas em aberto e o formato do mês, numa só visão."
+    },
+    "secrets": {
+      "title": "Segredos de ferramentas criptografados",
+      "body": "Guarde as credenciais das ferramentas que você paga, seladas por conta."
+    },
+    "github": {
+      "title": "GitHub Actions no projeto",
+      "body": "Conecte um token pessoal e leia as últimas execuções do repositório que já está no projeto."
+    },
+    "audit": {
+      "title": "Registro de auditoria",
+      "body": "Um histórico do que mudou, para um mês depois você ainda saber quem moveu o quê."
+    }
+  },
+  "how": {
+    "title": "Três passos, e o sistema é seu",
+    "addClient": {
+      "title": "Adicione um cliente",
+      "body": "Guarde quem você cobra num cadastro que pode reutilizar em todo projeto."
+    },
+    "createProject": {
+      "title": "Crie um projeto",
+      "body": "Associe o cliente, o repositório e as ferramentas das quais o projeto depende."
+    },
+    "track": {
+      "title": "Acompanhe o trabalho e a cobrança",
+      "body": "Mova o cartão, envie a fatura e veja o mês se preencher."
+    }
+  },
+  "security": {
+    "title": "Isolado por padrão",
+    "subtitle": "Os dados do seu estúdio não se misturam com os de ninguém.",
+    "isolation": {
+      "title": "Isolamento por usuário",
+      "body": "Cada linha pertence à sua conta. Outro usuário não lê seus clientes, projetos ou faturas."
+    },
+    "encryption": {
+      "title": "Criptografia de envelope para segredos",
+      "body": "As credenciais são seladas antes de serem gravadas e ficam ligadas ao projeto que as usa."
+    },
+    "emailCode": {
+      "title": "Um código por e-mail em cada entrada",
+      "body": "Senha não basta. Cada login também exige um código de seis dígitos enviado à sua caixa de entrada."
+    }
+  },
+  "faq": {
+    "title": "Perguntas",
+    "who": {
+      "q": "Para quem é?",
+      "a": "Desenvolvedores freelancers que cobram clientes, conduzem alguns projetos e pagam pelas ferramentas que esses projetos exigem."
+    },
+    "data": {
+      "q": "Onde ficam os meus dados?",
+      "a": "Na sua conta, no aplicativo. Este site é só a apresentação."
+    },
+    "secrets": {
+      "q": "Posso guardar chaves de API e logins?",
+      "a": "Sim. As credenciais de ferramentas pagas são criptografadas por conta e ficam ligadas ao projeto que as usa."
+    },
+    "start": {
+      "q": "Como eu começo?",
+      "a": "Crie uma conta no aplicativo, confirme o e-mail e adicione o primeiro cliente."
+    }
+  },
+  "cta": {
+    "title": "Coloque o estúdio num só lugar.",
+    "subtitle": "Entre se você já tem conta, ou crie uma e adicione o primeiro cliente.",
+    "button": "Começar"
+  },
+  "footer": {
+    "tagline": "Clientes, projetos, faturas e credenciais de ferramentas para desenvolvedores freelancers.",
+    "rights": "Projects Manager"
+  }
+}
