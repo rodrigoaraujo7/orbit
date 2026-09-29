@@ -3,6 +3,7 @@ import { buttonVariants } from "ui/button"
 import { cn } from "ui/utils"
 import type { Dictionary } from "@/i18n"
 import { signUpUrl } from "@/lib/site"
+import { PersonaRotator } from "./persona"
 import { HeroVisual } from "./visual"
 
 export function Hero({ dictionary }: { dictionary: Dictionary }) {
@@ -10,9 +11,11 @@ export function Hero({ dictionary }: { dictionary: Dictionary }) {
     <section id="product" className="relative overflow-hidden">
       <HeroVisual />
       <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-6 py-24 md:py-32">
-        <p className="text-xs font-medium tracking-[0.22em] text-primary uppercase">
-          {dictionary.hero.eyebrow}
-        </p>
+        <PersonaRotator
+          prefix={dictionary.hero.eyebrowPrefix}
+          personas={Object.values(dictionary.hero.personas)}
+          label={dictionary.hero.eyebrowLabel}
+        />
         <h1 className="max-w-3xl font-heading text-5xl leading-[1.05] tracking-tight md:text-7xl">
           {dictionary.hero.titleBefore}
           <Emphasis className="text-primary">{dictionary.hero.titleEmphasis}</Emphasis>

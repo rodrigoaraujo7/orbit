@@ -11,6 +11,12 @@ describe("Hero", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Run the studio from one place." }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "Built for developers, vibecoders, freelancers, agencies, and indie hackers",
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByTestId("persona")).toHaveTextContent("developers")
     expect(screen.getByRole("link", { name: "Get started" })).toHaveAttribute("href", signUpUrl())
     expect(screen.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how")
     await expect(loadLightRays()).resolves.toHaveProperty("default")

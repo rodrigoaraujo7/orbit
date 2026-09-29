@@ -17,7 +17,15 @@
     "portuguese": "Português"
   },
   "hero": {
-    "eyebrow": "Para desenvolvedores freelancers",
+    "eyebrowPrefix": "Feito para",
+    "eyebrowLabel": "Feito para desenvolvedores, vibecoders, freelancers, agências e indie hackers",
+    "personas": {
+      "developers": "desenvolvedores",
+      "vibecoders": "vibecoders",
+      "freelancers": "freelancers",
+      "agencies": "agências",
+      "indieHackers": "indie hackers"
+    },
     "titleBefore": "Conduza o estúdio num ",
     "titleEmphasis": "só lugar",
     "titleAfter": ".",
