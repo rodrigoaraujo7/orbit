@@ -28,7 +28,7 @@ describe("locale routes", () => {
     render(layout)
     expect(document.documentElement).toHaveAttribute("lang", "en")
     expect(
-      screen.getByRole("heading", { level: 1, name: "Run the studio from one place." }),
+      screen.getByRole("heading", { level: 1, name: "Manage your software in one place." }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole("heading", { name: "The work is scattered. The money is too." }),
@@ -48,7 +48,7 @@ describe("locale routes", () => {
     render(layout)
     expect(document.documentElement).toHaveAttribute("lang", "pt-BR")
     expect(
-      screen.getByRole("heading", { level: 1, name: "Conduza o estúdio num só lugar." }),
+      screen.getByRole("heading", { level: 1, name: "Gerencie seu software em um único lugar." }),
     ).toBeInTheDocument()
   })
 

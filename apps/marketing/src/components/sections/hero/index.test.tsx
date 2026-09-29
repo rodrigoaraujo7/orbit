@@ -8,7 +8,7 @@ describe("Hero", () => {
   it("states the product above the app preview", async () => {
     render(<Hero dictionary={getDictionary("en")} locale="en" />)
     expect(
-      screen.getByRole("heading", { level: 1, name: "Run the studio from one place." }),
+      screen.getByRole("heading", { level: 1, name: "Manage your software in one place." }),
     ).toBeInTheDocument()
     expect(
       screen.getByText(
