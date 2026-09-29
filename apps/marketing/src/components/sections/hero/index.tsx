@@ -1,16 +1,17 @@
 import { Emphasis } from "ui/emphasis"
 import { buttonVariants } from "ui/button"
 import { cn } from "ui/utils"
-import type { Dictionary } from "@/i18n"
-import { signUpUrl } from "@/lib/site"
+import type { Dictionary, Locale } from "@/i18n"
+import { appOrigin, signUpUrl } from "@/lib/site"
+import { AppMockup } from "./mockup"
 import { PersonaRotator } from "./persona"
 import { HeroVisual } from "./visual"
 
-export function Hero({ dictionary }: { dictionary: Dictionary }) {
+export function Hero({ dictionary, locale }: { dictionary: Dictionary; locale: Locale }) {
   return (
     <section id="product" className="relative overflow-hidden">
       <HeroVisual />
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-6 py-24 md:py-32">
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-6 pt-24 pb-14 md:pt-32 md:pb-20">
         <PersonaRotator
           prefix={dictionary.hero.eyebrowPrefix}
           personas={Object.values(dictionary.hero.personas)}
@@ -30,6 +31,9 @@ export function Hero({ dictionary }: { dictionary: Dictionary }) {
             {dictionary.hero.secondary}
           </a>
         </div>
+      </div>
+      <div className="relative mx-auto max-w-6xl px-6 pb-24 animate-in fade-in slide-in-from-bottom-6 duration-1000 motion-reduce:animate-none">
+        <AppMockup copy={dictionary.mockup} locale={locale} address={new URL(appOrigin()).host} />
       </div>
     </section>
   )

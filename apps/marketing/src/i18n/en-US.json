@@ -33,6 +33,89 @@
     "primary": "Get started",
     "secondary": "See how it works"
   },
+  "mockup": {
+    "label": "Interactive preview of the Projects Manager app",
+    "brand": "Projects",
+    "views": "App sections",
+    "nav": {
+      "dashboard": "Dashboard",
+      "projects": "Projects",
+      "kanban": "Kanban",
+      "audit": "Audit"
+    },
+    "status": {
+      "queued": "Queued",
+      "in-development": "In development",
+      "in-validation": "In validation",
+      "completed": "Completed"
+    },
+    "invoice": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "overdue": "Overdue"
+    },
+    "workflow": {
+      "success": "Passing",
+      "failure": "Failing",
+      "running": "Running"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "How the studio is doing in the period.",
+      "billed": "Billed in period",
+      "received": "Received",
+      "receivable": "Receivable",
+      "overdue": "Overdue",
+      "toolCost": "Tool cost",
+      "revenue": "Revenue by month",
+      "revenueHint": "{projects} projects · {clients} clients · {margin} margin",
+      "clientGrowth": "Client growth",
+      "clientGrowthHint": "Cumulative clients",
+      "profit": "Profit by project",
+      "profitHint": "Billed amount minus the tools you pay for",
+      "ruler": "Payment ruler",
+      "rulerHint": "Each installment in the month it is due, by project"
+    },
+    "projects": {
+      "title": "Projects",
+      "count": "{count} projects",
+      "project": "Project",
+      "status": "Status",
+      "value": "Value",
+      "tools": "Tools",
+      "github": "GitHub",
+      "installments": "{amount} in {count}x",
+      "upfront": "{amount} upfront",
+      "paidTool": "Paid · {amount}/mo",
+      "freeTool": "Free plan"
+    },
+    "kanban": {
+      "title": "Kanban",
+      "empty": "Drop a project here"
+    },
+    "audit": {
+      "title": "Audit",
+      "description": "History of actions taken on your account.",
+      "date": "Date",
+      "module": "Module",
+      "action": "Action",
+      "object": "Object",
+      "modules": {
+        "project": "Projects",
+        "kanban": "Kanban",
+        "settings": "Settings",
+        "security": "Security"
+      },
+      "actions": {
+        "statusChanged": "Status changed",
+        "invoiceStatus": "Invoice status",
+        "projectCreated": "Project created",
+        "toolCreated": "Tool created",
+        "contactCreated": "Contact created",
+        "login": "Login"
+      }
+    }
+  },
   "pains": {
     "title": "The work is scattered. The money is too.",
     "subtitle": "Freelancing breaks down in the gaps between tools.",

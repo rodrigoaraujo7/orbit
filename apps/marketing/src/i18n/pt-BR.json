@@ -33,6 +33,89 @@
     "primary": "Começar",
     "secondary": "Ver como funciona"
   },
+  "mockup": {
+    "label": "Prévia interativa do app Projects Manager",
+    "brand": "Projects",
+    "views": "Seções do app",
+    "nav": {
+      "dashboard": "Dashboard",
+      "projects": "Projetos",
+      "kanban": "Kanban",
+      "audit": "Auditoria"
+    },
+    "status": {
+      "queued": "Na fila",
+      "in-development": "Em desenvolvimento",
+      "in-validation": "Em validação",
+      "completed": "Concluído"
+    },
+    "invoice": {
+      "paid": "Paga",
+      "pending": "Pendente",
+      "overdue": "Atrasada"
+    },
+    "workflow": {
+      "success": "Passando",
+      "failure": "Falhando",
+      "running": "Rodando"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Como o estúdio está indo no período.",
+      "billed": "Faturado no período",
+      "received": "Recebido",
+      "receivable": "A receber",
+      "overdue": "Atrasado",
+      "toolCost": "Custo de ferramentas",
+      "revenue": "Receita por mês",
+      "revenueHint": "{projects} projetos · {clients} clientes · margem de {margin}",
+      "clientGrowth": "Crescimento de clientes",
+      "clientGrowthHint": "Clientes acumulados",
+      "profit": "Lucro por projeto",
+      "profitHint": "Valor faturado menos as ferramentas que você paga",
+      "ruler": "Régua de recebimento",
+      "rulerHint": "Cada parcela no mês em que vence, por projeto"
+    },
+    "projects": {
+      "title": "Projetos",
+      "count": "{count} projetos",
+      "project": "Projeto",
+      "status": "Status",
+      "value": "Valor",
+      "tools": "Ferramentas",
+      "github": "GitHub",
+      "installments": "{amount} em {count}x",
+      "upfront": "{amount} à vista",
+      "paidTool": "Paga · {amount}/mês",
+      "freeTool": "Plano free"
+    },
+    "kanban": {
+      "title": "Kanban",
+      "empty": "Solte um projeto aqui"
+    },
+    "audit": {
+      "title": "Auditoria",
+      "description": "Histórico das ações feitas na sua conta.",
+      "date": "Data",
+      "module": "Módulo",
+      "action": "Ação",
+      "object": "Objeto",
+      "modules": {
+        "project": "Projetos",
+        "kanban": "Kanban",
+        "settings": "Configurações",
+        "security": "Segurança"
+      },
+      "actions": {
+        "statusChanged": "Status alterado",
+        "invoiceStatus": "Status da fatura",
+        "projectCreated": "Projeto criado",
+        "toolCreated": "Ferramenta criada",
+        "contactCreated": "Contato criado",
+        "login": "Login"
+      }
+    }
+  },
   "pains": {
     "title": "O trabalho está espalhado. O dinheiro também.",
     "subtitle": "O freelance se perde nos vãos entre as ferramentas.",

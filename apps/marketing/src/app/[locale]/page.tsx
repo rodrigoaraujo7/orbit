@@ -29,7 +29,7 @@ export default async function LocalePage({ params }: { params: Promise<{ locale:
       <JsonLd locale={locale} />
       <Header dictionary={dictionary} locale={locale} />
       <main>
-        <Hero dictionary={dictionary} />
+        <Hero dictionary={dictionary} locale={locale} />
         <Pains dictionary={dictionary} />
         <Features dictionary={dictionary} />
         <How dictionary={dictionary} />

@@ -6,8 +6,8 @@ import { Hero } from "./index"
 import { loadLightRays } from "./visual"
 
 describe("Hero", () => {
-  it("states the product and links to sign-up and the steps", async () => {
-    render(<Hero dictionary={getDictionary("en")} />)
+  it("states the product above an interactive preview", async () => {
+    render(<Hero dictionary={getDictionary("en")} locale="en" />)
     expect(
       screen.getByRole("heading", { level: 1, name: "Run the studio from one place." }),
     ).toBeInTheDocument()
@@ -19,6 +19,9 @@ describe("Hero", () => {
     expect(screen.getByTestId("persona")).toHaveTextContent("developers")
     expect(screen.getByRole("link", { name: "Get started" })).toHaveAttribute("href", signUpUrl())
     expect(screen.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how")
+    expect(
+      screen.getByRole("figure", { name: "Interactive preview of the Projects Manager app" }),
+    ).toHaveTextContent("app.projectsmanager.rodrigoleite.dev")
     await expect(loadLightRays()).resolves.toHaveProperty("default")
   })
 })
