@@ -6,6 +6,6 @@ vi.mock("next/font/google", () => ({
   Instrument_Serif: () => ({ variable: "font-serif", className: "font-serif" }),
 }))
 
-vi.mock("ui/grainient", () => ({
+vi.mock("ui/light-rays", () => ({
   default: () => null,
 }))

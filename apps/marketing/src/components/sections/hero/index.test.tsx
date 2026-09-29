@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { getDictionary } from "@/i18n"
 import { signUpUrl } from "@/lib/site"
 import { Hero } from "./index"
-import { loadGrainient } from "./visual"
+import { loadLightRays } from "./visual"
 
 describe("Hero", () => {
   it("states the product and links to sign-up and the steps", async () => {
@@ -11,9 +11,8 @@ describe("Hero", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Run the studio from one place." }),
     ).toBeInTheDocument()
-    expect(screen.getByRole("img", { name: "For freelance developers" })).toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Get started" })).toHaveAttribute("href", signUpUrl())
     expect(screen.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how")
-    await expect(loadGrainient()).resolves.toHaveProperty("default")
+    await expect(loadLightRays()).resolves.toHaveProperty("default")
   })
 })

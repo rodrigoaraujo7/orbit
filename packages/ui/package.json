@@ -10,7 +10,7 @@
     "./emphasis": "./src/emphasis.tsx",
     "./card": "./src/card.tsx",
     "./badge": "./src/badge.tsx",
-    "./grainient": "./src/Grainient.jsx"
+    "./light-rays": "./src/LightRays.jsx"
   },
   "scripts": {
     "test": "vitest run",

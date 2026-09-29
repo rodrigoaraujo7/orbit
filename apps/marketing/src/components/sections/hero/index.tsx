@@ -8,7 +8,7 @@ import { HeroVisual } from "./visual"
 export function Hero({ dictionary }: { dictionary: Dictionary }) {
   return (
     <section id="product" className="relative overflow-hidden">
-      <HeroVisual label={dictionary.hero.eyebrow} />
+      <HeroVisual />
       <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-6 py-24 md:py-32">
         <p className="text-xs font-medium tracking-[0.22em] text-primary uppercase">
           {dictionary.hero.eyebrow}

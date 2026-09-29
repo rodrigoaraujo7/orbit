@@ -37,7 +37,7 @@ export default defineConfig({
         "apps/api/src/test/**",
         "packages/ui/src/test/**",
         "apps/marketing/src/test/**",
-        "packages/ui/src/Grainient.jsx",
+        "packages/ui/src/LightRays.jsx",
         "packages/ui/src/badge.tsx",
         "packages/ui/src/button.tsx",
         "packages/ui/src/card.tsx",
