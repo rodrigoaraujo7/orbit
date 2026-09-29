@@ -63,7 +63,9 @@ type AuthFormValues = z.infer<ReturnType<typeof authSchema>>
 function LoginPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [mode, setMode] = useState<"signin" | "signup">("signin")
+  const [mode, setMode] = useState<"signin" | "signup">(() =>
+    new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "signin",
+  )
   const [step, setStep] = useState<Step>("credentials")
   const [pendingEmail, setPendingEmail] = useState("")
   const [cooldown, setCooldown] = useState(0)
