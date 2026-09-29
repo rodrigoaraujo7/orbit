@@ -10,7 +10,7 @@ const LightRays = dynamic(loadLightRays, { ssr: false })
 
 export function HeroVisual() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 z-0 opacity-70" aria-hidden>
       <LightRays
         raysOrigin="top-right"
         raysColor="#c03a4a"
