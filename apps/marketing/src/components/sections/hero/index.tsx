@@ -1,8 +1,6 @@
 import { Emphasis } from "ui/emphasis"
-import { buttonVariants } from "ui/button"
-import { cn } from "ui/utils"
 import type { Dictionary, Locale } from "@/i18n"
-import { appOrigin, signUpUrl } from "@/lib/site"
+import { appOrigin } from "@/lib/site"
 import { AppMockup } from "./mockup"
 import { PersonaRotator } from "./persona"
 import { HeroVisual } from "./visual"
@@ -23,14 +21,6 @@ export function Hero({ dictionary, locale }: { dictionary: Dictionary; locale: L
           {dictionary.hero.titleAfter}
         </h1>
         <p className="max-w-xl text-lg text-muted-foreground">{dictionary.hero.subtitle}</p>
-        <div className="flex flex-wrap items-center gap-3">
-          <a href={signUpUrl()} className={cn(buttonVariants({ size: "lg" }))}>
-            {dictionary.hero.primary}
-          </a>
-          <a href="#how" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
-            {dictionary.hero.secondary}
-          </a>
-        </div>
       </div>
       <div className="relative mx-auto max-w-6xl px-6 pb-24 animate-in fade-in slide-in-from-bottom-6 duration-1000 motion-reduce:animate-none">
         <AppMockup copy={dictionary.mockup} locale={locale} address={new URL(appOrigin()).host} />

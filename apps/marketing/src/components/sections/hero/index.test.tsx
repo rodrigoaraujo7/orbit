@@ -1,12 +1,11 @@
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 import { getDictionary } from "@/i18n"
-import { signUpUrl } from "@/lib/site"
 import { Hero } from "./index"
 import { loadLightRays } from "./visual"
 
 describe("Hero", () => {
-  it("states the product above an interactive preview", async () => {
+  it("states the product above the app preview", async () => {
     render(<Hero dictionary={getDictionary("en")} locale="en" />)
     expect(
       screen.getByRole("heading", { level: 1, name: "Run the studio from one place." }),
@@ -17,8 +16,8 @@ describe("Hero", () => {
       ),
     ).toBeInTheDocument()
     expect(screen.getByTestId("persona")).toHaveTextContent("developers")
-    expect(screen.getByRole("link", { name: "Get started" })).toHaveAttribute("href", signUpUrl())
-    expect(screen.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how")
+    expect(screen.queryByRole("link", { name: "Get started" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: "See how it works" })).not.toBeInTheDocument()
     expect(
       screen.getByRole("figure", { name: "Interactive preview of the Projects Manager app" }),
     ).toHaveTextContent("app.projectsmanager.rodrigoleite.dev")
