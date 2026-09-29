@@ -41,6 +41,7 @@ export default defineConfig({
         "packages/ui/src/badge.tsx",
         "packages/ui/src/button.tsx",
         "packages/ui/src/card.tsx",
+        "packages/ui/src/drawer.tsx",
         "apps/web/src/components/ui/chart.tsx",
         "apps/web/src/components/ui/dialog.tsx",
         "apps/web/src/components/ui/drawer.tsx",

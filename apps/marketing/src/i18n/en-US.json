@@ -14,7 +14,9 @@
     "getStarted": "Get started",
     "language": "Language",
     "english": "English",
-    "portuguese": "Português"
+    "portuguese": "Português",
+    "menu": "Menu",
+    "openMenu": "Open menu"
   },
   "hero": {
     "eyebrowPrefix": "Built for",

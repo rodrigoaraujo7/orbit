@@ -1,4 +1,5 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { buttonVariants } from "ui/button"
 import { afterEach, describe, expect, it } from "vitest"
 import { getDictionary } from "@/i18n"
@@ -25,10 +26,15 @@ describe("Header", () => {
     const separator = screen.getByRole("separator")
     const signIn = screen.getByRole("link", { name: "Sign in" })
     const cluster = nav.parentElement
+    const openMenu = screen.getByRole("button", { name: "Open menu" })
 
     expect(cluster).toContainElement(separator)
     expect(cluster).toContainElement(signIn)
-    expect(cluster).toHaveClass("ml-auto")
+    expect(cluster).toHaveClass("ml-auto", "hidden", "lg:flex")
+    expect(openMenu.parentElement).toHaveClass("ml-auto", "lg:hidden")
+    expect(
+      cluster!.compareDocumentPosition(openMenu) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
     expect(nav.compareDocumentPosition(separator) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(
       separator.compareDocumentPosition(signIn) & Node.DOCUMENT_POSITION_FOLLOWING,
@@ -107,5 +113,71 @@ describe("Header", () => {
       "duration-300",
     )
     expect(header).not.toHaveClass("bg-background/80", "backdrop-blur-md", "border-border/70")
+  })
+
+  it("opens the shared drawer from the menu button and closes it from a link", async () => {
+    render(<Header dictionary={getDictionary("en")} locale="en" />)
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole("button", { name: "Open menu" }))
+
+    const drawer = screen.getByRole("dialog", { name: "Menu" })
+    expect(drawer).toHaveClass(
+      "w-60",
+      "rounded-4xl",
+      "bg-sidebar/40",
+      "text-sidebar-foreground",
+      "backdrop-blur-xl",
+      "after:hidden",
+    )
+    expect(drawer).toHaveAttribute("data-swipe-direction", "right")
+
+    const pains = screen.getAllByRole("link", { name: "Pains" })
+    expect(
+      pains.some((link) => link.getAttribute("href") === "#pains" && drawer.contains(link)),
+    ).toBe(true)
+    const language = within(drawer).getByRole("button", { name: "Language" })
+    const getStarted = within(drawer).getByRole("link", { name: "Get started" })
+    const signIn = within(drawer).getByRole("link", { name: "Sign in" })
+    const navLink = pains.find((link) => drawer.contains(link))!
+    expect(language).toHaveClass("h-11", "w-full", "hover:bg-sidebar-accent", "text-left")
+    expect(navLink).toHaveClass("justify-start", "text-left")
+    expect(getStarted).toHaveClass("justify-start", "text-left")
+    expect(signIn).toHaveClass("border-border", "justify-start", "text-left")
+    expect(
+      language.compareDocumentPosition(getStarted) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      getStarted.compareDocumentPosition(signIn) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(screen.queryByRole("menu", { name: "Language" })).not.toBeInTheDocument()
+
+    fireEvent.click(language)
+    const languageMenu = screen.getByRole("menu")
+    expect(languageMenu).toHaveClass("rounded-xl", "border", "bg-popover", "shadow-lg")
+    const english = within(languageMenu).getByRole("menuitem", { name: "English" })
+    const portuguese = within(languageMenu).getByRole("menuitem", { name: "Português" })
+    expect(english).toHaveAttribute("href", "/en")
+    expect(english.querySelector("svg")).toHaveClass("text-primary")
+    expect(portuguese).toHaveAttribute("href", "/pt-BR")
+    expect(portuguese.querySelector("svg")).toBeNull()
+
+    fireEvent.click(pains.find((link) => drawer.contains(link))!)
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+  })
+
+  it("labels the menu button in Portuguese", async () => {
+    render(<Header dictionary={getDictionary("pt-BR")} locale="pt-BR" />)
+    await userEvent.click(screen.getByRole("button", { name: "Abrir menu" }))
+    const drawer = screen.getByRole("dialog", { name: "Menu" })
+    await userEvent.click(within(drawer).getByRole("button", { name: "Idioma" }))
+    const languageMenu = await screen.findByRole("menu")
+    const portuguese = within(languageMenu).getByRole("menuitem", { name: "Português" })
+    expect(portuguese).toHaveAttribute("href", "/pt-BR")
+    expect(portuguese.querySelector("svg")).toHaveClass("text-primary")
+    expect(within(languageMenu).getByRole("menuitem", { name: "English" })).toHaveAttribute(
+      "href",
+      "/en",
+    )
   })
 })
