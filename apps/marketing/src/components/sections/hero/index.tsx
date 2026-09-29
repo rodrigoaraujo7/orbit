@@ -7,9 +7,12 @@ import { HeroVisual } from "./visual"
 
 export function Hero({ dictionary, locale }: { dictionary: Dictionary; locale: Locale }) {
   return (
-    <section id="product" className="relative overflow-hidden">
+    <section
+      id="product"
+      className="relative -mt-[var(--marketing-header-height,4rem)] overflow-hidden"
+    >
       <HeroVisual />
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-6 pt-24 pb-14 md:pt-32 md:pb-20">
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-6 pt-[calc(var(--marketing-header-height,4rem)+6rem)] pb-14 md:pt-[calc(var(--marketing-header-height,4rem)+8rem)] md:pb-20">
         <PersonaRotator
           prefix={dictionary.hero.eyebrowPrefix}
           personas={Object.values(dictionary.hero.personas)}

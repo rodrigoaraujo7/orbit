@@ -69,7 +69,7 @@ const LightRays = ({
         const entry = entries[0]
         setIsVisible(entry.isIntersecting)
       },
-      { threshold: 0.1 },
+      { threshold: 0 },
     )
 
     observerRef.current.observe(containerRef.current)
@@ -100,12 +100,17 @@ const LightRays = ({
       const renderer = new Renderer({
         dpr: Math.min(window.devicePixelRatio, 2),
         alpha: true,
+        premultipliedAlpha: false,
+        preserveDrawingBuffer: true,
       })
       rendererRef.current = renderer
 
       const gl = renderer.gl
+      gl.clearColor(0, 0, 0, 0)
       gl.canvas.style.width = "100%"
       gl.canvas.style.height = "100%"
+      gl.canvas.style.backgroundColor = "transparent"
+      gl.canvas.style.opacity = "0"
 
       while (containerRef.current.firstChild) {
         containerRef.current.removeChild(containerRef.current.firstChild)
@@ -189,24 +194,25 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
                rayStrength(rayPos, finalRayDir, coord, 22.3991, 18.0234,
                            1.1 * raysSpeed);
 
-  fragColor = rays1 * 0.5 + rays2 * 0.4;
+  float strength = clamp(rays1.a * 0.5 + rays2.a * 0.4, 0.0, 1.0);
+  vec3 color = raysColor;
 
   if (noiseAmount > 0.0) {
     float n = noise(coord * 0.01 + iTime * 0.1);
-    fragColor.rgb *= (1.0 - noiseAmount + noiseAmount * n);
+    color *= (1.0 - noiseAmount + noiseAmount * n);
   }
 
-  float brightness = 1.0 - (coord.y / iResolution.y);
-  fragColor.x *= 0.1 + brightness * 0.8;
-  fragColor.y *= 0.3 + brightness * 0.6;
-  fragColor.z *= 0.5 + brightness * 0.5;
+  float brightness = 1.0 - (coord.y / max(iResolution.y, 1.0));
+  color.r *= 0.1 + brightness * 0.8;
+  color.g *= 0.3 + brightness * 0.6;
+  color.b *= 0.5 + brightness * 0.5;
 
   if (saturation != 1.0) {
-    float gray = dot(fragColor.rgb, vec3(0.299, 0.587, 0.114));
-    fragColor.rgb = mix(vec3(gray), fragColor.rgb, saturation);
+    float gray = dot(color, vec3(0.299, 0.587, 0.114));
+    color = mix(vec3(gray), color, saturation);
   }
 
-  fragColor.rgb *= raysColor;
+  fragColor = vec4(color, strength);
 
   if (lightMode > 0.5) {
     vec3 mapped = vec3(1.0) - exp(-max(fragColor.rgb, vec3(0.0)) * 1.35);
@@ -256,7 +262,10 @@ void main() {
         renderer.dpr = Math.min(window.devicePixelRatio, 2)
 
         const { clientWidth: wCSS, clientHeight: hCSS } = containerRef.current
-        renderer.setSize(wCSS, hCSS)
+        if (renderer.width !== wCSS || renderer.height !== hCSS) {
+          renderer.setSize(wCSS, hCSS)
+          gl.clearColor(0, 0, 0, 0)
+        }
 
         const dpr = renderer.dpr
         const w = wCSS * dpr
@@ -269,6 +278,7 @@ void main() {
         uniforms.rayDir.value = dir
       }
 
+      let revealed = false
       const loop = (t) => {
         if (!rendererRef.current || !uniformsRef.current || !meshRef.current) {
           return
@@ -288,7 +298,12 @@ void main() {
         }
 
         try {
+          gl.clearColor(0, 0, 0, 0)
           renderer.render({ scene: mesh })
+          if (!revealed) {
+            gl.canvas.style.opacity = "1"
+            revealed = true
+          }
           animationIdRef.current = requestAnimationFrame(loop)
         } catch (error) {
           console.warn("WebGL rendering error:", error)
@@ -311,13 +326,13 @@ void main() {
         if (renderer) {
           try {
             const canvas = renderer.gl.canvas
+            if (canvas && canvas.parentNode) {
+              canvas.parentNode.removeChild(canvas)
+            }
+
             const loseContextExt = renderer.gl.getExtension("WEBGL_lose_context")
             if (loseContextExt) {
               loseContextExt.loseContext()
-            }
-
-            if (canvas && canvas.parentNode) {
-              canvas.parentNode.removeChild(canvas)
             }
           } catch (error) {
             console.warn("Error during WebGL cleanup:", error)
