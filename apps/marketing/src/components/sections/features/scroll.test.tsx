@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import path from "node:path"
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { BentoCard } from "./card"
@@ -72,6 +74,12 @@ afterEach(() => {
 })
 
 describe("scroll activation", () => {
+  it("keeps the pointer glow off below the lg breakpoint", () => {
+    const css = readFileSync(path.join(import.meta.dirname, "../../../app/globals.css"), "utf8")
+    expect(css).toContain("@media (max-width: 1023px)")
+    expect(css).toMatch(/\.bento-spotlight,\s*\.bento-card::after \{\s*display: none;/)
+  })
+
   it("turns the attribute on and off", () => {
     const node = document.createElement("article")
     applyScrollActivation(node, true)

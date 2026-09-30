@@ -98,6 +98,14 @@
   opacity: 1;
 }
 
+/* Scroll reveals the illustration below lg. The pointer glow stays on wide screens. */
+@media (max-width: 1023px) {
+  .bento-spotlight,
+  .bento-card::after {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bento-card *,
   .bento-card::after {
