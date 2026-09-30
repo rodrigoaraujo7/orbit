@@ -1,9 +1,10 @@
 "use client"
 
-import type { PointerEvent, ReactNode } from "react"
+import { useEffect, useRef, type PointerEvent, type ReactNode } from "react"
 import { cn } from "ui/utils"
 import { Reveal } from "@/components/reveal"
 import { applyPointerVars, clearPointerVars, pointerVars } from "./pointer"
+import { bindScrollActivation, usesScrollActivation } from "./scroll"
 
 function onPointerMove(event: PointerEvent<HTMLElement>) {
   const node = event.currentTarget
@@ -14,14 +15,20 @@ function onPointerMove(event: PointerEvent<HTMLElement>) {
 }
 
 function onPointerEnter(event: PointerEvent<HTMLElement>) {
+  if (usesScrollActivation()) return
   event.currentTarget.dataset.active = ""
 }
 
-/** A tap ends with pointerleave right away, so touch keeps the card revealed. */
+/**
+ * Wide screens reveal the illustration with the pointer. A tap ends with
+ * pointerleave immediately, so touch on those screens keeps the card revealed.
+ * Below 1024px, scrolling owns that state instead.
+ */
 function onPointerLeave(event: PointerEvent<HTMLElement>) {
   const node = event.currentTarget
   clearPointerVars(node.style)
-  if (event.pointerType !== "touch") delete node.dataset.active
+  if (usesScrollActivation() || event.pointerType === "touch") return
+  delete node.dataset.active
 }
 
 export function BentoCard({
@@ -37,9 +44,13 @@ export function BentoCard({
   art: ReactNode
   className?: string
 }) {
+  const articleRef = useRef<HTMLElement>(null)
+  useEffect(() => bindScrollActivation(articleRef.current), [])
+
   return (
     <Reveal delay={index * 70} className={cn("h-full", className)}>
       <article
+        ref={articleRef}
         onPointerEnter={onPointerEnter}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
