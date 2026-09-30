@@ -1,16 +1,20 @@
-import { ChartPie, GitBranch, Kanban, Lock, Receipt, ScrollText } from "lucide-react"
-import { Card, CardContent, CardHeader } from "ui/card"
+import type { ComponentType } from "react"
 import { Reveal } from "@/components/reveal"
 import type { Dictionary } from "@/i18n"
+import { AuditArt, FinanceArt, GithubArt, InvoicesArt, KanbanArt, SecretsArt } from "./art"
+import { BentoCard } from "./card"
 
-const ITEMS = [
-  ["kanban", Kanban],
-  ["invoices", Receipt],
-  ["finance", ChartPie],
-  ["secrets", Lock],
-  ["github", GitBranch],
-  ["audit", ScrollText],
-] as const
+type FeatureKey = "kanban" | "secrets" | "invoices" | "github" | "finance" | "audit"
+
+/** Order and spans form the bento: wide Kanban and Finance, a tall Secrets column. */
+const ITEMS: readonly { key: FeatureKey; Art: ComponentType; span: string }[] = [
+  { key: "kanban", Art: KanbanArt, span: "md:col-span-2" },
+  { key: "secrets", Art: SecretsArt, span: "lg:row-span-2" },
+  { key: "invoices", Art: InvoicesArt, span: "" },
+  { key: "github", Art: GithubArt, span: "" },
+  { key: "finance", Art: FinanceArt, span: "md:col-span-2" },
+  { key: "audit", Art: AuditArt, span: "" },
+]
 
 export function Features({ dictionary }: { dictionary: Dictionary }) {
   return (
@@ -22,21 +26,18 @@ export function Features({ dictionary }: { dictionary: Dictionary }) {
           </h2>
           <p className="mt-4 max-w-xl text-muted-foreground">{dictionary.features.subtitle}</p>
         </Reveal>
-        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {ITEMS.map(([key, Icon], index) => {
+        <div className="mt-10 grid grid-flow-row-dense gap-4 md:grid-cols-2 lg:auto-rows-[24rem] lg:grid-cols-3">
+          {ITEMS.map(({ key, Art, span }, index) => {
             const item = dictionary.features[key]
             return (
-              <Reveal key={key} delay={index * 70}>
-                <Card size="sm">
-                  <CardHeader>
-                    <Icon aria-hidden className="text-primary" />
-                    <h3 className="font-heading text-base font-medium">{item.title}</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{item.body}</p>
-                  </CardContent>
-                </Card>
-              </Reveal>
+              <BentoCard
+                key={key}
+                index={index}
+                title={item.title}
+                body={item.body}
+                art={<Art />}
+                className={span}
+              />
             )
           })}
         </div>

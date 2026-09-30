@@ -18,7 +18,7 @@ describe("Header", () => {
   it("links the sections and the app, with navigation on the right of the logo", () => {
     render(<Header dictionary={getDictionary("en")} locale="en" />)
     expect(screen.getByRole("link", { name: "Projects Manager" })).toHaveAttribute("href", "/en")
-    expect(screen.getByRole("link", { name: "Pains" })).toHaveAttribute("href", "#pains")
+    expect(screen.queryByRole("link", { name: "Pains" })).not.toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Features" })).toHaveAttribute("href", "#features")
     expect(screen.getByRole("link", { name: "How it works" })).toHaveAttribute("href", "#how")
     expect(screen.getByRole("link", { name: "Security" })).toHaveAttribute("href", "#security")
@@ -134,14 +134,14 @@ describe("Header", () => {
     )
     expect(drawer).toHaveAttribute("data-swipe-direction", "right")
 
-    const pains = screen.getAllByRole("link", { name: "Pains" })
+    const features = screen.getAllByRole("link", { name: "Features" })
     expect(
-      pains.some((link) => link.getAttribute("href") === "#pains" && drawer.contains(link)),
+      features.some((link) => link.getAttribute("href") === "#features" && drawer.contains(link)),
     ).toBe(true)
     const language = within(drawer).getByRole("button", { name: "Language" })
     const getStarted = within(drawer).getByRole("link", { name: "Get started" })
     const signIn = within(drawer).getByRole("link", { name: "Sign in" })
-    const navLink = pains.find((link) => drawer.contains(link))!
+    const navLink = features.find((link) => drawer.contains(link))!
     expect(language).toHaveClass("h-11", "w-full", "hover:bg-sidebar-accent", "text-left")
     expect(navLink).toHaveClass("justify-start", "text-left")
     expect(getStarted).toHaveClass("justify-start", "text-left")
@@ -164,7 +164,7 @@ describe("Header", () => {
     expect(portuguese).toHaveAttribute("href", "/pt-BR")
     expect(portuguese.querySelector("svg")).toBeNull()
 
-    fireEvent.click(pains.find((link) => drawer.contains(link))!)
+    fireEvent.click(features.find((link) => drawer.contains(link))!)
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   })
 

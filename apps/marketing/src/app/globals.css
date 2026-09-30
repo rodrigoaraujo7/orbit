@@ -48,6 +48,72 @@
   animation-fill-mode: both;
 }
 
+/* Pointer vars are written inline by the feature cards; these are the resting values. */
+.bento-card {
+  --mx: 50%;
+  --my: 50%;
+  --px: 0;
+}
+
+.bento-spotlight,
+.bento-card::after {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.bento-spotlight {
+  background: radial-gradient(
+    26rem circle at var(--mx) var(--my),
+    color-mix(in oklch, var(--primary) 14%, transparent),
+    transparent 60%
+  );
+}
+
+/* A 1px ring that only lights up near the pointer. */
+.bento-card::after {
+  content: "";
+  z-index: 1;
+  padding: 1px;
+  background: radial-gradient(
+    16rem circle at var(--mx) var(--my),
+    color-mix(in oklch, var(--primary) 75%, transparent),
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+.bento-card[data-active] .bento-spotlight,
+.bento-card[data-active]::after {
+  opacity: 1;
+}
+
+/* Scroll reveals the illustration below lg. The pointer glow stays on wide screens. */
+@media (max-width: 1023px) {
+  .bento-spotlight,
+  .bento-card::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-card *,
+  .bento-card::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marketing-reveal,
   .marketing-reveal-immediate {

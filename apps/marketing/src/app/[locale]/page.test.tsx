@@ -32,7 +32,6 @@ describe("locale routes", () => {
     ).toBeInTheDocument()
     for (const name of [
       "Manage your software in one place.",
-      "The work is scattered. The money is too.",
       "Everything the studio needs",
       "Three steps, then it is your system",
       "Isolated by default",
@@ -42,8 +41,9 @@ describe("locale routes", () => {
       expect(screen.getByRole("heading", { name }).closest(".marketing-reveal")).not.toBeNull()
     }
     expect(
-      screen.getByRole("heading", { name: "The work is scattered. The money is too." }),
-    ).toBeInTheDocument()
+      screen.queryByRole("heading", { name: "The work is scattered. The money is too." }),
+    ).not.toBeInTheDocument()
+    expect(document.getElementById("pains")).toBeNull()
     const script = document.querySelector("script[type='application/ld+json']")
     expect(script?.textContent).toContain('"@type":"SoftwareApplication"')
     const metadata = await generateMetadata({ params: Promise.resolve({ locale: "en" }) })

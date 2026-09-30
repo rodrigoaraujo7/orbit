@@ -12,7 +12,6 @@ import { bindMarketingHeaderHeight } from "./height"
 
 const NAV = [
   ["#product", "product"],
-  ["#pains", "pains"],
   ["#features", "features"],
   ["#how", "how"],
   ["#security", "security"],
