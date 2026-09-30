@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { buttonVariants } from "ui/button"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { getDictionary } from "@/i18n"
 import { signInUrl, signUpUrl } from "@/lib/site"
 import { Header } from "./index"
@@ -10,6 +10,8 @@ const ghostSignIn = buttonVariants({ variant: "ghost", size: "sm" }).split(" ")
 
 afterEach(() => {
   cleanup()
+  document.documentElement.style.removeProperty("--marketing-header-height")
+  Reflect.deleteProperty(window, "ResizeObserver")
 })
 
 describe("Header", () => {
@@ -164,6 +166,24 @@ describe("Header", () => {
 
     fireEvent.click(pains.find((link) => drawer.contains(link))!)
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+  })
+
+  it("publishes the header height and clears it when the header unmounts", () => {
+    const disconnect = vi.fn()
+    window.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {
+        disconnect()
+      }
+    } as unknown as typeof ResizeObserver
+
+    const view = render(<Header dictionary={getDictionary("en")} locale="en" />)
+    expect(document.documentElement.style.getPropertyValue("--marketing-header-height")).toBe("0px")
+
+    view.unmount()
+    expect(disconnect).toHaveBeenCalledOnce()
+    expect(document.documentElement.style.getPropertyValue("--marketing-header-height")).toBe("")
   })
 
   it("labels the menu button in Portuguese", async () => {

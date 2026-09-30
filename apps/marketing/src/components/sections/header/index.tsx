@@ -8,6 +8,7 @@ import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "ui/drawer"
 import { cn } from "ui/utils"
 import type { Dictionary, Locale } from "@/i18n"
 import { signInUrl, signUpUrl } from "@/lib/site"
+import { bindMarketingHeaderHeight } from "./height"
 
 const NAV = [
   ["#product", "product"],
@@ -145,24 +146,7 @@ export function Header({ dictionary, locale }: { dictionary: Dictionary; locale:
   const [scrolled, setScrolled] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
 
-  useLayoutEffect(() => {
-    const header = headerRef.current
-    if (!header) return
-    const syncHeight = () => {
-      document.documentElement.style.setProperty(
-        "--marketing-header-height",
-        `${header.offsetHeight}px`,
-      )
-    }
-    syncHeight()
-    if (typeof ResizeObserver === "undefined") return
-    const observer = new ResizeObserver(syncHeight)
-    observer.observe(header)
-    return () => {
-      observer.disconnect()
-      document.documentElement.style.removeProperty("--marketing-header-height")
-    }
-  }, [])
+  useLayoutEffect(() => bindMarketingHeaderHeight(headerRef.current), [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0)
