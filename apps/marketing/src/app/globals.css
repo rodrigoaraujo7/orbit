@@ -9,3 +9,58 @@
   --font-heading: var(--font-instrument-serif), "Instrument Serif", serif;
   --font-subtitle: var(--font-instrument-sans), "Instrument Sans", sans-serif;
 }
+
+/* 15% less side margin than the previous 72rem column, at every viewport. */
+@utility page-wrap {
+  width: 100%;
+  max-width: min(100%, calc(61.2rem + 15vw));
+  margin-inline: auto;
+}
+
+@keyframes marketing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.marketing-reveal:not(.marketing-reveal-immediate) {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition-property: opacity, transform;
+  transition-duration: 0.7s;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.marketing-reveal.marketing-reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+.marketing-reveal-immediate {
+  animation-name: marketing-rise;
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-reveal,
+  .marketing-reveal-immediate {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+@media (scripting: none) {
+  .marketing-reveal {
+    opacity: 1;
+    transform: none;
+  }
+}

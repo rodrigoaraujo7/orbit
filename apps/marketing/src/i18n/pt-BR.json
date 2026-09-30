@@ -13,21 +13,12 @@
     "signIn": "Entrar",
     "getStarted": "Começar",
     "language": "Idioma",
-    "english": "English",
-    "portuguese": "Português",
     "menu": "Menu",
-    "openMenu": "Abrir menu"
+    "openMenu": "Abrir menu",
+    "english": "English",
+    "portuguese": "Português"
   },
   "hero": {
-    "eyebrowPrefix": "Feito para",
-    "eyebrowLabel": "Feito para desenvolvedores, vibecoders, freelancers, agências e indie hackers",
-    "personas": {
-      "developers": "desenvolvedores",
-      "vibecoders": "vibecoders",
-      "freelancers": "freelancers",
-      "agencies": "agências",
-      "indieHackers": "indie hackers"
-    },
     "titleBefore": "Gerencie seu software em um ",
     "titleEmphasis": "único lugar",
     "titleAfter": ".",

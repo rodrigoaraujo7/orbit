@@ -10,12 +10,7 @@ describe("Hero", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Manage your software in one place." }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        "Built for developers, vibecoders, freelancers, agencies, and indie hackers",
-      ),
-    ).toBeInTheDocument()
-    expect(screen.getByTestId("persona")).toHaveTextContent("developers")
+    expect(screen.queryByText(/Built for/)).not.toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "Get started" })).not.toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "See how it works" })).not.toBeInTheDocument()
     expect(

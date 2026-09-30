@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from "react"
 import { Renderer, Program, Triangle, Mesh } from "ogl"
+import { applyLightsOn } from "./lights-on"
 
 const DEFAULT_COLOR = "#ffffff"
 
@@ -58,6 +59,10 @@ const LightRays = ({
   const animationIdRef = useRef(null)
   const meshRef = useRef(null)
   const cleanupFunctionRef = useRef(null)
+  const loopRef = useRef(null)
+  const visibleRef = useRef(false)
+  const startedAtRef = useRef(null)
+  const revealedRef = useRef(false)
   const [isVisible, setIsVisible] = useState(false)
   const observerRef = useRef(null)
 
@@ -67,7 +72,9 @@ const LightRays = ({
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const entry = entries[0]
-        setIsVisible(entry.isIntersecting)
+        const on = Boolean(entry?.isIntersecting)
+        visibleRef.current = on
+        setIsVisible(on)
       },
       { threshold: 0 },
     )
@@ -83,7 +90,20 @@ const LightRays = ({
   }, [])
 
   useEffect(() => {
-    if (!isVisible || !containerRef.current) return
+    if (!isVisible) {
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current)
+        animationIdRef.current = null
+      }
+      return
+    }
+    if (loopRef.current && rendererRef.current && animationIdRef.current === null) {
+      animationIdRef.current = requestAnimationFrame(loopRef.current)
+    }
+  }, [isVisible])
+
+  useEffect(() => {
+    if (!containerRef.current) return
 
     if (cleanupFunctionRef.current) {
       cleanupFunctionRef.current()
@@ -110,7 +130,8 @@ const LightRays = ({
       gl.canvas.style.width = "100%"
       gl.canvas.style.height = "100%"
       gl.canvas.style.backgroundColor = "transparent"
-      gl.canvas.style.opacity = "0"
+      gl.canvas.style.transition = "none"
+      gl.canvas.style.opacity = revealedRef.current ? "1" : "0"
 
       while (containerRef.current.firstChild) {
         containerRef.current.removeChild(containerRef.current.firstChild)
@@ -144,6 +165,7 @@ uniform float mouseInfluence;
 uniform float noiseAmount;
 uniform float distortion;
 uniform float lightMode;
+uniform float power;
 
 varying vec2 vUv;
 
@@ -212,14 +234,14 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     color = mix(vec3(gray), color, saturation);
   }
 
-  fragColor = vec4(color, strength);
+  fragColor = vec4(color, strength * power);
 
   if (lightMode > 0.5) {
     vec3 mapped = vec3(1.0) - exp(-max(fragColor.rgb, vec3(0.0)) * 1.35);
     float energy = clamp(max(mapped.r, max(mapped.g, mapped.b)), 0.0, 1.0);
     vec3 hue = mapped / max(energy, 0.0001);
     vec3 ink = mix(hue * 0.25, hue * 0.72, energy);
-    fragColor = vec4(mix(vec3(1.0), ink, energy), 1.0);
+    fragColor = vec4(mix(vec3(1.0), ink, energy * power), 1.0);
   }
 }
 
@@ -248,7 +270,10 @@ void main() {
         noiseAmount: { value: noiseAmount },
         distortion: { value: distortion },
         lightMode: { value: lightMode ? 1.0 : 0.0 },
+        power: { value: 0 },
       }
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      applyLightsOn(uniforms, 0, rayLength, reduceMotion)
       uniformsRef.current = uniforms
 
       const geometry = new Triangle(gl)
@@ -278,13 +303,18 @@ void main() {
         uniforms.rayDir.value = dir
       }
 
-      let revealed = false
       const loop = (t) => {
+        if (!visibleRef.current) {
+          animationIdRef.current = null
+          return
+        }
         if (!rendererRef.current || !uniformsRef.current || !meshRef.current) {
           return
         }
 
+        if (startedAtRef.current === null) startedAtRef.current = t
         uniforms.iTime.value = t * 0.001
+        applyLightsOn(uniforms, t - startedAtRef.current, rayLength, reduceMotion)
 
         if (followMouse && mouseInfluence > 0.0) {
           const smoothing = 0.92
@@ -300,9 +330,9 @@ void main() {
         try {
           gl.clearColor(0, 0, 0, 0)
           renderer.render({ scene: mesh })
-          if (!revealed) {
+          if (!revealedRef.current) {
             gl.canvas.style.opacity = "1"
-            revealed = true
+            revealedRef.current = true
           }
           animationIdRef.current = requestAnimationFrame(loop)
         } catch (error) {
@@ -313,6 +343,7 @@ void main() {
 
       window.addEventListener("resize", updatePlacement)
       updatePlacement()
+      loopRef.current = loop
       animationIdRef.current = requestAnimationFrame(loop)
 
       cleanupFunctionRef.current = () => {
@@ -342,6 +373,7 @@ void main() {
         rendererRef.current = null
         uniformsRef.current = null
         meshRef.current = null
+        loopRef.current = null
       }
     }
 
@@ -354,7 +386,6 @@ void main() {
       }
     }
   }, [
-    isVisible,
     raysOrigin,
     raysColor,
     raysSpeed,
@@ -379,7 +410,6 @@ void main() {
     u.raysColor.value = hexToRgb(raysColor)
     u.raysSpeed.value = raysSpeed
     u.lightSpread.value = lightSpread
-    u.rayLength.value = rayLength
     u.pulsating.value = pulsating ? 1.0 : 0.0
     u.fadeDistance.value = fadeDistance
     u.saturation.value = saturation
@@ -387,6 +417,7 @@ void main() {
     u.noiseAmount.value = noiseAmount
     u.distortion.value = distortion
     u.lightMode.value = lightMode ? 1.0 : 0.0
+    u.rayLength.value = rayLength * (0.25 + 0.75 * u.power.value)
 
     const { clientWidth: wCSS, clientHeight: hCSS } = containerRef.current
     const dpr = renderer.dpr

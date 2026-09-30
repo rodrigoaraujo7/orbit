@@ -30,6 +30,17 @@ describe("locale routes", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Manage your software in one place." }),
     ).toBeInTheDocument()
+    for (const name of [
+      "Manage your software in one place.",
+      "The work is scattered. The money is too.",
+      "Everything the studio needs",
+      "Three steps, then it is your system",
+      "Isolated by default",
+      "Questions",
+      "Put the studio in one place.",
+    ]) {
+      expect(screen.getByRole("heading", { name }).closest(".marketing-reveal")).not.toBeNull()
+    }
     expect(
       screen.getByRole("heading", { name: "The work is scattered. The money is too." }),
     ).toBeInTheDocument()

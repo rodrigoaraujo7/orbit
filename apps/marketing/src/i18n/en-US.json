@@ -13,21 +13,12 @@
     "signIn": "Sign in",
     "getStarted": "Get started",
     "language": "Language",
-    "english": "English",
-    "portuguese": "Português",
     "menu": "Menu",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "english": "English",
+    "portuguese": "Português"
   },
   "hero": {
-    "eyebrowPrefix": "Built for",
-    "eyebrowLabel": "Built for developers, vibecoders, freelancers, agencies, and indie hackers",
-    "personas": {
-      "developers": "developers",
-      "vibecoders": "vibecoders",
-      "freelancers": "freelancers",
-      "agencies": "agencies",
-      "indieHackers": "indie hackers"
-    },
     "titleBefore": "Manage your software in ",
     "titleEmphasis": "one place",
     "titleAfter": ".",
