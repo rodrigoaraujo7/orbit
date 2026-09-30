@@ -98,7 +98,7 @@
   opacity: 1;
 }
 
-/* The Pro wash fills the lower part of the card and dissolves upward. */
+/* The Pro wash covers the card and dissolves all the way to the top. */
 .pricing-card {
   --px: 0;
 }
@@ -106,10 +106,7 @@
 .pricing-wash {
   pointer-events: none;
   position: absolute;
-  right: -10%;
-  bottom: -12%;
-  left: -10%;
-  height: 82%;
+  inset: -30% -20% -35%;
   background: linear-gradient(
     100deg,
     oklch(0.62 0.24 350) 0%,
@@ -117,28 +114,37 @@
     oklch(0.8 0.15 95) 62%,
     oklch(0.72 0.18 150) 100%
   );
-  filter: blur(22px);
+  filter: blur(40px);
+  -webkit-mask-image: linear-gradient(
+    to top,
+    black 0%,
+    rgb(0 0 0 / 0.72) 18%,
+    rgb(0 0 0 / 0.38) 36%,
+    rgb(0 0 0 / 0.16) 54%,
+    rgb(0 0 0 / 0.06) 72%,
+    transparent 92%
+  );
   mask-image: linear-gradient(
     to top,
     black 0%,
-    rgb(0 0 0 / 0.82) 16%,
-    rgb(0 0 0 / 0.46) 38%,
-    rgb(0 0 0 / 0.18) 60%,
-    rgb(0 0 0 / 0.05) 80%,
-    transparent 100%
+    rgb(0 0 0 / 0.72) 18%,
+    rgb(0 0 0 / 0.38) 36%,
+    rgb(0 0 0 / 0.16) 54%,
+    rgb(0 0 0 / 0.06) 72%,
+    transparent 92%
   );
 }
 
-/* Pointer position (--px, -1…1) slides the rainbow shadow sideways. */
+/* --px (-1…1) pulls the whole colored shadow toward the pointer. */
 .pricing-card[data-featured] {
-  transition: box-shadow 0.45s ease;
+  transition: box-shadow 0.2s ease-out;
 }
 
 .pricing-card[data-featured][data-active] {
   box-shadow:
-    calc(var(--px) * -1.35rem) 1.2rem 2.8rem -0.45rem oklch(0.65 0.24 350 / 0.85),
-    0 1.35rem 2.3rem -0.7rem oklch(0.8 0.16 85 / 0.55),
-    calc(var(--px) * 1.45rem) 1.35rem 3rem -0.5rem oklch(0.72 0.18 150 / 0.8);
+    calc(var(--px) * 2.75rem) 1.15rem 2.4rem -0.15rem oklch(0.66 0.24 350 / 0.9),
+    calc(var(--px) * 2.75rem) 1.45rem 3.1rem 0.15rem oklch(0.78 0.16 85 / 0.55),
+    calc(var(--px) * 2.75rem) 1.25rem 2.7rem -0.1rem oklch(0.72 0.18 150 / 0.85);
 }
 
 /* Scroll reveals the illustration below lg. The pointer glow stays on wide screens. */
