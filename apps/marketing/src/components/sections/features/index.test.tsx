@@ -44,25 +44,41 @@ describe("Features", () => {
     const kanban = card("Kanban pipeline")
     kanban.getBoundingClientRect = () => ({ left: 10, top: 20, width: 200, height: 100 }) as DOMRect
 
+    expect(kanban).not.toHaveAttribute("data-active")
+    fireEvent.pointerEnter(kanban, { pointerType: "mouse" })
+    expect(kanban).toHaveAttribute("data-active")
+
     fireEvent.pointerMove(kanban, { clientX: 160, clientY: 45 })
     expect(kanban.style.getPropertyValue("--mx")).toBe("150px")
     expect(kanban.style.getPropertyValue("--my")).toBe("25px")
     expect(kanban.style.getPropertyValue("--px")).toBe("0.5")
     expect(kanban.style.getPropertyValue("--py")).toBe("-0.5")
 
-    fireEvent.pointerLeave(kanban)
+    fireEvent.pointerLeave(kanban, { pointerType: "mouse" })
+    expect(kanban).not.toHaveAttribute("data-active")
     for (const property of ["--mx", "--my", "--px", "--py"]) {
       expect(kanban.style.getPropertyValue(property)).toBe("")
     }
   })
 
-  it("draws each illustration with hover transitions", () => {
+  it("keeps a tapped card revealed on touch", () => {
+    render(<Features dictionary={getDictionary("en")} />)
+    const audit = card("Audit log")
+
+    fireEvent.pointerEnter(audit, { pointerType: "touch" })
+    fireEvent.pointerMove(audit, { clientX: 0, clientY: 0 })
+    fireEvent.pointerLeave(audit, { pointerType: "touch" })
+    expect(audit).toHaveAttribute("data-active")
+    expect(audit.style.getPropertyValue("--mx")).toBe("")
+  })
+
+  it("animates each illustration while the card is active", () => {
     const { container } = render(<Features dictionary={getDictionary("en")} />)
     const part = (name: string) => container.querySelectorAll(`[data-part="${name}"]`)
 
-    expect(part("moving-card")[0]).toHaveClass("group-hover:translate-x-[140px]")
-    expect(part("dial")[0]).toHaveClass("group-hover:-rotate-[60deg]")
-    expect(part("shackle")[0]).toHaveClass("-translate-y-2", "group-hover:translate-y-0")
+    expect(part("moving-card")[0]).toHaveClass("group-data-active:translate-x-[140px]")
+    expect(part("dial")[0]).toHaveClass("group-data-active:-rotate-[60deg]")
+    expect(part("shackle")[0]).toHaveClass("-translate-y-2", "group-data-active:translate-y-0")
     expect(part("password-dot")).toHaveLength(8)
     expect(part("password-dot")[7]).toHaveStyle({ transitionDelay: "420ms" })
 
@@ -75,11 +91,11 @@ describe("Features", () => {
       "pending",
       ...Array(3).fill("future"),
     ])
-    expect(part("today")[0]).toHaveClass("group-hover:translate-x-[192px]")
+    expect(part("today")[0]).toHaveClass("group-data-active:translate-x-[192px]")
 
     expect(part("edge")).toHaveLength(5)
     expect(part("job")).toHaveLength(4)
-    expect(part("running")[0]).toHaveClass("group-hover:opacity-100")
+    expect(part("running")[0]).toHaveClass("group-data-active:opacity-100")
 
     expect(part("bar")).toHaveLength(9)
     expect(part("trend")[0]).toHaveAttribute("pathLength", "1")
@@ -87,9 +103,9 @@ describe("Features", () => {
 
     const entries = [...part("entry")]
     expect(entries).toHaveLength(4)
-    expect(entries.at(-1)).toHaveClass("group-hover:opacity-0")
-    expect(entries[0]).toHaveClass("group-hover:opacity-60")
-    expect(part("new-entry")[0]).toHaveClass("opacity-0", "group-hover:opacity-100")
+    expect(entries.at(-1)).toHaveClass("group-data-active:opacity-0")
+    expect(entries[0]).toHaveClass("group-data-active:opacity-60")
+    expect(part("new-entry")[0]).toHaveClass("opacity-0", "group-data-active:opacity-100")
   })
 
   it("renders the Portuguese copy", () => {

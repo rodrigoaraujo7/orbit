@@ -94,8 +94,8 @@
     linear-gradient(#000 0 0);
 }
 
-.bento-card:hover .bento-spotlight,
-.bento-card:hover::after {
+.bento-card[data-active] .bento-spotlight,
+.bento-card[data-active]::after {
   opacity: 1;
 }
 

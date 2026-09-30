@@ -13,8 +13,15 @@ function onPointerMove(event: PointerEvent<HTMLElement>) {
   )
 }
 
+function onPointerEnter(event: PointerEvent<HTMLElement>) {
+  event.currentTarget.dataset.active = ""
+}
+
+/** A tap ends with pointerleave right away, so touch keeps the card revealed. */
 function onPointerLeave(event: PointerEvent<HTMLElement>) {
-  clearPointerVars(event.currentTarget.style)
+  const node = event.currentTarget
+  clearPointerVars(node.style)
+  if (event.pointerType !== "touch") delete node.dataset.active
 }
 
 export function BentoCard({
@@ -33,9 +40,10 @@ export function BentoCard({
   return (
     <Reveal delay={index * 70} className={cn("h-full", className)}>
       <article
+        onPointerEnter={onPointerEnter}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
-        className="bento-card group relative isolate flex h-full flex-col overflow-hidden rounded-4xl bg-card ring-1 ring-foreground/10 transition-[box-shadow] duration-500 hover:ring-foreground/20"
+        className="bento-card group relative isolate flex h-full flex-col overflow-hidden rounded-4xl bg-card ring-1 ring-foreground/10 transition-[box-shadow] duration-500 data-active:ring-foreground/20"
       >
         <div aria-hidden className="bento-spotlight" />
         <div

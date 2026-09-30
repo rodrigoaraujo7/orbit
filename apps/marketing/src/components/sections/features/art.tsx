@@ -5,7 +5,7 @@ const SVG = "absolute inset-0 h-full w-full overflow-visible"
 const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]"
 const SPRING = "ease-[cubic-bezier(0.34,1.56,0.64,1)]"
 const DRAW =
-  "[stroke-dasharray:1] [stroke-dashoffset:1] transition-[stroke-dashoffset] group-hover:[stroke-dashoffset:0]"
+  "[stroke-dasharray:1] [stroke-dashoffset:1] transition-[stroke-dashoffset] group-data-active:[stroke-dashoffset:0]"
 
 function delay(ms: number): CSSProperties {
   return { transitionDelay: `${ms}ms` }
@@ -50,7 +50,7 @@ export function KanbanArt() {
             rx={16}
             className={cn(
               "fill-foreground/[0.02] stroke-foreground/15 transition-[stroke] duration-500",
-              column === 1 && "group-hover:stroke-primary/50",
+              column === 1 && "group-data-active:stroke-primary/50",
             )}
           />
           <circle cx={x + 18} cy={40} r={3} className={dot} />
@@ -66,7 +66,7 @@ export function KanbanArt() {
         width={96}
         height={36}
         rx={9}
-        className="stroke-foreground/20 [stroke-dasharray:4_4] opacity-60 transition-opacity duration-300 group-hover:opacity-0"
+        className="stroke-foreground/20 [stroke-dasharray:4_4] opacity-60 transition-opacity duration-300 group-data-active:opacity-0"
       />
       <MiniCard x={332} y={58} dot="fill-success" />
       <MiniCard x={332} y={100} dot="fill-success" />
@@ -74,7 +74,7 @@ export function KanbanArt() {
       <g
         data-part="moving-card"
         className={cn(
-          "transition-[translate] duration-700 group-hover:translate-x-[140px] group-hover:-translate-y-[42px]",
+          "transition-[translate] duration-700 group-data-active:translate-x-[140px] group-data-active:-translate-y-[42px]",
           SPRING,
         )}
       >
@@ -105,14 +105,14 @@ export function SecretsArt() {
         cy={120}
         r={96}
         className={cn(
-          "origin-center stroke-foreground/15 [stroke-dasharray:2_7] transition-[rotate] duration-[1400ms] transform-fill group-hover:rotate-90",
+          "origin-center stroke-foreground/15 [stroke-dasharray:2_7] transition-[rotate] duration-[1400ms] transform-fill group-data-active:rotate-90",
           EASE,
         )}
       />
       <g
         data-part="dial"
         className={cn(
-          "origin-center transition-[rotate] duration-1000 transform-fill group-hover:-rotate-[60deg]",
+          "origin-center transition-[rotate] duration-1000 transform-fill group-data-active:-rotate-[60deg]",
           EASE,
         )}
       >
@@ -137,7 +137,7 @@ export function SecretsArt() {
         cx={120}
         cy={120}
         r={56}
-        className="fill-card stroke-foreground/15 transition-[stroke] duration-500 group-hover:stroke-primary/40"
+        className="fill-card stroke-foreground/15 transition-[stroke] duration-500 group-data-active:stroke-primary/40"
       />
       <path
         data-part="shackle"
@@ -145,7 +145,7 @@ export function SecretsArt() {
         strokeWidth={3}
         strokeLinecap="round"
         className={cn(
-          "-translate-y-2 stroke-foreground/40 transition-[translate,stroke] duration-500 group-hover:translate-y-0 group-hover:stroke-primary",
+          "-translate-y-2 stroke-foreground/40 transition-[translate,stroke] duration-500 group-data-active:translate-y-0 group-data-active:stroke-primary",
           SPRING,
         )}
       />
@@ -156,9 +156,9 @@ export function SecretsArt() {
         height={38}
         rx={9}
         strokeWidth={1.5}
-        className="fill-card stroke-foreground/40 transition-[fill,stroke] duration-500 group-hover:fill-primary/15 group-hover:stroke-primary"
+        className="fill-card stroke-foreground/40 transition-[fill,stroke] duration-500 group-data-active:fill-primary/15 group-data-active:stroke-primary"
       />
-      <g className="fill-foreground/40 transition-[fill] duration-500 group-hover:fill-primary">
+      <g className="fill-foreground/40 transition-[fill] duration-500 group-data-active:fill-primary">
         <circle cx={120} cy={129} r={4} />
         <rect x={118.5} y={131} width={3} height={10} rx={1.5} />
       </g>
@@ -168,7 +168,7 @@ export function SecretsArt() {
         width={152}
         height={36}
         rx={18}
-        className="stroke-foreground/15 transition-[stroke] duration-500 group-hover:stroke-primary/40"
+        className="stroke-foreground/15 transition-[stroke] duration-500 group-data-active:stroke-primary/40"
       />
       {PASSWORD_DOTS.map((i) => (
         <circle
@@ -178,7 +178,7 @@ export function SecretsArt() {
           cy={256}
           r={4}
           style={delay(i * 60)}
-          className="fill-foreground/15 transition-[fill] duration-300 group-hover:fill-primary"
+          className="fill-foreground/15 transition-[fill] duration-300 group-data-active:fill-primary"
         />
       ))}
     </svg>
@@ -236,7 +236,7 @@ export function InvoicesArt() {
               data-status={status}
               style={delay(i * 45)}
               className={cn(
-                "origin-bottom scale-y-[0.3] opacity-0 transition-[scale,opacity] duration-500 transform-fill group-hover:scale-y-100 group-hover:opacity-100",
+                "origin-bottom scale-y-[0.3] opacity-0 transition-[scale,opacity] duration-500 transform-fill group-data-active:scale-y-100 group-data-active:opacity-100",
                 EASE,
                 MONTH_FILL[status],
               )}
@@ -246,7 +246,10 @@ export function InvoicesArt() {
       })}
       <g
         data-part="today"
-        className={cn("transition-[translate] duration-1000 group-hover:translate-x-[192px]", EASE)}
+        className={cn(
+          "transition-[translate] duration-1000 group-data-active:translate-x-[192px]",
+          EASE,
+        )}
       >
         <line x1={36} y1={62} x2={36} y2={148} className="stroke-primary" />
         <path d="M30 52 h12 l-6 8 z" className="fill-primary" />
@@ -295,7 +298,7 @@ export function GithubArt() {
             data-part="job"
             style={delay(wait)}
             className={cn(
-              "origin-center scale-0 fill-success transition-[scale] duration-500 transform-fill group-hover:scale-100",
+              "origin-center scale-0 fill-success transition-[scale] duration-500 transform-fill group-data-active:scale-100",
               SPRING,
             )}
           />
@@ -309,7 +312,7 @@ export function GithubArt() {
         strokeWidth={2}
         data-part="running"
         style={delay(1050)}
-        className="origin-center animate-[spin_2.4s_linear_infinite] stroke-warning opacity-0 [stroke-dasharray:6_6] transition-opacity duration-300 transform-fill group-hover:opacity-100"
+        className="origin-center animate-[spin_2.4s_linear_infinite] stroke-warning opacity-0 [stroke-dasharray:6_6] transition-opacity duration-300 transform-fill group-data-active:opacity-100"
       />
     </svg>
   )
@@ -351,7 +354,7 @@ export function FinanceArt() {
             data-part="bar"
             style={delay(i * 50)}
             className={cn(
-              "origin-bottom scale-y-0 fill-primary/80 transition-[scale] duration-700 transform-fill group-hover:scale-y-100",
+              "origin-bottom scale-y-0 fill-primary/80 transition-[scale] duration-700 transform-fill group-data-active:scale-y-100",
               EASE,
             )}
           />
@@ -374,7 +377,7 @@ export function FinanceArt() {
         y2={BASELINE}
         data-part="crosshair"
         style={{ translate: "calc(var(--px, 0) * 216px) 0" }}
-        className="stroke-foreground/40 opacity-0 [stroke-dasharray:3_3] transition-[translate,opacity] duration-150 ease-out group-hover:opacity-100"
+        className="stroke-foreground/40 opacity-0 [stroke-dasharray:3_3] transition-[translate,opacity] duration-150 ease-out group-data-active:opacity-100"
       />
     </svg>
   )
@@ -400,7 +403,7 @@ export function AuditArt() {
       <g
         data-part="new-entry"
         className={cn(
-          "-translate-y-3 opacity-0 transition-[translate,opacity] duration-500 group-hover:translate-y-0 group-hover:opacity-100",
+          "-translate-y-3 opacity-0 transition-[translate,opacity] duration-500 group-data-active:translate-y-0 group-data-active:opacity-100",
           SPRING,
         )}
       >
@@ -423,8 +426,8 @@ export function AuditArt() {
           className={cn(
             "transition-[opacity,translate] duration-500",
             i === LOG_ROWS.length - 1
-              ? "group-hover:translate-y-2 group-hover:opacity-0"
-              : "group-hover:opacity-60",
+              ? "group-data-active:translate-y-2 group-data-active:opacity-0"
+              : "group-data-active:opacity-60",
             EASE,
           )}
         >
