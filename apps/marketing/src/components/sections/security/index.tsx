@@ -86,7 +86,7 @@ export function Security({ dictionary }: { dictionary: Dictionary }) {
         </Reveal>
 
         <div
-          className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-stretch"
+          className="mt-12 grid items-start gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-stretch"
           onPointerEnter={() => setPaused(true)}
           onPointerLeave={() => setPaused(false)}
           onFocus={() => setPaused(true)}
@@ -183,7 +183,7 @@ export function Security({ dictionary }: { dictionary: Dictionary }) {
             onPointerEnter={onStageEnter}
             onPointerMove={onStageMove}
             onPointerLeave={onStageLeave}
-            className="bento-card group relative isolate order-1 flex min-h-[28rem] flex-col overflow-hidden rounded-4xl bg-card ring-1 ring-foreground/10 lg:order-2 lg:min-h-[36rem]"
+            className="bento-card group relative isolate order-1 flex min-h-52 flex-col overflow-hidden rounded-4xl bg-card ring-1 ring-foreground/10 lg:order-2 lg:h-full lg:min-h-0"
           >
             <div aria-hidden className="bento-spotlight" />
             <div aria-hidden className="security-grid pointer-events-none absolute inset-0" />

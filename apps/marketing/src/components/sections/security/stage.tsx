@@ -284,7 +284,11 @@ const SCENES = {
 export function SecurityStage({ kind }: { kind: SecurityKey }) {
   const Scene = SCENES[kind]
   return (
-    <div key={kind} data-scene={kind} className="security-stage relative min-h-72 w-full flex-1">
+    <div
+      key={kind}
+      data-scene={kind}
+      className="security-stage relative h-full min-h-0 w-full flex-1"
+    >
       <Scene />
     </div>
   )

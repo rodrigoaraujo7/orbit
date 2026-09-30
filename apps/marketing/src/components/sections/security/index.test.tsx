@@ -69,6 +69,8 @@ describe("Security", () => {
     for (const body of BODIES) expect(screen.getByText(body)).toBeInTheDocument()
 
     expect(tab(/Per-user isolation/)).toHaveAttribute("aria-selected", "true")
+    expect(stage()).toHaveClass("lg:h-full", "lg:min-h-0")
+    expect(stage().parentElement).toHaveClass("lg:items-stretch")
     expect(stage()).toHaveAttribute("data-scene", "isolation")
     expect(stage().querySelector("[data-part='shield']")).not.toBeNull()
     expect(stage().querySelector("[data-part='meter']")).toBeNull()
