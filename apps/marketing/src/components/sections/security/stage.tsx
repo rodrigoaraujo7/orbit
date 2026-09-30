@@ -8,6 +8,8 @@ function wait(ms: number): CSSProperties {
   return { animationDelay: `${ms}ms` }
 }
 
+const RECORD_WIDTH = 142
+
 function Record({
   x,
   y,
@@ -19,6 +21,7 @@ function Record({
   delay: number
   locked?: boolean
 }) {
+  const lockX = x + RECORD_WIDTH - 32
   return (
     <g
       data-part={locked ? "locked-row" : "account-row"}
@@ -28,7 +31,7 @@ function Record({
       <rect
         x={x}
         y={y}
-        width={168}
+        width={RECORD_WIDTH}
         height={58}
         rx={16}
         className={
@@ -37,15 +40,15 @@ function Record({
             : "fill-primary/10 stroke-primary/45"
         }
       />
-      <rect x={x + 16} y={y + 16} width={78} height={6} rx={3} className="fill-foreground/30" />
+      <rect x={x + 16} y={y + 16} width={72} height={6} rx={3} className="fill-foreground/30" />
       <rect x={x + 16} y={y + 32} width={48} height={5} rx={2.5} className="fill-foreground/10" />
       {locked ? (
         <g className="stroke-foreground/35" strokeWidth={1.4} fill="none">
-          <rect x={x + 136} y={y + 24} width={14} height={11} rx={2} />
-          <path d={`M${x + 139} ${y + 24} v-3 a4 4 0 0 1 8 0 v3`} />
+          <rect x={lockX} y={y + 24} width={14} height={11} rx={2} />
+          <path d={`M${lockX + 3} ${y + 24} v-3 a4 4 0 0 1 8 0 v3`} />
         </g>
       ) : (
-        <circle cx={x + 146} cy={y + 29} r={4} className="fill-primary" />
+        <circle cx={x + RECORD_WIDTH - 22} cy={y + 29} r={4} className="fill-primary" />
       )}
     </g>
   )
@@ -56,47 +59,51 @@ function IsolationScene() {
     <svg viewBox="0 0 560 460" fill="none" strokeWidth={1.25} className={SVG} aria-hidden>
       <defs>
         <clipPath id="security-you-clip">
-          <rect x="24" y="28" width="210" height="404" rx="32" />
+          <rect x="4" y="28" width="170" height="404" rx="32" />
         </clipPath>
       </defs>
       <rect
-        x="24"
+        data-part="phone"
+        data-side="you"
+        x="4"
         y="28"
-        width="210"
+        width="170"
         height="404"
         rx="32"
         className="fill-foreground/[0.03] stroke-foreground/15"
       />
       <rect
-        x="326"
+        data-part="phone"
+        data-side="other"
+        x="386"
         y="28"
-        width="210"
+        width="170"
         height="404"
         rx="32"
         className="fill-foreground/[0.02] stroke-foreground/10"
       />
       <g>
-        <circle cx="58" cy="68" r="12" className="fill-primary/15 stroke-primary" />
-        <circle cx="58" cy="65" r="4" className="fill-primary" />
-        <path d="M50 76c2-4 14-4 16 0" className="stroke-primary" strokeLinecap="round" />
-        <rect x="80" y="60" width="72" height="7" rx="3.5" className="fill-foreground/35" />
-        <rect x="80" y="74" width="44" height="5" rx="2.5" className="fill-foreground/15" />
+        <circle cx="36" cy="68" r="12" className="fill-primary/15 stroke-primary" />
+        <circle cx="36" cy="65" r="4" className="fill-primary" />
+        <path d="M28 76c2-4 14-4 16 0" className="stroke-primary" strokeLinecap="round" />
+        <rect x="56" y="60" width="68" height="7" rx="3.5" className="fill-foreground/35" />
+        <rect x="56" y="74" width="44" height="5" rx="2.5" className="fill-foreground/15" />
       </g>
       <g className="opacity-45">
-        <circle cx="360" cy="68" r="12" className="stroke-foreground/30" />
-        <rect x="382" y="60" width="72" height="7" rx="3.5" className="fill-foreground/20" />
-        <rect x="382" y="74" width="44" height="5" rx="2.5" className="fill-foreground/10" />
+        <circle cx="418" cy="68" r="12" className="stroke-foreground/30" />
+        <rect x="438" y="60" width="68" height="7" rx="3.5" className="fill-foreground/20" />
+        <rect x="438" y="74" width="44" height="5" rx="2.5" className="fill-foreground/10" />
       </g>
-      <Record x={44} y={112} delay={80} />
-      <Record x={44} y={186} delay={180} />
-      <Record x={44} y={260} delay={280} />
-      <Record x={346} y={112} delay={120} locked />
-      <Record x={346} y={186} delay={220} locked />
-      <Record x={346} y={260} delay={320} locked />
+      <Record x={18} y={112} delay={80} />
+      <Record x={18} y={186} delay={180} />
+      <Record x={18} y={260} delay={280} />
+      <Record x={400} y={112} delay={120} locked />
+      <Record x={400} y={186} delay={220} locked />
+      <Record x={400} y={260} delay={320} locked />
       <g clipPath="url(#security-you-clip)">
         <g className="security-motion security-scan">
-          <rect x="36" y="100" width="186" height="46" className="fill-primary/10" />
-          <rect x="36" y="144" width="186" height="2" className="fill-primary" />
+          <rect x="16" y="100" width="146" height="46" className="fill-primary/10" />
+          <rect x="16" y="144" width="146" height="2" className="fill-primary" />
         </g>
       </g>
       <path
@@ -114,17 +121,17 @@ function IsolationScene() {
         strokeLinejoin="round"
       />
       <line
-        x1="318"
+        x1="338"
         y1="230"
-        x2="346"
+        x2="370"
         y2="230"
         strokeDasharray="3 5"
         className="stroke-foreground/25"
       />
       <line
-        x1="214"
+        x1="186"
         y1="230"
-        x2="242"
+        x2="220"
         y2="230"
         className="stroke-primary/50"
         strokeLinecap="round"

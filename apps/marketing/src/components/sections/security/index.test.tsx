@@ -73,6 +73,12 @@ describe("Security", () => {
     expect(stage().parentElement).toHaveClass("lg:items-stretch")
     expect(stage()).toHaveAttribute("data-scene", "isolation")
     expect(stage().querySelector("[data-part='shield']")).not.toBeNull()
+    const phones = stage().querySelectorAll("[data-part='phone']")
+    const you = phones[0]
+    const other = phones[1]
+    const youRight = Number(you?.getAttribute("x")) + Number(you?.getAttribute("width"))
+    const otherLeft = Number(other?.getAttribute("x"))
+    expect(otherLeft - youRight).toBeGreaterThan(160)
     expect(stage().querySelector("[data-part='meter']")).toBeNull()
     expect(tab(/Per-user isolation/).querySelector("[data-part='meter']")).toHaveClass(
       "security-meter",
