@@ -5,7 +5,6 @@
   },
   "nav": {
     "product": "Produto",
-    "pains": "Dores",
     "features": "Recursos",
     "how": "Como funciona",
     "security": "Segurança",
@@ -105,26 +104,6 @@
         "contactCreated": "Contato criado",
         "login": "Login"
       }
-    }
-  },
-  "pains": {
-    "title": "O trabalho está espalhado. O dinheiro também.",
-    "subtitle": "O freelance se perde nos vãos entre as ferramentas.",
-    "scattered": {
-      "title": "Clientes e projetos vivem em planilhas",
-      "body": "Nomes, status e anotações se espalham em abas até você não saber o que ainda está ativo."
-    },
-    "invoices": {
-      "title": "A fatura sai e depois o silêncio",
-      "body": "Sem uma régua de pagamento, os meses em aberto só aparecem quando o caixa já apertou."
-    },
-    "secrets": {
-      "title": "Credenciais de ferramentas vão parar no chat",
-      "body": "Logins pagos são colados em mensagens porque não há um lugar seguro para guardá-los junto do projeto."
-    },
-    "overview": {
-      "title": "Trabalho e receita nunca dividem a mesma tela",
-      "body": "O quadro diz o que está andando. Nada diz quanto isso vale neste mês."
     }
   },
   "features": {

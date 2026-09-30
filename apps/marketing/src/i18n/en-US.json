@@ -5,7 +5,6 @@
   },
   "nav": {
     "product": "Product",
-    "pains": "Pains",
     "features": "Features",
     "how": "How it works",
     "security": "Security",
@@ -105,26 +104,6 @@
         "contactCreated": "Contact created",
         "login": "Login"
       }
-    }
-  },
-  "pains": {
-    "title": "The work is scattered. The money is too.",
-    "subtitle": "Freelancing breaks down in the gaps between tools.",
-    "scattered": {
-      "title": "Clients and projects live in spreadsheets",
-      "body": "Names, statuses, and notes drift across tabs until you cannot tell what is still active."
-    },
-    "invoices": {
-      "title": "Invoices go out and then go quiet",
-      "body": "Without a payment ruler, unpaid months hide until cash is already tight."
-    },
-    "secrets": {
-      "title": "Tool credentials end up in chat",
-      "body": "Paid logins get pasted into messages because there is nowhere safe to keep them next to the project."
-    },
-    "overview": {
-      "title": "Work and revenue never share a view",
-      "body": "The board says what is moving. Nothing says what it is worth this month."
     }
   },
   "features": {
