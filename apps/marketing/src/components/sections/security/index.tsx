@@ -133,7 +133,7 @@ export function Security({ dictionary }: { dictionary: Dictionary }) {
                       className={cn(
                         "grid size-11 shrink-0 place-items-center rounded-2xl ring-1 transition-colors duration-300",
                         active
-                          ? "bg-primary/15 text-primary ring-primary/30"
+                          ? "bg-primary/10 text-primary ring-primary/20"
                           : "bg-foreground/5 text-muted-foreground ring-foreground/10",
                       )}
                     >
@@ -183,7 +183,7 @@ export function Security({ dictionary }: { dictionary: Dictionary }) {
             onPointerEnter={onStageEnter}
             onPointerMove={onStageMove}
             onPointerLeave={onStageLeave}
-            className="bento-card group relative isolate order-1 flex min-h-52 flex-col overflow-hidden rounded-4xl bg-card ring-1 ring-foreground/10 lg:order-2 lg:h-full lg:min-h-0"
+            className="security-stage bento-card group relative isolate order-1 flex min-h-52 flex-col overflow-hidden rounded-4xl bg-card ring-1 ring-foreground/10 lg:order-2 lg:h-full lg:min-h-0"
           >
             <div aria-hidden className="bento-spotlight" />
             <div aria-hidden className="security-grid pointer-events-none absolute inset-0" />

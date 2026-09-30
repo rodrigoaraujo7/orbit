@@ -156,8 +156,25 @@
 .security-card[aria-selected="true"] {
   background: var(--card);
   box-shadow:
-    0 0 0 1px color-mix(in oklch, var(--primary) 42%, transparent),
-    0 28px 70px -40px color-mix(in oklch, var(--primary) 75%, transparent);
+    0 0 0 1px color-mix(in oklch, var(--primary) 22%, transparent),
+    0 12px 28px -22px color-mix(in oklch, var(--primary) 28%, transparent);
+}
+
+/* The stage reuses the feature pointer glow. Keep it, at a lower volume. */
+.security-stage .bento-spotlight {
+  background: radial-gradient(
+    18rem circle at var(--mx) var(--my),
+    color-mix(in oklch, var(--primary) 6%, transparent),
+    transparent 68%
+  );
+}
+
+.security-stage.bento-card::after {
+  background: radial-gradient(
+    12rem circle at var(--mx) var(--my),
+    color-mix(in oklch, var(--primary) 28%, transparent),
+    transparent 72%
+  );
 }
 
 .security-grid {
