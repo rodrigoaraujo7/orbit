@@ -1,5 +1,7 @@
+import type { CSSProperties } from "react"
 import { Reveal } from "@/components/reveal"
 import type { Dictionary } from "@/i18n"
+import { Timeline } from "./timeline"
 
 const STEPS = ["addClient", "createProject", "track"] as const
 
@@ -12,18 +14,30 @@ export function How({ dictionary }: { dictionary: Dictionary }) {
             {dictionary.how.title}
           </h2>
         </Reveal>
-        <ol className="mt-10 grid gap-8 md:grid-cols-3">
+        <Timeline>
           {STEPS.map((key, index) => {
             const step = dictionary.how[key]
             return (
-              <Reveal as="li" key={key} delay={index * 80}>
-                <p className="font-heading text-3xl text-primary italic">{index + 1}</p>
-                <h3 className="mt-3 text-lg font-medium">{step.title}</h3>
-                <p className="mt-2 text-muted-foreground">{step.body}</p>
-              </Reveal>
+              <li key={key} className="how-step" style={{ "--step": index } as CSSProperties}>
+                {index < STEPS.length - 1 ? (
+                  <span className="how-connector" aria-hidden="true">
+                    <span className="how-connector-track" />
+                    <span className="how-connector-progress" />
+                  </span>
+                ) : null}
+                <div className="how-step-body">
+                  <span className="how-node" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div className="how-step-copy">
+                    <h3 className="text-lg font-medium">{step.title}</h3>
+                    <p className="mt-2 text-muted-foreground">{step.body}</p>
+                  </div>
+                </div>
+              </li>
             )
           })}
-        </ol>
+        </Timeline>
       </div>
     </section>
   )

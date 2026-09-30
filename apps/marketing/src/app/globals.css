@@ -130,3 +130,175 @@
     transform: none;
   }
 }
+
+/* Process timeline. The rail is one segment per step so it can run vertically
+   on small screens and across the node row on wide ones. The track and hollow
+   nodes stay visible; data-active draws each segment and fills its node. */
+.how-steps {
+  --how-gap: 2.75rem;
+  --how-node: 2.75rem;
+  --how-draw: 0.95s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--how-gap);
+}
+
+.how-step {
+  position: relative;
+}
+
+.how-step-body {
+  display: grid;
+  grid-template-columns: var(--how-node) minmax(0, 1fr);
+  column-gap: 1.25rem;
+  align-items: start;
+}
+
+.how-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: var(--how-node);
+  height: var(--how-node);
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-style: italic;
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--primary) 45%, transparent);
+  transition:
+    background-color 0.45s ease,
+    color 0.45s ease,
+    box-shadow 0.45s ease;
+  transition-delay: calc(var(--step) * var(--how-draw));
+}
+
+.how-steps[data-active] .how-node {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 0 6px color-mix(in oklch, var(--primary) 18%, transparent);
+}
+
+.how-connector {
+  pointer-events: none;
+  position: absolute;
+  top: calc(var(--how-node) / 2);
+  left: calc(var(--how-node) / 2);
+  width: 2px;
+  height: calc(100% + var(--how-gap));
+  transform: translateX(-50%);
+}
+
+.how-connector-track,
+.how-connector-progress {
+  position: absolute;
+  inset: 0;
+}
+
+.how-connector-track {
+  background: color-mix(in oklch, var(--border) 90%, transparent);
+}
+
+.how-connector-progress {
+  background: var(--primary);
+  box-shadow: 0 0 12px color-mix(in oklch, var(--primary) 55%, transparent);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform var(--how-draw) cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--step) * var(--how-draw));
+}
+
+.how-steps[data-active] .how-connector-progress {
+  transform: scaleY(1);
+}
+
+.how-step-copy {
+  padding-top: 0.35rem;
+  opacity: 0;
+  transform: translateY(0.75rem);
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--step) * var(--how-draw) + 0.2s);
+}
+
+.how-steps[data-active] .how-step-copy {
+  opacity: 1;
+  transform: none;
+}
+
+@media (min-width: 768px) {
+  .how-steps {
+    --how-gap: 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .how-step-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .how-connector {
+    top: calc(var(--how-node) / 2);
+    left: calc(50% + var(--how-node) / 2);
+    width: calc(100% + var(--how-gap) - var(--how-node));
+    height: 2px;
+    transform: translateY(-50%);
+  }
+
+  .how-connector-progress {
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  .how-steps[data-active] .how-connector-progress {
+    transform: scaleX(1);
+  }
+
+  .how-step-copy {
+    max-width: 18rem;
+    padding-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .how-node,
+  .how-connector-progress,
+  .how-step-copy {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .how-connector-progress,
+  .how-step-copy {
+    opacity: 1;
+    transform: none;
+  }
+
+  .how-node {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: 0 0 0 6px color-mix(in oklch, var(--primary) 18%, transparent);
+  }
+}
+
+@media (scripting: none) {
+  .how-connector-progress,
+  .how-step-copy {
+    opacity: 1;
+    transform: none;
+  }
+
+  .how-node {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: 0 0 0 6px color-mix(in oklch, var(--primary) 18%, transparent);
+  }
+}
