@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useRef, useState, type ReactNode } from "react"
+import { cn } from "ui/utils"
 
-export function Timeline({ children }: { children: ReactNode }) {
+export function Timeline({ children, className }: { children: ReactNode; className?: string }) {
   const ref = useRef<HTMLOListElement>(null)
   const [active, setActive] = useState(false)
 
@@ -28,7 +29,7 @@ export function Timeline({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <ol ref={ref} className="how-steps" data-active={active ? "true" : undefined}>
+    <ol ref={ref} className={cn("how-steps", className)} data-active={active ? "true" : undefined}>
       {children}
     </ol>
   )

@@ -14,7 +14,7 @@ export function How({ dictionary }: { dictionary: Dictionary }) {
             {dictionary.how.title}
           </h2>
         </Reveal>
-        <Timeline>
+        <Timeline className="mt-14 md:mt-16">
           {STEPS.map((key, index) => {
             const step = dictionary.how[key]
             return (

@@ -36,7 +36,7 @@ describe("How", () => {
 
     const list = screen.getByRole("list")
     expect(list.tagName).toBe("OL")
-    expect(list).toHaveClass("how-steps")
+    expect(list).toHaveClass("how-steps", "mt-14", "md:mt-16")
     expect(list).not.toHaveAttribute("data-active")
 
     const items = screen.getAllByRole("listitem")
