@@ -48,15 +48,58 @@ function installMedia(matches: boolean | ((query: string) => boolean)) {
   }
 }
 
+class IntersectionStub {
+  static instances: IntersectionStub[] = []
+  callback: IntersectionObserverCallback
+  disconnect = vi.fn()
+
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback
+    IntersectionStub.instances.push(this)
+  }
+
+  observe() {}
+  unobserve() {}
+  takeRecords() {
+    return []
+  }
+}
+
+function installObserver() {
+  window.IntersectionObserver = IntersectionStub as unknown as typeof IntersectionObserver
+}
+
+/** Lets the cycle start in browsers that cannot observe visibility. */
+async function settleSeen() {
+  await act(async () => {
+    await Promise.resolve()
+  })
+}
+
+function emitVisibility(isIntersecting: boolean | null) {
+  const observer = IntersectionStub.instances.at(-1)
+  if (!observer) throw new Error("missing observer")
+  act(() => {
+    observer.callback(
+      isIntersecting === null ? [] : [{ isIntersecting } as IntersectionObserverEntry],
+      observer as unknown as IntersectionObserver,
+    )
+  })
+  return observer
+}
+
 afterEach(() => {
   cleanup()
   vi.useRealTimers()
+  IntersectionStub.instances = []
   Reflect.deleteProperty(window, "matchMedia")
+  Reflect.deleteProperty(window, "IntersectionObserver")
 })
 
 describe("Security", () => {
-  it("keeps isolation, encryption, and the sign-in code on the console", () => {
+  it("keeps isolation, encryption, and the sign-in code on the console", async () => {
     render(<Security dictionary={getDictionary("en")} />)
+    await settleSeen()
 
     expect(screen.getByRole("heading", { name: "Isolated by default" })).toBeInTheDocument()
     expect(screen.getByRole("heading", { name: "Per-user isolation" })).toBeInTheDocument()
@@ -85,10 +128,21 @@ describe("Security", () => {
     )
   })
 
-  it("previews a control on hover and selects it on click", () => {
+  it("does not start the cycle after the section has gone", async () => {
+    const view = render(<Security dictionary={getDictionary("en")} />)
+    view.unmount()
+    await settleSeen()
+    expect(screen.queryByRole("tabpanel")).not.toBeInTheDocument()
+  })
+
+  it("keeps the current control on hover and selects another on click", () => {
     render(<Security dictionary={getDictionary("en")} />)
 
     fireEvent.pointerEnter(tab(/Envelope encryption/))
+    expect(tab(/Per-user isolation/)).toHaveAttribute("aria-selected", "true")
+    expect(stage()).toHaveAttribute("data-scene", "isolation")
+
+    fireEvent.click(tab(/Envelope encryption/))
     expect(tab(/Envelope encryption/)).toHaveAttribute("aria-selected", "true")
     expect(stage()).toHaveAttribute("data-scene", "encryption")
     expect(stage().querySelector("[data-part='chip']")).toHaveClass("security-chip")
@@ -121,52 +175,98 @@ describe("Security", () => {
     expect(stage()).toHaveAttribute("data-scene", "emailCode")
   })
 
-  it("advances on its own, pauses while the console is in use, and resumes after", () => {
-    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] })
+  it("pauses on hover without resetting and resumes the time that is left", async () => {
+    vi.useFakeTimers({
+      toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"],
+    })
     render(<Security dictionary={getDictionary("en")} />)
+    await settleSeen()
     const console = screen.getByRole("tablist").parentElement!
+    const elapsed = 3_000
 
     act(() => {
-      vi.advanceTimersByTime(SECURITY_CYCLE_MS)
+      vi.advanceTimersByTime(elapsed)
     })
-    expect(stage()).toHaveAttribute("data-scene", "encryption")
+    expect(stage()).toHaveAttribute("data-scene", "isolation")
 
     fireEvent.pointerEnter(console)
+    fireEvent.pointerEnter(stage())
+    expect(tab(/Per-user isolation/).querySelector("[data-part='meter']")).toHaveStyle({
+      animationPlayState: "paused",
+    })
     act(() => {
       vi.advanceTimersByTime(SECURITY_CYCLE_MS * 2)
     })
-    expect(stage()).toHaveAttribute("data-scene", "encryption")
-    expect(tab(/Envelope encryption/).querySelector("[data-part='meter']")).toHaveClass(
-      "scale-x-100",
-    )
+    expect(stage()).toHaveAttribute("data-scene", "isolation")
 
     fireEvent.pointerLeave(console)
     act(() => {
-      vi.advanceTimersByTime(SECURITY_CYCLE_MS)
+      vi.advanceTimersByTime(SECURITY_CYCLE_MS - elapsed - 1)
     })
-    expect(stage()).toHaveAttribute("data-scene", "emailCode")
+    expect(stage()).toHaveAttribute("data-scene", "isolation")
+    act(() => {
+      vi.advanceTimersByTime(1)
+    })
+    expect(stage()).toHaveAttribute("data-scene", "encryption")
 
     fireEvent.focus(console)
     act(() => {
       vi.advanceTimersByTime(SECURITY_CYCLE_MS)
     })
-    expect(stage()).toHaveAttribute("data-scene", "emailCode")
+    expect(stage()).toHaveAttribute("data-scene", "encryption")
 
-    fireEvent.blur(console, { relatedTarget: tab(/An email code/) })
+    fireEvent.blur(console, { relatedTarget: tab(/Envelope encryption/) })
     act(() => {
       vi.advanceTimersByTime(SECURITY_CYCLE_MS)
     })
-    expect(stage()).toHaveAttribute("data-scene", "emailCode")
+    expect(stage()).toHaveAttribute("data-scene", "encryption")
 
     fireEvent.blur(console, { relatedTarget: document.body })
     act(() => {
       vi.advanceTimersByTime(SECURITY_CYCLE_MS)
     })
-    expect(stage()).toHaveAttribute("data-scene", "isolation")
+    expect(stage()).toHaveAttribute("data-scene", "emailCode")
   })
 
-  it("stays on the selected control when motion is reduced, including after a change", () => {
-    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] })
+  it("starts the cycle the first time the section enters view", () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] })
+    installObserver()
+    const view = render(<Security dictionary={getDictionary("en")} />)
+    const meter = () => tab(/Per-user isolation/).querySelector("[data-part='meter']")
+
+    act(() => {
+      vi.advanceTimersByTime(SECURITY_CYCLE_MS)
+    })
+    expect(stage()).toHaveAttribute("data-scene", "isolation")
+    expect(meter()).toHaveClass("scale-x-100")
+    expect(meter()).not.toHaveClass("security-meter")
+
+    emitVisibility(false)
+    emitVisibility(null)
+    act(() => {
+      vi.advanceTimersByTime(SECURITY_CYCLE_MS)
+    })
+    expect(stage()).toHaveAttribute("data-scene", "isolation")
+
+    const observer = emitVisibility(true)
+    expect(meter()).toHaveClass("security-meter")
+    expect(observer.disconnect).toHaveBeenCalled()
+
+    act(() => {
+      vi.advanceTimersByTime(SECURITY_CYCLE_MS)
+    })
+    expect(stage()).toHaveAttribute("data-scene", "encryption")
+
+    act(() => {
+      vi.advanceTimersByTime(SECURITY_CYCLE_MS)
+    })
+    expect(stage()).toHaveAttribute("data-scene", "emailCode")
+
+    view.unmount()
+  })
+
+  it("stays on the selected control when motion is reduced, including after a change", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] })
     const media = {
       matches: true,
       addEventListener: vi.fn(),
@@ -175,6 +275,7 @@ describe("Security", () => {
     window.matchMedia = vi.fn(() => media) as unknown as typeof window.matchMedia
 
     const view = render(<Security dictionary={getDictionary("en")} />)
+    await settleSeen()
     act(() => {
       vi.advanceTimersByTime(SECURITY_CYCLE_MS * 3)
     })

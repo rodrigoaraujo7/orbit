@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type PointerEvent } from "react"
+import { useEffect, useRef, useState, type PointerEvent } from "react"
 import { KeyRound, Mail, Shield, type LucideIcon } from "lucide-react"
 import { cn } from "ui/utils"
 import { Reveal } from "@/components/reveal"
@@ -62,21 +62,70 @@ function onStageLeave(event: PointerEvent<HTMLElement>) {
 }
 
 export function Security({ dictionary }: { dictionary: Dictionary }) {
+  const sectionRef = useRef<HTMLElement>(null)
   const [selected, setSelected] = useState<SecurityKey>("isolation")
   const [paused, setPaused] = useState(false)
+  const [seen, setSeen] = useState(false)
   const reduced = usePrefersReducedMotion()
-  const playing = !paused && !reduced
+  const playing = seen && !paused && !reduced
+  const remainingRef = useRef(SECURITY_CYCLE_MS)
+  const preserveRef = useRef(true)
+
+  function choose(key: SecurityKey) {
+    remainingRef.current = SECURITY_CYCLE_MS
+    preserveRef.current = false
+    setSelected(key)
+  }
+
+  useEffect(() => {
+    const node = sectionRef.current
+    /* v8 ignore next -- ref is set before the effect runs */
+    if (!node) return
+    if (typeof IntersectionObserver === "undefined") {
+      let active = true
+      queueMicrotask(() => {
+        if (active) setSeen(true)
+      })
+      return () => {
+        active = false
+      }
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return
+        setSeen(true)
+        observer.disconnect()
+      },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.15 },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     if (!playing) return
-    const id = window.setInterval(() => {
+    preserveRef.current = true
+    const wait = remainingRef.current
+    const started = Date.now()
+    const id = window.setTimeout(() => {
+      remainingRef.current = SECURITY_CYCLE_MS
+      preserveRef.current = false
       setSelected((current) => stepSecurityKey(current, 1))
-    }, SECURITY_CYCLE_MS)
-    return () => window.clearInterval(id)
-  }, [playing])
+    }, wait)
+    return () => {
+      window.clearTimeout(id)
+      if (!preserveRef.current) return
+      remainingRef.current = Math.max(0, wait - (Date.now() - started))
+    }
+  }, [playing, selected])
 
   return (
-    <section id="security" className="security-section scroll-mt-24 border-t border-border/70">
+    <section
+      ref={sectionRef}
+      id="security"
+      className="security-section scroll-mt-24 border-t border-border/70"
+    >
       <div className="page-wrap px-6 py-20 md:py-28">
         <Reveal>
           <h2 className="max-w-2xl font-heading text-4xl tracking-tight md:text-5xl">
@@ -104,7 +153,7 @@ export function Security({ dictionary }: { dictionary: Dictionary }) {
               const next = securityKeyFromKey(selected, event.key)
               if (!next) return
               event.preventDefault()
-              setSelected(next)
+              choose(next)
               focusSecurityTab(event.currentTarget, next)
             }}
           >
@@ -121,8 +170,7 @@ export function Security({ dictionary }: { dictionary: Dictionary }) {
                   aria-selected={active}
                   aria-controls={`security-panel-${selected}`}
                   tabIndex={active ? 0 : -1}
-                  onClick={() => setSelected(key)}
-                  onPointerEnter={() => setSelected(key)}
+                  onClick={() => choose(key)}
                   className={cn(
                     "security-card group cursor-pointer rounded-4xl px-5 py-5 text-left ring-1 ring-transparent",
                     !active && "ring-foreground/10 hover:bg-card/70 hover:ring-foreground/20",
@@ -160,10 +208,15 @@ export function Security({ dictionary }: { dictionary: Dictionary }) {
                             data-part="meter"
                             className={cn(
                               "block h-full w-full bg-primary",
-                              playing ? "security-meter" : "scale-x-100",
+                              seen && !reduced ? "security-meter" : "scale-x-100",
                             )}
                             style={
-                              playing ? { animationDuration: `${SECURITY_CYCLE_MS}ms` } : undefined
+                              seen && !reduced
+                                ? {
+                                    animationDuration: `${SECURITY_CYCLE_MS}ms`,
+                                    animationPlayState: playing ? "running" : "paused",
+                                  }
+                                : undefined
                             }
                           />
                         </span>
