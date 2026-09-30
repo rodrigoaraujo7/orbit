@@ -8,6 +8,7 @@
     "features": "Recursos",
     "how": "Como funciona",
     "security": "Segurança",
+    "pricing": "Preços",
     "faq": "Perguntas",
     "signIn": "Entrar",
     "getStarted": "Começar",
@@ -163,6 +164,42 @@
     "emailCode": {
       "title": "Um código por e-mail em cada entrada",
       "body": "Senha não basta. Cada login também exige um código de seis dígitos enviado à sua caixa de entrada."
+    }
+  },
+  "pricing": {
+    "title": "Preços simples",
+    "subtitle": "Comece de graça. Passe para o Pro quando o estúdio precisar do sistema inteiro.",
+    "billing": "Período de cobrança",
+    "monthly": "Mensal",
+    "yearly": "Anual",
+    "save": "Economize {percent}%",
+    "perMonth": "/mês",
+    "freeForever": "Grátis para sempre",
+    "billedYearly": "{amount} cobrados por ano",
+    "free": {
+      "name": "Free",
+      "description": "Para o primeiro cliente e alguns projetos.",
+      "includes": "Inclui",
+      "cta": "Começar",
+      "benefits": {
+        "projects": "Até 2 projetos ativos",
+        "clients": "Até 2 clientes",
+        "kanban": "Pipeline no kanban",
+        "dashboard": "Painel financeiro"
+      }
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "Para um estúdio que cobra todo mês.",
+      "includes": "Tudo do Free, e ainda",
+      "cta": "Assinar Pro",
+      "benefits": {
+        "unlimited": "Projetos e clientes ilimitados",
+        "invoices": "Faturas e régua de pagamento",
+        "secrets": "Credenciais de ferramentas criptografadas",
+        "github": "GitHub Actions em cada projeto",
+        "audit": "Registro de auditoria completo"
+      }
     }
   },
   "faq": {

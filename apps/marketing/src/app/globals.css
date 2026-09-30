@@ -98,6 +98,24 @@
   opacity: 1;
 }
 
+/* A short color band behind the Pro button. It fades out before the benefit list. */
+.pricing-wash {
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 7.5rem;
+  background: linear-gradient(
+    100deg,
+    oklch(0.62 0.2 350 / 0.55),
+    oklch(0.78 0.14 85 / 0.4),
+    oklch(0.72 0.16 150 / 0.5)
+  );
+  -webkit-mask-image: linear-gradient(to top, black 0%, rgb(0 0 0 / 0.35) 42%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, rgb(0 0 0 / 0.35) 42%, transparent 100%);
+}
+
 /* Scroll reveals the illustration below lg. The pointer glow stays on wide screens. */
 @media (max-width: 1023px) {
   .bento-spotlight,

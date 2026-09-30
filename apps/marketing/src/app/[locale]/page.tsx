@@ -6,6 +6,7 @@ import { Footer } from "@/components/sections/footer"
 import { Header } from "@/components/sections/header"
 import { Hero } from "@/components/sections/hero"
 import { How } from "@/components/sections/how"
+import { Pricing } from "@/components/sections/pricing"
 import { Security } from "@/components/sections/security"
 import { getDictionary, isLocale, type Locale } from "@/i18n"
 import { softwareJsonLd } from "@/lib/seo"
@@ -32,6 +33,7 @@ export default async function LocalePage({ params }: { params: Promise<{ locale:
         <Features dictionary={dictionary} />
         <How dictionary={dictionary} />
         <Security dictionary={dictionary} />
+        <Pricing dictionary={dictionary} />
         <Faq dictionary={dictionary} />
         <Cta dictionary={dictionary} />
       </main>

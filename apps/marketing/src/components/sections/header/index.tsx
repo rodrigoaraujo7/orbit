@@ -15,6 +15,7 @@ const NAV = [
   ["#features", "features"],
   ["#how", "how"],
   ["#security", "security"],
+  ["#pricing", "pricing"],
   ["#faq", "faq"],
 ] as const
 
