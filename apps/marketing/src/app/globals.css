@@ -98,6 +98,49 @@
   opacity: 1;
 }
 
+/* The Pro wash fills the lower part of the card and dissolves upward. */
+.pricing-card {
+  --px: 0;
+}
+
+.pricing-wash {
+  pointer-events: none;
+  position: absolute;
+  right: -10%;
+  bottom: -12%;
+  left: -10%;
+  height: 82%;
+  background: linear-gradient(
+    100deg,
+    oklch(0.62 0.24 350) 0%,
+    oklch(0.76 0.16 55) 38%,
+    oklch(0.8 0.15 95) 62%,
+    oklch(0.72 0.18 150) 100%
+  );
+  filter: blur(22px);
+  mask-image: linear-gradient(
+    to top,
+    black 0%,
+    rgb(0 0 0 / 0.82) 16%,
+    rgb(0 0 0 / 0.46) 38%,
+    rgb(0 0 0 / 0.18) 60%,
+    rgb(0 0 0 / 0.05) 80%,
+    transparent 100%
+  );
+}
+
+/* Pointer position (--px, -1…1) slides the rainbow shadow sideways. */
+.pricing-card[data-featured] {
+  transition: box-shadow 0.45s ease;
+}
+
+.pricing-card[data-featured][data-active] {
+  box-shadow:
+    calc(var(--px) * -1.35rem) 1.2rem 2.8rem -0.45rem oklch(0.65 0.24 350 / 0.85),
+    0 1.35rem 2.3rem -0.7rem oklch(0.8 0.16 85 / 0.55),
+    calc(var(--px) * 1.45rem) 1.35rem 3rem -0.5rem oklch(0.72 0.18 150 / 0.8);
+}
+
 /* Scroll reveals the illustration below lg. The pointer glow stays on wide screens. */
 @media (max-width: 1023px) {
   .bento-spotlight,
@@ -108,7 +151,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bento-card *,
-  .bento-card::after {
+  .bento-card::after,
+  .pricing-card[data-featured] {
     transition: none !important;
     animation: none !important;
   }

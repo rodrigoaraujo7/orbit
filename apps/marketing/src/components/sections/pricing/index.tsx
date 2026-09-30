@@ -1,12 +1,13 @@
 "use client"
 
 import { Check } from "lucide-react"
-import { useState, type KeyboardEvent } from "react"
+import { useState, type KeyboardEvent, type PointerEvent } from "react"
 import { buttonVariants } from "ui/button"
 import { cn } from "ui/utils"
 import { Reveal } from "@/components/reveal"
 import type { Dictionary } from "@/i18n"
 import { signUpUrl } from "@/lib/site"
+import { applyPointerVars, clearPointerVars, pointerVars } from "../features/pointer"
 import {
   formatUsd,
   fill,
@@ -20,6 +21,24 @@ import {
 
 const FREE_BENEFITS = ["projects", "clients", "kanban", "dashboard"] as const
 const PRO_BENEFITS = ["unlimited", "invoices", "secrets", "github", "audit"] as const
+
+function onPointerMove(event: PointerEvent<HTMLElement>) {
+  const node = event.currentTarget
+  applyPointerVars(
+    node.style,
+    pointerVars(node.getBoundingClientRect(), event.clientX, event.clientY),
+  )
+}
+
+function onPointerEnter(event: PointerEvent<HTMLElement>) {
+  event.currentTarget.dataset.active = ""
+}
+
+function onPointerLeave(event: PointerEvent<HTMLElement>) {
+  const node = event.currentTarget
+  clearPointerVars(node.style)
+  delete node.dataset.active
+}
 
 function BenefitList({ items }: { items: readonly string[] }) {
   return (
@@ -59,17 +78,16 @@ function PlanCard({
 }) {
   return (
     <article
+      data-featured={featured ? "" : undefined}
+      onPointerEnter={featured ? onPointerEnter : undefined}
+      onPointerMove={featured ? onPointerMove : undefined}
+      onPointerLeave={featured ? onPointerLeave : undefined}
       className={cn(
-        "relative flex h-full flex-col overflow-hidden rounded-4xl bg-card p-8 ring-1",
+        "pricing-card relative flex h-full flex-col overflow-hidden rounded-4xl bg-card p-8 ring-1",
         featured ? "ring-primary/50" : "ring-foreground/10",
       )}
     >
-      {featured ? (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-[linear-gradient(100deg,oklch(0.62_0.24_350)_0%,oklch(0.78_0.16_85)_48%,oklch(0.74_0.18_150)_100%)] opacity-90 [mask-image:linear-gradient(to_top,black_0%,transparent_78%)]"
-        />
-      ) : null}
+      {featured ? <div aria-hidden className="pricing-wash" /> : null}
       <div className="relative z-10 flex h-full flex-col">
         <h3 className="text-lg font-medium">{name}</h3>
         <p className="mt-1 max-w-xs text-sm text-muted-foreground">{description}</p>

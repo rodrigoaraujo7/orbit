@@ -1,6 +1,6 @@
-import { cleanup, render, screen, within } from "@testing-library/react"
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { getDictionary } from "@/i18n"
 import { signUpUrl } from "@/lib/site"
 import { Pricing } from "./index"
@@ -52,6 +52,44 @@ describe("Pricing", () => {
       "bg-foreground",
       "text-background",
     )
+
+    const pro = within(region).getByRole("heading", { name: "Pro" }).closest("article")
+    const free = within(region).getByRole("heading", { name: "Free" }).closest("article")
+    expect(pro).toHaveClass("pricing-card")
+    expect(pro).toHaveAttribute("data-featured", "")
+    expect(pro?.querySelector(".pricing-wash")).not.toBeNull()
+    expect(free?.querySelector(".pricing-wash")).toBeNull()
+    expect(free).not.toHaveAttribute("data-featured")
+  })
+
+  it("slides a colored shadow with the pointer and clears it on leave", () => {
+    render(<Pricing dictionary={getDictionary("en")} />)
+    const pro = screen.getByRole("heading", { name: "Pro" }).closest("article")!
+
+    expect(pro).not.toHaveAttribute("data-active")
+    fireEvent.pointerEnter(pro)
+    expect(pro).toHaveAttribute("data-active", "")
+
+    vi.spyOn(pro, "getBoundingClientRect").mockReturnValue({
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      right: 200,
+      bottom: 100,
+      width: 200,
+      height: 100,
+      toJSON: () => ({}),
+    })
+    fireEvent.pointerMove(pro, { clientX: 150, clientY: 40 })
+    expect(pro.style.getPropertyValue("--mx")).toBe("150px")
+    expect(pro.style.getPropertyValue("--my")).toBe("40px")
+    expect(pro.style.getPropertyValue("--px")).toBe("0.5")
+
+    fireEvent.pointerLeave(pro)
+    expect(pro).not.toHaveAttribute("data-active")
+    expect(pro.style.getPropertyValue("--mx")).toBe("")
+    expect(pro.style.getPropertyValue("--px")).toBe("")
   })
 
   it("switches to the full monthly price and back with the keyboard", async () => {
