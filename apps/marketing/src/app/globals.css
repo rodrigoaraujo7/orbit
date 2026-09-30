@@ -98,53 +98,22 @@
   opacity: 1;
 }
 
-/* The Pro wash covers the card and dissolves all the way to the top. */
-.pricing-card {
-  --px: 0;
-}
-
+/* A short color band behind the Pro button. It fades out before the benefit list. */
 .pricing-wash {
   pointer-events: none;
   position: absolute;
-  inset: -30% -20% -35%;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 7.5rem;
   background: linear-gradient(
     100deg,
-    oklch(0.62 0.24 350) 0%,
-    oklch(0.76 0.16 55) 38%,
-    oklch(0.8 0.15 95) 62%,
-    oklch(0.72 0.18 150) 100%
+    oklch(0.62 0.2 350 / 0.55),
+    oklch(0.78 0.14 85 / 0.4),
+    oklch(0.72 0.16 150 / 0.5)
   );
-  filter: blur(40px);
-  -webkit-mask-image: linear-gradient(
-    to top,
-    black 0%,
-    rgb(0 0 0 / 0.72) 18%,
-    rgb(0 0 0 / 0.38) 36%,
-    rgb(0 0 0 / 0.16) 54%,
-    rgb(0 0 0 / 0.06) 72%,
-    transparent 92%
-  );
-  mask-image: linear-gradient(
-    to top,
-    black 0%,
-    rgb(0 0 0 / 0.72) 18%,
-    rgb(0 0 0 / 0.38) 36%,
-    rgb(0 0 0 / 0.16) 54%,
-    rgb(0 0 0 / 0.06) 72%,
-    transparent 92%
-  );
-}
-
-/* --px (-1…1) pulls the whole colored shadow toward the pointer. */
-.pricing-card[data-featured] {
-  transition: box-shadow 0.2s ease-out;
-}
-
-.pricing-card[data-featured][data-active] {
-  box-shadow:
-    calc(var(--px) * 2.75rem) 1.15rem 2.4rem -0.15rem oklch(0.66 0.24 350 / 0.9),
-    calc(var(--px) * 2.75rem) 1.45rem 3.1rem 0.15rem oklch(0.78 0.16 85 / 0.55),
-    calc(var(--px) * 2.75rem) 1.25rem 2.7rem -0.1rem oklch(0.72 0.18 150 / 0.85);
+  -webkit-mask-image: linear-gradient(to top, black 0%, rgb(0 0 0 / 0.35) 42%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, rgb(0 0 0 / 0.35) 42%, transparent 100%);
 }
 
 /* Scroll reveals the illustration below lg. The pointer glow stays on wide screens. */
@@ -157,8 +126,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bento-card *,
-  .bento-card::after,
-  .pricing-card[data-featured] {
+  .bento-card::after {
     transition: none !important;
     animation: none !important;
   }
