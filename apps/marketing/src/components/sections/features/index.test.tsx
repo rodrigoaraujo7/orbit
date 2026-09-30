@@ -52,11 +52,10 @@ describe("Features", () => {
     expect(kanban.style.getPropertyValue("--mx")).toBe("150px")
     expect(kanban.style.getPropertyValue("--my")).toBe("25px")
     expect(kanban.style.getPropertyValue("--px")).toBe("0.5")
-    expect(kanban.style.getPropertyValue("--py")).toBe("-0.5")
 
     fireEvent.pointerLeave(kanban, { pointerType: "mouse" })
     expect(kanban).not.toHaveAttribute("data-active")
-    for (const property of ["--mx", "--my", "--px", "--py"]) {
+    for (const property of ["--mx", "--my", "--px"]) {
       expect(kanban.style.getPropertyValue(property)).toBe("")
     }
   })

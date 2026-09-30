@@ -50,7 +50,7 @@ export function BentoCard({
           aria-hidden
           className="relative h-52 shrink-0 text-foreground lg:h-auto lg:min-h-0 lg:flex-1"
         >
-          <div className="bento-parallax absolute inset-4">{art}</div>
+          <div className="absolute inset-4">{art}</div>
         </div>
         <div className="relative px-6 pb-6">
           <p className="font-mono text-[0.7rem] tracking-[0.2em] text-muted-foreground/60">

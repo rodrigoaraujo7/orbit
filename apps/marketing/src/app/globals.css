@@ -53,7 +53,6 @@
   --mx: 50%;
   --my: 50%;
   --px: 0;
-  --py: 0;
 }
 
 .bento-spotlight,
@@ -99,16 +98,7 @@
   opacity: 1;
 }
 
-.bento-parallax {
-  translate: calc(var(--px) * -8px) calc(var(--py) * -6px);
-  transition: translate 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .bento-parallax {
-    translate: none;
-  }
-
   .bento-card *,
   .bento-card::after {
     transition: none !important;
