@@ -130,3 +130,209 @@
     transform: none;
   }
 }
+
+/* Security console: a quiet bordô wash, a masked grid on the stage, and the motions that play inside it. */
+.security-section {
+  background:
+    radial-gradient(
+      42rem 24rem at 82% 42%,
+      color-mix(in oklch, var(--primary) 16%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      24rem 16rem at 8% 88%,
+      color-mix(in oklch, var(--foreground) 5%, transparent),
+      transparent 70%
+    );
+}
+
+.security-card {
+  transition:
+    background-color 0.35s ease,
+    box-shadow 0.35s ease,
+    ring-color 0.35s ease;
+}
+
+.security-card[aria-selected="true"] {
+  background: var(--card);
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--primary) 42%, transparent),
+    0 28px 70px -40px color-mix(in oklch, var(--primary) 75%, transparent);
+}
+
+.security-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklch, var(--foreground) 7%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklch, var(--foreground) 7%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at center, #000 15%, transparent 72%);
+}
+
+@keyframes security-stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes security-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes security-scan {
+  0% {
+    transform: translateY(-24px);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(250px);
+    opacity: 0;
+  }
+}
+
+@keyframes security-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes security-chip {
+  from {
+    opacity: 0;
+    transform: translateY(-26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes security-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes security-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes security-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes security-meter {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.security-stage {
+  animation: security-stage-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.security-in {
+  animation: security-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.security-scan {
+  animation: security-scan 3.4s ease-in-out infinite;
+}
+
+.security-orbit {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: security-orbit 22s linear infinite;
+}
+
+.security-chip {
+  animation: security-chip 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.security-stamp {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: security-stamp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+}
+
+.security-bar {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: security-bar 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.security-draw {
+  stroke-dasharray: 1;
+  animation: security-draw 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+.security-meter {
+  transform-origin: left center;
+  animation-name: security-meter;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .security-stage,
+  .security-in,
+  .security-scan,
+  .security-orbit,
+  .security-chip,
+  .security-stamp,
+  .security-bar,
+  .security-draw,
+  .security-meter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
