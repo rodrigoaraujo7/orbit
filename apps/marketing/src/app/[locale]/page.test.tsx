@@ -35,6 +35,7 @@ describe("locale routes", () => {
       "Everything the studio needs",
       "Three steps, then it is your system",
       "Isolated by default",
+      "Simple pricing",
       "Questions",
       "Put the studio in one place.",
     ]) {
@@ -43,6 +44,15 @@ describe("locale routes", () => {
     expect(
       screen.queryByRole("heading", { name: "The work is scattered. The money is too." }),
     ).not.toBeInTheDocument()
+    const security = screen.getByRole("heading", { name: "Isolated by default" })
+    const pricing = screen.getByRole("heading", { name: "Simple pricing" })
+    const questions = screen.getByRole("heading", { name: "Questions" })
+    expect(
+      security.compareDocumentPosition(pricing) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(
+      pricing.compareDocumentPosition(questions) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
     expect(document.getElementById("pains")).toBeNull()
     const script = document.querySelector("script[type='application/ld+json']")
     expect(script?.textContent).toContain('"@type":"SoftwareApplication"')

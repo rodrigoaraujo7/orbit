@@ -8,6 +8,7 @@
     "features": "Features",
     "how": "How it works",
     "security": "Security",
+    "pricing": "Pricing",
     "faq": "FAQ",
     "signIn": "Sign in",
     "getStarted": "Get started",
@@ -163,6 +164,42 @@
     "emailCode": {
       "title": "An email code on every sign-in",
       "body": "A password is not enough. Each login also needs a six-digit code sent to your inbox."
+    }
+  },
+  "pricing": {
+    "title": "Simple pricing",
+    "subtitle": "Start free. Move to Pro when the studio needs the whole system.",
+    "billing": "Billing period",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "save": "Save {percent}%",
+    "perMonth": "/mo",
+    "freeForever": "Free forever",
+    "billedYearly": "{amount} billed yearly",
+    "free": {
+      "name": "Free",
+      "description": "For a first client and a couple of projects.",
+      "includes": "Includes",
+      "cta": "Get started",
+      "benefits": {
+        "projects": "Up to 2 active projects",
+        "clients": "Up to 2 clients",
+        "kanban": "Kanban pipeline",
+        "dashboard": "Finance dashboard"
+      }
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "For a studio that bills every month.",
+      "includes": "Everything in Free, plus",
+      "cta": "Get Pro",
+      "benefits": {
+        "unlimited": "Unlimited projects and clients",
+        "invoices": "Invoices and a payment ruler",
+        "secrets": "Encrypted tool credentials",
+        "github": "GitHub Actions on each project",
+        "audit": "Full audit log"
+      }
     }
   },
   "faq": {
