@@ -8,10 +8,25 @@ import { Header } from "./index"
 
 const ghostSignIn = buttonVariants({ variant: "ghost", size: "sm" }).split(" ")
 
+const mountedSections: HTMLElement[] = []
+
+function mountSection(id: string) {
+  const section = document.createElement("section")
+  section.id = id
+  section.scrollIntoView = vi.fn()
+  document.body.append(section)
+  mountedSections.push(section)
+  return section
+}
+
 afterEach(() => {
   cleanup()
+  for (const section of mountedSections) section.remove()
+  mountedSections.length = 0
+  window.history.replaceState(null, "", "/")
   document.documentElement.style.removeProperty("--marketing-header-height")
   Reflect.deleteProperty(window, "ResizeObserver")
+  Reflect.deleteProperty(window, "matchMedia")
 })
 
 describe("Header", () => {
@@ -23,7 +38,7 @@ describe("Header", () => {
     expect(screen.getByRole("link", { name: "How it works" })).toHaveAttribute("href", "#how")
     expect(screen.getByRole("link", { name: "Security" })).toHaveAttribute("href", "#security")
     expect(screen.getByRole("link", { name: "Pricing" })).toHaveAttribute("href", "#pricing")
-    expect(screen.getByRole("link", { name: "FAQ" })).toHaveAttribute("href", "#faq")
+    expect(screen.queryByRole("link", { name: "FAQ" })).not.toBeInTheDocument()
 
     const nav = screen.getByRole("navigation", { name: "Product" })
     const separator = screen.getByRole("separator")
@@ -167,6 +182,52 @@ describe("Header", () => {
 
     fireEvent.click(features.find((link) => drawer.contains(link))!)
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+  })
+
+  it("smoothly scrolls a desktop nav link to its section", () => {
+    const pricing = mountSection("pricing")
+    render(<Header dictionary={getDictionary("en")} locale="en" />)
+
+    fireEvent.click(screen.getByRole("link", { name: "Pricing" }))
+
+    expect(pricing.scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" })
+    expect(window.location.hash).toBe("#pricing")
+  })
+
+  it("scrolls instantly from the nav when the user prefers reduced motion", () => {
+    window.matchMedia = vi.fn((query: string) => ({
+      matches: query === "(prefers-reduced-motion: reduce)",
+      media: query,
+    })) as unknown as typeof window.matchMedia
+    const security = mountSection("security")
+    render(<Header dictionary={getDictionary("en")} locale="en" />)
+
+    fireEvent.click(screen.getByRole("link", { name: "Security" }))
+
+    expect(security.scrollIntoView).toHaveBeenCalledWith({ behavior: "auto", block: "start" })
+  })
+
+  it("leaves modified nav clicks to the browser", () => {
+    const pricing = mountSection("pricing")
+    render(<Header dictionary={getDictionary("en")} locale="en" />)
+
+    fireEvent.click(screen.getByRole("link", { name: "Pricing" }), { metaKey: true })
+
+    expect(pricing.scrollIntoView).not.toHaveBeenCalled()
+    expect(window.location.hash).toBe("")
+  })
+
+  it("closes the drawer and scrolls when a drawer link is clicked", () => {
+    const features = mountSection("features")
+    render(<Header dictionary={getDictionary("en")} locale="en" />)
+    fireEvent.click(screen.getByRole("button", { name: "Open menu" }))
+
+    const drawer = screen.getByRole("dialog", { name: "Menu" })
+    fireEvent.click(within(drawer).getByRole("link", { name: "Features" }))
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    expect(features.scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" })
+    expect(window.location.hash).toBe("#features")
   })
 
   it("publishes the header height and clears it when the header unmounts", () => {

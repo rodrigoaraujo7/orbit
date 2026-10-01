@@ -9,6 +9,7 @@ import { cn } from "ui/utils"
 import type { Dictionary, Locale } from "@/i18n"
 import { signInUrl, signUpUrl } from "@/lib/site"
 import { bindMarketingHeaderHeight } from "./height"
+import { followInPageNav } from "./scroll"
 
 const NAV = [
   ["#product", "product"],
@@ -16,7 +17,6 @@ const NAV = [
   ["#how", "how"],
   ["#security", "security"],
   ["#pricing", "pricing"],
-  ["#faq", "faq"],
 ] as const
 
 const LOCALES = [
@@ -181,6 +181,7 @@ export function Header({ dictionary, locale }: { dictionary: Dictionary; locale:
                 key={href}
                 href={href}
                 className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={followInPageNav}
               >
                 {dictionary.nav[key]}
               </a>
@@ -215,7 +216,15 @@ export function Header({ dictionary, locale }: { dictionary: Dictionary; locale:
             <DrawerTitle className="sr-only">{dictionary.nav.menu}</DrawerTitle>
             <nav aria-label={dictionary.nav.product} className="flex flex-1 flex-col gap-0.5 p-2">
               {NAV.map(([href, key]) => (
-                <a key={href} href={href} className={drawerLinkClass} onClick={closeMenu}>
+                <a
+                  key={href}
+                  href={href}
+                  className={drawerLinkClass}
+                  onClick={(event) => {
+                    followInPageNav(event)
+                    closeMenu()
+                  }}
+                >
                   {dictionary.nav[key]}
                 </a>
               ))}

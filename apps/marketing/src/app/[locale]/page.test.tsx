@@ -36,7 +36,6 @@ describe("locale routes", () => {
       "Three steps, then it is your system",
       "Isolated by default",
       "Simple pricing",
-      "Questions",
       "Put the studio in one place.",
     ]) {
       expect(screen.getByRole("heading", { name }).closest(".marketing-reveal")).not.toBeNull()
@@ -46,14 +45,13 @@ describe("locale routes", () => {
     ).not.toBeInTheDocument()
     const security = screen.getByRole("heading", { name: "Isolated by default" })
     const pricing = screen.getByRole("heading", { name: "Simple pricing" })
-    const questions = screen.getByRole("heading", { name: "Questions" })
+    const cta = screen.getByRole("heading", { name: "Put the studio in one place." })
     expect(
       security.compareDocumentPosition(pricing) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
-    expect(
-      pricing.compareDocumentPosition(questions) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    expect(pricing.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(document.getElementById("pains")).toBeNull()
+    expect(document.getElementById("faq")).toBeNull()
     const script = document.querySelector("script[type='application/ld+json']")
     expect(script?.textContent).toContain('"@type":"SoftwareApplication"')
     const metadata = await generateMetadata({ params: Promise.resolve({ locale: "en" }) })

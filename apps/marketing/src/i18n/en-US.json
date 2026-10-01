@@ -9,7 +9,6 @@
     "how": "How it works",
     "security": "Security",
     "pricing": "Pricing",
-    "faq": "FAQ",
     "signIn": "Sign in",
     "getStarted": "Get started",
     "language": "Language",
@@ -200,25 +199,6 @@
         "github": "GitHub Actions on each project",
         "audit": "Full audit log"
       }
-    }
-  },
-  "faq": {
-    "title": "Questions",
-    "who": {
-      "q": "Who is this for?",
-      "a": "Freelance developers who bill clients, run a handful of projects, and pay for the tools those projects need."
-    },
-    "data": {
-      "q": "Where does my data live?",
-      "a": "In your account, on the app. This site is only the introduction."
-    },
-    "secrets": {
-      "q": "Can I store API keys and logins?",
-      "a": "Yes. Paid-tool credentials are encrypted per account and stay attached to the project that uses them."
-    },
-    "start": {
-      "q": "How do I start?",
-      "a": "Create an account on the app, confirm your email, and add your first client."
     }
   },
   "cta": {

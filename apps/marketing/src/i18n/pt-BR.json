@@ -9,7 +9,6 @@
     "how": "Como funciona",
     "security": "Segurança",
     "pricing": "Preços",
-    "faq": "Perguntas",
     "signIn": "Entrar",
     "getStarted": "Começar",
     "language": "Idioma",
@@ -200,25 +199,6 @@
         "github": "GitHub Actions em cada projeto",
         "audit": "Registro de auditoria completo"
       }
-    }
-  },
-  "faq": {
-    "title": "Perguntas",
-    "who": {
-      "q": "Para quem é?",
-      "a": "Desenvolvedores freelancers que cobram clientes, conduzem alguns projetos e pagam pelas ferramentas que esses projetos exigem."
-    },
-    "data": {
-      "q": "Onde ficam os meus dados?",
-      "a": "Na sua conta, no aplicativo. Este site é só a apresentação."
-    },
-    "secrets": {
-      "q": "Posso guardar chaves de API e logins?",
-      "a": "Sim. As credenciais de ferramentas pagas são criptografadas por conta e ficam ligadas ao projeto que as usa."
-    },
-    "start": {
-      "q": "Como eu começo?",
-      "a": "Crie uma conta no aplicativo, confirme o e-mail e adicione o primeiro cliente."
     }
   },
   "cta": {

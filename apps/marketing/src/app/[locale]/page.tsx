@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { Cta } from "@/components/sections/cta"
-import { Faq } from "@/components/sections/faq"
 import { Features } from "@/components/sections/features"
 import { Footer } from "@/components/sections/footer"
 import { Header } from "@/components/sections/header"
@@ -34,7 +33,6 @@ export default async function LocalePage({ params }: { params: Promise<{ locale:
         <How dictionary={dictionary} />
         <Security dictionary={dictionary} />
         <Pricing dictionary={dictionary} />
-        <Faq dictionary={dictionary} />
         <Cta dictionary={dictionary} />
       </main>
       <Footer dictionary={dictionary} locale={locale} />
