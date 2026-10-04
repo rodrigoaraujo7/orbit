@@ -3,16 +3,7 @@
 import { useEffect, useRef, type PointerEvent, type ReactNode } from "react"
 import { cn } from "ui/utils"
 import { Reveal } from "@/components/reveal"
-import { applyPointerVars, clearPointerVars, pointerVars } from "./pointer"
 import { bindScrollActivation, usesScrollActivation } from "./scroll"
-
-function onPointerMove(event: PointerEvent<HTMLElement>) {
-  const node = event.currentTarget
-  applyPointerVars(
-    node.style,
-    pointerVars(node.getBoundingClientRect(), event.clientX, event.clientY),
-  )
-}
 
 function onPointerEnter(event: PointerEvent<HTMLElement>) {
   if (usesScrollActivation()) return
@@ -25,10 +16,8 @@ function onPointerEnter(event: PointerEvent<HTMLElement>) {
  * Below 1024px, scrolling owns that state instead.
  */
 function onPointerLeave(event: PointerEvent<HTMLElement>) {
-  const node = event.currentTarget
-  clearPointerVars(node.style)
   if (usesScrollActivation() || event.pointerType === "touch") return
-  delete node.dataset.active
+  delete event.currentTarget.dataset.active
 }
 
 export function BentoCard({
@@ -52,7 +41,6 @@ export function BentoCard({
       <article
         ref={articleRef}
         onPointerEnter={onPointerEnter}
-        onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
         className="bento-card group relative isolate flex h-full flex-col overflow-hidden rounded-4xl bg-card ring-1 ring-foreground/10 transition-[box-shadow] duration-500 data-active:ring-foreground/20"
       >

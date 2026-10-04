@@ -39,25 +39,56 @@ describe("Features", () => {
     expect(card("Audit log").parentElement).not.toHaveClass("md:col-span-2", "lg:row-span-2")
   })
 
-  it("follows the pointer with CSS variables and resets them on leave", () => {
+  it("follows one pointer across every card and fades in place when it leaves the grid", () => {
     render(<Features dictionary={getDictionary("en")} />)
     const kanban = card("Kanban pipeline")
-    kanban.getBoundingClientRect = () => ({ left: 10, top: 20, width: 200, height: 100 }) as DOMRect
+    const secrets = card("Encrypted tool secrets")
+    const grid = document.querySelector(".bento-grid")
+    kanban.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 200 }) as DOMRect
+    secrets.getBoundingClientRect = () =>
+      ({ left: 416, top: 0, width: 200, height: 420 }) as DOMRect
 
+    expect(grid).not.toBeNull()
     expect(kanban).not.toHaveAttribute("data-active")
     fireEvent.pointerEnter(kanban, { pointerType: "mouse" })
-    expect(kanban).toHaveAttribute("data-active")
+    fireEvent.pointerMove(kanban, { clientX: 380, clientY: 80 })
 
-    fireEvent.pointerMove(kanban, { clientX: 160, clientY: 45 })
-    expect(kanban.style.getPropertyValue("--mx")).toBe("150px")
-    expect(kanban.style.getPropertyValue("--my")).toBe("25px")
-    expect(kanban.style.getPropertyValue("--px")).toBe("0.5")
+    expect(kanban).toHaveAttribute("data-active")
+    expect(secrets).not.toHaveAttribute("data-active")
+    expect(kanban.style.getPropertyValue("--mx")).toBe("380px")
+    expect(kanban.style.getPropertyValue("--my")).toBe("80px")
+    expect(kanban.style.getPropertyValue("--px")).toBe("0.9")
+    expect(kanban.style.getPropertyValue("--glow")).toBe("1")
+    expect(secrets.style.getPropertyValue("--mx")).toBe("-36px")
+    expect(secrets.style.getPropertyValue("--my")).toBe("80px")
+    expect(secrets.style.getPropertyValue("--glow")).toBe("1")
+    expect(secrets.style.getPropertyValue("--px")).toBe("")
 
     fireEvent.pointerLeave(kanban, { pointerType: "mouse" })
+    fireEvent.pointerMove(grid!, { clientX: 408, clientY: 90 })
     expect(kanban).not.toHaveAttribute("data-active")
-    for (const property of ["--mx", "--my", "--px"]) {
-      expect(kanban.style.getPropertyValue(property)).toBe("")
-    }
+    expect(secrets).not.toHaveAttribute("data-active")
+    expect(kanban.style.getPropertyValue("--mx")).toBe("408px")
+    expect(secrets.style.getPropertyValue("--mx")).toBe("-8px")
+    expect(kanban.style.getPropertyValue("--glow")).toBe("1")
+    expect(secrets.style.getPropertyValue("--glow")).toBe("1")
+
+    fireEvent.pointerEnter(secrets, { pointerType: "mouse" })
+    fireEvent.pointerMove(secrets, { clientX: 440, clientY: 100 })
+
+    expect(kanban).not.toHaveAttribute("data-active")
+    expect(secrets).toHaveAttribute("data-active")
+    expect(kanban.style.getPropertyValue("--mx")).toBe("440px")
+    expect(kanban.style.getPropertyValue("--glow")).toBe("1")
+    expect(secrets.style.getPropertyValue("--mx")).toBe("24px")
+    expect(secrets.style.getPropertyValue("--my")).toBe("100px")
+    expect(secrets.style.getPropertyValue("--px")).toBe("-0.76")
+
+    fireEvent.pointerLeave(grid!)
+    expect(kanban.style.getPropertyValue("--glow")).toBe("0")
+    expect(secrets.style.getPropertyValue("--glow")).toBe("0")
+    expect(kanban.style.getPropertyValue("--mx")).toBe("440px")
+    expect(secrets.style.getPropertyValue("--mx")).toBe("24px")
   })
 
   it("keeps a tapped card revealed on touch", () => {
@@ -68,7 +99,6 @@ describe("Features", () => {
     fireEvent.pointerMove(audit, { clientX: 0, clientY: 0 })
     fireEvent.pointerLeave(audit, { pointerType: "touch" })
     expect(audit).toHaveAttribute("data-active")
-    expect(audit.style.getPropertyValue("--mx")).toBe("")
   })
 
   it("animates each illustration while the card is active", () => {

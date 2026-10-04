@@ -3,6 +3,7 @@ import path from "node:path"
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { BentoCard } from "./card"
+import { BentoGrid } from "./grid"
 import {
   SCROLL_ACTIVATION_QUERY,
   SCROLL_ACTIVATION_THRESHOLD,
@@ -78,6 +79,9 @@ describe("scroll activation", () => {
     const css = readFileSync(path.join(import.meta.dirname, "../../../app/globals.css"), "utf8")
     expect(css).toContain("@media (max-width: 1023px)")
     expect(css).toMatch(/\.bento-spotlight,\s*\.bento-card::after \{\s*display: none;/)
+    expect(css).toContain("opacity: var(--glow, 0)")
+    expect(css).toContain(".security-stage[data-active] .bento-spotlight")
+    expect(css).not.toContain(".bento-card[data-active] .bento-spotlight")
   })
 
   it("turns the attribute on and off", () => {
@@ -156,6 +160,21 @@ describe("scroll activation", () => {
     bindScrollActivation(node)
     expect(node).not.toHaveAttribute("data-active")
     expect(IntersectionStub.instances).toHaveLength(0)
+  })
+})
+
+describe("BentoGrid on a small screen", () => {
+  it("does not paint the pointer glow while scroll owns the cards", () => {
+    installMedia(true)
+    render(
+      <BentoGrid>
+        <article className="bento-card">Kanban</article>
+      </BentoGrid>,
+    )
+    const article = screen.getByRole("article")
+    fireEvent.pointerMove(article, { clientX: 40, clientY: 40 })
+    expect(article.style.getPropertyValue("--glow")).toBe("")
+    expect(article.style.getPropertyValue("--mx")).toBe("")
   })
 })
 

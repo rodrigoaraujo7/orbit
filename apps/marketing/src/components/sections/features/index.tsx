@@ -3,6 +3,7 @@ import { Reveal } from "@/components/reveal"
 import type { Dictionary } from "@/i18n"
 import { AuditArt, FinanceArt, GithubArt, InvoicesArt, KanbanArt, SecretsArt } from "./art"
 import { BentoCard } from "./card"
+import { BentoGrid } from "./grid"
 
 type FeatureKey = "kanban" | "secrets" | "invoices" | "github" | "finance" | "audit"
 
@@ -26,7 +27,7 @@ export function Features({ dictionary }: { dictionary: Dictionary }) {
           </h2>
           <p className="mt-4 max-w-xl text-muted-foreground">{dictionary.features.subtitle}</p>
         </Reveal>
-        <div className="mt-10 grid grid-flow-row-dense gap-4 md:grid-cols-2 lg:auto-rows-[24rem] lg:grid-cols-3">
+        <BentoGrid className="mt-10 grid grid-flow-row-dense gap-4 md:grid-cols-2 lg:auto-rows-[24rem] lg:grid-cols-3">
           {ITEMS.map(({ key, Art, span }, index) => {
             const item = dictionary.features[key]
             return (
@@ -40,7 +41,7 @@ export function Features({ dictionary }: { dictionary: Dictionary }) {
               />
             )
           })}
-        </div>
+        </BentoGrid>
       </div>
     </section>
   )

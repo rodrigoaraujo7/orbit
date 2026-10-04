@@ -22,6 +22,15 @@ export function pointerVars(box: Box, clientX: number, clientY: number): Pointer
   return { x, y, px: normalize(x, box.width) }
 }
 
+/** Pointer position relative to a box, including points that fall outside it. */
+export function spotlightPoint(box: Box, clientX: number, clientY: number) {
+  return { x: clientX - box.left, y: clientY - box.top }
+}
+
+export function hoveredCard(target: EventTarget | null) {
+  return target instanceof Element ? target.closest<HTMLElement>(".bento-card") : null
+}
+
 export const POINTER_PROPERTIES = ["--mx", "--my", "--px"] as const
 
 export function applyPointerVars(style: CSSStyleDeclaration, vars: PointerVars) {
@@ -32,4 +41,15 @@ export function applyPointerVars(style: CSSStyleDeclaration, vars: PointerVars) 
 
 export function clearPointerVars(style: CSSStyleDeclaration) {
   for (const property of POINTER_PROPERTIES) style.removeProperty(property)
+}
+
+export function applySpotlight(style: CSSStyleDeclaration, point: { x: number; y: number }) {
+  style.setProperty("--mx", `${point.x}px`)
+  style.setProperty("--my", `${point.y}px`)
+  style.setProperty("--glow", "1")
+}
+
+/** Hides the glow where it last was. Clearing the origin would slide it to the card center. */
+export function fadeSpotlight(style: CSSStyleDeclaration) {
+  style.setProperty("--glow", "0")
 }

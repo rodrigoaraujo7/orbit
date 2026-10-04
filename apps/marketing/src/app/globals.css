@@ -48,11 +48,12 @@
   animation-fill-mode: both;
 }
 
-/* Pointer vars are written inline by the feature cards; these are the resting values. */
+/* The feature grid writes these from one pointer. The origin stays put so the glow fades where it is. */
 .bento-card {
   --mx: 50%;
   --my: 50%;
   --px: 0;
+  --glow: 0;
 }
 
 .bento-spotlight,
@@ -62,7 +63,7 @@
   inset: 0;
   z-index: -1;
   border-radius: inherit;
-  opacity: 0;
+  opacity: var(--glow, 0);
   transition: opacity 0.5s ease;
 }
 
@@ -93,8 +94,8 @@
     linear-gradient(#000 0 0);
 }
 
-.bento-card[data-active] .bento-spotlight,
-.bento-card[data-active]::after {
+.security-stage[data-active] .bento-spotlight,
+.security-stage[data-active]::after {
   opacity: 1;
 }
 

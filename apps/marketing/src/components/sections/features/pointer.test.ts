@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest"
-import { applyPointerVars, clearPointerVars, pointerVars, POINTER_PROPERTIES } from "./pointer"
+import {
+  applyPointerVars,
+  applySpotlight,
+  clearPointerVars,
+  fadeSpotlight,
+  hoveredCard,
+  pointerVars,
+  POINTER_PROPERTIES,
+  spotlightPoint,
+} from "./pointer"
 
 const box = { left: 100, top: 50, width: 400, height: 200 }
 
@@ -21,6 +30,44 @@ describe("pointerVars", () => {
       y: 0,
       px: 0,
     })
+  })
+})
+
+describe("spotlightPoint", () => {
+  it("keeps a pointer that sits outside the card so the glow can spill onto its neighbors", () => {
+    expect(spotlightPoint(box, 40, 40)).toEqual({ x: -60, y: -10 })
+    expect(spotlightPoint(box, 600, 300)).toEqual({ x: 500, y: 250 })
+    expect(spotlightPoint(box, 300, 150)).toEqual({ x: 200, y: 100 })
+  })
+})
+
+describe("hoveredCard", () => {
+  it("finds the card under the pointer and ignores anything else", () => {
+    const card = document.createElement("article")
+    card.className = "bento-card"
+    const child = document.createElement("span")
+    card.append(child)
+
+    expect(hoveredCard(child)).toBe(card)
+    expect(hoveredCard(card)).toBe(card)
+    expect(hoveredCard(document.createElement("div"))).toBeNull()
+    expect(hoveredCard(document.createTextNode("gap"))).toBeNull()
+    expect(hoveredCard(null)).toBeNull()
+  })
+})
+
+describe("applySpotlight / fadeSpotlight", () => {
+  it("pins the glow to the pointer and fades it without moving that point", () => {
+    const { style } = document.createElement("div")
+    applySpotlight(style, { x: -20, y: 80 })
+    expect(style.getPropertyValue("--mx")).toBe("-20px")
+    expect(style.getPropertyValue("--my")).toBe("80px")
+    expect(style.getPropertyValue("--glow")).toBe("1")
+
+    fadeSpotlight(style)
+    expect(style.getPropertyValue("--glow")).toBe("0")
+    expect(style.getPropertyValue("--mx")).toBe("-20px")
+    expect(style.getPropertyValue("--my")).toBe("80px")
   })
 })
 
