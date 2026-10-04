@@ -10,7 +10,7 @@ Stack this system assumes: Tailwind CSS v4, CSS variables, shadcn `base-luma` (n
 
 ## Personality
 
-- Quiet surfaces, loud type. Page titles are large serif at normal weight. Body and controls are sans, 14px, medium.
+- Quiet surfaces, loud type. Page titles are large serif at normal weight. Body, inputs, and table cells are sans, 14px, regular. Buttons, labels, nav, and table headers are 14px medium.
 - Bordô is scarce. Use it for the primary button, the active nav marker, the active tab underline, status “in progress”, focus rings, and the refetch scan. Do not paint cards, page backgrounds, or large regions in bordô.
 - Borders are white at 10% opacity, not gray solids. Elevation is a ring or a soft shadow, not a heavy drop shadow.
 - Motion is short and ease-out. Honor `prefers-reduced-motion`: skip entrance animations, count-up, and the filter scan.
@@ -83,27 +83,30 @@ Negative currency uses `text-destructive`. Stat tones are `foreground`, `success
 
 ## Typography
 
-| Role                              | Family           | Weight     | Size              | Notes                                                                                                 |
-| --------------------------------- | ---------------- | ---------- | ----------------- | ----------------------------------------------------------------------------------------------------- |
-| Page title                        | Instrument Serif | 400        | 36px (`text-4xl`) | `tracking-normal`, one line with the description under it                                             |
-| Hero figure                       | Instrument Serif | 400        | 36px              | `tabular-nums`, right-aligned from `sm`                                                               |
-| Dialog title                      | Instrument Serif | 400        | 26px              | `tracking-wide`                                                                                       |
-| Drawer title                      | Instrument Serif | 500        | 22px              |                                                                                                       |
-| Card / kanban title               | Instrument Serif | 400–500    | 16–18px           | Kanban names are `text-lg font-normal` and truncate                                                   |
-| Section / KPI value               | Instrument Sans  | 600        | 18–30px           | `tracking-tight tabular-nums`                                                                         |
-| Chart / panel title               | Instrument Sans  | 600        | 14px              |                                                                                                       |
-| Body, buttons, inputs, table      | Instrument Sans  | 500        | 14px (`text-sm`)  |                                                                                                       |
-| Meta, errors, hints, table header | Instrument Sans  | 500        | 12px (`text-xs`)  | Errors are `text-destructive`; hints are `text-muted-foreground`                                      |
-| Eyebrow                           | Instrument Sans  | 500        | 12px              | `uppercase tracking-wide text-muted-foreground`                                                       |
-| Status label over a title         | Instrument Serif | 400 italic | inherit           | `tracking-wider` plus the status text color                                                           |
-| Inline emphasis (a name)          | Instrument Serif | 700 italic | 1.15em            | `tracking-wider`. If italics must be off, switch to Instrument Sans bold — do not leave a roman serif |
+| Role                               | Family           | Weight     | Size              | Notes                                                                                                 |
+| ---------------------------------- | ---------------- | ---------- | ----------------- | ----------------------------------------------------------------------------------------------------- |
+| Page title                         | Instrument Serif | 400        | 36px (`text-4xl`) | `tracking-normal`, one line with the description under it                                             |
+| Hero figure                        | Instrument Serif | 400        | 36px              | `tabular-nums`, right-aligned from `sm`                                                               |
+| Dialog title                       | Instrument Serif | 400        | 26px              | `tracking-wide`                                                                                       |
+| Drawer title                       | Instrument Serif | 500        | 22px              |                                                                                                       |
+| Card / kanban title                | Instrument Serif | 400–500    | 16–18px           | Kanban names are `text-lg font-normal` and truncate                                                   |
+| Section / KPI value                | Instrument Sans  | 600        | 18–30px           | `tracking-tight tabular-nums`                                                                         |
+| Chart / panel title                | Instrument Sans  | 600        | 14px              |                                                                                                       |
+| Body, inputs, table cells          | Instrument Sans  | 400        | 14px (`text-sm`)  |                                                                                                       |
+| Buttons, labels, nav, table header | Instrument Sans  | 500        | 14px (`text-sm`)  |                                                                                                       |
+| Meta, errors, hints                | Instrument Sans  | 500        | 12px (`text-xs`)  | Errors are `text-destructive`; hints are `text-muted-foreground`                                      |
+| Eyebrow                            | Instrument Sans  | 500        | 12px              | `uppercase tracking-wide text-muted-foreground`                                                       |
+| Status label over a title          | Instrument Serif | 400 italic | inherit           | `tracking-wider` plus the status text color                                                           |
+| Inline emphasis (a name)           | Instrument Serif | 700 italic | 1.15em            | `tracking-wider`. If italics must be off, switch to Instrument Sans bold — do not leave a roman serif |
 
 Load Instrument Sans 400/500/600/700 and italic, plus Instrument Serif 400 and 400 italic. `font-synthesis: none`. Antialiased. `text-rendering: optimizeLegibility`.
 
 ```css
---font-sans: "Instrument Sans", sans-serif;
---font-heading: "Instrument Serif", serif;
---font-subtitle: "Instrument Sans", sans-serif;
+@theme inline {
+  --font-sans: "Instrument Sans", sans-serif;
+  --font-heading: "Instrument Serif", serif;
+  --font-subtitle: "Instrument Sans", sans-serif;
+}
 ```
 
 ---
@@ -264,13 +267,16 @@ Mobile dock: fixed bottom center, pill, `border-border/50 bg-background/40 p-1.5
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.55 0.17 18);
+}
+
+@theme inline {
   --font-sans: "Instrument Sans", sans-serif;
   --font-heading: "Instrument Serif", serif;
   --font-subtitle: "Instrument Sans", sans-serif;
 }
 ```
 
-Map each `--color-*` (and the radius scale) through Tailwind `@theme inline` the same way `apps/web/src/index.css` does, so utilities like `bg-primary`, `text-muted-foreground`, `rounded-xl`, and `font-heading` resolve to these tokens.
+Map each `--color-*`, the radius scale, `--font-sans`, `--font-heading`, and `--font-subtitle` through Tailwind `@theme inline` the same way `apps/web/src/index.css` does, so utilities like `bg-primary`, `text-muted-foreground`, `rounded-xl`, `font-sans`, `font-heading`, and `font-subtitle` resolve to these tokens.
 
 ---
 
