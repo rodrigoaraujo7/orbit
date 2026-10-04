@@ -94,7 +94,7 @@ Negative currency uses `text-destructive`. Stat tones are `foreground`, `success
 | Chart / panel title                | Instrument Sans  | 600        | 14px              |                                                                                                       |
 | Body, inputs, table cells          | Instrument Sans  | 400        | 14px (`text-sm`)  |                                                                                                       |
 | Buttons, labels, nav, table header | Instrument Sans  | 500        | 14px (`text-sm`)  |                                                                                                       |
-| Meta, errors, hints                | Instrument Sans  | 500        | 12px (`text-xs`)  | Errors are `text-destructive`; hints are `text-muted-foreground`                                      |
+| Meta, errors, hints                | Instrument Sans  | 400        | 12px (`text-xs`)  | Errors are `text-destructive`; hints are `text-muted-foreground`                                      |
 | Eyebrow                            | Instrument Sans  | 500        | 12px              | `uppercase tracking-wide text-muted-foreground`                                                       |
 | Status label over a title          | Instrument Serif | 400 italic | inherit           | `tracking-wider` plus the status text color                                                           |
 | Inline emphasis (a name)           | Instrument Serif | 700 italic | 1.15em            | `tracking-wider`. If italics must be off, switch to Instrument Sans bold — do not leave a roman serif |
