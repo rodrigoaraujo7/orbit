@@ -4,8 +4,10 @@ export default defineConfig({
   test: {
     projects: [
       "packages/shared/vitest.config.ts",
+      "packages/ui/vitest.config.ts",
       "apps/api/vitest.config.ts",
       "apps/web/vitest.config.ts",
+      "apps/marketing/vitest.config.ts",
     ],
     coverage: {
       provider: "v8",
@@ -14,9 +16,11 @@ export default defineConfig({
       reportsDirectory: "./coverage",
       include: [
         "packages/shared/src/**/*.ts",
+        "packages/ui/src/**/*.{ts,tsx}",
         "apps/api/src/**/*.ts",
         "apps/web/src/**/*.{ts,tsx}",
         "apps/web/middleware.ts",
+        "apps/marketing/src/**/*.{ts,tsx}",
       ],
       exclude: [
         "**/*.test.ts",
@@ -32,13 +36,16 @@ export default defineConfig({
         "apps/web/src/components/ui/Beams.jsx",
         "apps/web/src/test/**",
         "apps/api/src/test/**",
-        "apps/web/src/components/ui/badge.tsx",
-        "apps/web/src/components/ui/button.tsx",
-        "apps/web/src/components/ui/card.tsx",
+        "packages/ui/src/test/**",
+        "apps/marketing/src/test/**",
+        "packages/ui/src/LightRays.jsx",
+        "packages/ui/src/badge.tsx",
+        "packages/ui/src/button.tsx",
+        "packages/ui/src/card.tsx",
+        "packages/ui/src/drawer.tsx",
         "apps/web/src/components/ui/chart.tsx",
         "apps/web/src/components/ui/dialog.tsx",
         "apps/web/src/components/ui/drawer.tsx",
-        "apps/web/src/components/ui/emphasis.tsx",
         "apps/web/src/components/ui/field.tsx",
         "apps/web/src/components/ui/input.tsx",
         "apps/web/src/components/ui/input-otp.tsx",

@@ -2,7 +2,7 @@
 
 SaaS for freelance developers: clients, projects, kanban, invoices, and paid-tool credentials — isolated per user.
 
-Monorepo: **web** (Vite, `http://localhost:5173`) talks to **api** (Hono, `http://localhost:3100`) through the Vite proxy (`/trpc`, `/api`).
+Monorepo: **web** (Vite, `http://localhost:5173`) talks to **api** (Hono, `http://localhost:3100`) through the Vite proxy (`/trpc`, `/api`). **marketing** (Next.js, `http://localhost:3000`) is the public site and does not call the API.
 
 ## Prerequisites
 
@@ -110,7 +110,21 @@ pnpm dev
 
 Sign up with email and password on first visit, then open the confirmation link and the sign-in code from Resend.
 
-Separate processes: `pnpm dev:web` and `pnpm dev:api`.
+Separate processes: `pnpm dev:web`, `pnpm dev:api`, and `pnpm dev:marketing`.
+
+## Marketing site
+
+`apps/marketing` is the public site for `projectsmanager.rodrigoleite.dev`. The signed-in app stays on `app.projectsmanager.rodrigoleite.dev`.
+
+```bash
+pnpm dev:marketing
+```
+
+- Site: [http://localhost:3000](http://localhost:3000) (redirects `/` to `/en` or `/pt-BR`)
+
+`NEXT_PUBLIC_APP_URL` is where "Sign in" and "Get started" point. It defaults to `https://app.projectsmanager.rodrigoleite.dev`. "Get started" opens `/login?mode=signup`. Copy `apps/marketing/.env.example` if you need a different app origin.
+
+On Vercel, create a project with root directory `apps/marketing`, attach `projectsmanager.rodrigoleite.dev`, and set `NEXT_PUBLIC_APP_URL` to the app origin. The app project stays a separate Vercel project rooted at `apps/web`.
 
 ## 5. GitHub Actions
 

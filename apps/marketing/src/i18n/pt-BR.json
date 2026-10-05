@@ -1,0 +1,213 @@
+{
+  "meta": {
+    "title": "Projects Manager",
+    "description": "Clientes, projetos, faturas e credenciais de ferramentas criptografadas para desenvolvedores freelancers — numa só conta."
+  },
+  "nav": {
+    "product": "Produto",
+    "features": "Recursos",
+    "how": "Como funciona",
+    "security": "Segurança",
+    "pricing": "Preços",
+    "signIn": "Entrar",
+    "getStarted": "Começar",
+    "language": "Idioma",
+    "menu": "Menu",
+    "openMenu": "Abrir menu",
+    "english": "English",
+    "portuguese": "Português"
+  },
+  "hero": {
+    "titleBefore": "Gerencie seu software em um ",
+    "titleEmphasis": "único lugar",
+    "titleAfter": ".",
+    "subtitle": "Clientes, projetos, faturas e os acessos das ferramentas que você paga — na sua conta, não numa planilha."
+  },
+  "mockup": {
+    "label": "Prévia interativa do app Projects Manager",
+    "brand": "Projects",
+    "views": "Seções do app",
+    "nav": {
+      "dashboard": "Dashboard",
+      "projects": "Projetos",
+      "kanban": "Kanban",
+      "audit": "Auditoria"
+    },
+    "status": {
+      "queued": "Na fila",
+      "in-development": "Em desenvolvimento",
+      "in-validation": "Em validação",
+      "completed": "Concluído"
+    },
+    "invoice": {
+      "paid": "Paga",
+      "pending": "Pendente",
+      "overdue": "Atrasada"
+    },
+    "workflow": {
+      "success": "Passando",
+      "failure": "Falhando",
+      "running": "Rodando"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Como o estúdio está indo no período.",
+      "billed": "Faturado no período",
+      "received": "Recebido",
+      "receivable": "A receber",
+      "overdue": "Atrasado",
+      "toolCost": "Custo de ferramentas",
+      "revenue": "Receita por mês",
+      "revenueHint": "{projects} projetos · {clients} clientes · margem de {margin}",
+      "clientGrowth": "Crescimento de clientes",
+      "clientGrowthHint": "Clientes acumulados",
+      "profit": "Lucro por projeto",
+      "profitHint": "Valor faturado menos as ferramentas que você paga",
+      "ruler": "Régua de recebimento",
+      "rulerHint": "Cada parcela no mês em que vence, por projeto"
+    },
+    "projects": {
+      "title": "Projetos",
+      "count": "{count} projetos",
+      "project": "Projeto",
+      "status": "Status",
+      "value": "Valor",
+      "tools": "Ferramentas",
+      "github": "GitHub",
+      "installments": "{amount} em {count}x",
+      "upfront": "{amount} à vista",
+      "paidTool": "Paga · {amount}/mês",
+      "freeTool": "Plano free"
+    },
+    "kanban": {
+      "title": "Kanban",
+      "empty": "Solte um projeto aqui"
+    },
+    "audit": {
+      "title": "Auditoria",
+      "description": "Histórico das ações feitas na sua conta.",
+      "date": "Data",
+      "module": "Módulo",
+      "action": "Ação",
+      "object": "Objeto",
+      "modules": {
+        "project": "Projetos",
+        "kanban": "Kanban",
+        "settings": "Configurações",
+        "security": "Segurança"
+      },
+      "actions": {
+        "statusChanged": "Status alterado",
+        "invoiceStatus": "Status da fatura",
+        "projectCreated": "Projeto criado",
+        "toolCreated": "Ferramenta criada",
+        "contactCreated": "Contato criado",
+        "login": "Login"
+      }
+    }
+  },
+  "features": {
+    "title": "Tudo o que o estúdio precisa",
+    "subtitle": "Uma conta. Seus clientes, seu fluxo, sua cobrança.",
+    "kanban": {
+      "title": "Pipeline em kanban",
+      "body": "Mova o projeto no quadro conforme o trabalho anda, sem perder o cliente nem o dinheiro ligados a ele."
+    },
+    "invoices": {
+      "title": "Faturas e régua de pagamento",
+      "body": "Veja quais meses estão pagos, pendentes ou atrasados em cada projeto."
+    },
+    "finance": {
+      "title": "Painel financeiro",
+      "body": "Receita, faturas em aberto e o formato do mês, numa só visão."
+    },
+    "secrets": {
+      "title": "Segredos de ferramentas criptografados",
+      "body": "Guarde as credenciais das ferramentas que você paga, seladas por conta."
+    },
+    "github": {
+      "title": "GitHub Actions no projeto",
+      "body": "Conecte um token pessoal e leia as últimas execuções do repositório que já está no projeto."
+    },
+    "audit": {
+      "title": "Registro de auditoria",
+      "body": "Um histórico do que mudou, para um mês depois você ainda saber quem moveu o quê."
+    }
+  },
+  "how": {
+    "title": "Três passos, e o sistema é seu",
+    "addClient": {
+      "title": "Adicione um cliente",
+      "body": "Guarde quem você cobra num cadastro que pode reutilizar em todo projeto."
+    },
+    "createProject": {
+      "title": "Crie um projeto",
+      "body": "Associe o cliente, o repositório e as ferramentas das quais o projeto depende."
+    },
+    "track": {
+      "title": "Acompanhe o trabalho e a cobrança",
+      "body": "Mova o cartão, envie a fatura e veja o mês se preencher."
+    }
+  },
+  "security": {
+    "title": "Isolado por padrão",
+    "subtitle": "Os dados do seu estúdio não se misturam com os de ninguém.",
+    "isolation": {
+      "title": "Isolamento por usuário",
+      "body": "Cada linha pertence à sua conta. Outro usuário não lê seus clientes, projetos ou faturas."
+    },
+    "encryption": {
+      "title": "Criptografia de envelope para segredos",
+      "body": "As credenciais são seladas antes de serem gravadas e ficam ligadas ao projeto que as usa."
+    },
+    "emailCode": {
+      "title": "Um código por e-mail em cada entrada",
+      "body": "Senha não basta. Cada login também exige um código de seis dígitos enviado à sua caixa de entrada."
+    }
+  },
+  "pricing": {
+    "title": "Preços simples",
+    "subtitle": "Comece de graça. Passe para o Pro quando o estúdio precisar do sistema inteiro.",
+    "billing": "Período de cobrança",
+    "monthly": "Mensal",
+    "yearly": "Anual",
+    "save": "Economize {percent}%",
+    "perMonth": "/mês",
+    "freeForever": "Grátis para sempre",
+    "billedYearly": "{amount} cobrados por ano",
+    "free": {
+      "name": "Free",
+      "description": "Para o primeiro cliente e alguns projetos.",
+      "includes": "Inclui",
+      "cta": "Começar",
+      "benefits": {
+        "projects": "Até 2 projetos ativos",
+        "clients": "Até 2 clientes",
+        "kanban": "Pipeline no kanban",
+        "dashboard": "Painel financeiro"
+      }
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "Para um estúdio que cobra todo mês.",
+      "includes": "Tudo do Free, e ainda",
+      "cta": "Assinar Pro",
+      "benefits": {
+        "unlimited": "Projetos e clientes ilimitados",
+        "invoices": "Faturas e régua de pagamento",
+        "secrets": "Credenciais de ferramentas criptografadas",
+        "github": "GitHub Actions em cada projeto",
+        "audit": "Registro de auditoria completo"
+      }
+    }
+  },
+  "cta": {
+    "title": "Coloque o estúdio num só lugar.",
+    "subtitle": "Entre se você já tem conta, ou crie uma e adicione o primeiro cliente.",
+    "button": "Começar"
+  },
+  "footer": {
+    "tagline": "Clientes, projetos, faturas e credenciais de ferramentas para desenvolvedores freelancers.",
+    "rights": "Projects Manager"
+  }
+}

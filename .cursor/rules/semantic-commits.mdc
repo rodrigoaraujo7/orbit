@@ -18,7 +18,7 @@ fix(kanban): stack project detail in the mobile drawer
 ```
 
 - **type:** `feat` `fix` `docs` `style` `refactor` `test` `chore` `merge`
-- **scope** (required unless the change is repo-wide docs): `i18n` `ui` `auth` `login` `kanban` `audit` `filters` `contacts` `projects` `invoices` `tools` `dashboard` `finance` `settings` `nav` `api` `db` `secrets` `github` `shared` `repo`
+- **scope** (required unless the change is repo-wide docs): `i18n` `ui` `auth` `login` `kanban` `audit` `filters` `contacts` `projects` `invoices` `tools` `dashboard` `finance` `settings` `nav` `api` `db` `secrets` `github` `shared` `marketing` `repo`
 - **subject:** imperative, lowercase, no trailing period, ~72 characters
 - One logical change per commit. Body (optional) is English too.
 - Merge commits: `merge(scope): pull request #N` or `merge(scope): short reason`

@@ -61,6 +61,7 @@ afterEach(async () => {
 })
 
 beforeEach(() => {
+  window.history.replaceState(null, "", "/login")
   navigate.mockReset()
   signInEmail.mockReset()
   signUpEmail.mockReset()
@@ -285,6 +286,12 @@ describe("login route", () => {
     await user.type(screen.getByLabelText("Password"), "password1")
     await user.click(screen.getByRole("button", { name: "Sign up" }))
     expect(await screen.findByText("Could not create the account")).toBeInTheDocument()
+  })
+
+  it("opens in sign-up mode when the query asks for it", () => {
+    window.history.replaceState(null, "", "/login?mode=signup")
+    renderWithProviders(<LoginPage />)
+    expect(screen.getByRole("heading", { name: /Create an account on/ })).toBeInTheDocument()
   })
 
   it("toggles the locale", async () => {

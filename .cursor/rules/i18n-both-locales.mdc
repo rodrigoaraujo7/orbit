@@ -7,10 +7,12 @@ alwaysApply: true
 
 Supported locales are **en-US** and **pt-BR**. When adding, changing, or removing user-facing copy, do **both** catalogs in the same change. Never ship a key in only one language. Never pick “just English for now” or “just Portuguese for now”.
 
-Catalogs (keep the same nested key tree):
+Catalogs (keep the same nested key tree). The app and the marketing site each have their own pair:
 
 - `apps/web/src/i18n/en-US.json`
 - `apps/web/src/i18n/pt-BR.json`
+- `apps/marketing/src/i18n/en-US.json`
+- `apps/marketing/src/i18n/pt-BR.json`
 
 ```json
 // ❌ BAD — key exists in only one file
@@ -28,4 +30,4 @@ Catalogs (keep the same nested key tree):
 - Plurals need matching suffix keys in both files (`key_one` / `key_other`).
 - Default locale is `en-US`; pt-BR is a full translation, not a fallback dump of English.
 - Domain enums, API messages, and mock data stay as-is. Proper nouns (Pix, Boleto, GitHub) may be identical in both catalogs.
-- After catalog edits, key sets must match (`pnpm --filter web check:i18n`).
+- After catalog edits, key sets must match (`pnpm --filter web check:i18n` for the app, `pnpm --filter marketing check:i18n` for the marketing site).

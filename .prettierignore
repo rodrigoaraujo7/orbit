@@ -1,6 +1,8 @@
 node_modules
 dist
 coverage
+.next
+next-env.d.ts
 pnpm-lock.yaml
 **/routeTree.gen.ts
 **/.tanstack/

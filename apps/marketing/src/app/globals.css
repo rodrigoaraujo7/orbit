@@ -1,0 +1,546 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "ui/theme.css";
+
+/* next/font sets these variables on <html>. They replace the family names from the shared theme. */
+@theme inline {
+  --font-sans: var(--font-instrument-sans), "Instrument Sans", sans-serif;
+  --font-heading: var(--font-instrument-serif), "Instrument Serif", serif;
+  --font-subtitle: var(--font-instrument-sans), "Instrument Sans", sans-serif;
+}
+
+/* 15% less side margin than the previous 72rem column, at every viewport. */
+@utility page-wrap {
+  width: 100%;
+  max-width: min(100%, calc(61.2rem + 15vw));
+  margin-inline: auto;
+}
+
+@keyframes marketing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.marketing-reveal:not(.marketing-reveal-immediate) {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition-property: opacity, transform;
+  transition-duration: 0.7s;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.marketing-reveal.marketing-reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+.marketing-reveal-immediate {
+  animation-name: marketing-rise;
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+/* The feature grid writes these from one pointer. The origin stays put so the glow fades where it is. */
+.bento-card {
+  --mx: 50%;
+  --my: 50%;
+  --px: 0;
+  --glow: 0;
+}
+
+.bento-spotlight,
+.bento-card::after {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: var(--glow, 0);
+  transition: opacity 0.5s ease;
+}
+
+.bento-spotlight {
+  background: radial-gradient(
+    26rem circle at var(--mx) var(--my),
+    color-mix(in oklch, var(--primary) 14%, transparent),
+    transparent 60%
+  );
+}
+
+/* A 1px ring that only lights up near the pointer. */
+.bento-card::after {
+  content: "";
+  z-index: 1;
+  padding: 1px;
+  background: radial-gradient(
+    16rem circle at var(--mx) var(--my),
+    color-mix(in oklch, var(--primary) 75%, transparent),
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+.security-stage[data-active] .bento-spotlight,
+.security-stage[data-active]::after {
+  opacity: 1;
+}
+
+/* A short color band behind the Pro button. It fades out before the benefit list. */
+.pricing-wash {
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 7.5rem;
+  background: linear-gradient(
+    100deg,
+    oklch(0.62 0.2 350 / 0.55),
+    oklch(0.78 0.14 85 / 0.4),
+    oklch(0.72 0.16 150 / 0.5)
+  );
+  -webkit-mask-image: linear-gradient(to top, black 0%, rgb(0 0 0 / 0.35) 42%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, rgb(0 0 0 / 0.35) 42%, transparent 100%);
+}
+
+/* Scroll reveals the illustration below lg. The pointer glow stays on wide screens. */
+@media (max-width: 1023px) {
+  .bento-spotlight,
+  .bento-card::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-card *,
+  .bento-card::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-reveal,
+  .marketing-reveal-immediate {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+@media (scripting: none) {
+  .marketing-reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Security console: a quiet bordô wash, a masked grid on the stage, and the motions that play inside it. */
+.security-section {
+  background:
+    radial-gradient(
+      42rem 24rem at 82% 42%,
+      color-mix(in oklch, var(--primary) 16%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      24rem 16rem at 8% 88%,
+      color-mix(in oklch, var(--foreground) 5%, transparent),
+      transparent 70%
+    );
+}
+
+.security-card {
+  transition:
+    background-color 0.35s ease,
+    box-shadow 0.35s ease,
+    ring-color 0.35s ease;
+}
+
+.security-card[aria-selected="true"] {
+  background: var(--card);
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--primary) 22%, transparent),
+    0 12px 28px -22px color-mix(in oklch, var(--primary) 28%, transparent);
+}
+
+/* The stage reuses the feature pointer glow. Keep it, at a lower volume. */
+.security-stage .bento-spotlight {
+  background: radial-gradient(
+    18rem circle at var(--mx) var(--my),
+    color-mix(in oklch, var(--primary) 6%, transparent),
+    transparent 68%
+  );
+}
+
+.security-stage.bento-card::after {
+  background: radial-gradient(
+    12rem circle at var(--mx) var(--my),
+    color-mix(in oklch, var(--primary) 28%, transparent),
+    transparent 72%
+  );
+}
+
+.security-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklch, var(--foreground) 7%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklch, var(--foreground) 7%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at center, #000 15%, transparent 72%);
+}
+
+@keyframes security-stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes security-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes security-scan {
+  0% {
+    transform: translateY(-24px);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(250px);
+    opacity: 0;
+  }
+}
+
+@keyframes security-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes security-chip {
+  from {
+    opacity: 0;
+    transform: translateY(-26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes security-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes security-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes security-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes security-meter {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.security-stage {
+  animation: security-stage-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.security-in {
+  animation: security-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.security-scan {
+  animation: security-scan 3.4s ease-in-out infinite;
+}
+
+.security-orbit {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: security-orbit 22s linear infinite;
+}
+
+.security-chip {
+  animation: security-chip 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.security-stamp {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: security-stamp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+}
+
+.security-bar {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: security-bar 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.security-draw {
+  stroke-dasharray: 1;
+  animation: security-draw 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+.security-meter {
+  transform-origin: left center;
+  animation-name: security-meter;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .security-stage,
+  .security-in,
+  .security-scan,
+  .security-orbit,
+  .security-chip,
+  .security-stamp,
+  .security-bar,
+  .security-draw,
+  .security-meter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+/* Process timeline. The rail is one segment per step so it can run vertically
+   on small screens and across the node row on wide ones. The track and hollow
+   nodes stay visible; data-active draws each segment and fills its node. */
+.how-steps {
+  --how-gap: 2.75rem;
+  --how-node: 2.75rem;
+  --how-draw: 0.95s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--how-gap);
+}
+
+.how-step {
+  position: relative;
+}
+
+.how-step-body {
+  display: grid;
+  grid-template-columns: var(--how-node) minmax(0, 1fr);
+  column-gap: 1.25rem;
+  align-items: start;
+}
+
+.how-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: var(--how-node);
+  height: var(--how-node);
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-style: italic;
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--primary) 45%, transparent);
+  transition:
+    background-color 0.45s ease,
+    color 0.45s ease,
+    box-shadow 0.45s ease;
+  transition-delay: calc(var(--step) * var(--how-draw));
+}
+
+.how-steps[data-active] .how-node {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 0 6px color-mix(in oklch, var(--primary) 18%, transparent);
+}
+
+.how-connector {
+  pointer-events: none;
+  position: absolute;
+  top: calc(var(--how-node) / 2);
+  left: calc(var(--how-node) / 2);
+  width: 2px;
+  height: calc(100% + var(--how-gap));
+  transform: translateX(-50%);
+}
+
+.how-connector-track,
+.how-connector-progress {
+  position: absolute;
+  inset: 0;
+}
+
+.how-connector-track {
+  background: color-mix(in oklch, var(--border) 90%, transparent);
+}
+
+.how-connector-progress {
+  background: var(--primary);
+  box-shadow: 0 0 12px color-mix(in oklch, var(--primary) 55%, transparent);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform var(--how-draw) cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--step) * var(--how-draw));
+}
+
+.how-steps[data-active] .how-connector-progress {
+  transform: scaleY(1);
+}
+
+.how-step-copy {
+  padding-top: 0.35rem;
+  opacity: 0;
+  transform: translateY(0.75rem);
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--step) * var(--how-draw) + 0.2s);
+}
+
+.how-steps[data-active] .how-step-copy {
+  opacity: 1;
+  transform: none;
+}
+
+@media (min-width: 768px) {
+  .how-steps {
+    --how-gap: 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .how-step-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .how-connector {
+    top: calc(var(--how-node) / 2);
+    left: calc(50% + var(--how-node) / 2);
+    width: calc(100% + var(--how-gap) - var(--how-node));
+    height: 2px;
+    transform: translateY(-50%);
+  }
+
+  .how-connector-progress {
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  .how-steps[data-active] .how-connector-progress {
+    transform: scaleX(1);
+  }
+
+  .how-step-copy {
+    max-width: 18rem;
+    padding-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .how-node,
+  .how-connector-progress,
+  .how-step-copy {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .how-connector-progress,
+  .how-step-copy {
+    opacity: 1;
+    transform: none;
+  }
+
+  .how-node {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: 0 0 0 6px color-mix(in oklch, var(--primary) 18%, transparent);
+  }
+}
+
+@media (scripting: none) {
+  .how-connector-progress,
+  .how-step-copy {
+    opacity: 1;
+    transform: none;
+  }
+
+  .how-node {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: 0 0 0 6px color-mix(in oklch, var(--primary) 18%, transparent);
+  }
+}
