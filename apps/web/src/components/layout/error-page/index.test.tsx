@@ -5,10 +5,16 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { renderWithProviders } from "@/test/render"
 
+const routerStatus = vi.hoisted(() => ({ value: "idle" }))
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children?: ReactNode; to?: string }) => (
     <a href={String(to)}>{children}</a>
   ),
+  useRouterState: (opts?: { select?: (state: { status: string }) => unknown }) => {
+    const state = { status: routerStatus.value }
+    return opts?.select ? opts.select(state) : state
+  },
 }))
 
 vi.mock("@/components/ui/Beams", () => ({
@@ -31,6 +37,7 @@ afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
   session.data = { user: { id: "u1" } }
+  routerStatus.value = "idle"
 })
 
 describe("ErrorPage", () => {
@@ -57,6 +64,13 @@ describe("NotFoundPage", () => {
     expect(screen.getByRole("link", { name: "Back to the dashboard" })).toHaveAttribute("href", "/")
   })
 
+  it("stays blank while the next route is still loading", () => {
+    routerStatus.value = "pending"
+    const { container } = renderWithProviders(<NotFoundPage />)
+    expect(container).toBeEmptyDOMElement()
+    expect(screen.queryByText("404")).not.toBeInTheDocument()
+  })
+
   it("points signed-out visitors at sign in instead of the dashboard", () => {
     session.data = null
     renderWithProviders(<NotFoundPage />)
@@ -66,6 +80,15 @@ describe("NotFoundPage", () => {
 })
 
 describe("RouteErrorPage", () => {
+  it("stays blank while a navigation is still in flight", () => {
+    routerStatus.value = "pending"
+    const { container } = renderWithProviders(
+      <RouteErrorPage error={new Error("boom")} reset={vi.fn()} />,
+    )
+    expect(container).toBeEmptyDOMElement()
+    expect(screen.queryByText("500")).not.toBeInTheDocument()
+  })
+
   it("shows the generic error copy without technical details", () => {
     renderWithProviders(<RouteErrorPage error={new Error("boom")} reset={vi.fn()} />)
     expect(screen.getByText("500")).toBeInTheDocument()

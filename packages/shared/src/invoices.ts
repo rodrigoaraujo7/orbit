@@ -5,6 +5,14 @@ import { isDealFree, type Invoice, type Project } from "./project.ts"
 
 const PAYMENT_METHODS: PaymentMethod[] = ["boleto", "pix"]
 
+/** A status the user set by hand, keyed by the generated invoice id. */
+export type InvoiceStatusOverride = {
+  status: InvoiceStatus
+  paymentMethod?: PaymentMethod
+  paidAt?: string
+}
+export type InvoiceOverrides = Record<string, InvoiceStatusOverride>
+
 /**
  * Mock derived from the `deal` — there's no persisted invoice API yet, so an
  * invoice isn't an entity of its own with history, it's computed on the fly.
@@ -12,8 +20,15 @@ const PAYMENT_METHODS: PaymentMethod[] = ["boleto", "pix"]
  * Anchored on `project.startedAt`, not on today: that's what gives the platform
  * a real timeline (past installments already paid, future ones still open) and
  * what the dashboard charts read.
+ *
+ * `overrides` replace the derived status of an invoice with the one the user
+ * picked, so the list and the dashboard agree on it.
  */
-export function generateInvoices(project: Project, payerName: string): Invoice[] {
+export function generateInvoices(
+  project: Project,
+  payerName: string,
+  overrides: InvoiceOverrides = {},
+): Invoice[] {
   const { deal } = project
   if (isDealFree(deal)) return []
 
@@ -36,7 +51,7 @@ export function generateInvoices(project: Project, payerName: string): Invoice[]
     const isPaid = dueDate < today && index !== overdueIndex
     const status: InvoiceStatus = isPaid ? "paid" : index === overdueIndex ? "overdue" : "pending"
 
-    return {
+    const invoice: Invoice = {
       id: `${project.id}-invoice-${index + 1}`,
       referenceMonth: deal.kind === "installment" ? monthOf(dueDate) : undefined,
       amount,
@@ -47,6 +62,14 @@ export function generateInvoices(project: Project, payerName: string): Invoice[]
       payerName,
       hasAttachment: isPaid,
       currency: deal.currency ?? DEFAULT_CURRENCY,
+    }
+    const override = overrides[invoice.id]
+    if (!override) return invoice
+    return {
+      ...invoice,
+      status: override.status,
+      paymentMethod: override.paymentMethod,
+      paidAt: override.paidAt,
     }
   })
 }

@@ -53,6 +53,7 @@ describe("AppShell", () => {
       </AppShell>,
     )
     expect(screen.getByText("Page")).toBeInTheDocument()
+    expect(screen.getByRole("main")).toHaveClass("bg-background")
     expect(screen.getAllByText("Projects").length).toBeGreaterThan(0)
     const collapse = await screen.findByRole("button", { name: "Collapse menu" })
     await user.click(collapse)

@@ -8,6 +8,7 @@
     "edit": "Edit",
     "confirm": "Confirm",
     "loading": "Loading…",
+    "openingWorkspace": "Opening your workspace…",
     "clear": "Clear",
     "until": "to",
     "from": "From",
@@ -143,6 +144,8 @@
     "generateBoleto": "Generate boleto",
     "generatePix": "Generate pix",
     "changeStatus": "Change status",
+    "statusChanged": "Invoice status updated",
+    "statusChangeError": "Could not update the invoice status",
     "viewAttachment": "View attachment",
     "attachInvoice": "Attach invoice",
     "empty": "No invoices match these filters."

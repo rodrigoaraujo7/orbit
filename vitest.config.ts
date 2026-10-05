@@ -19,6 +19,7 @@ export default defineConfig({
         "packages/ui/src/**/*.{ts,tsx}",
         "apps/api/src/**/*.ts",
         "apps/web/src/**/*.{ts,tsx}",
+        "apps/web/middleware.ts",
         "apps/marketing/src/**/*.{ts,tsx}",
       ],
       exclude: [

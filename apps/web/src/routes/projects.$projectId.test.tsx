@@ -1,4 +1,4 @@
-import { cleanup, screen, within } from "@testing-library/react"
+import { cleanup, fireEvent, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -17,6 +17,12 @@ vi.mock("@/lib/trpc", async () => {
 })
 
 import { trpc } from "@/lib/trpc"
+
+const toastAdd = vi.fn()
+vi.mock("@/components/ui/toast", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/components/ui/toast")>()
+  return { ...actual, toast: { add: (...args: unknown[]) => toastAdd(...args) } }
+})
 
 const navigate = vi.fn()
 const routeNavigate = vi.fn((opts?: { search?: unknown }) => {
@@ -107,6 +113,7 @@ beforeEach(() => {
   vi.spyOn(Route, "useParams").mockReturnValue(params as never)
   vi.spyOn(Route, "useSearch").mockImplementation(() => search.value as never)
   vi.spyOn(Route, "useNavigate").mockReturnValue(routeNavigate as never)
+  trpc.invoices.list.query.mockClear()
   trpc.invoices.list.query.mockResolvedValue({
     items: [sampleInvoice],
     totals: { count: 1, paid: 1, overdue: 0 },
@@ -226,6 +233,64 @@ describe("project detail route", () => {
     await user.click(toolTriggers[toolTriggers.length - 2]!)
     await user.click(toolTriggers[toolTriggers.length - 1]!)
     expect(await screen.findByText("Edit tools")).toBeInTheDocument()
+  })
+
+  it("refetches invoices and projects from the finance and tools refresh buttons", async () => {
+    const user = userEvent.setup()
+    const { client } = renderWithProviders(<ProjectDetailPage />)
+    const invalidate = vi.spyOn(client, "invalidateQueries")
+    expect(await screen.findByRole("heading", { name: "Portal" })).toBeInTheDocument()
+    await vi.waitFor(() => expect(trpc.invoices.list.query).toHaveBeenCalledTimes(1))
+
+    const financeRefresh = screen
+      .getAllByRole("button")
+      .filter((el) => el.hasAttribute("data-base-ui-tooltip-trigger"))[1]!
+    await user.click(financeRefresh)
+    await vi.waitFor(() => expect(trpc.invoices.list.query).toHaveBeenCalledTimes(2))
+
+    await user.click(screen.getByRole("tab", { name: "Tools" }))
+    const toolTriggers = screen
+      .getAllByRole("button")
+      .filter((el) => el.hasAttribute("data-base-ui-tooltip-trigger"))
+    const toolsRefresh = toolTriggers[toolTriggers.length - 2]!
+    await user.click(toolsRefresh)
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["projects"] })
+
+    void client.prefetchQuery({ queryKey: ["projects"], queryFn: () => new Promise(() => {}) })
+    await vi.waitFor(() => expect(toolsRefresh.querySelector(".animate-spin")).not.toBeNull())
+  })
+
+  it("changes an invoice status and reports success or failure", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 })
+    const { client } = renderWithProviders(<ProjectDetailPage />)
+    const invalidate = vi.spyOn(client, "invalidateQueries")
+    const changeTo = async (status: string) => {
+      await user.click(await screen.findByRole("button", { name: "More actions" }))
+      await user.click(await screen.findByRole("menuitem", { name: "Change status" }))
+      fireEvent.click(await screen.findByRole("menuitem", { name: status }))
+    }
+
+    await changeTo("Overdue")
+    expect(trpc.invoices.setStatus.mutate).toHaveBeenCalledWith({
+      id: sampleInvoice.id,
+      status: "overdue",
+    })
+    await vi.waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith({ title: "Invoice status updated", type: "success" }),
+    )
+    for (const queryKey of [["projects"], ["dashboard"], ["invoices"], ["audit"]]) {
+      expect(invalidate).toHaveBeenCalledWith({ queryKey })
+    }
+
+    trpc.invoices.setStatus.mutate.mockRejectedValueOnce(new Error("nope"))
+    await user.keyboard("{Escape}")
+    await changeTo("Pending")
+    await vi.waitFor(() =>
+      expect(toastAdd).toHaveBeenCalledWith({
+        title: "Could not update the invoice status",
+        type: "error",
+      }),
+    )
   })
 
   it("shows invoice skeleton while the query is pending", () => {

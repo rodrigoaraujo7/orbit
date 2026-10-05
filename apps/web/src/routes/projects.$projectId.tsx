@@ -1,5 +1,11 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import {
+  keepPreviousData,
+  useIsFetching,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { ArrowLeft, GitBranch, Pencil, RefreshCw, Trash2, User, Wallet, Wrench } from "lucide-react"
 import { useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
@@ -18,8 +24,9 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Emphasis } from "@/components/ui/emphasis"
 import { GitHubIcon } from "@/components/ui/github-icon"
 import { Tabs, TabsDock, TabsDockTab, TabsPanel } from "@/components/ui/tabs"
+import { toast } from "@/components/ui/toast"
 import { Tooltip } from "@/components/ui/tooltip"
-import { isDealFree } from "@/data/projects"
+import { isDealFree, type InvoiceStatus } from "@/data/projects"
 import { freeLabel } from "@/i18n/labels"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
 import { formatCurrency, formatDealProgress, formatToolsProgress } from "@/lib/format"
@@ -67,6 +74,8 @@ function ProjectDetailPage() {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const navigate = useNavigate()
   const routeNavigate = Route.useNavigate()
+  const queryClient = useQueryClient()
+  const projectsFetching = useIsFetching({ queryKey: ["projects"] }) > 0
 
   const invoiceInput = {
     projectId,
@@ -112,6 +121,26 @@ function ProjectDetailPage() {
     void repoQuery.refetch()
     void runsQuery.refetch()
   }
+
+  function refreshFinance() {
+    void invoicesQuery.refetch()
+  }
+
+  function refreshTools() {
+    void queryClient.invalidateQueries({ queryKey: ["projects"] })
+  }
+
+  const setInvoiceStatus = useMutation({
+    mutationFn: (input: { id: string; status: InvoiceStatus }) =>
+      trpc.invoices.setStatus.mutate(input),
+    onSuccess: () => {
+      toast.add({ title: t("invoice.statusChanged"), type: "success" })
+      for (const queryKey of [["projects"], ["dashboard"], ["invoices"], ["audit"]]) {
+        void queryClient.invalidateQueries({ queryKey })
+      }
+    },
+    onError: () => toast.add({ title: t("invoice.statusChangeError"), type: "error" }),
+  })
 
   function selectBranch(next: string) {
     patchSearch({ branch: next === repoQuery.data?.defaultBranch ? undefined : next })
@@ -288,10 +317,10 @@ function ProjectDetailPage() {
               action={
                 <>
                   <Tooltip label={t("projects.refreshFinance")} side="top">
-                    {/* ponytail: no-op — same as the header refresh, no real
-                        fetch yet (see the comment further up). */}
-                    <Button variant="outline" size="icon-sm" onClick={() => {}}>
-                      <RefreshCw />
+                    <Button variant="outline" size="icon-sm" onClick={refreshFinance}>
+                      <RefreshCw
+                        className={invoicesQuery.isFetching ? "animate-spin" : undefined}
+                      />
                     </Button>
                   </Tooltip>
                   <Tooltip label={t("projects.editFinance")} side="top">
@@ -333,6 +362,9 @@ function ProjectDetailPage() {
                   }
                   onMonthFromChange={(from) => patchSearch({ from: from || undefined })}
                   onMonthToChange={(to) => patchSearch({ to: to || undefined })}
+                  onInvoiceStatusChange={(invoice, status) =>
+                    setInvoiceStatus.mutate({ id: invoice.id, status })
+                  }
                   isPending={invoicesQuery.isPending}
                   isFetching={invoicesQuery.isFetching}
                 />
@@ -345,10 +377,8 @@ function ProjectDetailPage() {
               action={
                 <>
                   <Tooltip label={t("projects.refreshTools")} side="top">
-                    {/* ponytail: no-op — same as the header refresh, no real
-                        fetch yet (see the comment further up). */}
-                    <Button variant="outline" size="icon-sm" onClick={() => {}}>
-                      <RefreshCw />
+                    <Button variant="outline" size="icon-sm" onClick={refreshTools}>
+                      <RefreshCw className={projectsFetching ? "animate-spin" : undefined} />
                     </Button>
                   </Tooltip>
                   <Tooltip label={t("projects.editTools")} side="top">

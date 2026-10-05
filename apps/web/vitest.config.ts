@@ -12,7 +12,7 @@ export default defineProject({
   test: {
     name: "web",
     environment: "jsdom",
-    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx", "middleware.test.ts"],
     setupFiles: ["./src/test/setup.ts"],
     css: false,
   },

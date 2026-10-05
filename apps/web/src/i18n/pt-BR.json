@@ -8,6 +8,7 @@
     "edit": "Editar",
     "confirm": "Confirmar",
     "loading": "Carregando…",
+    "openingWorkspace": "Abrindo seu espaço de trabalho…",
     "clear": "Limpar",
     "until": "até",
     "from": "De",
@@ -143,6 +144,8 @@
     "generateBoleto": "Gerar boleto",
     "generatePix": "Gerar pix",
     "changeStatus": "Alterar status",
+    "statusChanged": "Status da fatura atualizado",
+    "statusChangeError": "Não foi possível atualizar o status da fatura",
     "viewAttachment": "Ver anexo",
     "attachInvoice": "Anexar fatura",
     "empty": "Nenhuma fatura encontrada com esses filtros."

@@ -5,8 +5,10 @@ import { renderWithProviders } from "@/test/render"
 
 const pathname = vi.hoisted(() => ({ value: "/" }))
 const matches = vi.hoisted(() => ({
-  value: [] as Array<{ status: string; _notFound?: boolean }> | undefined,
+  value: [] as
+    Array<{ status: string; _notFound?: boolean; pathname?: string; routeId?: string }> | undefined,
 }))
+const routerStatus = vi.hoisted(() => ({ value: "idle" as string | undefined }))
 const session = vi.hoisted(() => ({
   data: { user: { id: "u1", name: "Ada", email: "ada@test.local" } } as {
     user: { id: string; name: string; email: string }
@@ -39,11 +41,16 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
     Outlet: () => <div data-testid="outlet">outlet</div>,
     useRouterState: (opts?: {
       select?: (state: {
+        status?: string
         location: { pathname: string }
-        matches: Array<{ status: string; _notFound?: boolean }>
+        matches: Array<{ status: string; _notFound?: boolean; pathname?: string; routeId?: string }>
       }) => unknown
     }) => {
-      const state = { location: { pathname: pathname.value }, matches: matches.value }
+      const state = {
+        status: routerStatus.value,
+        location: { pathname: pathname.value },
+        matches: matches.value,
+      }
       return opts?.select ? opts.select(state) : state
     },
   }
@@ -100,6 +107,7 @@ afterEach(() => {
 beforeEach(() => {
   pathname.value = "/"
   matches.value = []
+  routerStatus.value = "idle"
   session.data = { user: { id: "u1", name: "Ada", email: "ada@test.local" } }
   session.isPending = false
   workspace.isPending = false
@@ -110,7 +118,7 @@ describe("root Gate", () => {
   it("shows a loading screen while the session is pending", () => {
     session.isPending = true
     renderWithProviders(<Root />)
-    expect(screen.getByText("Loading…")).toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent("Opening your workspace…")
   })
 
   it("keeps public routes mounted while the session is refetching", () => {
@@ -119,7 +127,7 @@ describe("root Gate", () => {
     pathname.value = "/login"
     renderWithProviders(<Root />)
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
-    expect(screen.queryByText("Loading…")).not.toBeInTheDocument()
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
   })
 
   it("redirects anonymous users to login", () => {
@@ -186,7 +194,7 @@ describe("root Gate", () => {
     pathname.value = "/this-page-does-not-exist"
     matches.value = [{ status: "success", _notFound: true }]
     renderWithProviders(<Root />)
-    expect(screen.getByText("Loading…")).toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent("Opening your workspace…")
     expect(screen.queryByTestId("outlet")).not.toBeInTheDocument()
   })
 
@@ -196,6 +204,36 @@ describe("root Gate", () => {
     renderWithProviders(<Root />)
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
     expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
+  })
+
+  it("keeps the shell around a private page while the address bar moves to login", () => {
+    pathname.value = "/login"
+    routerStatus.value = "pending"
+    matches.value = [{ routeId: "/dashboard", pathname: "/dashboard", status: "success" }]
+    renderWithProviders(<Root />)
+    expect(screen.getByLabelText("Open menu")).toBeInTheDocument()
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByTestId("navigate")).not.toBeInTheDocument()
+  })
+
+  it("keeps the private outlet mounted while an anonymous redirect to login is in flight", () => {
+    session.data = null
+    pathname.value = "/login"
+    routerStatus.value = "pending"
+    matches.value = [{ routeId: "/dashboard", pathname: "/dashboard", status: "success" }]
+    renderWithProviders(<Root />)
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
+    expect(screen.queryByTestId("navigate")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument()
+  })
+
+  it("does not swap in the stop screen while the next page is still loading", () => {
+    pathname.value = "/projects"
+    routerStatus.value = "pending"
+    matches.value = [{ status: "success", _notFound: true }]
+    renderWithProviders(<Root />)
+    expect(screen.getByLabelText("Open menu")).toBeInTheDocument()
+    expect(screen.getByTestId("outlet")).toBeInTheDocument()
   })
 
   it("shows the error outlet without the shell when a route throws", () => {
@@ -215,7 +253,7 @@ describe("root Gate", () => {
   it("shows workspace loading and error states", () => {
     workspace.isPending = true
     const { rerender } = renderWithProviders(<Root />)
-    expect(screen.getByText("Loading…")).toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent("Opening your workspace…")
     workspace.isPending = false
     workspace.isError = true
     rerender(<Root />)

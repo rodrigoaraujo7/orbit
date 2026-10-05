@@ -3,6 +3,14 @@ import { trustedWebOrigins } from "../../web-origin/index.ts"
 
 export const INVALID_AUTH_TRUSTED_ORIGIN = "AUTH_TRUSTED_ORIGIN must be a single origin URL"
 
+/**
+ * Branch and deployment previews for this Vercel project. The `*` is one
+ * host label sequence, and the team slug stays fixed, so other vercel.app
+ * sites are not trusted.
+ */
+export const VERCEL_PREVIEW_ORIGIN =
+  "https://projects-manager-web-*-rodrigo-araujos-projects.vercel.app"
+
 export function resolveAuthTrustedOrigin(
   value: string | undefined | null = optionalEnv("AUTH_TRUSTED_ORIGIN"),
 ) {
@@ -33,5 +41,6 @@ export function resolveTrustedOrigins(
   if (tunnel && !origins.includes(tunnel)) {
     origins.push(tunnel)
   }
+  if (!origins.includes(VERCEL_PREVIEW_ORIGIN)) origins.push(VERCEL_PREVIEW_ORIGIN)
   return origins
 }

@@ -611,4 +611,17 @@ describe("summaries, ruler, DTO", () => {
     expect(metrics.toolRows).toHaveLength(1)
     expect(metrics.options.clients).toHaveLength(1)
   })
+
+  it("reads manual invoice statuses into revenue and the ruler", () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 5, 15))
+    const metrics = buildDashboardMetrics(
+      [project({ deal: { kind: "upfront", amount: 1000 } })],
+      emptyFilters,
+      [],
+      { "p1-invoice-1": { status: "overdue" } },
+    )
+    expect(metrics.summary).toMatchObject({ recebido: 0, atrasado: 1000 })
+    expect(metrics.rulerLanes[0]?.byMonth["2026-01"]?.[0]).toMatchObject({ status: "overdue" })
+  })
 })
