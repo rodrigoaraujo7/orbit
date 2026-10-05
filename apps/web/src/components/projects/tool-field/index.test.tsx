@@ -48,9 +48,9 @@ describe("ToolField", () => {
     expect(screen.getByPlaceholderText("API_KEY")).toBeInTheDocument()
     await user.type(screen.getByPlaceholderText("value"), "abc")
     expect(screen.getByPlaceholderText("value")).toHaveAttribute("type", "password")
-    await user.click(screen.getByRole("button", { name: "Reveal value" }))
+    await user.click(screen.getByRole("button", { name: "Show password" }))
     expect(screen.getByPlaceholderText("value")).toHaveAttribute("type", "text")
-    await user.click(screen.getByRole("button", { name: "Hide value" }))
+    await user.click(screen.getByRole("button", { name: "Hide password" }))
     await user.click(screen.getByRole("button", { name: "Remove secret" }))
     expect(screen.queryByPlaceholderText("API_KEY")).not.toBeInTheDocument()
   })
@@ -68,7 +68,7 @@ describe("ToolField", () => {
     expect(screen.getByLabelText("Secret key")).toHaveValue("API_KEY")
     expect(screen.getByLabelText("Secret value")).toBeDisabled()
     expect(screen.getByLabelText("Secret value")).toHaveValue(SECRET_VALUE_MASK)
-    expect(screen.getByRole("button", { name: "Reveal value" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Show password" })).toBeDisabled()
   })
 
   it("asks for a custom name for other tools and unlocks billing when paid", async () => {

@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
-import { Eye, EyeOff } from "lucide-react"
 import { useLayoutEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -48,7 +47,6 @@ export function EditSecretDialog({
 }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [revealed, setRevealed] = useState(false)
   const {
     register,
     handleSubmit,
@@ -64,7 +62,6 @@ export function EditSecretDialog({
   useLayoutEffect(() => {
     if (open && !wasOpen.current) {
       setActive(secret)
-      setRevealed(false)
       reset({ key: secret?.key ?? "", value: "" })
     }
     wasOpen.current = open
@@ -117,25 +114,15 @@ export function EditSecretDialog({
             </Field>
             <Field label={t("common.secretValue")} error={errors.value?.message}>
               {(props) => (
-                <div className="relative">
-                  <Input
-                    {...props}
-                    {...register("value")}
-                    type={revealed ? "text" : "password"}
-                    placeholder={t("common.valuePlaceholder")}
-                    className="pr-9 font-mono text-xs"
-                    autoComplete="off"
-                    spellCheck={false}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setRevealed((v) => !v)}
-                    aria-label={revealed ? t("common.hideValue") : t("common.revealValue")}
-                    className="absolute top-1/2 right-2 -translate-y-1/2 rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {revealed ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-                  </button>
-                </div>
+                <Input
+                  {...props}
+                  {...register("value")}
+                  type="password"
+                  placeholder={t("common.valuePlaceholder")}
+                  className="font-mono text-xs"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
               )}
             </Field>
           </ResponsiveDialogBody>

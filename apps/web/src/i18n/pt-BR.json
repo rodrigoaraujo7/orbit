@@ -89,6 +89,8 @@
     "valuePlaceholder": "valor",
     "hideValue": "Ocultar valor",
     "revealValue": "Revelar valor",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
     "removeSecret": "Remover segredo",
     "removeTool": "Remover ferramenta",
     "editSecret": "Editar segredo",
