@@ -33,7 +33,8 @@ export function bindScrollActivation(node: HTMLElement | null) {
       return
     }
     observer = new IntersectionObserver(
-      ([entry]) => applyScrollActivation(node, Boolean(entry?.isIntersecting)),
+      ([entry]) =>
+        applyScrollActivation(node, (entry?.intersectionRatio ?? 0) >= SCROLL_ACTIVATION_THRESHOLD),
       { threshold: SCROLL_ACTIVATION_THRESHOLD },
     )
     observer.observe(node)

@@ -57,12 +57,14 @@ function installMedia(matches: boolean) {
   return query as Query
 }
 
-function intersect(isIntersecting: boolean) {
+function intersect(
+  entry: Pick<IntersectionObserverEntry, "intersectionRatio" | "isIntersecting"> | null,
+) {
   const observer = IntersectionStub.instances.at(-1)
   if (!observer) throw new Error("missing observer")
   act(() => {
     observer.callback(
-      [{ isIntersecting } as IntersectionObserverEntry],
+      entry === null ? [] : [entry as IntersectionObserverEntry],
       observer as unknown as IntersectionObserver,
     )
   })
@@ -109,7 +111,7 @@ describe("scroll activation", () => {
     expect(node).toHaveAttribute("data-active")
   })
 
-  it("plays the illustration while the card is on screen and clears it on the way out", () => {
+  it("plays the illustration only while at least 35% of the card is visible", () => {
     window.IntersectionObserver = IntersectionStub as unknown as typeof IntersectionObserver
     installMedia(true)
     const node = document.createElement("article")
@@ -120,13 +122,17 @@ describe("scroll activation", () => {
     expect(observer.observed).toBe(node)
     expect(node).not.toHaveAttribute("data-active")
 
-    intersect(true)
+    intersect({ isIntersecting: true, intersectionRatio: SCROLL_ACTIVATION_THRESHOLD })
     expect(node).toHaveAttribute("data-active")
-    act(() => {
-      observer.callback([], observer as unknown as IntersectionObserver)
-    })
+    // The 0.35 threshold fires on the way out while any overlap remains.
+    // Ratio 0 is not a threshold, so this sliver is the notification that must clear it.
+    intersect({ isIntersecting: true, intersectionRatio: 0.2 })
     expect(node).not.toHaveAttribute("data-active")
-    intersect(false)
+    intersect({ isIntersecting: true, intersectionRatio: 1 })
+    expect(node).toHaveAttribute("data-active")
+    intersect(null)
+    expect(node).not.toHaveAttribute("data-active")
+    intersect({ isIntersecting: false, intersectionRatio: 0 })
     expect(node).not.toHaveAttribute("data-active")
 
     stop()
@@ -145,7 +151,7 @@ describe("scroll activation", () => {
 
     act(() => query.setMatches(true))
     expect(IntersectionStub.instances).toHaveLength(1)
-    intersect(true)
+    intersect({ isIntersecting: true, intersectionRatio: SCROLL_ACTIVATION_THRESHOLD })
     expect(node).toHaveAttribute("data-active")
 
     act(() => query.setMatches(false))
@@ -188,7 +194,7 @@ describe("BentoCard on a small screen", () => {
     fireEvent.pointerEnter(article, { pointerType: "touch" })
     expect(article).not.toHaveAttribute("data-active")
 
-    intersect(true)
+    intersect({ isIntersecting: true, intersectionRatio: 1 })
     expect(article).toHaveAttribute("data-active")
 
     fireEvent.pointerLeave(article, { pointerType: "touch" })
