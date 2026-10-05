@@ -92,7 +92,7 @@ Negative currency uses `text-destructive`. Stat tones are `foreground`, `success
 | Card / kanban title                | Instrument Serif | 400–500    | 16–18px           | Kanban names are `text-lg font-normal` and truncate                                                   |
 | Section / KPI value                | Instrument Sans  | 600        | 18–30px           | `tracking-tight tabular-nums`                                                                         |
 | Chart / panel title                | Instrument Sans  | 600        | 14px              |                                                                                                       |
-| Body, inputs, table cells          | Instrument Sans  | 400        | 14px (`text-sm`)  |                                                                                                       |
+| Body, inputs, table cells          | Instrument Sans  | 400        | 14px (`text-sm`)  | Textarea is 16px (`text-base`) below `md`, then 14px                                                  |
 | Buttons, labels, nav, table header | Instrument Sans  | 500        | 14px (`text-sm`)  |                                                                                                       |
 | Meta, errors, hints                | Instrument Sans  | 400        | 12px (`text-xs`)  | Errors are `text-destructive`; hints are `text-muted-foreground`                                      |
 | Eyebrow                            | Instrument Sans  | 500        | 12px              | `uppercase tracking-wide text-muted-foreground`                                                       |
@@ -169,13 +169,13 @@ Primary on the signed-out screen may add a bordô glow: `shadow-[0_0_16px_rgba(1
 
 ### Badge
 
-`rounded-4xl px-2 py-0.5 text-xs font-medium`. Variants: default `bg-primary/20 text-primary`, muted, outline (`border-border text-muted-foreground`), success, warning, destructive — each tint is the tone at 20% background and full tone as text. Icon-only workflow badges use `p-1`.
+`rounded-4xl px-2 py-0.5 text-xs font-medium`. Icons are 12px (`size-3`), including status and workflow badges. Variants: default `bg-primary/20 text-primary`, muted, outline (`border-border text-muted-foreground`), success, warning, destructive — each tint is the tone at 20% background and full tone as text. Icon-only workflow badges use `p-1`.
 
 ### Input, select, textarea
 
-- Input and select trigger: `h-9 rounded-xl border border-border bg-background px-3 text-sm`. Placeholder `text-muted-foreground`. Focus `border-ring ring-3 ring-ring/30`. Invalid input: `border-destructive ring-destructive/40`. Disabled 50%.
+- Input and select trigger: `h-9 rounded-xl border border-border bg-background px-3 text-sm`. Placeholder `text-muted-foreground`. Focus `border-ring ring-3 ring-ring/30`. Invalid input: `border-destructive ring-destructive/40`. Disabled 50%. Textarea is the exception: 16px (`text-base`) below `md`, 14px from `md`.
 - Select popup: `rounded-xl border bg-popover p-1 shadow-lg`, items `rounded-lg px-2 py-1.5`, highlight `bg-accent`. Group labels are eyebrows.
-- Textarea: `min-h-16 rounded-2xl border-transparent bg-input/50 px-3 py-3`, no resize.
+- Textarea: `field-sizing-content min-h-16 resize-none rounded-2xl border-transparent bg-input/50 px-3 py-3 text-base md:text-sm`. It grows with its content.
 - Field: label (`text-sm font-medium`) then control then message, `gap-1.5`. Error `text-xs text-destructive`. Hint `text-xs text-muted-foreground`. Wire `aria-invalid` and `aria-describedby`.
 
 ### Surface recipes
