@@ -23,11 +23,13 @@ describe("Input", () => {
     renderWithProviders(<Input aria-label="Password" type="password" defaultValue="secret" />)
     const input = screen.getByLabelText("Password")
     expect(input).toHaveAttribute("type", "password")
+    expectPlainTextCorrectionsOff(input)
 
     await user.click(input)
     expect(input).toHaveFocus()
     await user.click(screen.getByRole("button", { name: "Show password" }))
     expect(input).toHaveAttribute("type", "text")
+    expectPlainTextCorrectionsOff(input)
     expect(input).not.toHaveFocus()
     const hide = screen.getByRole("button", { name: "Hide password" })
     expect(hide).toHaveAttribute("aria-pressed", "true")
@@ -69,4 +71,27 @@ describe("Input", () => {
     expect(screen.getByLabelText("Password")).toHaveAttribute("type", "password")
     expect(screen.queryByRole("button", { name: "Show password" })).not.toBeInTheDocument()
   })
+
+  it("keeps caller text-entry attributes from re-enabling corrections on a revealed password", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(
+      <Input
+        aria-label="Password"
+        type="password"
+        autoCapitalize="sentences"
+        autoCorrect="on"
+        spellCheck
+      />,
+    )
+    const input = screen.getByLabelText("Password")
+    await user.click(screen.getByRole("button", { name: "Show password" }))
+    expect(input).toHaveAttribute("type", "text")
+    expectPlainTextCorrectionsOff(input)
+  })
 })
+
+function expectPlainTextCorrectionsOff(input: HTMLElement) {
+  expect(input).toHaveAttribute("autocapitalize", "none")
+  expect(input).toHaveAttribute("autocorrect", "off")
+  expect(input).toHaveAttribute("spellcheck", "false")
+}

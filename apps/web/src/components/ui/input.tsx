@@ -40,6 +40,9 @@ function Input({
         data-slot="input"
         className={cn(inputClassName, "pr-9", className)}
         {...props}
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
       />
       <button
         type="button"
