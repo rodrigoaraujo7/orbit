@@ -35,9 +35,9 @@ describe("EditSecretDialog", () => {
     const dialog = await screen.findByRole("dialog")
     expect(within(dialog).getByDisplayValue("API_KEY")).toBeInTheDocument()
     await user.type(within(dialog).getByLabelText("Secret value"), "sk_new")
-    await user.click(within(dialog).getByRole("button", { name: "Reveal value" }))
+    await user.click(within(dialog).getByRole("button", { name: "Show password" }))
     expect(within(dialog).getByLabelText("Secret value")).toHaveAttribute("type", "text")
-    await user.click(within(dialog).getByRole("button", { name: "Hide value" }))
+    await user.click(within(dialog).getByRole("button", { name: "Hide password" }))
     await user.click(within(dialog).getByRole("button", { name: "Save" }))
     await waitFor(() =>
       expect(trpc.credentials.update.mutate).toHaveBeenCalledWith({

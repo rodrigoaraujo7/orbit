@@ -1,6 +1,5 @@
-import { useState } from "react"
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form"
-import { Eye, EyeOff, KeyRound, Plus, Trash2 } from "lucide-react"
+import { KeyRound, Plus, Trash2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Badge } from "@/components/ui/badge"
@@ -28,7 +27,6 @@ function SecretRow({
   onRemove: () => void
 }) {
   const { t } = useTranslation()
-  const [revealed, setRevealed] = useState(false)
   const {
     register,
     formState: { errors },
@@ -57,7 +55,7 @@ function SecretRow({
           spellCheck={false}
           disabled={stored}
         />
-        <div className="relative flex-1">
+        <div className="min-w-0 flex-1">
           {stored ? (
             <>
               <input type="hidden" {...register(valuePath)} />
@@ -67,30 +65,21 @@ function SecretRow({
                 readOnly
                 value={SECRET_VALUE_MASK}
                 aria-label={t("common.secretValue")}
-                className="pr-9 font-mono text-xs"
+                className="font-mono text-xs"
               />
             </>
           ) : (
             <Input
               {...register(valuePath)}
-              type={revealed ? "text" : "password"}
+              type="password"
               aria-invalid={Boolean(secretErrors?.value)}
               aria-label={t("common.secretValue")}
               placeholder={t("common.valuePlaceholder")}
-              className="pr-9 font-mono text-xs"
+              className="font-mono text-xs"
               autoComplete="off"
               spellCheck={false}
             />
           )}
-          <button
-            type="button"
-            disabled={stored}
-            onClick={() => setRevealed((v) => !v)}
-            aria-label={revealed ? t("common.hideValue") : t("common.revealValue")}
-            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-          >
-            {revealed ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-          </button>
         </div>
         <Button
           type="button"
