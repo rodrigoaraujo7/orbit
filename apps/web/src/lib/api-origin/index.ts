@@ -1,4 +1,4 @@
-export const PRODUCTION_API_ORIGIN = "https://api-production-b70f.up.railway.app"
+export const PRODUCTION_API_ORIGIN = "https://api.orbit.rodrigoleite.dev"
 
 type ApiOriginEnv = {
   VERCEL_ENV?: string
@@ -7,7 +7,8 @@ type ApiOriginEnv = {
 
 /**
  * Where `/api` and `/trpc` are proxied to. A PR preview talks to the API of
- * its own Railway PR environment; everything else talks to production.
+ * its own Railway PR environment; everything else talks to production at
+ * `api.orbit.rodrigoleite.dev`.
  *
  * Railway names a PR environment `orbit-pr-<N>` and gives the `api`
  * service the domain `api-<environment>.up.railway.app`, so the URL follows

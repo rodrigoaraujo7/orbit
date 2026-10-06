@@ -9,6 +9,7 @@ describe("apiOrigin", () => {
   })
 
   it("falls back to production outside a PR preview", () => {
+    expect(PRODUCTION_API_ORIGIN).toBe("https://api.orbit.rodrigoleite.dev")
     expect(apiOrigin({ VERCEL_ENV: "production", VERCEL_GIT_PULL_REQUEST_ID: "22" })).toBe(
       PRODUCTION_API_ORIGIN,
     )

@@ -29,7 +29,7 @@ describe("vercel middleware", () => {
     const response = middleware(new Request("https://app.example.com/api/auth/session"))
 
     expect(response.headers.get("x-middleware-rewrite")).toBe(
-      "https://api-production-b70f.up.railway.app/api/auth/session",
+      "https://api.orbit.rodrigoleite.dev/api/auth/session",
     )
   })
 })
