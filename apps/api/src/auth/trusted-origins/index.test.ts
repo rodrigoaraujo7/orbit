@@ -66,16 +66,17 @@ describe("resolveTrustedOrigins", () => {
         matchesOriginPattern: (url: string, pattern: string) => boolean
       }
     const allowed = [
-      "https://orbit-web-git-cursor-6d7579-rodrigo-araujos-projects.vercel.app",
-      "https://orbit-web-abc123-rodrigo-araujos-projects.vercel.app",
+      "https://orbit-app-git-cursor-rename-pro-4d500c-rodrigo-araujos-projects.vercel.app",
+      "https://orbit-app-abc123-rodrigo-araujos-projects.vercel.app",
     ]
     const rejected = [
       "https://evil.vercel.app",
       "https://*.vercel.app",
-      "https://orbit-web.vercel.app",
-      "https://orbit-web-git-x-other-team.vercel.app",
-      "http://orbit-web-git-x-rodrigo-araujos-projects.vercel.app",
-      "https://orbit-web-git-x-rodrigo-araujos-projects.vercel.app.evil.com",
+      "https://orbit-app.vercel.app",
+      "https://orbit-app-git-x-other-team.vercel.app",
+      "http://orbit-app-git-x-rodrigo-araujos-projects.vercel.app",
+      "https://orbit-app-git-x-rodrigo-araujos-projects.vercel.app.evil.com",
+      "https://orbit-web-git-cursor-6d7579-rodrigo-araujos-projects.vercel.app",
       "https://app.orbit.rodrigoleite.dev",
     ]
     for (const origin of allowed) {
