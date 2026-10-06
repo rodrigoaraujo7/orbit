@@ -26,7 +26,7 @@ function recorder() {
 
 beforeEach(() => {
   vi.stubEnv("RESEND_API_KEY", "re_test")
-  vi.stubEnv("EMAIL_FROM", "Projects Manager <noreply@projectsmanager.rodrigoleite.dev>")
+  vi.stubEnv("EMAIL_FROM", "Orbit <noreply@orbit.rodrigoleite.dev>")
 })
 
 afterEach(() => {
@@ -40,11 +40,11 @@ describe("email senders", () => {
     await sendLoginOtp(ada, "123456", { fetchImpl })
 
     expect(sent[0].body).toEqual({
-      from: "Projects Manager <noreply@projectsmanager.rodrigoleite.dev>",
+      from: "Orbit <noreply@orbit.rodrigoleite.dev>",
       to: ["ada@test.local"],
-      subject: "Your Projects Manager sign-in code",
+      subject: "Your Orbit sign-in code",
       template: {
-        id: "pm-login-otp-en-us",
+        id: "orbit-login-otp-en-us",
         variables: { NAME: "Ada Lovelace", CODE: "123456", MINUTES: "10" },
       },
     })
@@ -61,16 +61,16 @@ describe("email senders", () => {
     )
 
     expect(sent[0].body).toMatchObject({
-      subject: "Confirm your Projects Manager account",
+      subject: "Confirm your Orbit account",
       template: {
-        id: "pm-confirm-account-en-us",
+        id: "orbit-confirm-account-en-us",
         variables: { NAME: "Ada Lovelace", URL: "https://app.test/verify?token=abc" },
       },
     })
     expect(sent[1].body).toMatchObject({
-      subject: "Redefina sua senha do Projects Manager",
+      subject: "Redefina sua senha do Orbit",
       template: {
-        id: "pm-reset-password-pt-br",
+        id: "orbit-reset-password-pt-br",
         variables: { URL: "https://app.test/reset-password?token=xyz" },
       },
     })
@@ -140,7 +140,7 @@ describe("email senders", () => {
       return {
         ok: false,
         status: 403,
-        text: async () => "The projectsmanager.rodrigoleite.dev domain is not verified",
+        text: async () => "The orbit.rodrigoleite.dev domain is not verified",
       }
     }) as unknown as FetchLike
 

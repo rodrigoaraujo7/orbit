@@ -23,7 +23,7 @@ describe("LoadingScreen", () => {
     renderWithProviders(<LoadingScreen />)
     const status = screen.getByRole("status")
     expect(status).toHaveAttribute("aria-busy", "true")
-    expect(status).toHaveTextContent("Projects Manager")
+    expect(status).toHaveTextContent("Orbit")
     expect(status).toHaveTextContent("Opening your workspace…")
     expect(status.querySelector("[class*='animate-spin']")).toBeTruthy()
   })

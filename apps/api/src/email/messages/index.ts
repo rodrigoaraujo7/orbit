@@ -6,16 +6,16 @@ import type { EmailKind, EmailLocale } from "../config/index.ts"
  */
 const SUBJECTS: Record<EmailLocale, Record<EmailKind, string>> = {
   "en-US": {
-    "login-otp": "Your Projects Manager sign-in code",
-    "confirm-account": "Confirm your Projects Manager account",
-    "reset-password": "Reset your Projects Manager password",
-    "new-login": "New sign-in to your Projects Manager account",
+    "login-otp": "Your Orbit sign-in code",
+    "confirm-account": "Confirm your Orbit account",
+    "reset-password": "Reset your Orbit password",
+    "new-login": "New sign-in to your Orbit account",
   },
   "pt-BR": {
-    "login-otp": "Seu código de acesso do Projects Manager",
-    "confirm-account": "Confirme sua conta do Projects Manager",
-    "reset-password": "Redefina sua senha do Projects Manager",
-    "new-login": "Novo acesso à sua conta do Projects Manager",
+    "login-otp": "Seu código de acesso do Orbit",
+    "confirm-account": "Confirme sua conta do Orbit",
+    "reset-password": "Redefina sua senha do Orbit",
+    "new-login": "Novo acesso à sua conta do Orbit",
   },
 }
 

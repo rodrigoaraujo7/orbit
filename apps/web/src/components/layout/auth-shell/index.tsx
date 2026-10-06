@@ -39,7 +39,7 @@ function AuthShell({
     <>
       <div className="flex w-full items-start justify-between gap-2">
         <div className="grid size-10 place-items-center rounded-lg bg-muted text-base font-bold text-muted-foreground">
-          P
+          O
         </div>
         <LanguageButton />
       </div>

@@ -649,7 +649,7 @@ export function AppMockup({
           <aside className="shrink-0 border-b bg-sidebar md:w-52 md:border-r md:border-b-0">
             <div className="hidden h-14 items-center gap-2.5 px-4 md:flex">
               <div className="grid size-7 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-                P
+                O
               </div>
               <span className="text-sm font-semibold tracking-tight">{copy.brand}</span>
             </div>

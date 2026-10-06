@@ -75,7 +75,7 @@ describe("metrics", () => {
 
   it("ranks projects by profit after tool cost", () => {
     expect(metrics(initialState().projects).profits).toEqual([
-      { name: "Orbit mobile app", profit: 26886 },
+      { name: "Nimbus mobile app", profit: 26886 },
       { name: "Atlas storefront", profit: 24930 },
       { name: "Harbor CRM", profit: 18450 },
       { name: "Pulse analytics", profit: 9000 },

@@ -1,5 +1,5 @@
-export const SITE_URL = "https://projectsmanager.rodrigoleite.dev"
-const DEFAULT_APP_URL = "https://app.projectsmanager.rodrigoleite.dev"
+export const SITE_URL = "https://orbit.rodrigoleite.dev"
+const DEFAULT_APP_URL = "https://app.orbit.rodrigoleite.dev"
 
 export function appOrigin(): string {
   const configured = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL

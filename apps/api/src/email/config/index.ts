@@ -10,7 +10,7 @@ export const DEFAULT_EMAIL_LOCALE: EmailLocale = "en-US"
 /** Minutes a login OTP stays valid. Mirrored in `twoFactor({ otpOptions: { period } })`. */
 export const OTP_PERIOD_MINUTES = 10
 
-export const DEFAULT_EMAIL_FROM = "Projects Manager <noreply@projectsmanager.rodrigoleite.dev>"
+export const DEFAULT_EMAIL_FROM = "Orbit <noreply@orbit.rodrigoleite.dev>"
 
 const TEMPLATE_ENV: Record<EmailKind, string> = {
   "login-otp": "RESEND_TEMPLATE_LOGIN_OTP",
@@ -20,10 +20,10 @@ const TEMPLATE_ENV: Record<EmailKind, string> = {
 }
 
 const TEMPLATE_DEFAULT: Record<EmailKind, string> = {
-  "login-otp": "pm-login-otp",
-  "confirm-account": "pm-confirm-account",
-  "reset-password": "pm-reset-password",
-  "new-login": "pm-new-login",
+  "login-otp": "orbit-login-otp",
+  "confirm-account": "orbit-confirm-account",
+  "reset-password": "orbit-reset-password",
+  "new-login": "orbit-new-login",
 }
 
 function setting(name: string) {

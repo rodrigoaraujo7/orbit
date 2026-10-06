@@ -2,10 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { sendResendEmail, type FetchLike } from "./index.ts"
 
 const email = {
-  from: "Projects Manager <noreply@projectsmanager.rodrigoleite.dev>",
+  from: "Orbit <noreply@orbit.rodrigoleite.dev>",
   to: ["ada@test.local"],
-  subject: "Your Projects Manager sign-in code",
-  template: { id: "pm-login-otp-en-us", variables: { CODE: "123456" } },
+  subject: "Your Orbit sign-in code",
+  template: { id: "orbit-login-otp-en-us", variables: { CODE: "123456" } },
 }
 
 function ok() {

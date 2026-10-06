@@ -107,7 +107,7 @@
     "collapseMenu": "Collapse menu",
     "expandMenu": "Expand menu",
     "openMenu": "Open menu",
-    "brand": "Projects",
+    "brand": "Orbit",
     "mainNav": "Main navigation",
     "editProfile": "Edit profile",
     "switchAccount": "Switch account",
@@ -230,7 +230,7 @@
   "auth": {
     "signInTo": "Sign in to ",
     "createAccountOn": "Create an account on ",
-    "brand": "Projects Manager",
+    "brand": "Orbit",
     "noAccount": "Don't have an account? ",
     "hasAccount": "Already have an account? ",
     "create": "Create",

@@ -71,8 +71,8 @@ export function initialState(): MockupState {
         repo: { fullName: "lumen/atlas-storefront", workflow: "success" },
       },
       {
-        id: "orbit",
-        name: "Orbit mobile app",
+        id: "nimbus",
+        name: "Nimbus mobile app",
         client: "Kite Labs",
         status: "in-development",
         deal: "installment",
@@ -82,7 +82,7 @@ export function initialState(): MockupState {
           { name: "Expo", monthlyCost: 19 },
           { name: "Sentry", monthlyCost: 0 },
         ],
-        repo: { fullName: "kitelabs/orbit", workflow: "running" },
+        repo: { fullName: "kitelabs/nimbus", workflow: "running" },
       },
       {
         id: "harbor",
@@ -145,7 +145,7 @@ export function initialState(): MockupState {
         id: 5,
         module: "project",
         action: "invoiceStatus",
-        object: "Orbit mobile app",
+        object: "Nimbus mobile app",
         at: at(29, 9, 15),
       },
       { id: 4, module: "security", action: "login", object: null, at: at(29, 9, 2) },

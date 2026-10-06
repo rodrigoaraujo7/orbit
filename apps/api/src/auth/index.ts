@@ -237,7 +237,7 @@ export function createAuth() {
     },
     plugins: [
       twoFactor({
-        issuer: "Projects Manager",
+        issuer: "Orbit",
         totpOptions: { disable: true },
         otpOptions: {
           period: OTP_PERIOD_MINUTES,

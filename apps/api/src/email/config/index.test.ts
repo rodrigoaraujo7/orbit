@@ -37,10 +37,10 @@ describe("email config", () => {
   it("defaults every template alias and lets env override it", () => {
     for (const kind of EMAIL_KINDS) delete process.env[`RESEND_TEMPLATE_${kind}`]
     expect(EMAIL_KINDS.map((kind) => templateBase(kind))).toEqual([
-      "pm-login-otp",
-      "pm-confirm-account",
-      "pm-reset-password",
-      "pm-new-login",
+      "orbit-login-otp",
+      "orbit-confirm-account",
+      "orbit-reset-password",
+      "orbit-new-login",
     ])
 
     vi.stubEnv("RESEND_TEMPLATE_LOGIN_OTP", "custom-otp")

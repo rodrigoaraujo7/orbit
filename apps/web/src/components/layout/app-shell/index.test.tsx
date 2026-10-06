@@ -54,17 +54,18 @@ describe("AppShell", () => {
     )
     expect(screen.getByText("Page")).toBeInTheDocument()
     expect(screen.getByRole("main")).toHaveClass("bg-background")
+    expect(screen.getAllByText("Orbit").length).toBeGreaterThan(0)
     expect(screen.getAllByText("Projects").length).toBeGreaterThan(0)
     const collapse = await screen.findByRole("button", { name: "Collapse menu" })
     await user.click(collapse)
-    expect(localStorage.getItem("pm-sidebar-collapsed")).toBe("1")
+    expect(localStorage.getItem("orbit-sidebar-collapsed")).toBe("1")
     await user.click(screen.getByRole("button", { name: "Expand menu" }))
-    expect(localStorage.getItem("pm-sidebar-collapsed")).toBe("0")
+    expect(localStorage.getItem("orbit-sidebar-collapsed")).toBe("0")
   })
 
   it("starts collapsed from localStorage and opens the mobile drawer", async () => {
     const user = userEvent.setup()
-    localStorage.setItem("pm-sidebar-collapsed", "1")
+    localStorage.setItem("orbit-sidebar-collapsed", "1")
     renderWithProviders(
       <AppShell>
         <p>Inside</p>
