@@ -8,14 +8,14 @@ import { cn } from "@/lib/utils"
 import { SidebarNav } from "../sidebar-nav"
 import { UserMenu } from "../user-menu"
 
-const COLLAPSED_KEY = "pm-sidebar-collapsed"
+const COLLAPSED_KEY = "orbit-sidebar-collapsed"
 
 function Logo({ collapsed = false }: { collapsed?: boolean }) {
   const { t } = useTranslation()
   return (
     <div className="flex h-14 items-center gap-2.5 px-4">
       <div className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-        P
+        O
       </div>
       <span className={cn("truncate text-sm font-semibold tracking-tight", collapsed && "sr-only")}>
         {t("layout.brand")}

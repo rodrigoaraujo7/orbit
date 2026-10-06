@@ -31,12 +31,12 @@ describe("sitemap and robots routes", () => {
 
 describe("open graph image", () => {
   it("renders the card copy", () => {
-    render(<OgCard title="Projects Manager" description="One account." />)
-    expect(screen.getByText("Projects Manager")).toBeInTheDocument()
+    render(<OgCard title="Orbit" description="One account." />)
+    expect(screen.getByText("Orbit")).toBeInTheDocument()
     expect(screen.getByText("One account.")).toBeInTheDocument()
     expect(size).toEqual({ width: 1200, height: 630 })
     expect(contentType).toBe("image/png")
-    expect(alt).toBe("Projects Manager")
+    expect(alt).toBe("Orbit")
   })
 
   it("builds an image response for a locale and rejects unknown ones", async () => {

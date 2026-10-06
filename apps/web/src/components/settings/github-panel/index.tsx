@@ -16,8 +16,7 @@ import { toast } from "@/components/ui/toast"
 import i18n from "@/i18n"
 import { trpc } from "@/lib/trpc"
 
-const TOKEN_SETTINGS_URL =
-  "https://github.com/settings/tokens/new?scopes=repo&description=Projects%20Manager"
+const TOKEN_SETTINGS_URL = "https://github.com/settings/tokens/new?scopes=repo&description=Orbit"
 
 function tokenSchema() {
   return z.object({

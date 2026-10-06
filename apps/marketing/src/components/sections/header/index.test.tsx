@@ -32,7 +32,7 @@ afterEach(() => {
 describe("Header", () => {
   it("links the sections and the app, with navigation on the right of the logo", () => {
     render(<Header dictionary={getDictionary("en")} locale="en" />)
-    expect(screen.getByRole("link", { name: "Projects Manager" })).toHaveAttribute("href", "/en")
+    expect(screen.getByRole("link", { name: "Orbit" })).toHaveAttribute("href", "/en")
     expect(screen.queryByRole("link", { name: "Pains" })).not.toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Features" })).toHaveAttribute("href", "#features")
     expect(screen.getByRole("link", { name: "How it works" })).toHaveAttribute("href", "#how")

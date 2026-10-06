@@ -8,8 +8,8 @@ afterEach(() => {
 describe("resolveDatabaseUrlSecret", () => {
   it("returns a provided url and reads DATABASE_URL from the environment", () => {
     expect(resolveDatabaseUrlSecret("postgres://localhost/test")).toBe("postgres://localhost/test")
-    vi.stubEnv("DATABASE_URL", "  postgres:///projects_manager  ")
-    expect(resolveDatabaseUrlSecret()).toBe("postgres:///projects_manager")
+    vi.stubEnv("DATABASE_URL", "  postgres:///orbit  ")
+    expect(resolveDatabaseUrlSecret()).toBe("postgres:///orbit")
   })
 
   it("rejects a missing or blank url", () => {

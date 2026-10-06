@@ -8,8 +8,7 @@ export const INVALID_AUTH_TRUSTED_ORIGIN = "AUTH_TRUSTED_ORIGIN must be a single
  * host label sequence, and the team slug stays fixed, so other vercel.app
  * sites are not trusted.
  */
-export const VERCEL_PREVIEW_ORIGIN =
-  "https://projects-manager-web-*-rodrigo-araujos-projects.vercel.app"
+export const VERCEL_PREVIEW_ORIGIN = "https://orbit-web-*-rodrigo-araujos-projects.vercel.app"
 
 export function resolveAuthTrustedOrigin(
   value: string | undefined | null = optionalEnv("AUTH_TRUSTED_ORIGIN"),

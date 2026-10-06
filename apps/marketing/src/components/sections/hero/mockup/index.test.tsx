@@ -31,7 +31,7 @@ describe("AppMockup", () => {
   it("opens on the dashboard inside a browser frame, with no settings section", () => {
     renderMockup()
     const figure = screen.getByRole("figure", {
-      name: "Interactive preview of the Projects Manager app",
+      name: "Interactive preview of the Orbit app",
     })
     expect(figure).toHaveTextContent("app.example.dev")
     expect(figure).not.toHaveTextContent("Try it")
@@ -129,7 +129,7 @@ describe("AppMockup", () => {
     expect(within(growth).getByLabelText("September 2026: 5")).toBeInTheDocument()
 
     const profit = screen.getByRole("region", { name: "Profit by project" })
-    expect(within(profit).getAllByRole("listitem")[0]).toHaveTextContent("Orbit mobile app$26.9K")
+    expect(within(profit).getAllByRole("listitem")[0]).toHaveTextContent("Nimbus mobile app$26.9K")
 
     const ruler = screen.getByRole("region", { name: "Payment ruler" })
     expect(
@@ -150,7 +150,7 @@ describe("AppMockup", () => {
     expect(row(/Atlas storefront/)).toHaveTextContent(
       "Atlas storefrontLumen CoffeeIn development$25,200 in 6xVercelSupabaselumen/atlas-storefront",
     )
-    expect(row(/Orbit mobile app/)).toHaveTextContent("$27,000 in 5x")
+    expect(row(/Nimbus mobile app/)).toHaveTextContent("$27,000 in 5x")
     expect(row(/Pulse analytics/)).toHaveTextContent(
       "Pulse analyticsBrightlineQueued$9,000 upfrontPostHog—",
     )
@@ -159,12 +159,12 @@ describe("AppMockup", () => {
       "title",
       "Paid · $20/mo",
     )
-    expect(within(row(/Orbit mobile app/)).getByText("Sentry")).toHaveAttribute(
+    expect(within(row(/Nimbus mobile app/)).getByText("Sentry")).toHaveAttribute(
       "title",
       "Free plan",
     )
     expect(
-      within(row(/Orbit mobile app/)).getByRole("img", { name: "Running" }),
+      within(row(/Nimbus mobile app/)).getByRole("img", { name: "Running" }),
     ).toBeInTheDocument()
     expect(within(row(/Harbor CRM/)).getByRole("img", { name: "Failing" })).toBeInTheDocument()
     expect(within(row(/Relay API/)).getByRole("img", { name: "Passing" })).toBeInTheDocument()
@@ -178,7 +178,7 @@ describe("AppMockup", () => {
     expect(rows).toEqual([
       "DateModuleActionObject",
       "09/29/2026, 10:42 AMKanbanStatus changedIn development → In validationHarbor CRM",
-      "09/29/2026, 09:15 AMProjectsInvoice statusOrbit mobile app",
+      "09/29/2026, 09:15 AMProjectsInvoice statusNimbus mobile app",
       "09/29/2026, 09:02 AMSecurityLogin—",
       "09/28/2026, 05:30 PMSettingsTool createdPostHog",
       "09/27/2026, 02:08 PMProjectsProject createdRelay API",

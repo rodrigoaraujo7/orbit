@@ -24,7 +24,7 @@ describe("i18n catalogs", () => {
     expect(isLocale("pt-BR")).toBe(true)
     expect(isLocale("fr")).toBe(false)
     expect(isLocale("")).toBe(false)
-    expect(getDictionary("en").meta.title).toBe("Projects Manager")
+    expect(getDictionary("en").meta.title).toBe("Orbit")
     expect(getDictionary("pt-BR").nav.signIn).toBe("Entrar")
   })
 })

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Projects Manager",
+    "title": "Orbit",
     "description": "Clientes, projetos, faturas e credenciais de ferramentas criptografadas para desenvolvedores freelancers — numa só conta."
   },
   "nav": {
@@ -24,8 +24,8 @@
     "subtitle": "Clientes, projetos, faturas e os acessos das ferramentas que você paga — na sua conta, não numa planilha."
   },
   "mockup": {
-    "label": "Prévia interativa do app Projects Manager",
-    "brand": "Projects",
+    "label": "Prévia interativa do app Orbit",
+    "brand": "Orbit",
     "views": "Seções do app",
     "nav": {
       "dashboard": "Dashboard",
@@ -208,6 +208,6 @@
   },
   "footer": {
     "tagline": "Clientes, projetos, faturas e credenciais de ferramentas para desenvolvedores freelancers.",
-    "rights": "Projects Manager"
+    "rights": "Orbit"
   }
 }

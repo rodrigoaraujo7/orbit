@@ -8,7 +8,7 @@ function previewApiOrigin(env: { VERCEL_ENV?: string; VERCEL_GIT_PULL_REQUEST_ID
   // exists, so this id is empty and `/api` stays on production. A later web
   // deploy, after the pull request is open, receives the id.
   if (env.VERCEL_ENV === "preview" && pullRequest) {
-    return `https://api-projects-manager-pr-${pullRequest}.up.railway.app`
+    return `https://api-orbit-pr-${pullRequest}.up.railway.app`
   }
   return PRODUCTION_API_ORIGIN
 }

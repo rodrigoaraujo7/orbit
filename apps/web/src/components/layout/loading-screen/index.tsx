@@ -28,7 +28,7 @@ function LoadingScreen({ message }: { message?: string }) {
             }
           />
           <span className="grid size-10 place-items-center rounded-lg bg-primary text-base font-bold text-primary-foreground shadow-lg shadow-primary/30">
-            P
+            O
           </span>
         </div>
         <div className="flex flex-col gap-1">

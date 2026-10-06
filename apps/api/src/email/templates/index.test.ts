@@ -9,16 +9,16 @@ afterEach(() => {
 describe("templateAlias", () => {
   it("suffixes the published alias with the lowercase locale", () => {
     expect(EMAIL_KINDS.map((kind) => templateAlias(kind, "en-US"))).toEqual([
-      "pm-login-otp-en-us",
-      "pm-confirm-account-en-us",
-      "pm-reset-password-en-us",
-      "pm-new-login-en-us",
+      "orbit-login-otp-en-us",
+      "orbit-confirm-account-en-us",
+      "orbit-reset-password-en-us",
+      "orbit-new-login-en-us",
     ])
     expect(EMAIL_KINDS.map((kind) => templateAlias(kind, "pt-BR"))).toEqual([
-      "pm-login-otp-pt-br",
-      "pm-confirm-account-pt-br",
-      "pm-reset-password-pt-br",
-      "pm-new-login-pt-br",
+      "orbit-login-otp-pt-br",
+      "orbit-confirm-account-pt-br",
+      "orbit-reset-password-pt-br",
+      "orbit-new-login-pt-br",
     ])
   })
 

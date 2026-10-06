@@ -21,16 +21,16 @@ describe("localeRedirect", () => {
 describe("proxy", () => {
   it("redirects the apex path", () => {
     const response = proxy(
-      new NextRequest("https://projectsmanager.rodrigoleite.dev/", {
+      new NextRequest("https://orbit.rodrigoleite.dev/", {
         headers: { "accept-language": "pt-BR,pt;q=0.9" },
       }),
     )
     expect(response.status).toBe(307)
-    expect(response.headers.get("location")).toBe("https://projectsmanager.rodrigoleite.dev/pt-BR")
+    expect(response.headers.get("location")).toBe("https://orbit.rodrigoleite.dev/pt-BR")
   })
 
   it("continues when the locale is already in the path", () => {
-    const response = proxy(new NextRequest("https://projectsmanager.rodrigoleite.dev/en"))
+    const response = proxy(new NextRequest("https://orbit.rodrigoleite.dev/en"))
     expect(response.headers.get("location")).toBeNull()
     expect(response.status).not.toBe(307)
   })

@@ -18,7 +18,7 @@ describe("vercel middleware", () => {
     const response = middleware(request)
 
     expect(response.headers.get("x-middleware-rewrite")).toBe(
-      "https://api-projects-manager-pr-23.up.railway.app/trpc/projects.list?batch=1",
+      "https://api-orbit-pr-23.up.railway.app/trpc/projects.list?batch=1",
     )
   })
 

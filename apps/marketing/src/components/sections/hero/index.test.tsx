@@ -14,8 +14,8 @@ describe("Hero", () => {
     expect(screen.queryByRole("link", { name: "Get started" })).not.toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "See how it works" })).not.toBeInTheDocument()
     expect(
-      screen.getByRole("figure", { name: "Interactive preview of the Projects Manager app" }),
-    ).toHaveTextContent("app.projectsmanager.rodrigoleite.dev")
+      screen.getByRole("figure", { name: "Interactive preview of the Orbit app" }),
+    ).toHaveTextContent("app.orbit.rodrigoleite.dev")
     await expect(loadLightRays()).resolves.toHaveProperty("default")
   })
 })

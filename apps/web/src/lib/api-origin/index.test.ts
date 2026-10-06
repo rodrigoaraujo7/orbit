@@ -4,7 +4,7 @@ import { apiOrigin, apiRewriteUrl, PRODUCTION_API_ORIGIN } from "./index"
 describe("apiOrigin", () => {
   it("sends a PR preview to the API of its Railway PR environment", () => {
     expect(apiOrigin({ VERCEL_ENV: "preview", VERCEL_GIT_PULL_REQUEST_ID: "22" })).toBe(
-      "https://api-projects-manager-pr-22.up.railway.app",
+      "https://api-orbit-pr-22.up.railway.app",
     )
   })
 
@@ -27,7 +27,7 @@ describe("apiRewriteUrl", () => {
       VERCEL_GIT_PULL_REQUEST_ID: "7",
     })
     expect(url.href).toBe(
-      "https://api-projects-manager-pr-7.up.railway.app/trpc/projects.list?batch=1&input=%7B%7D",
+      "https://api-orbit-pr-7.up.railway.app/trpc/projects.list?batch=1&input=%7B%7D",
     )
     expect(apiRewriteUrl("https://web.example.com/api/auth/session", {}).href).toBe(
       `${PRODUCTION_API_ORIGIN}/api/auth/session`,

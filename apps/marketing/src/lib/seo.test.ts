@@ -5,12 +5,12 @@ import { buildMetadata, robotsConfig, sitemapEntries, softwareJsonLd } from "./s
 
 describe("site urls", () => {
   it("defaults the app origin and builds auth links", () => {
-    expect(SITE_URL).toBe("https://projectsmanager.rodrigoleite.dev")
+    expect(SITE_URL).toBe("https://orbit.rodrigoleite.dev")
     const previous = process.env.NEXT_PUBLIC_APP_URL
     delete process.env.NEXT_PUBLIC_APP_URL
-    expect(appOrigin()).toBe("https://app.projectsmanager.rodrigoleite.dev")
-    expect(signInUrl()).toBe("https://app.projectsmanager.rodrigoleite.dev/login")
-    expect(signUpUrl()).toBe("https://app.projectsmanager.rodrigoleite.dev/login?mode=signup")
+    expect(appOrigin()).toBe("https://app.orbit.rodrigoleite.dev")
+    expect(signInUrl()).toBe("https://app.orbit.rodrigoleite.dev/login")
+    expect(signUpUrl()).toBe("https://app.orbit.rodrigoleite.dev/login?mode=signup")
     process.env.NEXT_PUBLIC_APP_URL = "https://app.example.test/"
     expect(appOrigin()).toBe("https://app.example.test")
     expect(signInUrl()).toBe("https://app.example.test/login")
@@ -36,12 +36,12 @@ describe("seo", () => {
     expect(metadata.openGraph).toMatchObject({
       url: "/pt-BR",
       locale: "pt_BR",
-      siteName: "Projects Manager",
+      siteName: "Orbit",
       type: "website",
     })
     expect(metadata.twitter).toMatchObject({
       card: "summary_large_image",
-      title: "Projects Manager",
+      title: "Orbit",
     })
     expect(buildMetadata("en").openGraph).toMatchObject({ locale: "en_US", url: "/en" })
   })
@@ -79,7 +79,7 @@ describe("seo", () => {
     expect(softwareJsonLd("en")).toEqual({
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      name: "Projects Manager",
+      name: "Orbit",
       description: getDictionary("en").meta.description,
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",

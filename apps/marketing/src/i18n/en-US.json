@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Projects Manager",
+    "title": "Orbit",
     "description": "Clients, projects, invoices, and encrypted tool credentials for freelance developers — in one account."
   },
   "nav": {
@@ -24,8 +24,8 @@
     "subtitle": "Clients, projects, invoices, and the logins for tools you pay for — kept in your account, not in a spreadsheet."
   },
   "mockup": {
-    "label": "Interactive preview of the Projects Manager app",
-    "brand": "Projects",
+    "label": "Interactive preview of the Orbit app",
+    "brand": "Orbit",
     "views": "App sections",
     "nav": {
       "dashboard": "Dashboard",
@@ -208,6 +208,6 @@
   },
   "footer": {
     "tagline": "Clients, projects, invoices, and tool credentials for freelance developers.",
-    "rights": "Projects Manager"
+    "rights": "Orbit"
   }
 }

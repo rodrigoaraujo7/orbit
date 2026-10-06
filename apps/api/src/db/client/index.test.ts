@@ -47,9 +47,9 @@ describe("createDb / applySchema / getDb", () => {
   })
 
   it("passes a unix socket host for hostless DATABASE_URL", () => {
-    vi.stubEnv("DATABASE_URL", "postgres:///projects_manager")
+    vi.stubEnv("DATABASE_URL", "postgres:///orbit")
     createDb()
-    expect(postgres).toHaveBeenCalledWith("postgres:///projects_manager", {
+    expect(postgres).toHaveBeenCalledWith("postgres:///orbit", {
       max: 10,
       host: "/var/run/postgresql",
     })

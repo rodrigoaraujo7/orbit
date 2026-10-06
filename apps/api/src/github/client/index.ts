@@ -4,7 +4,7 @@ import { runWorkflowStatus, type WorkflowRun } from "shared"
 
 const API_BASE = "https://api.github.com"
 const API_VERSION = "2022-11-28"
-const USER_AGENT = "projects-manager"
+const USER_AGENT = "orbit"
 
 /** GitHub `workflow_run`, narrowed to the fields the table shows. */
 export type RawWorkflowRun = {
