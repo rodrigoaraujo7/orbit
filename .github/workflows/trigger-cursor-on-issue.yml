@@ -1,0 +1,26 @@
+name: trigger-cursor-on-issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  notify-cursor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start Cursor automation
+        env:
+          WEBHOOK_URL: ${{ secrets.CURSOR_FORGE_FIX_ISSUE_WEBHOOK_URL }}
+          WEBHOOK_TOKEN: ${{ secrets.CURSOR_FORGE_FIX_ISSUE_WEBHOOK_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+        run: |
+          payload="$(jq -n \
+            --arg number "$ISSUE_NUMBER" \
+            --arg url "$ISSUE_URL" \
+            '{context: ("Issue #" + $number + ": " + $url)}')"
+          curl --fail-with-body --silent --show-error \
+            -X POST "$WEBHOOK_URL" \
+            -H "Authorization: Bearer $WEBHOOK_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "$payload"
