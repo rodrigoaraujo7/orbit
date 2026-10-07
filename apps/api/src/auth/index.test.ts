@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises"
 import { APIError } from "better-auth/api"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { auditLog, user as userTable } from "../db/schema/index.ts"
+import { auditLog, session as sessionTable, user as userTable } from "../db/schema/index.ts"
 import {
   afterAuthHook,
   beforeAuthHook,
@@ -13,6 +13,7 @@ import {
   sendResetPasswordEmail,
   sendTwoFactorOtp,
   sendVerificationEmailFor,
+  syntheticSignupUser,
 } from "./index.ts"
 import { DASH_ORIGIN } from "./dash/index.ts"
 import { INSECURE_BETTER_AUTH_SECRET } from "./secret/index.ts"
@@ -393,6 +394,37 @@ describe("enableTwoFactorOnCreate", () => {
   })
 })
 
+describe("syntheticSignupUser", () => {
+  it("keeps email 2FA on and the caller's extra fields", () => {
+    const createdAt = new Date("2026-01-01T00:00:00.000Z")
+    const updatedAt = new Date("2026-01-02T00:00:00.000Z")
+    expect(
+      syntheticSignupUser({
+        coreFields: {
+          name: "Ada",
+          email: "ada@test.local",
+          emailVerified: false,
+          image: null,
+          createdAt,
+          updatedAt,
+        },
+        additionalFields: { locale: "pt-BR" },
+        id: "synthetic",
+      }),
+    ).toEqual({
+      name: "Ada",
+      email: "ada@test.local",
+      emailVerified: false,
+      image: null,
+      createdAt,
+      updatedAt,
+      locale: "pt-BR",
+      twoFactorEnabled: true,
+      id: "synthetic",
+    })
+  })
+})
+
 describe("beforeAuthHook", () => {
   it("rejects signup names shorter than 2 characters", async () => {
     await expect(
@@ -424,6 +456,41 @@ describe("beforeAuthHook", () => {
     await expect(
       beforeAuthHook({ path: "/sign-up/email", body: null, context: {} }),
     ).rejects.toBeInstanceOf(APIError)
+    await expect(
+      beforeAuthHook({
+        path: "/sign-up/email",
+        body: { name: "Ada", email: "ada@test.local" },
+        context: {},
+      }),
+    ).resolves.toBeUndefined()
+  })
+
+  it("forces other sessions to end when the password changes", async () => {
+    await expect(
+      beforeAuthHook({ path: "/change-password", body: null, context: {} }),
+    ).resolves.toBeUndefined()
+    await expect(
+      beforeAuthHook({ path: "/change-password", body: "nope", context: {} }),
+    ).resolves.toBeUndefined()
+    await expect(
+      beforeAuthHook({
+        path: "/change-password",
+        body: {
+          newPassword: "newpassword9",
+          currentPassword: "password1234",
+          revokeOtherSessions: false,
+        },
+        context: {},
+      }),
+    ).resolves.toEqual({
+      context: {
+        body: {
+          newPassword: "newpassword9",
+          currentPassword: "password1234",
+          revokeOtherSessions: true,
+        },
+      },
+    })
   })
 })
 
@@ -434,9 +501,14 @@ describe("signup input", () => {
   })
 
   it("rejects short names and passwords on email signup", async () => {
-    const { client } = await openTestDb()
+    const { db, client } = await openTestDb()
     vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
     const auth = createAuth()
+    const signup = {
+      email: "ok@test.local",
+      password: "password1234",
+      name: "Ada Lovelace",
+    }
 
     await expect(
       auth.api.signUpEmail({
@@ -450,20 +522,56 @@ describe("signup input", () => {
       }),
     ).rejects.toBeInstanceOf(APIError)
 
-    const signedUp = await auth.api.signUpEmail({
-      body: { email: "ok@test.local", password: "password1234", name: "Ada Lovelace" },
+    const created = await auth.api.signUpEmail({ body: signup, asResponse: true })
+    const duplicate = await auth.api.signUpEmail({ body: signup, asResponse: true })
+    expect(created.status).toBe(200)
+    expect(duplicate.status).toBe(200)
+
+    const createdBody = (await created.json()) as {
+      token: string | null
+      user: Record<string, unknown>
+    }
+    const duplicateBody = (await duplicate.json()) as {
+      token: string | null
+      user: Record<string, unknown>
+    }
+    expect(createdBody.token).toBeNull()
+    expect(duplicateBody.token).toBeNull()
+    expect(duplicateBody).not.toHaveProperty("code")
+    expect(signupProfile(duplicateBody.user)).toEqual(signupProfile(createdBody.user))
+    expect(duplicateBody.user.id).not.toBe(createdBody.user.id)
+
+    const decoy = await auth.api.signUpEmail({
+      body: { ...signup, email: "OK@test.local", name: "Grace Hopper" },
+      asResponse: true,
     })
-    expect(signedUp.user.name).toBe("Ada Lovelace")
+    expect(decoy.status).toBe(200)
+    const decoyBody = (await decoy.json()) as { token: string | null; user: { name: string } }
+    expect(decoyBody.token).toBeNull()
+    expect(decoyBody.user.name).toBe("Grace Hopper")
 
     await expect(
       auth.api.signUpEmail({
-        body: { email: "ok@test.local", password: "password1234", name: "Ada Lovelace" },
+        body: { email: "ok@test.local", password: "password1234", name: "A" },
       }),
-    ).rejects.toMatchObject({ body: { code: "USER_ALREADY_EXISTS" } })
+    ).rejects.toMatchObject({ status: "BAD_REQUEST" })
+
+    const rows = await db.select().from(userTable)
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({
+      id: createdBody.user.id,
+      email: "ok@test.local",
+      name: "Ada Lovelace",
+    })
     resetAuth()
     await closeTestDb(client)
   })
 })
+
+function signupProfile(user: Record<string, unknown>) {
+  const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...rest } = user
+  return rest
+}
 
 describe("auth options", () => {
   afterEach(() => {
@@ -480,6 +588,8 @@ describe("auth options", () => {
     expect(auth.options.emailAndPassword).toMatchObject({
       requireEmailVerification: true,
       minPasswordLength: 8,
+      revokeSessionsOnPasswordReset: true,
+      customSyntheticUser: syntheticSignupUser,
     })
     expect(auth.options.emailVerification).toMatchObject({
       sendOnSignUp: true,
@@ -600,6 +710,116 @@ describe("email OTP sign-in", () => {
     expect(reset[0]).toMatchObject({ email: "grace@test.local", locale: "en-US" })
     expect(reset[1]).toContain("/reset-password/")
 
+    resetAuth()
+    await closeTestDb(client)
+  })
+})
+
+describe("password session revocation", () => {
+  afterEach(() => {
+    resetAuth()
+    vi.unstubAllEnvs()
+  })
+
+  function cookieHeader(response: Response) {
+    return new Headers({
+      cookie: response.headers
+        .getSetCookie()
+        .map((entry) => entry.split(";")[0])
+        .join("; "),
+    })
+  }
+
+  async function verifyAccount(auth: AuthInstance) {
+    const [confirmation] = vi.mocked(sendAccountConfirmation).mock.calls
+    const token = new URL(confirmation[1]).searchParams.get("token") ?? ""
+    await auth.api.verifyEmail({ query: { token }, asResponse: true })
+  }
+
+  async function openSession(auth: AuthInstance, email: string, password: string) {
+    const challenge = await auth.api.signInEmail({
+      body: { email, password },
+      asResponse: true,
+    })
+    const pending = cookieHeader(challenge)
+    await auth.api.sendTwoFactorOTP({ headers: pending, body: {} })
+    const calls = vi.mocked(sendLoginOtp).mock.calls
+    const verified = await auth.api.verifyTwoFactorOTP({
+      headers: pending,
+      body: { code: calls[calls.length - 1][1] },
+      asResponse: true,
+    })
+    return cookieHeader(verified)
+  }
+
+  it("ends every session after a password reset", async () => {
+    const { db, client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    const auth = createAuth()
+    const email = "ada@test.local"
+    const password = "password1234"
+
+    await auth.api.signUpEmail({
+      body: { email, password, name: "Ada Lovelace" },
+    })
+    await verifyAccount(auth)
+    const first = await openSession(auth, email, password)
+    const second = await openSession(auth, email, password)
+    expect(await db.select().from(sessionTable)).toHaveLength(2)
+
+    await auth.api.requestPasswordReset({
+      body: { email, redirectTo: "http://localhost:5173/reset-password" },
+    })
+    const resetUrl = vi.mocked(sendPasswordReset).mock.calls.at(-1)?.[1] ?? ""
+    const token = new URL(resetUrl).pathname.split("/").pop() ?? ""
+    await expect(
+      auth.api.resetPassword({ body: { newPassword: "newpassword9", token } }),
+    ).resolves.toEqual({ status: true })
+
+    expect(await auth.api.getSession({ headers: first })).toBeNull()
+    expect(await auth.api.getSession({ headers: second })).toBeNull()
+    expect(await db.select().from(sessionTable)).toHaveLength(0)
+
+    const challenge = await auth.api.signInEmail({
+      body: { email, password: "newpassword9" },
+      asResponse: true,
+    })
+    expect(await challenge.json()).toMatchObject({ twoFactorRedirect: true })
+    resetAuth()
+    await closeTestDb(client)
+  })
+
+  it("ends other sessions when the password changes even if the client opts out", async () => {
+    const { db, client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    const auth = createAuth()
+    const email = "grace@test.local"
+    const password = "password1234"
+
+    await auth.api.signUpEmail({
+      body: { email, password, name: "Grace Hopper" },
+    })
+    await verifyAccount(auth)
+    const current = await openSession(auth, email, password)
+    const other = await openSession(auth, email, password)
+
+    const changed = await auth.api.changePassword({
+      headers: current,
+      body: {
+        currentPassword: password,
+        newPassword: "newpassword9",
+        revokeOtherSessions: false,
+      },
+      asResponse: true,
+    })
+    expect(changed.status).toBe(200)
+    const next = cookieHeader(changed)
+    expect(await auth.api.getSession({ headers: current })).toBeNull()
+    expect(await auth.api.getSession({ headers: other })).toBeNull()
+    await expect(auth.api.getSession({ headers: next })).resolves.toMatchObject({
+      user: { email },
+    })
+    expect(await db.select().from(sessionTable)).toHaveLength(1)
     resetAuth()
     await closeTestDb(client)
   })
