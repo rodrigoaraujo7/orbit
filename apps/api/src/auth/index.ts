@@ -103,6 +103,34 @@ export async function enableTwoFactorOnCreate<T extends Record<string, unknown>>
   return { data: { ...created, twoFactorEnabled: true } }
 }
 
+/**
+ * A duplicate signup must look like a new one. Real accounts are created with
+ * email 2FA already on, so the stand-in user carries the same flag.
+ */
+export function syntheticSignupUser({
+  coreFields,
+  additionalFields,
+  id,
+}: {
+  coreFields: {
+    name: string
+    email: string
+    emailVerified: boolean
+    image: string | null
+    createdAt: Date
+    updatedAt: Date
+  }
+  additionalFields: Record<string, unknown>
+  id: string
+}) {
+  return {
+    ...coreFields,
+    ...additionalFields,
+    twoFactorEnabled: true,
+    id,
+  }
+}
+
 type HookUser = { id: string; email?: unknown; name?: unknown; locale?: unknown }
 
 type AuthHookCtx = {
@@ -118,6 +146,19 @@ type AuthHookCtx = {
 }
 
 export async function beforeAuthHook(ctx: AuthHookCtx) {
+  if (ctx.path === "/change-password") {
+    // The client cannot opt out of ending the other sessions.
+    if (!ctx.body || typeof ctx.body !== "object") return
+    return {
+      context: {
+        body: {
+          ...(ctx.body as Record<string, unknown>),
+          revokeOtherSessions: true,
+        },
+      },
+    }
+  }
+
   if (ctx.path !== "/sign-up/email") return
   const name =
     ctx.body && typeof ctx.body === "object" && "name" in ctx.body
@@ -125,19 +166,6 @@ export async function beforeAuthHook(ctx: AuthHookCtx) {
       : undefined
   if (typeof name !== "string" || name.trim().length < 2) {
     throw new APIError("BAD_REQUEST", { message: validation.minChars })
-  }
-  const email =
-    ctx.body && typeof ctx.body === "object" && "email" in ctx.body
-      ? (ctx.body as { email?: unknown }).email
-      : undefined
-  if (typeof email === "string") {
-    const existing = await userIdByEmail(email.trim().toLowerCase())
-    if (existing) {
-      throw new APIError("UNPROCESSABLE_ENTITY", {
-        message: "User already exists",
-        code: "USER_ALREADY_EXISTS",
-      })
-    }
   }
 }
 
@@ -219,6 +247,8 @@ export function createAuth() {
       enabled: true,
       minPasswordLength: 8,
       requireEmailVerification: true,
+      revokeSessionsOnPasswordReset: true,
+      customSyntheticUser: syntheticSignupUser,
       sendResetPassword: sendResetPasswordEmail,
     },
     emailVerification: {
