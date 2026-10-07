@@ -12,6 +12,7 @@ const AUTH_ERROR_KEYS: Record<string, string> = {
   USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "auth.emailInUse",
   PASSWORD_TOO_SHORT: "auth.passwordMin",
   PASSWORD_TOO_LONG: "auth.passwordTooLong",
+  PASSWORDS_DO_NOT_MATCH: "auth.passwordsMismatch",
   FAILED_TO_CREATE_USER: "auth.signUpFailed",
   FAILED_TO_CREATE_SESSION: "auth.signInFailed",
   SESSION_EXPIRED: "auth.sessionExpired",

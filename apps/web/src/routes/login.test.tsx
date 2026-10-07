@@ -76,6 +76,20 @@ async function signIn(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: "Sign in" }))
 }
 
+async function signUp(
+  user: ReturnType<typeof userEvent.setup>,
+  fields: { password?: string; confirm?: string } = {},
+) {
+  const password = fields.password ?? "password1"
+  const confirm = fields.confirm === undefined ? password : fields.confirm
+  await user.click(screen.getByRole("button", { name: "Create" }))
+  await user.type(screen.getByLabelText("Name"), "Ada")
+  await user.type(screen.getByLabelText("Email"), "ada@test.local")
+  await user.type(screen.getByLabelText("Password"), password)
+  if (confirm) await user.type(screen.getByLabelText("Confirm the password"), confirm)
+  await user.click(screen.getByRole("button", { name: "Sign up" }))
+}
+
 describe("login route", () => {
   it("signs in and navigates home", async () => {
     const user = userEvent.setup()
@@ -83,6 +97,10 @@ describe("login route", () => {
     renderWithProviders(<LoginPage />)
     await signIn(user)
     await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/" }))
+    expect(signInEmail).toHaveBeenCalledWith({
+      email: "ada@test.local",
+      password: "secret123",
+    })
   })
 
   it("shows sign-in errors", async () => {
@@ -183,11 +201,7 @@ describe("login route", () => {
     signUpEmail.mockResolvedValue({ error: null, data: { user: { id: "u1" } } })
     sendVerificationEmail.mockResolvedValue({ error: null, data: { status: true } })
     renderWithProviders(<LoginPage />)
-    await user.click(screen.getByRole("button", { name: "Create" }))
-    await user.type(screen.getByLabelText("Name"), "Ada")
-    await user.type(screen.getByLabelText("Email"), "ada@test.local")
-    await user.type(screen.getByLabelText("Password"), "password1")
-    await user.click(screen.getByRole("button", { name: "Sign up" }))
+    await signUp(user)
     expect(await screen.findByText("Confirm your email")).toBeInTheDocument()
     expect(
       screen.getByText(
@@ -203,6 +217,7 @@ describe("login route", () => {
       name: "Ada",
       email: "ada@test.local",
       password: "password1",
+      confirmPassword: "password1",
       locale: "en-US",
     })
     await user.click(screen.getByRole("button", { name: "Send the link again" }))
@@ -251,11 +266,7 @@ describe("login route", () => {
     const user = userEvent.setup()
     signUpEmail.mockResolvedValue({ error: { code: "USER_ALREADY_EXISTS" }, data: null })
     renderWithProviders(<LoginPage />)
-    await user.click(screen.getByRole("button", { name: "Create" }))
-    await user.type(screen.getByLabelText("Name"), "Ada")
-    await user.type(screen.getByLabelText("Email"), "ada@test.local")
-    await user.type(screen.getByLabelText("Password"), "password1")
-    await user.click(screen.getByRole("button", { name: "Sign up" }))
+    await signUp(user)
     expect(await screen.findByText("This email is already in use")).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Sign in" }))
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument()
@@ -268,11 +279,7 @@ describe("login route", () => {
       data: null,
     })
     renderWithProviders(<LoginPage />)
-    await user.click(screen.getByRole("button", { name: "Create" }))
-    await user.type(screen.getByLabelText("Name"), "Ada")
-    await user.type(screen.getByLabelText("Email"), "ada@test.local")
-    await user.type(screen.getByLabelText("Password"), "password1")
-    await user.click(screen.getByRole("button", { name: "Sign up" }))
+    await signUp(user)
     expect(await screen.findByText("This email is already in use")).toBeInTheDocument()
   })
 
@@ -280,18 +287,33 @@ describe("login route", () => {
     const user = userEvent.setup()
     signUpEmail.mockResolvedValue({ error: { code: "FAILED_TO_CREATE_USER" }, data: null })
     renderWithProviders(<LoginPage />)
-    await user.click(screen.getByRole("button", { name: "Create" }))
-    await user.type(screen.getByLabelText("Name"), "Ada")
-    await user.type(screen.getByLabelText("Email"), "ada@test.local")
-    await user.type(screen.getByLabelText("Password"), "password1")
-    await user.click(screen.getByRole("button", { name: "Sign up" }))
+    await signUp(user)
     expect(await screen.findByText("Could not create the account")).toBeInTheDocument()
+  })
+
+  it("rejects a short password and a mismatched confirmation before sign up", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<LoginPage />)
+    await signUp(user, { password: "short", confirm: "shorter" })
+    expect(await screen.findByText("Password must be at least 8 characters")).toBeInTheDocument()
+    expect(screen.getByText("The passwords do not match")).toBeInTheDocument()
+    expect(signUpEmail).not.toHaveBeenCalled()
+  })
+
+  it("shows a password confirmation error from the API", async () => {
+    const user = userEvent.setup()
+    signUpEmail.mockResolvedValue({ error: { code: "PASSWORDS_DO_NOT_MATCH" }, data: null })
+    renderWithProviders(<LoginPage />)
+    await signUp(user)
+    expect(await screen.findByText("The passwords do not match")).toBeInTheDocument()
+    expect(screen.queryByText("Could not create the account")).not.toBeInTheDocument()
   })
 
   it("opens in sign-up mode when the query asks for it", () => {
     window.history.replaceState(null, "", "/login?mode=signup")
     renderWithProviders(<LoginPage />)
     expect(screen.getByRole("heading", { name: /Create an account on/ })).toBeInTheDocument()
+    expect(screen.getByLabelText("Confirm the password")).toBeInTheDocument()
   })
 
   it("toggles the locale", async () => {

@@ -167,6 +167,28 @@ export async function beforeAuthHook(ctx: AuthHookCtx) {
   if (typeof name !== "string" || name.trim().length < 2) {
     throw new APIError("BAD_REQUEST", { message: validation.minChars })
   }
+  // Confirmation is not a user column. Drop it after the check so it cannot be stored.
+  assertSignupPasswordConfirmation(ctx.body as Record<string, unknown>)
+}
+
+/**
+ * Signup must repeat the password. Length limits stay on Better Auth
+ * (`minPasswordLength` / `maxPasswordLength`); this only checks the pair.
+ */
+export function assertSignupPasswordConfirmation(body: Record<string, unknown>) {
+  const password = body.password
+  const confirmPassword = body.confirmPassword
+  if (
+    typeof password !== "string" ||
+    typeof confirmPassword !== "string" ||
+    password !== confirmPassword
+  ) {
+    throw new APIError("BAD_REQUEST", {
+      message: validation.passwordsMismatch,
+      code: "PASSWORDS_DO_NOT_MATCH",
+    })
+  }
+  delete body.confirmPassword
 }
 
 /** A session now exists: record the login and tell the account holder about it. */
