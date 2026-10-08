@@ -20,6 +20,16 @@ import { validation } from "../input/messages.ts"
 import { originUsesHttps, resolveAuthBaseUrl } from "../web-origin/index.ts"
 import { DASH_ORIGIN, resolveDashApiKey } from "./dash/index.ts"
 import { resolveBetterAuthSecret } from "./secret/index.ts"
+import {
+  isTrustDeviceVerifyPath,
+  passwordResetUserId,
+  resolveSessionUserId,
+  revokeTrustDevices,
+  stripTrustDeviceCookie,
+  TRUST_DEVICE_NOT_ALLOWED,
+  trustDeviceRequested,
+  type SessionCookieReader,
+} from "./trust-device/index.ts"
 import { resolveTrustedOrigins } from "./trusted-origins/index.ts"
 
 const SESSION_EXPIRES_IN = 60 * 60 * 24 * 30
@@ -138,14 +148,46 @@ type AuthHookCtx = {
   headers?: Headers | null
   request?: { headers?: Headers } | null
   body?: unknown
-  context: {
-    newSession?: { user: HookUser } | null
-    session?: { user: HookUser } | null
+  query?: unknown
+  getSignedCookie?: SessionCookieReader["getSignedCookie"]
+  context: SessionCookieReader["context"] & {
     returned?: unknown
   }
 }
 
+/**
+ * Email OTP is the only second factor. Better Auth still accepts `trustDevice`
+ * on verify and then skips the OTP for 30 days when that cookie comes back
+ * with the password. Refuse the flag, ignore the cookie, and drop the rows
+ * when the password session ends.
+ */
 export async function beforeAuthHook(ctx: AuthHookCtx) {
+  if (isTrustDeviceVerifyPath(ctx.path)) {
+    if (trustDeviceRequested(ctx.body)) {
+      throw new APIError("BAD_REQUEST", TRUST_DEVICE_NOT_ALLOWED)
+    }
+    return
+  }
+
+  if (ctx.path === "/sign-in/email") {
+    const headers = ctx.headers ?? ctx.request?.headers
+    if (!headers) return
+    const stripped = stripTrustDeviceCookie(headers)
+    if (stripped === headers) return
+    return { context: { headers: stripped } }
+  }
+
+  // The session row is deleted in the handler, so the user id has to be read here.
+  if (ctx.path === "/sign-out") {
+    await revokeTrustDevices(await resolveSessionUserId(ctx))
+    return
+  }
+
+  if (ctx.path === "/reset-password") {
+    await revokeTrustDevices(await passwordResetUserId(ctx.body, ctx.query))
+    return
+  }
+
   if (ctx.path === "/change-password") {
     // The client cannot opt out of ending the other sessions.
     if (!ctx.body || typeof ctx.body !== "object") return
@@ -211,6 +253,7 @@ export async function afterAuthHook(ctx: AuthHookCtx) {
     await logSecurity(sessionUserId, "security.logout", headers)
   } else if (ctx.path === "/change-password") {
     await logSecurity(sessionUserId, "security.password.change", headers)
+    await revokeTrustDevices(sessionUserId)
   } else if (ctx.path === "/two-factor/enable") {
     await logSecurity(sessionUserId, "security.2fa.enable", headers)
   } else if (ctx.path === "/two-factor/disable") {
