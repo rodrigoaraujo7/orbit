@@ -1,7 +1,12 @@
 import { readFile } from "node:fs/promises"
 import { APIError } from "better-auth/api"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { auditLog, session as sessionTable, user as userTable } from "../db/schema/index.ts"
+import {
+  auditLog,
+  session as sessionTable,
+  user as userTable,
+  verification,
+} from "../db/schema/index.ts"
 import {
   afterAuthHook,
   beforeAuthHook,
@@ -17,6 +22,7 @@ import {
 } from "./index.ts"
 import { DASH_ORIGIN } from "./dash/index.ts"
 import { INSECURE_BETTER_AUTH_SECRET } from "./secret/index.ts"
+import { TRUST_DEVICE_NOT_ALLOWED } from "./trust-device/index.ts"
 import { closeTestDb, insertUser, openTestDb } from "../test/harness.ts"
 import { withUser } from "../db/with-user/index.ts"
 import { dbHolder } from "../test/setup.ts"
@@ -339,6 +345,45 @@ describe("afterAuthHook", () => {
     expect(sendNewLoginAlert).not.toHaveBeenCalled()
     await closeTestDb(client)
   })
+
+  it("revokes trust devices only after the password change succeeds", async () => {
+    const { db, client } = await openTestDb()
+    await insertUser(client, "user-a", "ada@test.local")
+    const future = new Date(Date.now() + 60_000)
+    await db.insert(verification).values([
+      {
+        id: "trust-a",
+        identifier: "trust-device-a",
+        value: "user-a",
+        expiresAt: future,
+      },
+      {
+        id: "trust-b",
+        identifier: "trust-device-b",
+        value: "user-b",
+        expiresAt: future,
+      },
+    ])
+
+    await afterAuthHook({
+      path: "/change-password",
+      context: {
+        session: { user: { id: "user-a" } },
+        returned: new APIError("BAD_REQUEST", { message: "no" }),
+      },
+    })
+    expect((await db.select().from(verification)).map((row) => row.id).sort()).toEqual([
+      "trust-a",
+      "trust-b",
+    ])
+
+    await afterAuthHook({
+      path: "/change-password",
+      context: { session: { user: { id: "user-a" } } },
+    })
+    expect((await db.select().from(verification)).map((row) => row.id)).toEqual(["trust-b"])
+    await closeTestDb(client)
+  })
 })
 
 describe("emailRecipient", () => {
@@ -491,6 +536,140 @@ describe("beforeAuthHook", () => {
         },
       },
     })
+  })
+
+  it("rejects device trust on every second-factor verify route", async () => {
+    for (const path of [
+      "/two-factor/verify-otp",
+      "/two-factor/verify-backup-code",
+      "/two-factor/verify-totp",
+    ]) {
+      await expect(
+        beforeAuthHook({ path, body: { code: "123456", trustDevice: true }, context: {} }),
+      ).rejects.toMatchObject({ status: "BAD_REQUEST", body: TRUST_DEVICE_NOT_ALLOWED })
+    }
+
+    await expect(
+      beforeAuthHook({
+        path: "/two-factor/verify-otp",
+        body: { code: "123456", trustDevice: false },
+        context: {},
+      }),
+    ).resolves.toBeUndefined()
+    await expect(
+      beforeAuthHook({ path: "/two-factor/verify-otp", body: { code: "123456" }, context: {} }),
+    ).resolves.toBeUndefined()
+  })
+
+  it("strips a trust-device cookie from password sign-in", async () => {
+    await expect(
+      beforeAuthHook({ path: "/sign-in/email", body: { email: "ada@test.local" }, context: {} }),
+    ).resolves.toBeUndefined()
+
+    const plain = new Headers({ cookie: "better-auth.session_token=abc" })
+    await expect(
+      beforeAuthHook({ path: "/sign-in/email", headers: plain, context: {} }),
+    ).resolves.toBeUndefined()
+
+    const trusted = new Headers({
+      cookie: "better-auth.session_token=abc; better-auth.trust_device=signed",
+      "x-request-id": "1",
+    })
+    await expect(
+      beforeAuthHook({ path: "/sign-in/email", headers: trusted, context: {} }),
+    ).resolves.toEqual({
+      context: {
+        headers: expect.any(Headers),
+      },
+    })
+    const stripped = await beforeAuthHook({
+      path: "/sign-in/email",
+      headers: trusted,
+      context: {},
+    })
+    expect(stripped?.context.headers.get("cookie")).toBe("better-auth.session_token=abc")
+    expect(stripped?.context.headers.get("x-request-id")).toBe("1")
+    expect(trusted.get("cookie")).toContain("trust_device")
+
+    const fromRequest = new Headers({
+      cookie: "better-auth.trust_device=signed; theme=dark",
+    })
+    const viaRequest = await beforeAuthHook({
+      path: "/sign-in/email",
+      request: { headers: fromRequest },
+      context: {},
+    })
+    expect(viaRequest?.context.headers.get("cookie")).toBe("theme=dark")
+  })
+
+  it("revokes trust devices on sign-out and password reset", async () => {
+    const { db, client } = await openTestDb()
+    const future = new Date(Date.now() + 60_000)
+    await db.insert(verification).values([
+      {
+        id: "trust-a",
+        identifier: "trust-device-a",
+        value: "user-a",
+        expiresAt: future,
+      },
+      {
+        id: "trust-b",
+        identifier: "trust-device-b",
+        value: "user-b",
+        expiresAt: future,
+      },
+      {
+        id: "reset-a",
+        identifier: "reset-password:reset-token",
+        value: "user-a",
+        expiresAt: future,
+      },
+      {
+        id: "otp-a",
+        identifier: "2fa-otp-keep",
+        value: "user-a",
+        expiresAt: future,
+      },
+    ])
+
+    await beforeAuthHook({ path: "/sign-out", context: {} })
+    await beforeAuthHook({ path: "/reset-password", body: {}, context: {} })
+    expect((await db.select().from(verification)).map((row) => row.id).sort()).toEqual([
+      "otp-a",
+      "reset-a",
+      "trust-a",
+      "trust-b",
+    ])
+
+    await beforeAuthHook({
+      path: "/sign-out",
+      context: { session: { user: { id: "user-a" } } },
+    })
+    expect((await db.select().from(verification)).map((row) => row.id).sort()).toEqual([
+      "otp-a",
+      "reset-a",
+      "trust-b",
+    ])
+
+    await db.insert(verification).values({
+      id: "trust-a2",
+      identifier: "trust-device-a2",
+      value: "user-a",
+      expiresAt: future,
+    })
+    await beforeAuthHook({
+      path: "/reset-password",
+      body: {},
+      query: { token: "reset-token" },
+      context: {},
+    })
+    expect((await db.select().from(verification)).map((row) => row.id).sort()).toEqual([
+      "otp-a",
+      "reset-a",
+      "trust-b",
+    ])
+
+    await closeTestDb(client)
   })
 })
 
@@ -820,6 +999,252 @@ describe("password session revocation", () => {
       user: { email },
     })
     expect(await db.select().from(sessionTable)).toHaveLength(1)
+    resetAuth()
+    await closeTestDb(client)
+  })
+})
+
+describe("mandatory email OTP", () => {
+  afterEach(() => {
+    resetAuth()
+    vi.unstubAllEnvs()
+  })
+
+  function cookieHeader(response: Response) {
+    return new Headers({
+      cookie: response.headers
+        .getSetCookie()
+        .map((entry) => entry.split(";")[0])
+        .join("; "),
+    })
+  }
+
+  async function verifyAccount(auth: AuthInstance) {
+    const [confirmation] = vi.mocked(sendAccountConfirmation).mock.calls
+    const token = new URL(confirmation[1]).searchParams.get("token") ?? ""
+    await auth.api.verifyEmail({ query: { token }, asResponse: true })
+  }
+
+  async function trustDevicePair(auth: AuthInstance, userId: string, identifier: string) {
+    const { createRequire } = await import("node:module")
+    const require = createRequire(import.meta.resolve("better-auth"))
+    const { createHMAC } = require("@better-auth/utils/hmac") as {
+      createHMAC: (
+        hash: "SHA-256",
+        encoding: "base64urlnopad",
+      ) => {
+        sign: (secret: string, data: string) => Promise<string>
+      }
+    }
+    const { serializeSignedCookie } = require("better-call") as {
+      serializeSignedCookie: (name: string, value: string, secret: string) => Promise<string>
+    }
+    const authContext = await auth.$context
+    const token = await createHMAC("SHA-256", "base64urlnopad").sign(
+      authContext.secret,
+      `${userId}!${identifier}`,
+    )
+    const serialized = await serializeSignedCookie(
+      authContext.createAuthCookie("trust_device").name,
+      `${token}!${identifier}`,
+      authContext.secret,
+    )
+    return serialized.split(";")[0] ?? ""
+  }
+
+  it("rejects trustDevice and still accepts the same emailed code", async () => {
+    const { db, client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    const auth = createAuth()
+    const credentials = { email: "ada@test.local", password: "password1234" }
+
+    await auth.api.signUpEmail({ body: { ...credentials, name: "Ada Lovelace" } })
+    await verifyAccount(auth)
+    const challenge = await auth.api.signInEmail({ body: credentials, asResponse: true })
+    const headers = cookieHeader(challenge)
+    await auth.api.sendTwoFactorOTP({ headers, body: {} })
+    const code = vi.mocked(sendLoginOtp).mock.calls.at(-1)?.[1] ?? ""
+
+    await expect(
+      auth.api.verifyTwoFactorOTP({ headers, body: { code, trustDevice: true } }),
+    ).rejects.toMatchObject({ status: "BAD_REQUEST", body: TRUST_DEVICE_NOT_ALLOWED })
+    await expect(
+      auth.api.verifyBackupCode({ body: { code: "000000", trustDevice: true } }),
+    ).rejects.toMatchObject({ body: TRUST_DEVICE_NOT_ALLOWED })
+    await expect(
+      auth.api.verifyTOTP({ body: { code: "000000", trustDevice: true } }),
+    ).rejects.toMatchObject({ body: TRUST_DEVICE_NOT_ALLOWED })
+
+    expect(await db.select().from(sessionTable)).toHaveLength(0)
+    const verified = await auth.api.verifyTwoFactorOTP({
+      headers,
+      body: { code, trustDevice: false },
+      asResponse: true,
+    })
+    expect(verified.status).toBe(200)
+    expect(verified.headers.getSetCookie().some((cookie) => cookie.includes("trust_device"))).toBe(
+      false,
+    )
+    expect(
+      (await db.select().from(verification)).filter((row) =>
+        row.identifier.startsWith("trust-device-"),
+      ),
+    ).toEqual([])
+    expect(sendNewLoginAlert).toHaveBeenCalledOnce()
+
+    resetAuth()
+    await closeTestDb(client)
+  })
+
+  it("keeps asking for an OTP when a trust cookie is presented with the password", async () => {
+    const { db, client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    const auth = createAuth()
+    const credentials = { email: "ada@test.local", password: "password1234" }
+
+    await auth.api.signUpEmail({ body: { ...credentials, name: "Ada Lovelace" } })
+    await verifyAccount(auth)
+    const [created] = await db.select().from(userTable)
+    const identifier = "trust-device-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    await db.insert(verification).values([
+      {
+        id: "trust-ada",
+        identifier,
+        value: created.id,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      },
+      {
+        id: "trust-other",
+        identifier: "trust-device-other",
+        value: "someone-else",
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    ])
+    const headers = new Headers({
+      cookie: await trustDevicePair(auth, created.id, identifier),
+    })
+
+    const challenge = await auth.api.signInEmail({ body: credentials, headers, asResponse: true })
+    expect(await challenge.json()).toMatchObject({
+      twoFactorRedirect: true,
+      twoFactorMethods: ["otp"],
+    })
+    expect(challenge.headers.getSetCookie().some((cookie) => cookie.includes("trust_device"))).toBe(
+      false,
+    )
+    expect(await db.select().from(sessionTable)).toHaveLength(0)
+    expect(
+      (await db.select().from(verification))
+        .filter((row) => row.identifier.startsWith("trust-device-"))
+        .map((row) => row.identifier)
+        .sort(),
+    ).toEqual([identifier, "trust-device-other"].sort())
+    expect(sendNewLoginAlert).not.toHaveBeenCalled()
+    const logs = await withUser(db, created.id, (tx) => tx.select().from(auditLog))
+    expect(logs.map((row) => row.action)).not.toContain("security.login")
+
+    resetAuth()
+    await closeTestDb(client)
+  })
+
+  it("revokes trust devices on sign-out, password change, and password reset", async () => {
+    const { db, client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    const auth = createAuth()
+    const email = "ada@test.local"
+    const password = "password1234"
+
+    await auth.api.signUpEmail({ body: { email, password, name: "Ada Lovelace" } })
+    await verifyAccount(auth)
+    const challenge = await auth.api.signInEmail({ body: { email, password }, asResponse: true })
+    const pending = cookieHeader(challenge)
+    await auth.api.sendTwoFactorOTP({ headers: pending, body: {} })
+    const code = vi.mocked(sendLoginOtp).mock.calls.at(-1)?.[1] ?? ""
+    const signedIn = await auth.api.verifyTwoFactorOTP({
+      headers: pending,
+      body: { code },
+      asResponse: true,
+    })
+    const sessionHeaders = cookieHeader(signedIn)
+    const [created] = await db.select().from(userTable)
+    const future = new Date(Date.now() + 60 * 60 * 1000)
+    await db.insert(verification).values([
+      {
+        id: "trust-1",
+        identifier: "trust-device-one",
+        value: created.id,
+        expiresAt: future,
+      },
+      {
+        id: "trust-2",
+        identifier: "trust-device-two",
+        value: created.id,
+        expiresAt: future,
+      },
+      {
+        id: "trust-other",
+        identifier: "trust-device-other",
+        value: "someone-else",
+        expiresAt: future,
+      },
+      {
+        id: "otp-keep",
+        identifier: "2fa-otp-keep",
+        value: created.id,
+        expiresAt: future,
+      },
+    ])
+
+    async function trustIds() {
+      return (await db.select().from(verification))
+        .filter((row) => row.identifier.startsWith("trust-device-"))
+        .map((row) => row.id)
+        .sort()
+    }
+
+    await expect(
+      auth.api.changePassword({
+        headers: sessionHeaders,
+        body: { currentPassword: "wrong-password", newPassword: "newpassword9" },
+      }),
+    ).rejects.toBeInstanceOf(APIError)
+    expect(await trustIds()).toEqual(["trust-1", "trust-2", "trust-other"])
+
+    const changed = await auth.api.changePassword({
+      headers: sessionHeaders,
+      body: { currentPassword: password, newPassword: "newpassword9", revokeOtherSessions: false },
+      asResponse: true,
+    })
+    expect(changed.status).toBe(200)
+    expect(await trustIds()).toEqual(["trust-other"])
+
+    const next = cookieHeader(changed)
+    await db.insert(verification).values({
+      id: "trust-3",
+      identifier: "trust-device-three",
+      value: created.id,
+      expiresAt: future,
+    })
+    await auth.api.signOut({ headers: next })
+    expect(await trustIds()).toEqual(["trust-other"])
+
+    await db.insert(verification).values({
+      id: "trust-4",
+      identifier: "trust-device-four",
+      value: created.id,
+      expiresAt: future,
+    })
+    await auth.api.requestPasswordReset({
+      body: { email, redirectTo: "http://localhost:5173/reset-password" },
+    })
+    const resetUrl = vi.mocked(sendPasswordReset).mock.calls.at(-1)?.[1] ?? ""
+    const token = new URL(resetUrl).pathname.split("/").pop() ?? ""
+    await expect(
+      auth.api.resetPassword({ body: { newPassword: "password1234", token } }),
+    ).resolves.toEqual({ status: true })
+    expect(await trustIds()).toEqual(["trust-other"])
+    expect((await db.select().from(verification)).some((row) => row.id === "otp-keep")).toBe(true)
+
     resetAuth()
     await closeTestDb(client)
   })
