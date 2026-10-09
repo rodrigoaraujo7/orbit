@@ -1,14 +1,18 @@
 import { readFile } from "node:fs/promises"
 import { APIError } from "better-auth/api"
+import { eq } from "drizzle-orm"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { auditLog, session as sessionTable, user as userTable } from "../db/schema/index.ts"
 import {
   afterAuthHook,
   beforeAuthHook,
   createAuth,
+  EMAIL_OTP_CANNOT_BE_DISABLED,
   emailRecipient,
   enableTwoFactorOnCreate,
   getAuth,
+  isEmailPasswordSignIn,
+  recordIssuedEmailSession,
   resetAuth,
   sendResetPasswordEmail,
   sendTwoFactorOtp,
@@ -144,6 +148,9 @@ describe("createAuth", () => {
 
     const auth = createAuth()
     expect(pluginIds(auth)).toContain("dash")
+    expect(pluginIds(auth).indexOf("mandatory-email-otp")).toBe(
+      pluginIds(auth).indexOf("two-factor") + 1,
+    )
     expect(dashEndpointPaths(auth).length).toBeGreaterThan(0)
     expect(auth.options.trustedOrigins).toContain(DASH_ORIGIN)
 
@@ -341,6 +348,66 @@ describe("afterAuthHook", () => {
   })
 })
 
+describe("recordIssuedEmailSession", () => {
+  it("recognizes only the password sign-in route", () => {
+    expect(isEmailPasswordSignIn({ path: "/sign-in/email" })).toBe(true)
+    expect(isEmailPasswordSignIn({ path: "/two-factor/verify-otp" })).toBe(false)
+    expect(isEmailPasswordSignIn({})).toBe(false)
+  })
+
+  it("records a password session the OTP plugin kept, and ignores the rest", async () => {
+    const { db, client } = await openTestDb()
+    await insertUser(client, "user-e", "ada@test.local")
+    const headers = new Headers({ "x-forwarded-for": "10.0.0.8", "user-agent": "kept" })
+
+    await recordIssuedEmailSession({
+      path: "/two-factor/verify-otp",
+      headers,
+      context: { newSession: { user: { id: "user-e", email: "ada@test.local" } } },
+    })
+    await recordIssuedEmailSession({
+      path: "/sign-in/email",
+      headers,
+      context: { newSession: null },
+    })
+    await recordIssuedEmailSession({
+      path: "/sign-in/email",
+      headers,
+      context: {
+        newSession: { user: { id: "user-e", email: "ada@test.local" } },
+        returned: new APIError("UNAUTHORIZED", { message: "no" }),
+      },
+    })
+
+    expect(await withUser(db, "user-e", (tx) => tx.select().from(auditLog))).toEqual([])
+    expect(sendNewLoginAlert).not.toHaveBeenCalled()
+
+    await recordIssuedEmailSession({
+      path: "/sign-in/email",
+      headers,
+      context: {
+        newSession: {
+          user: { id: "user-e", email: "ada@test.local", name: "Ada", locale: "en-US" },
+        },
+      },
+    })
+    await recordIssuedEmailSession({
+      path: "/sign-in/email",
+      request: { headers },
+      context: { newSession: { user: { id: "user-e" } } },
+    })
+
+    const logs = await withUser(db, "user-e", (tx) => tx.select().from(auditLog))
+    expect(logs.map((row) => row.action)).toEqual(["security.login", "security.login"])
+    expect(sendNewLoginAlert).toHaveBeenCalledOnce()
+    expect(sendNewLoginAlert).toHaveBeenCalledWith(
+      { email: "ada@test.local", name: "Ada", locale: "en-US" },
+      { headers },
+    )
+    await closeTestDb(client)
+  })
+})
+
 describe("emailRecipient", () => {
   it("keeps only a usable address and narrows the optional fields", () => {
     expect(emailRecipient({ email: "ada@test.local", name: "Ada", locale: "pt-BR" })).toEqual({
@@ -463,6 +530,22 @@ describe("beforeAuthHook", () => {
         context: {},
       }),
     ).resolves.toBeUndefined()
+  })
+
+  it("rejects turning email OTP off", async () => {
+    await expect(
+      beforeAuthHook({
+        path: "/two-factor/disable",
+        body: { password: "password1234" },
+        context: {},
+      }),
+    ).rejects.toMatchObject({
+      status: "FORBIDDEN",
+      body: EMAIL_OTP_CANNOT_BE_DISABLED,
+    })
+    await expect(
+      beforeAuthHook({ path: "/two-factor/disable", body: null, context: {} }),
+    ).rejects.toMatchObject({ status: "FORBIDDEN" })
   })
 
   it("forces other sessions to end when the password changes", async () => {
@@ -600,6 +683,9 @@ describe("auth options", () => {
       defaultValue: "en-US",
       input: true,
     })
+
+    const ids = (auth.options.plugins ?? []).map((entry) => entry.id)
+    expect(ids.indexOf("mandatory-email-otp")).toBe(ids.indexOf("two-factor") + 1)
 
     const plugin = (auth.options.plugins ?? []).find((entry) => entry.id === "two-factor")
     const options = (plugin as { options?: Record<string, unknown> }).options
@@ -820,6 +906,127 @@ describe("password session revocation", () => {
       user: { email },
     })
     expect(await db.select().from(sessionTable)).toHaveLength(1)
+    resetAuth()
+    await closeTestDb(client)
+  })
+})
+
+describe("mandatory email OTP", () => {
+  afterEach(() => {
+    resetAuth()
+    vi.unstubAllEnvs()
+  })
+
+  function cookieHeader(response: Response) {
+    return new Headers({
+      cookie: response.headers
+        .getSetCookie()
+        .map((entry) => entry.split(";")[0])
+        .join("; "),
+    })
+  }
+
+  async function verifyAccount(auth: AuthInstance) {
+    const [confirmation] = vi.mocked(sendAccountConfirmation).mock.calls
+    const token = new URL(confirmation[1]).searchParams.get("token") ?? ""
+    await auth.api.verifyEmail({ query: { token }, asResponse: true })
+  }
+
+  async function openSession(auth: AuthInstance, email: string, password: string) {
+    const challenge = await auth.api.signInEmail({
+      body: { email, password },
+      asResponse: true,
+    })
+    const pending = cookieHeader(challenge)
+    await auth.api.sendTwoFactorOTP({ headers: pending, body: {} })
+    const calls = vi.mocked(sendLoginOtp).mock.calls
+    const verified = await auth.api.verifyTwoFactorOTP({
+      headers: pending,
+      body: { code: calls[calls.length - 1][1] },
+      asResponse: true,
+    })
+    return cookieHeader(verified)
+  }
+
+  it("refuses a password request to turn email OTP off", async () => {
+    const { db, client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    const auth = createAuth()
+    const email = "ada@test.local"
+    const password = "password1234"
+
+    await expect(auth.api.disableTwoFactor({ body: { password } })).rejects.toMatchObject({
+      status: "FORBIDDEN",
+      body: EMAIL_OTP_CANNOT_BE_DISABLED,
+    })
+
+    await auth.api.signUpEmail({ body: { email, password, name: "Ada Lovelace" } })
+    await verifyAccount(auth)
+    const sessionHeaders = await openSession(auth, email, password)
+    const [created] = await db.select().from(userTable)
+
+    await expect(
+      auth.api.disableTwoFactor({ headers: sessionHeaders, body: { password } }),
+    ).rejects.toMatchObject({ status: "FORBIDDEN", body: EMAIL_OTP_CANNOT_BE_DISABLED })
+
+    const [stillOn] = await db.select().from(userTable)
+    expect(stillOn.twoFactorEnabled).toBe(true)
+    await expect(auth.api.getSession({ headers: sessionHeaders })).resolves.toMatchObject({
+      user: { email },
+    })
+    expect(await db.select().from(sessionTable)).toHaveLength(1)
+
+    await auth.api.signOut({ headers: sessionHeaders })
+    const challenge = await auth.api.signInEmail({ body: { email, password }, asResponse: true })
+    expect(await challenge.json()).toMatchObject({
+      twoFactorRedirect: true,
+      twoFactorMethods: ["otp"],
+    })
+    expect(await db.select().from(sessionTable)).toHaveLength(0)
+
+    const logs = await withUser(db, created.id, (tx) => tx.select().from(auditLog))
+    expect(logs.map((row) => row.action)).not.toContain("security.2fa.disable")
+    expect(logs.filter((row) => row.action === "security.login")).toHaveLength(1)
+    expect(sendNewLoginAlert).toHaveBeenCalledOnce()
+
+    resetAuth()
+    await closeTestDb(client)
+  })
+
+  it("audits a password sign-in when email OTP has been turned off", async () => {
+    const { db, client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    const auth = createAuth()
+    const email = "grace@test.local"
+    const password = "password1234"
+    const headers = new Headers({ "x-forwarded-for": "203.0.113.8", "user-agent": "forge" })
+
+    await auth.api.signUpEmail({
+      body: { email, password, name: "Grace Hopper", locale: "pt-BR" },
+    })
+    await verifyAccount(auth)
+    const [created] = await db.select().from(userTable)
+    await db.update(userTable).set({ twoFactorEnabled: false }).where(eq(userTable.id, created.id))
+
+    const signedIn = await auth.api.signInEmail({
+      body: { email, password },
+      headers,
+      asResponse: true,
+    })
+    const body = (await signedIn.json()) as { token?: string; twoFactorRedirect?: boolean }
+    expect(body.twoFactorRedirect).toBeUndefined()
+    expect(body.token).toBeTruthy()
+    expect(await db.select().from(sessionTable)).toHaveLength(1)
+
+    const logs = await withUser(db, created.id, (tx) => tx.select().from(auditLog))
+    expect(logs.map((row) => row.action)).toEqual(["security.login"])
+    expect(logs[0]).toMatchObject({ ip: "203.0.113.8", userAgent: "forge" })
+    expect(sendNewLoginAlert).toHaveBeenCalledOnce()
+    expect(sendNewLoginAlert).toHaveBeenCalledWith(
+      { email, name: "Grace Hopper", locale: "pt-BR" },
+      { headers },
+    )
+
     resetAuth()
     await closeTestDb(client)
   })

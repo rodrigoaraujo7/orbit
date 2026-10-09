@@ -145,7 +145,25 @@ type AuthHookCtx = {
   }
 }
 
+/** Email OTP is mandatory. A password must not be able to clear it. */
+export const EMAIL_OTP_CANNOT_BE_DISABLED = {
+  message: "Email verification codes cannot be turned off",
+  code: "EMAIL_OTP_CANNOT_BE_DISABLED",
+} as const
+
+export function isEmailPasswordSignIn(context: { path?: string }) {
+  return context.path === "/sign-in/email"
+}
+
+function authHookFailed(returned: unknown) {
+  return isAPIError(returned) || returned instanceof APIError
+}
+
 export async function beforeAuthHook(ctx: AuthHookCtx) {
+  if (ctx.path === "/two-factor/disable") {
+    throw new APIError("FORBIDDEN", EMAIL_OTP_CANNOT_BE_DISABLED)
+  }
+
   if (ctx.path === "/change-password") {
     // The client cannot opt out of ending the other sessions.
     if (!ctx.body || typeof ctx.body !== "object") return
@@ -176,16 +194,44 @@ async function recordSignIn(signedIn: HookUser, headers: Headers | null | undefi
   if (recipient) await sendNewLoginAlert(recipient, { headers })
 }
 
+/**
+ * Runs after the two-factor plugin. That plugin deletes the credential session
+ * while email OTP is still required and clears `newSession`, so a session that
+ * is still here was actually issued — including one kept because the flag was
+ * turned off. Record it, or a later password sign-in stays invisible.
+ */
+export async function recordIssuedEmailSession(ctx: AuthHookCtx) {
+  if (!isEmailPasswordSignIn(ctx)) return
+  const signedIn = ctx.context.newSession?.user
+  if (!signedIn || authHookFailed(ctx.context.returned)) return
+  await recordSignIn(signedIn, ctx.headers ?? ctx.request?.headers)
+}
+
+/** Sees the credential session after the two-factor plugin has kept or deleted it. */
+export function mandatoryEmailOtpAudit(): BetterAuthPlugin {
+  return {
+    id: "mandatory-email-otp",
+    hooks: {
+      after: [
+        {
+          matcher: isEmailPasswordSignIn,
+          handler: createAuthMiddleware(recordIssuedEmailSession),
+        },
+      ],
+    },
+  }
+}
+
 export async function afterAuthHook(ctx: AuthHookCtx) {
   const headers = ctx.headers ?? ctx.request?.headers
   const sessionUserId = ctx.context.newSession?.user.id ?? ctx.context.session?.user.id ?? null
-  const failed = isAPIError(ctx.context.returned) || ctx.context.returned instanceof APIError
+  const failed = authHookFailed(ctx.context.returned)
 
   /**
    * Every account has email 2FA, so a completed login is the verified OTP, not
    * `/sign-in/email`. The credential handler does create a session, but the 2FA
-   * plugin deletes it and answers `twoFactorRedirect` — and its after-hook runs
-   * after this one, so the session is still visible here and means nothing.
+   * plugin deletes it after this hook. `recordIssuedEmailSession` runs after
+   * that plugin and records a session the plugin kept.
    */
   if (ctx.path === "/two-factor/verify-otp") {
     if (ctx.context.newSession && !failed) await recordSignIn(ctx.context.newSession.user, headers)
@@ -277,6 +323,7 @@ export function createAuth() {
           sendOTP: sendTwoFactorOtp,
         },
       }),
+      mandatoryEmailOtpAudit(),
       ...dashPlugins,
     ],
     hooks: {
