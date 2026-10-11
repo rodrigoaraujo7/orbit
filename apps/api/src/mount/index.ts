@@ -1,5 +1,6 @@
 import { trpcServer } from "@hono/trpc-server"
 import type { Hono } from "hono"
+import { authRequestWithClientIp } from "../auth/client-ip/index.ts"
 import { getAuth } from "../auth/index.ts"
 import { isBetterAuthSecretError } from "../auth/secret/index.ts"
 import { createContext } from "../trpc/init/index.ts"
@@ -8,7 +9,7 @@ import { appRouter } from "../trpc/router/index.ts"
 export function mountApi(app: Hono) {
   app.on(["POST", "GET"], "/api/auth/*", (c) => {
     try {
-      return getAuth().handler(c.req.raw)
+      return getAuth().handler(authRequestWithClientIp(c.req.raw))
     } catch (error) {
       if (isBetterAuthSecretError(error)) {
         return c.json({ error: error.message }, 500)

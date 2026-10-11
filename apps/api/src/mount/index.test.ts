@@ -17,12 +17,22 @@ describe("mountApi", () => {
     getAuth.mockReset()
     getAuth.mockImplementation(() => ({ handler }))
     handler.mockClear()
+    vi.unstubAllEnvs()
   })
   it("forwards Better Auth and tRPC routes", async () => {
+    vi.stubEnv("AUTH_TRUSTED_PROXIES", "76.76.21.0/24")
     const app = new Hono()
     mountApi(app)
-    const auth = await app.request("/api/auth/ok")
+    const auth = await app.request("http://localhost/api/auth/ok", {
+      headers: {
+        "x-real-ip": "76.76.21.22",
+        "x-forwarded-for": "1.2.3.4",
+        "x-vercel-forwarded-for": "203.0.113.10",
+      },
+    })
     expect(handler).toHaveBeenCalled()
+    const forwarded = handler.mock.calls[0][0] as Request
+    expect(forwarded.headers.get("x-forwarded-for")).toBe("203.0.113.10")
     expect(await auth.text()).toBe("auth-ok")
 
     const trpc = await app.request("/trpc/does-not-exist")

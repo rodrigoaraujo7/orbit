@@ -93,6 +93,30 @@ describe("vercel middleware", () => {
     )
   })
 
+  it("forwards Vercel's visitor address and the original request headers", () => {
+    vi.stubEnv("VERCEL_ENV", "production")
+    const response = middleware(
+      new Request("https://app.example.com/api/auth/sign-in/email", {
+        headers: {
+          "x-real-ip": "203.0.113.10",
+          "x-vercel-forwarded-for": "198.51.100.99",
+          cookie: "session=abc",
+          "content-type": "application/json",
+        },
+      }),
+    )
+
+    expect(response.headers.get("x-middleware-rewrite")).toBe(
+      "https://api.orbit.rodrigoleite.dev/api/auth/sign-in/email",
+    )
+    expect(response.headers.get("x-middleware-request-x-vercel-forwarded-for")).toBe("203.0.113.10")
+    expect(response.headers.get("x-middleware-request-cookie")).toBe("session=abc")
+    expect(response.headers.get("x-middleware-request-content-type")).toBe("application/json")
+    expect(response.headers.get("x-middleware-override-headers")).toContain(
+      "x-vercel-forwarded-for",
+    )
+  })
+
   it("emits a .js import the Node middleware runtime can load", () => {
     const emitted = emitMiddlewareForVercel()
 
