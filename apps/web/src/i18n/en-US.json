@@ -303,7 +303,8 @@
     "repoFormat": "Use the owner/repository format",
     "repoUrl": "Use an https://github.com/owner/repository URL",
     "selectCategory": "Select a category",
-    "enterGithubToken": "Enter the GitHub token"
+    "enterGithubToken": "Enter the GitHub token",
+    "month": "Use a YYYY-MM month"
   },
   "format": {
     "inInstallments": "{{amount}} in {{count}}x",

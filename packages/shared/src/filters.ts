@@ -1,8 +1,36 @@
 import { z } from "zod"
 import { auditModuleSchema } from "./audit.ts"
+import { isMonthLabel } from "./dates.ts"
 import { invoiceStatusSchema, projectStatusSchema, workflowStatusSchema } from "./domain.ts"
 
 const optionalString = z.string().trim().optional()
+
+/** English copy of web `validation.month`. Blank means the bound is unset. */
+export const monthInputMessage = "Use a YYYY-MM month"
+
+const optionalMonth = z
+  .string()
+  .trim()
+  .refine((value) => value === "" || isMonthLabel(value), monthInputMessage)
+  .optional()
+
+/** Keep a YYYY-MM search value. Anything else is absent, so the page does not send it. */
+function readMonthSearch(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined
+  const trimmed = value.trim()
+  return isMonthLabel(trimmed) ? trimmed : undefined
+}
+
+const optionalMonthSearch = z.preprocess(readMonthSearch, z.string().optional())
+
+function withoutUndefined<T extends Record<string, unknown>>(value: T): Partial<T> {
+  const next: Partial<T> = {}
+  for (const key of Object.keys(value) as (keyof T)[]) {
+    const item = value[key]
+    if (item !== undefined) next[key] = item
+  }
+  return next
+}
 
 export const projectListFiltersSchema = z.object({
   q: optionalString,
@@ -15,8 +43,8 @@ export const projectListFiltersSchema = z.object({
 export type ProjectListFilters = z.infer<typeof projectListFiltersSchema>
 
 export const dashboardFiltersSchema = z.object({
-  monthFrom: optionalString,
-  monthTo: optionalString,
+  monthFrom: optionalMonth,
+  monthTo: optionalMonth,
   projectId: optionalString,
   clientId: optionalString,
   currency: optionalString,
@@ -52,13 +80,15 @@ export const kanbanSearchSchema = z.object({
 export type KanbanSearch = z.infer<typeof kanbanSearchSchema>
 
 /** URL search for `/dashboard`. */
-export const dashboardSearchSchema = z.object({
-  from: optionalString,
-  to: optionalString,
-  client: optionalString,
-  project: optionalString,
-  currency: optionalString,
-})
+export const dashboardSearchSchema = z
+  .object({
+    from: optionalMonthSearch,
+    to: optionalMonthSearch,
+    client: optionalString,
+    project: optionalString,
+    currency: optionalString,
+  })
+  .transform(withoutUndefined)
 export type DashboardSearch = z.infer<typeof dashboardSearchSchema>
 
 /** URL search for invoice filters on `/projects/$projectId`. */

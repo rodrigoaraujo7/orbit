@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { dashboardFiltersSchema } from "shared"
+import { validation } from "../../input/messages.ts"
 import {
   caller,
   closeTestDb,
@@ -35,5 +37,22 @@ describe("dashboard router", () => {
     expect(empty.currency).toBe("BRL")
     const filtered = await api.dashboard.metrics({ clientId: contact.id, currency: "BRL" })
     expect(filtered.summary.projetos).toBeGreaterThanOrEqual(1)
+  })
+
+  it("rejects month bounds that are not YYYY-MM", async () => {
+    const rejected = dashboardFiltersSchema.safeParse({ monthFrom: "0" })
+    expect(rejected.success).toBe(false)
+    if (!rejected.success) expect(rejected.error.issues[0]?.message).toBe(validation.month)
+
+    const api = caller("user-a")
+    await expect(api.dashboard.metrics({ monthFrom: "0", monthTo: "zzz" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    })
+    await expect(api.dashboard.metrics({ monthTo: "2026-13" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    })
+    await expect(
+      api.dashboard.metrics({ monthFrom: "2026-01", monthTo: "2026-02" }),
+    ).resolves.toMatchObject({ months: ["2026-01", "2026-02"] })
   })
 })

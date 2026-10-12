@@ -28,6 +28,19 @@ export function monthOf(iso: string): string {
   return iso.slice(0, 7)
 }
 
+/** Calendar month label, "YYYY-MM", with the month in 01–12. */
+const MONTH_LABEL = /^\d{4}-(0[1-9]|1[0-2])$/
+
+export function isMonthLabel(value: string): boolean {
+  return MONTH_LABEL.test(value)
+}
+
+/**
+ * Longest inclusive walk `monthRange` will take (100 years). A wider pair of
+ * labels is truncated so one request cannot pin the process on the array.
+ */
+export const MAX_MONTH_RANGE = 1200
+
 /** "2026-11" + 3 → "2027-02". Negative `count` walks backwards. */
 export function addMonths(month: string, count: number): string {
   const [year, monthNumber] = month.split("-").map(Number)
@@ -51,12 +64,20 @@ export function lastDayOfMonth(month: string): string {
   return dayOfMonth(month, 31)
 }
 
-/** Whole months from `from` to `to`, inclusive: ["2026-07", "2026-08", …]. */
+/**
+ * Whole months from `from` to `to`, inclusive: ["2026-07", "2026-08", …].
+ * Anything that is not a month label, or a walk that stops advancing, is cut
+ * short instead of looping.
+ */
 export function monthRange(from: string, to: string): string[] {
-  if (from > to) return []
+  if (!isMonthLabel(from) || !isMonthLabel(to) || from > to) return []
   const months: string[] = []
-  for (let month = from; month <= to; month = addMonths(month, 1)) {
+  let month = from
+  while (month <= to && months.length < MAX_MONTH_RANGE) {
     months.push(month)
+    const next = addMonths(month, 1)
+    if (next <= month) break
+    month = next
   }
   return months
 }

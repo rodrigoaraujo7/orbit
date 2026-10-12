@@ -83,6 +83,28 @@ describe("dashboard route", () => {
   it("parses search params", () => {
     expect(Route.options.validateSearch?.({ currency: "USD" })).toMatchObject({ currency: "USD" })
   })
+
+  it("does not keep month search keys that are not YYYY-MM", async () => {
+    expect(Route.options.validateSearch?.({ from: "0", to: "zzz", currency: "USD" })).toEqual({
+      currency: "USD",
+    })
+    expect(Route.options.validateSearch?.({ from: " 2026-01 ", to: "2026-04" })).toEqual({
+      from: "2026-01",
+      to: "2026-04",
+    })
+
+    search.value = { from: "2026-01", to: "2026-04" }
+    renderWithProviders(<DashboardPage />)
+    await waitFor(() =>
+      expect(trpc.dashboard.metrics.query).toHaveBeenCalledWith({
+        monthFrom: "2026-01",
+        monthTo: "2026-04",
+        clientId: undefined,
+        projectId: undefined,
+        currency: "BRL",
+      }),
+    )
+  })
   it("shows a skeleton while metrics load", () => {
     trpc.dashboard.metrics.query.mockReturnValue(new Promise(() => {}))
     renderWithProviders(<DashboardPage />)

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
+import { monthInputMessage } from "shared"
 import { authErrorMessage } from "../lib/auth-errors/index.ts"
 import { formatCurrency, formatDate } from "../lib/format/index.ts"
 import i18n, { DEFAULT_LOCALE, getLocale, isLocale, setLocale } from "./index.ts"
@@ -18,6 +19,7 @@ describe("i18n catalogs", () => {
   it("keeps en-US and pt-BR key trees in sync", () => {
     expect(DEFAULT_LOCALE).toBe("en-US")
     expect(flatten(enUS).sort()).toEqual(flatten(ptBR).sort())
+    expect(enUS.validation.month).toBe(monthInputMessage)
   })
 
   it("switches language and formatters", async () => {
