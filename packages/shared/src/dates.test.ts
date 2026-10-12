@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   addMonths,
   dayOfMonth,
+  isMonthLabel,
   lastDayOfMonth,
+  MAX_MONTH_RANGE,
   monthOf,
   monthRange,
   monthsBetween,
@@ -54,9 +56,24 @@ describe("month helpers", () => {
   })
 
   it("builds an inclusive month range and an empty one when inverted", () => {
+    expect(isMonthLabel("2026-07")).toBe(true)
+    expect(isMonthLabel("2026-13")).toBe(false)
     expect(monthRange("2026-07", "2026-09")).toEqual(["2026-07", "2026-08", "2026-09"])
     expect(monthRange("2026-07", "2026-07")).toEqual(["2026-07"])
     expect(monthRange("2026-09", "2026-07")).toEqual([])
+  })
+
+  it("stops a walk that does not advance and caps the number of steps", () => {
+    expect(monthRange("0", "zzz")).toEqual([])
+    expect(monthRange("2026-01", "zzz")).toEqual([])
+    expect(monthRange("9999-12", "9999-12")).toEqual(["9999-12"])
+    expect(addMonths("9999-12", 1) <= "9999-12").toBe(true)
+
+    const capped = monthRange("2000-01", "9999-12")
+    expect(capped).toHaveLength(MAX_MONTH_RANGE)
+    expect(capped[0]).toBe("2000-01")
+    expect(capped.at(-1)).toBe("2099-12")
+    expect(monthRange("2000-01", "2099-12")).toEqual(capped)
   })
 
   it("counts whole months between two values", () => {

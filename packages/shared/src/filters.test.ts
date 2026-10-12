@@ -4,8 +4,10 @@ import {
   parseSearch,
   auditSearchSchema,
   dashboardFiltersSchema,
+  dashboardSearchSchema,
   invoiceListFiltersSchema,
   kanbanSearchSchema,
+  monthInputMessage,
   projectDetailSearchSchema,
   projectListFiltersSchema,
   projectsSearchSchema,
@@ -46,6 +48,27 @@ describe("parseSearch", () => {
       workflow: "success",
     })
     expect(dashboardFiltersSchema.parse({ currency: "USD" })).toMatchObject({ currency: "USD" })
+    expect(dashboardFiltersSchema.parse({ monthFrom: " 2026-01 ", monthTo: "" })).toMatchObject({
+      monthFrom: "2026-01",
+      monthTo: "",
+    })
+    const rejected = dashboardFiltersSchema.safeParse({ monthFrom: "0", monthTo: "2026-13" })
+    expect(rejected.success).toBe(false)
+    if (!rejected.success) {
+      expect(rejected.error.issues.map((issue) => issue.message)).toEqual([
+        monthInputMessage,
+        monthInputMessage,
+      ])
+    }
+    expect(
+      parseSearch(dashboardSearchSchema, { from: "0", to: "zzz", currency: "USD", client: "c1" }),
+    ).toEqual({ currency: "USD", client: "c1" })
+    expect(parseSearch(dashboardSearchSchema, { from: " 2026-01 ", to: "2026-06" })).toEqual({
+      from: "2026-01",
+      to: "2026-06",
+    })
+    expect(parseSearch(dashboardSearchSchema, { from: "   ", to: 1 })).toEqual({})
+    expect("from" in parseSearch(dashboardSearchSchema, { from: "0", currency: "USD" })).toBe(false)
     expect(invoiceListFiltersSchema.parse({ projectId: "p1", status: "all" })).toMatchObject({
       projectId: "p1",
       status: "all",

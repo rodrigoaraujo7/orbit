@@ -109,6 +109,7 @@ export {
   compactSearch,
   dashboardFiltersSchema,
   dashboardSearchSchema,
+  monthInputMessage,
   invoiceListFiltersSchema,
   invoiceSearchSchema,
   kanbanSearchSchema,

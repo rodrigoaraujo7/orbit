@@ -303,7 +303,8 @@
     "repoFormat": "Use o formato usuario/repositorio",
     "repoUrl": "Use uma URL https://github.com/usuario/repositorio",
     "selectCategory": "Selecione a categoria",
-    "enterGithubToken": "Informe o token do GitHub"
+    "enterGithubToken": "Informe o token do GitHub",
+    "month": "Use um mês no formato AAAA-MM"
   },
   "format": {
     "inInstallments": "{{amount}} em {{count}}x",

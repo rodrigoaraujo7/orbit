@@ -1,3 +1,5 @@
+import { monthInputMessage } from "shared"
+
 /** English copies of apps/web `validation.*` (and auth.minChars). API-only — do not import i18n. */
 export const validation = {
   minChars: "Enter at least 2 characters",
@@ -16,4 +18,5 @@ export const validation = {
   repoUrl: "Use an https://github.com/owner/repository URL",
   selectCategory: "Select a category",
   enterGithubToken: "Enter the GitHub token",
+  month: monthInputMessage,
 } as const
