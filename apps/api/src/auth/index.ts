@@ -18,6 +18,7 @@ import {
 } from "../email/send/index.ts"
 import { validation } from "../input/messages.ts"
 import { originUsesHttps, resolveAuthBaseUrl } from "../web-origin/index.ts"
+import { resolveTrustedProxies } from "./client-ip/index.ts"
 import { DASH_ORIGIN, resolveDashApiKey } from "./dash/index.ts"
 import { resolveBetterAuthSecret } from "./secret/index.ts"
 import { resolveTrustedOrigins } from "./trusted-origins/index.ts"
@@ -240,7 +241,7 @@ export async function afterAuthHook(ctx: AuthHookCtx) {
   }
 }
 
-export function createAuth() {
+export function createAuth(options?: { rateLimitEnabled?: boolean }) {
   const secret = resolveBetterAuthSecret()
   const baseURL = resolveAuthBaseUrl()
   const dashApiKey = resolveDashApiKey()
@@ -280,7 +281,14 @@ export function createAuth() {
       sendVerificationEmail: sendVerificationEmailFor,
     },
     databaseHooks: { user: { create: { before: enableTwoFactorOnCreate } } },
+    ...(options?.rateLimitEnabled ? { rateLimit: { enabled: true } } : {}),
     advanced: {
+      ipAddress: {
+        // The mount rewrites this header to one visitor address. A chain that
+        // still arrives is walked from the right, skipping these proxies.
+        ipAddressHeaders: ["x-forwarded-for"],
+        trustedProxies: resolveTrustedProxies(),
+      },
       defaultCookieAttributes: {
         httpOnly: true,
         sameSite: "lax",

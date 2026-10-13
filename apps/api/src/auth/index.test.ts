@@ -4,6 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { auditLog, session as sessionTable, user as userTable } from "../db/schema/index.ts"
 import { validation } from "../input/messages.ts"
 import {
+  authRequestWithClientIp,
+  INVALID_AUTH_TRUSTED_PROXIES,
+  VERCEL_PROXY_CIDRS,
+} from "./client-ip/index.ts"
+import {
   afterAuthHook,
   assertSignupPasswordConfirmation,
   beforeAuthHook,
@@ -136,6 +141,76 @@ describe("createAuth", () => {
       resetAuth()
     }
 
+    await closeTestDb(client)
+  })
+
+  it("trusts the rewrite proxies when keying auth rate limits", async () => {
+    const { client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    delete process.env.AUTH_TRUSTED_PROXIES
+    expect(createAuth().options.advanced?.ipAddress?.trustedProxies).toEqual([
+      ...VERCEL_PROXY_CIDRS,
+    ])
+    expect(createAuth().options.advanced?.ipAddress?.ipAddressHeaders).toEqual(["x-forwarded-for"])
+    resetAuth()
+
+    vi.stubEnv("AUTH_TRUSTED_PROXIES", "203.0.113.0/24")
+    expect(createAuth().options.advanced?.ipAddress?.trustedProxies).toEqual(["203.0.113.0/24"])
+    resetAuth()
+
+    vi.stubEnv("AUTH_TRUSTED_PROXIES", "nope")
+    expect(() => createAuth()).toThrow(INVALID_AUTH_TRUSTED_PROXIES)
+    resetAuth()
+    await closeTestDb(client)
+  })
+
+  it("gives each visitor behind the rewrite hop its own sign-in limit", async () => {
+    const { client } = await openTestDb()
+    vi.stubEnv("BETTER_AUTH_SECRET", "unit-test-better-auth-secret")
+    vi.stubEnv("BETTER_AUTH_URL", "http://localhost:5173")
+    vi.stubEnv("AUTH_TRUSTED_PROXIES", "76.76.21.0/24")
+    const auth = createAuth({ rateLimitEnabled: true })
+
+    const signIn = (visitor: string, peer = "76.76.21.22") =>
+      auth.handler(
+        authRequestWithClientIp(
+          new Request("http://localhost:5173/api/auth/sign-in/email", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              origin: "http://localhost:5173",
+              "x-real-ip": peer,
+              "x-forwarded-for": peer,
+              "x-vercel-forwarded-for": visitor,
+            },
+            body: JSON.stringify({
+              email: "nobody@test.local",
+              password: "not-a-real-password",
+            }),
+          }),
+        ),
+      )
+
+    const firstVisitor = []
+    for (let attempt = 0; attempt < 4; attempt++) firstVisitor.push(await signIn("203.0.113.10"))
+    expect(firstVisitor.map((response) => response.status)).toEqual([401, 401, 401, 429])
+    const limited = firstVisitor[3]
+    if (!limited) throw new Error("missing limited response")
+    expect(Number(limited.headers.get("x-retry-after"))).toBeGreaterThan(0)
+    expect(await limited.json()).toEqual({
+      message: "Too many requests. Please try again later.",
+    })
+
+    const secondVisitor = []
+    for (let attempt = 0; attempt < 3; attempt++) {
+      secondVisitor.push((await signIn("203.0.113.99")).status)
+    }
+    expect(secondVisitor).toEqual([401, 401, 401])
+
+    const spoofed = await signIn("203.0.113.10", "198.51.100.7")
+    expect(spoofed.status).toBe(401)
+
+    resetAuth()
     await closeTestDb(client)
   })
 
