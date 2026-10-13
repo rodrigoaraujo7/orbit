@@ -3,6 +3,7 @@ import { Plus } from "lucide-react"
 import { useLayoutEffect, useRef, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { Controller, FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form"
+import { MAX_INSTALLMENTS } from "shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -75,9 +76,6 @@ function Section({
   )
 }
 
-/** 2x to 24x — the same range as any installment simulator out there. */
-const MAX_INSTALLMENTS = 24
-
 export function CreateProjectDialog({
   open,
   onOpenChange,
@@ -99,6 +97,7 @@ export function CreateProjectDialog({
   const { addProject, updateProject } = useProjects()
   const { addContact, contacts, isContactsPending } = useRegistry()
 
+  /** 2x to 24x — the same range as any installment simulator out there. */
   function installmentOptions(amount: number, currency: string) {
     return Array.from({ length: MAX_INSTALLMENTS - 1 }, (_, i) => i + 2).map((n) => ({
       value: String(n),

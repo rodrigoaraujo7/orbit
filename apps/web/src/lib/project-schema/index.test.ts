@@ -67,6 +67,21 @@ describe("projectSchema", () => {
     expect(
       errorPaths(form({ dealKind: "installment", amount: "18000", installments: "3" })),
     ).toEqual([])
+    expect(
+      errorPaths(form({ dealKind: "installment", amount: "18000", installments: "24" })),
+    ).toEqual([])
+    const overCap = projectSchema().safeParse(
+      form({ dealKind: "installment", amount: "18000", installments: "25" }),
+    )
+    expect(overCap.success).toBe(false)
+    if (!overCap.success) {
+      expect(overCap.error.issues.map((issue) => issue.message)).toContain(
+        i18n.t("validation.maxInstallments"),
+      )
+    }
+    expect(
+      errorPaths(form({ dealKind: "installment", amount: "1", installments: "2147483647" })),
+    ).toEqual(["installments"])
     expect(errorPaths(form({ dealKind: "installment", amount: "0", installments: "1" }))).toEqual(
       [],
     )

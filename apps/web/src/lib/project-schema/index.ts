@@ -6,6 +6,7 @@ import {
   GITHUB_REPO_PREFIX,
   githubRepoUrl,
   hasPositiveAmount as hasPositiveAmountWithLocale,
+  MAX_INSTALLMENTS,
   parseAmount as parseAmountWithLocale,
   payerSchema,
   projectStatusSchema,
@@ -142,6 +143,12 @@ export function projectSchema() {
             code: "custom",
             path: ["installments"],
             message: i18n.t("validation.minInstallments"),
+          })
+        } else if (installments > MAX_INSTALLMENTS) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["installments"],
+            message: i18n.t("validation.maxInstallments"),
           })
         }
       }
