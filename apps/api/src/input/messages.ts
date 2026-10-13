@@ -1,6 +1,7 @@
-/** English copies of apps/web `validation.*` (and auth.minChars). API-only — do not import i18n. */
+/** English copies of apps/web `validation.*` (and auth.minChars / auth.passwordsMismatch). API-only — do not import i18n. */
 export const validation = {
   minChars: "Enter at least 2 characters",
+  passwordsMismatch: "The passwords do not match",
   selectTool: "Select a tool",
   enterKey: "Enter the key",
   enterValue: "Enter the value",

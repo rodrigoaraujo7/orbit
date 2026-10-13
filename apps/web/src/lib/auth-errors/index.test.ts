@@ -10,6 +10,9 @@ describe("authErrorMessage", () => {
     expect(authErrorMessage({ code: "INVALID_TOKEN" }, "x")).toBe(
       "This link is invalid or has expired.",
     )
+    expect(authErrorMessage({ code: "PASSWORDS_DO_NOT_MATCH" }, "x")).toBe(
+      "The passwords do not match",
+    )
     expect(authErrorMessage({ status: 429 }, "x")).not.toBe("x")
     expect(authErrorMessage({ code: "UNKNOWN" }, "fallback")).toBe("fallback")
     expect(authErrorMessage({}, "fallback")).toBe("fallback")

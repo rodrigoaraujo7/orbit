@@ -26,36 +26,43 @@ export const Route = createFileRoute("/login")({
 type Step = "credentials" | "otp" | "confirm"
 
 function authSchema(mode: "signin" | "signup", step: Step) {
-  return z.object({
-    name:
-      step === "credentials" && mode === "signup"
-        ? z.string().trim().min(2, i18n.t("auth.minChars"))
-        : z.string(),
-    email:
-      step === "credentials"
-        ? z
-            .string()
-            .trim()
-            .min(1, i18n.t("auth.emailRequired"))
-            .refine(
-              (value) => z.string().email().safeParse(value).success,
-              i18n.t("auth.emailInvalid"),
-            )
-        : z.string(),
-    password:
-      step === "credentials"
-        ? mode === "signup"
-          ? z.string().min(1, i18n.t("auth.passwordRequired")).min(8, i18n.t("auth.passwordMin"))
-          : z.string().min(1, i18n.t("auth.passwordRequired"))
-        : z.string(),
-    code:
-      step === "otp"
-        ? z
-            .string()
-            .trim()
-            .regex(/^\d{6}$/, i18n.t("auth.codeRequired"))
-        : z.string(),
-  })
+  return z
+    .object({
+      name:
+        step === "credentials" && mode === "signup"
+          ? z.string().trim().min(2, i18n.t("auth.minChars"))
+          : z.string(),
+      email:
+        step === "credentials"
+          ? z
+              .string()
+              .trim()
+              .min(1, i18n.t("auth.emailRequired"))
+              .refine(
+                (value) => z.string().email().safeParse(value).success,
+                i18n.t("auth.emailInvalid"),
+              )
+          : z.string(),
+      password:
+        step === "credentials"
+          ? mode === "signup"
+            ? z.string().min(1, i18n.t("auth.passwordRequired")).min(8, i18n.t("auth.passwordMin"))
+            : z.string().min(1, i18n.t("auth.passwordRequired"))
+          : z.string(),
+      confirmPassword: z.string(),
+      code:
+        step === "otp"
+          ? z
+              .string()
+              .trim()
+              .regex(/^\d{6}$/, i18n.t("auth.codeRequired"))
+          : z.string(),
+    })
+    .refine(
+      (values) =>
+        step !== "credentials" || mode !== "signup" || values.password === values.confirmPassword,
+      { path: ["confirmPassword"], message: i18n.t("auth.passwordsMismatch") },
+    )
 }
 
 type AuthFormValues = z.infer<ReturnType<typeof authSchema>>
@@ -81,7 +88,7 @@ function LoginPage() {
   } = useForm<AuthFormValues>({
     resolver: (values, context, options) =>
       zodResolver(authSchema(mode, step))(values, context, options),
-    defaultValues: { name: "", email: "", password: "", code: "" },
+    defaultValues: { name: "", email: "", password: "", confirmPassword: "", code: "" },
   })
 
   useEffect(() => {
@@ -156,18 +163,23 @@ function LoginPage() {
     }
 
     if (mode === "signup") {
-      const result = await authClient.signUp.email({
+      // Better Auth's signup type has no confirmation field. The value is still
+      // sent, and the API rejects the account unless it matches `password`.
+      const signup = {
         name: values.name,
         email: values.email,
         password: values.password,
+        confirmPassword: values.confirmPassword,
         locale: getLocale(),
-      })
+      }
+      const result = await authClient.signUp.email(signup)
       if (result.error) {
-        const field =
+        const duplicateEmail =
           result.error.code === "USER_ALREADY_EXISTS" ||
           result.error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"
-            ? "email"
-            : "password"
+        let field: "email" | "password" | "confirmPassword" = "password"
+        if (duplicateEmail) field = "email"
+        else if (result.error.code === "PASSWORDS_DO_NOT_MATCH") field = "confirmPassword"
         setError(field, {
           message: authErrorMessage(result.error, t("auth.signUpFailed")),
         })
@@ -297,6 +309,26 @@ function LoginPage() {
               />
             )}
           </Field>
+          <div
+            className={cn(
+              "grid transition-[grid-template-rows,margin] duration-300 ease-out motion-reduce:transition-none",
+              mode === "signup" ? "grid-rows-[1fr]" : "grid-rows-[0fr] -mb-4",
+            )}
+          >
+            <div className="min-h-0 overflow-hidden" inert={mode !== "signup"}>
+              <Field label={t("auth.confirmPassword")} error={errors.confirmPassword?.message}>
+                {(props) => (
+                  <Input
+                    {...props}
+                    {...register("confirmPassword")}
+                    type="password"
+                    autoComplete="new-password"
+                    tabIndex={mode === "signup" ? undefined : -1}
+                  />
+                )}
+              </Field>
+            </div>
+          </div>
           {mode === "signin" && (
             <Link
               to="/forgot-password"

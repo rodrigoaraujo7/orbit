@@ -2,8 +2,10 @@ import { readFile } from "node:fs/promises"
 import { APIError } from "better-auth/api"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { auditLog, session as sessionTable, user as userTable } from "../db/schema/index.ts"
+import { validation } from "../input/messages.ts"
 import {
   afterAuthHook,
+  assertSignupPasswordConfirmation,
   beforeAuthHook,
   createAuth,
   emailRecipient,
@@ -430,12 +432,25 @@ describe("beforeAuthHook", () => {
     await expect(
       beforeAuthHook({ path: "/sign-in/email", body: { name: "A" }, context: {} }),
     ).resolves.toBeUndefined()
+    const confirmed = {
+      name: "Ada",
+      email: "ada@test.local",
+      password: "password1234",
+      confirmPassword: "password1234",
+    }
     await expect(
-      beforeAuthHook({ path: "/sign-up/email", body: { name: "Ada" }, context: {} }),
+      beforeAuthHook({ path: "/sign-up/email", body: confirmed, context: {} }),
     ).resolves.toBeUndefined()
+    expect(confirmed).not.toHaveProperty("confirmPassword")
+    const padded = {
+      name: "  Ad  ",
+      password: "password1234",
+      confirmPassword: "password1234",
+    }
     await expect(
-      beforeAuthHook({ path: "/sign-up/email", body: { name: "  Ad  " }, context: {} }),
+      beforeAuthHook({ path: "/sign-up/email", body: padded, context: {} }),
     ).resolves.toBeUndefined()
+    expect(padded).not.toHaveProperty("confirmPassword")
     await expect(
       beforeAuthHook({ path: "/sign-up/email", body: { name: "A" }, context: {} }),
     ).rejects.toBeInstanceOf(APIError)
@@ -462,7 +477,29 @@ describe("beforeAuthHook", () => {
         body: { name: "Ada", email: "ada@test.local" },
         context: {},
       }),
-    ).resolves.toBeUndefined()
+    ).rejects.toMatchObject({
+      status: "BAD_REQUEST",
+      body: { code: "PASSWORDS_DO_NOT_MATCH", message: validation.passwordsMismatch },
+    })
+  })
+
+  it("rejects a signup password that was not repeated", () => {
+    expect(() =>
+      assertSignupPasswordConfirmation({
+        password: "password1234",
+        confirmPassword: "password1235",
+      }),
+    ).toThrow(APIError)
+    expect(() => assertSignupPasswordConfirmation({ password: "password1234" })).toThrow(APIError)
+    expect(() =>
+      assertSignupPasswordConfirmation({ password: 1, confirmPassword: "password1234" }),
+    ).toThrow(APIError)
+    expect(() =>
+      assertSignupPasswordConfirmation({ password: "password1234", confirmPassword: null }),
+    ).toThrow(APIError)
+    const body = { password: "password1234", confirmPassword: "password1234", locale: "pt-BR" }
+    expect(assertSignupPasswordConfirmation(body)).toBeUndefined()
+    expect(body).toEqual({ password: "password1234", locale: "pt-BR" })
   })
 
   it("forces other sessions to end when the password changes", async () => {
@@ -507,6 +544,7 @@ describe("signup input", () => {
     const signup = {
       email: "ok@test.local",
       password: "password1234",
+      confirmPassword: "password1234",
       name: "Ada Lovelace",
     }
 
@@ -518,12 +556,51 @@ describe("signup input", () => {
 
     await expect(
       auth.api.signUpEmail({
-        body: { email: "pw@test.local", password: "1234567", name: "Ada Lovelace" },
+        body: {
+          email: "pw@test.local",
+          password: "1234567",
+          confirmPassword: "1234567",
+          name: "Ada Lovelace",
+        },
       }),
-    ).rejects.toBeInstanceOf(APIError)
+    ).rejects.toMatchObject({ status: "BAD_REQUEST", body: { code: "PASSWORD_TOO_SHORT" } })
 
-    const created = await auth.api.signUpEmail({ body: signup, asResponse: true })
-    const duplicate = await auth.api.signUpEmail({ body: signup, asResponse: true })
+    await expect(
+      auth.api.signUpEmail({
+        body: {
+          email: "long@test.local",
+          password: "a".repeat(129),
+          confirmPassword: "a".repeat(129),
+          name: "Ada Lovelace",
+        },
+      }),
+    ).rejects.toMatchObject({ status: "BAD_REQUEST", body: { code: "PASSWORD_TOO_LONG" } })
+
+    await expect(
+      auth.api.signUpEmail({
+        body: {
+          email: "mismatch@test.local",
+          password: "password1234",
+          confirmPassword: "different12",
+          name: "Ada Lovelace",
+        },
+      }),
+    ).rejects.toMatchObject({
+      status: "BAD_REQUEST",
+      body: { code: "PASSWORDS_DO_NOT_MATCH", message: validation.passwordsMismatch },
+    })
+
+    await expect(
+      auth.api.signUpEmail({
+        body: { email: "missing@test.local", password: "password1234", name: "Ada Lovelace" },
+      }),
+    ).rejects.toMatchObject({
+      status: "BAD_REQUEST",
+      body: { code: "PASSWORDS_DO_NOT_MATCH" },
+    })
+
+    const created = await auth.api.signUpEmail({ body: { ...signup }, asResponse: true })
+    const duplicate = await auth.api.signUpEmail({ body: { ...signup }, asResponse: true })
     expect(created.status).toBe(200)
     expect(duplicate.status).toBe(200)
 
@@ -536,6 +613,7 @@ describe("signup input", () => {
       user: Record<string, unknown>
     }
     expect(createdBody.token).toBeNull()
+    expect(createdBody.user).not.toHaveProperty("confirmPassword")
     expect(duplicateBody.token).toBeNull()
     expect(duplicateBody).not.toHaveProperty("code")
     expect(signupProfile(duplicateBody.user)).toEqual(signupProfile(createdBody.user))
@@ -638,7 +716,12 @@ describe("email OTP sign-in", () => {
     const credentials = { email: "ada@test.local", password: "password1234" }
 
     const signedUp = await auth.api.signUpEmail({
-      body: { ...credentials, name: "Ada Lovelace", locale: "pt-BR" },
+      body: {
+        ...credentials,
+        name: "Ada Lovelace",
+        locale: "pt-BR",
+        confirmPassword: credentials.password,
+      },
     })
     expect(signedUp.token).toBeNull()
 
@@ -700,7 +783,12 @@ describe("email OTP sign-in", () => {
     const auth = createAuth()
 
     await auth.api.signUpEmail({
-      body: { email: "grace@test.local", password: "password1234", name: "Grace Hopper" },
+      body: {
+        email: "grace@test.local",
+        password: "password1234",
+        confirmPassword: "password1234",
+        name: "Grace Hopper",
+      },
     })
     await auth.api.requestPasswordReset({
       body: { email: "grace@test.local", redirectTo: "http://localhost:5173/reset-password" },
@@ -760,7 +848,7 @@ describe("password session revocation", () => {
     const password = "password1234"
 
     await auth.api.signUpEmail({
-      body: { email, password, name: "Ada Lovelace" },
+      body: { email, password, confirmPassword: password, name: "Ada Lovelace" },
     })
     await verifyAccount(auth)
     const first = await openSession(auth, email, password)
@@ -797,7 +885,7 @@ describe("password session revocation", () => {
     const password = "password1234"
 
     await auth.api.signUpEmail({
-      body: { email, password, name: "Grace Hopper" },
+      body: { email, password, confirmPassword: password, name: "Grace Hopper" },
     })
     await verifyAccount(auth)
     const current = await openSession(auth, email, password)
