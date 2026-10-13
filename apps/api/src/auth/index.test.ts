@@ -1048,7 +1048,9 @@ describe("mandatory email OTP", () => {
       body: EMAIL_OTP_CANNOT_BE_DISABLED,
     })
 
-    await auth.api.signUpEmail({ body: { email, password, name: "Ada Lovelace" } })
+    await auth.api.signUpEmail({
+      body: { email, password, confirmPassword: password, name: "Ada Lovelace" },
+    })
     await verifyAccount(auth)
     const sessionHeaders = await openSession(auth, email, password)
     const [created] = await db.select().from(userTable)
@@ -1090,7 +1092,7 @@ describe("mandatory email OTP", () => {
     const headers = new Headers({ "x-forwarded-for": "203.0.113.8", "user-agent": "forge" })
 
     await auth.api.signUpEmail({
-      body: { email, password, name: "Grace Hopper", locale: "pt-BR" },
+      body: { email, password, confirmPassword: password, name: "Grace Hopper", locale: "pt-BR" },
     })
     await verifyAccount(auth)
     const [created] = await db.select().from(userTable)
