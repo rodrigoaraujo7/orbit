@@ -116,6 +116,40 @@ describe("projectInput", () => {
     ).toContain(`deal.installments: ${validation.minInstallments}`)
   })
 
+  it("rejects installment counts above the cap on create and update", () => {
+    const overCap = {
+      ...validProject,
+      deal: { kind: "installment" as const, amount: 1, installments: 2147483647, currency: "BRL" },
+    }
+    expect(messages(projectInput.safeParse(overCap))).toContain(
+      `deal.installments: ${validation.maxInstallments}`,
+    )
+    expect(messages(projectUpdateInput.safeParse({ ...overCap, id: "p1" }))).toContain(
+      `deal.installments: ${validation.maxInstallments}`,
+    )
+    expect(
+      messages(
+        projectInput.safeParse({
+          ...validProject,
+          deal: { kind: "installment", amount: 1, installments: 25, currency: "BRL" },
+        }),
+      ),
+    ).toContain(`deal.installments: ${validation.maxInstallments}`)
+    expect(
+      projectInput.safeParse({
+        ...validProject,
+        deal: { kind: "installment", amount: 1, installments: 24, currency: "BRL" },
+      }).success,
+    ).toBe(true)
+    expect(
+      projectUpdateInput.safeParse({
+        ...validProject,
+        id: "p1",
+        deal: { kind: "installment", amount: 1, installments: 24, currency: "BRL" },
+      }).success,
+    ).toBe(true)
+  })
+
   it("rejects malformed repos and empty comments", () => {
     expect(
       messages(

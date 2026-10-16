@@ -5,6 +5,7 @@ import {
   githubRepoUrl,
   isGithubRepoFullName,
   isHttpsGithubRepoUrl,
+  MAX_INSTALLMENTS,
   payerSchema,
   projectStatusSchema,
   repoFullNamePattern,
@@ -90,6 +91,12 @@ function refineProject(
         code: "custom",
         path: ["deal", "installments"],
         message: validation.minInstallments,
+      })
+    } else if (n > MAX_INSTALLMENTS) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["deal", "installments"],
+        message: validation.maxInstallments,
       })
     }
   }

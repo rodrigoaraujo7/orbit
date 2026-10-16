@@ -11,6 +11,7 @@ export const validation = {
   emailInvalid: "Invalid email",
   negativeAmount: "Amount cannot be negative",
   minInstallments: "Minimum of 2 installments",
+  maxInstallments: "Maximum of 24 installments",
   enterToolName: "Enter the tool name",
   enterInvoiceDate: "Enter the invoice date",
   repoFormat: "Use the owner/repository format",

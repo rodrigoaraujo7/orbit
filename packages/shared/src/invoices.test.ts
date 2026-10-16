@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { generateInvoices } from "./invoices.ts"
+import { generateInvoices, MAX_INSTALLMENTS } from "./invoices.ts"
 import type { Project } from "./project.ts"
 
 afterEach(() => {
@@ -84,6 +84,40 @@ describe("generateInvoices", () => {
       "Ada",
     )
     expect(invoices.every((row) => row.status === "pending")).toBe(true)
+  })
+
+  it("emits one invoice per installment up to the cap", () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 0, 1))
+    const invoices = generateInvoices(
+      project({
+        deal: { kind: "installment", amount: 2400, installments: MAX_INSTALLMENTS },
+      }),
+      "Ada",
+    )
+    expect(invoices).toHaveLength(MAX_INSTALLMENTS)
+    expect(invoices[0]?.amount).toBe(100)
+    expect(invoices.at(-1)?.generatedAt).toBe("2027-12-10")
+  })
+
+  it("refuses to expand an installment count above the cap", () => {
+    const message = `Installment count exceeds the maximum of ${MAX_INSTALLMENTS}`
+    expect(() =>
+      generateInvoices(
+        project({
+          deal: { kind: "installment", amount: 1, installments: MAX_INSTALLMENTS + 1 },
+        }),
+        "Ada",
+      ),
+    ).toThrow(message)
+    expect(() =>
+      generateInvoices(
+        project({
+          deal: { kind: "installment", amount: 1, installments: 2147483647 },
+        }),
+        "Ada",
+      ),
+    ).toThrow(message)
   })
 
   it("replaces the derived status with an override for the same invoice id", () => {

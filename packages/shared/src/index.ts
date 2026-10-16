@@ -61,7 +61,12 @@ export {
   runWorkflowStatus,
   type WorkflowRun,
 } from "./github.ts"
-export { generateInvoices, type InvoiceOverrides, type InvoiceStatusOverride } from "./invoices.ts"
+export {
+  generateInvoices,
+  MAX_INSTALLMENTS,
+  type InvoiceOverrides,
+  type InvoiceStatusOverride,
+} from "./invoices.ts"
 export { effectiveMonth, filterInvoices, type InvoiceFilters } from "./invoice-table.ts"
 export {
   applyFilters,

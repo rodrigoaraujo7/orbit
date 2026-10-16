@@ -22,6 +22,32 @@ afterEach(async () => {
 })
 
 describe("invoices and payments", () => {
+  it("refuses to expand a stored installment count above the cap", async () => {
+    const api = caller("user-a")
+    await withUser(db, "user-a", async (tx) => {
+      await tx.insert(project).values({
+        id: "p-poison",
+        userId: "user-a",
+        name: "Poison",
+        status: "in-development",
+        position: 0,
+        startedAt: "2026-01-15",
+        dealKind: "installment",
+        dealAmountCents: 100n,
+        dealCurrency: "BRL",
+        dealInstallments: 2147483647,
+      })
+    })
+    await expect(api.invoices.list({ projectId: "p-poison" })).rejects.toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Installment count exceeds the maximum of 24",
+    })
+    await expect(api.dashboard.metrics()).rejects.toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Installment count exceeds the maximum of 24",
+    })
+  })
+
   it("lists generated invoices and records persisted ones", async () => {
     const api = caller("user-a")
     expect(await api.invoices.list({ projectId: "missing" })).toEqual({

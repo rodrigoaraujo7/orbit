@@ -298,6 +298,7 @@
     "invalidAmount": "Informe um valor válido",
     "negativeAmount": "O valor não pode ser negativo",
     "minInstallments": "Mínimo de 2 parcelas",
+    "maxInstallments": "Máximo de 24 parcelas",
     "enterToolName": "Informe o nome da ferramenta",
     "enterInvoiceDate": "Informe a data da fatura",
     "repoFormat": "Use o formato usuario/repositorio",

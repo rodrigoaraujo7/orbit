@@ -5,6 +5,9 @@ import { isDealFree, type Invoice, type Project } from "./project.ts"
 
 const PAYMENT_METHODS: PaymentMethod[] = ["boleto", "pix"]
 
+/** Same ceiling as the project form. Larger counts are rejected, never expanded. */
+export const MAX_INSTALLMENTS = 24
+
 /** A status the user set by hand, keyed by the generated invoice id. */
 export type InvoiceStatusOverride = {
   status: InvoiceStatus
@@ -33,6 +36,11 @@ export function generateInvoices(
   if (isDealFree(deal)) return []
 
   const installments = deal.kind === "installment" ? (deal.installments ?? 1) : 1
+  // A stored count above the cap must fail the read. `Array.from` of that
+  // length allocates every invoice on the main thread and can abort the process.
+  if (installments > MAX_INSTALLMENTS) {
+    throw new Error(`Installment count exceeds the maximum of ${MAX_INSTALLMENTS}`)
+  }
   const amount = deal.amount / installments
   const today = todayIso()
   const startMonth = monthOf(project.startedAt)

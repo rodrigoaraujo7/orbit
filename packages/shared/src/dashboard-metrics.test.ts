@@ -160,6 +160,16 @@ describe("dataRange / resolveMonths", () => {
     ).toBe("2026-01")
   })
 
+  it("does not expand an installment count above the cap", () => {
+    expect(() =>
+      dataRange([
+        project({
+          deal: { kind: "installment", amount: 1, installments: 2147483647 },
+        }),
+      ]),
+    ).toThrow("Installment count exceeds the maximum of 24")
+  })
+
   it("respects explicit month filters", () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(2026, 5, 15))

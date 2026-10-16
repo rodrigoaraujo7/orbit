@@ -226,6 +226,33 @@ describe("projects router", () => {
     ).rejects.toMatchObject({ code: "BAD_REQUEST" })
   })
 
+  it("rejects installment counts above the cap on create and update", async () => {
+    const api = caller("user-a")
+    const contactRow = await api.contacts.create({ name: "Ada Lovelace", ...requiredContactFields })
+    await expect(
+      api.projects.create({
+        ...baseProject,
+        clientId: contactRow.id,
+        deal: { kind: "installment", amount: 1, installments: 2147483647, currency: "BRL" },
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    const created = await api.projects.create({
+      ...baseProject,
+      clientId: contactRow.id,
+      deal: { kind: "installment", amount: 24, installments: 24, currency: "BRL" },
+    })
+    await expect(
+      api.projects.update({
+        id: created.id,
+        ...baseProject,
+        clientId: contactRow.id,
+        deal: { kind: "installment", amount: 1, installments: 25, currency: "BRL" },
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    const listed = await api.projects.list()
+    expect(listed.find((row) => row.id === created.id)?.deal.installments).toBe(24)
+  })
+
   it("creates with an explicit id and updates omitted optional fields", async () => {
     const api = caller("user-a")
     const contactRow = await api.contacts.create({ name: "Ada Lovelace", ...requiredContactFields })
